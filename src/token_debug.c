@@ -156,19 +156,6 @@ const char *token_name[256][2] =
 [TK_Unary_Expr] = { "TK_Unary_Expr", "" },
 };
 
-/* void dump_ast(struct obazl_buildfile_s *ast) */
-/* { */
-/*     log_debug("dump_ast"); */
-/*     log_debug("fname: %s", ast->fname); */
-
-/*     struct node_s *p; */
-/*     for(p=(struct node_s*)utarray_front(ast->nodelist); */
-/*         p!=NULL; */
-/*         p=(struct node_s*)utarray_next(ast->nodelist, p)) { */
-/*         log_debug("node type: %d", p->type); */
-/*     } */
-/* } */
-
 void dump_node(struct node_s *node)
 {
     log_debug("dump_node: %p", node);

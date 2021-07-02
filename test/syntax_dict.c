@@ -35,9 +35,9 @@ void test_dict_comp(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, dict_comp[i]); */
         test_str = dict_comp[i];
-        root = obazl_starlark_parse_string(test_str);
+        root = starlark_parse_string(test_str);
         utstring_renew(buf);
-        root2string(root, buf);
+        starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         node_dtor(root);
@@ -50,9 +50,9 @@ void test_dict_expr(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, dict_expr[i]); */
         test_str = dict_expr[i];
-        root = obazl_starlark_parse_string(test_str);
+        root = starlark_parse_string(test_str);
         utstring_renew(buf);
-        root2string(root, buf);
+        starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         node_dtor(root);

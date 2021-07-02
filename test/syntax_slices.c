@@ -268,9 +268,9 @@ void test_slice_a(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, slice_a[i]); */
         test_str = slice_a[i];
-        root = obazl_starlark_parse_string(test_str);
+        root = starlark_parse_string(test_str);
         utstring_renew(buf);
-        root2string(root, buf);
+        starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         node_dtor(root);
@@ -283,9 +283,9 @@ void test_slice_embed_a(void) {
     for (int i=0; i < ct; i++) {
         printf("case %d: :]%s[:\n", i, slice_embed_a[i]);
         test_str = slice_embed_a[i];
-        root = obazl_starlark_parse_string(test_str);
+        root = starlark_parse_string(test_str);
         utstring_renew(buf);
-        root2string(root, buf);
+        starlark_node2string(root, buf);
         printf(":]%s[:\n", utstring_body(buf));
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         node_dtor(root);
@@ -298,9 +298,9 @@ void test_slice_a_cmt(void) {
     for (int i=0; i < ct; i++) {
         printf("case %d: :]%s[:\n", i, slice_a_cmt[i]);
         test_str = slice_a_cmt[i];
-        root = obazl_starlark_parse_string(test_str);
+        root = starlark_parse_string(test_str);
         utstring_renew(buf);
-        root2string(root, buf);
+        starlark_node2string(root, buf);
         printf(":]%s[:\n", utstring_body(buf));
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         node_dtor(root);
@@ -313,9 +313,9 @@ void test_slice_int(void) {
     for (int i=0; i < ct; i++) {
         printf("case %d: :]%s[:\n", i, slice_int[i]);
         test_str = slice_int[i];
-        root = obazl_starlark_parse_string(test_str);
+        root = starlark_parse_string(test_str);
         utstring_renew(buf);
-        root2string(root, buf);
+        starlark_node2string(root, buf);
         printf(":]%s[:\n", utstring_body(buf));
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         node_dtor(root);
@@ -328,9 +328,9 @@ void test_slice_float(void) {
     for (int i=0; i < ct; i++) {
         printf("case %d: :]%s[:\n", i, slice_float[i]);
         test_str = slice_float[i];
-        root = obazl_starlark_parse_string(test_str);
+        root = starlark_parse_string(test_str);
         utstring_renew(buf);
-        root2string(root, buf);
+        starlark_node2string(root, buf);
         printf(":]%s[:\n", utstring_body(buf));
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         node_dtor(root);
@@ -343,9 +343,9 @@ void test_slice_a_float(void) {
     for (int i=0; i < ct; i++) {
         printf("case %d: :]%s[:\n", i, slice_a_float[i]);
         test_str = slice_a_float[i];
-        root = obazl_starlark_parse_string(test_str);
+        root = starlark_parse_string(test_str);
         utstring_renew(buf);
-        root2string(root, buf);
+        starlark_node2string(root, buf);
         printf(":]%s[:\n", utstring_body(buf));
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         node_dtor(root);
@@ -358,9 +358,9 @@ void test_slice_a_int(void) {
     for (int i=0; i < ct; i++) {
         printf("case %d: :]%s[:\n", i, slice_a_int[i]);
         test_str = slice_a_int[i];
-        root = obazl_starlark_parse_string(test_str);
+        root = starlark_parse_string(test_str);
         utstring_renew(buf);
-        root2string(root, buf);
+        starlark_node2string(root, buf);
         printf(":]%s[:\n", utstring_body(buf));
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         node_dtor(root);
@@ -373,9 +373,9 @@ void test_slice_fn(void) {
     for (int i=0; i < ct; i++) {
         printf("case %d: :]%s[:\n", i, slice_fn[i]);
         test_str = slice_fn[i];
-        root = obazl_starlark_parse_string(test_str);
+        root = starlark_parse_string(test_str);
         utstring_renew(buf);
-        root2string(root, buf);
+        starlark_node2string(root, buf);
         printf(":]%s[:\n", utstring_body(buf));
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         node_dtor(root);

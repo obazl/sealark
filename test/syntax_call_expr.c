@@ -67,9 +67,9 @@ void test_call_a(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, call_a[i]); */
         test_str = call_a[i];
-        root = obazl_starlark_parse_string(test_str);
+        root = starlark_parse_string(test_str);
         utstring_renew(buf);
-        root2string(root, buf);
+        starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         node_dtor(root);
@@ -82,9 +82,9 @@ void test_call_rules(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, call_rules[i]); */
         test_str = call_rules[i];
-        root = obazl_starlark_parse_string(test_str);
+        root = starlark_parse_string(test_str);
         utstring_renew(buf);
-        root2string(root, buf);
+        starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         node_dtor(root);

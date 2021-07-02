@@ -19,8 +19,6 @@
 
 UT_string *build_file;
 
-/* struct obazl_buildfile_s *ast; */
-
 int main(int argc, char *argv[])
 {
     int opt;
@@ -46,7 +44,7 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    struct node_s *root = obazl_starlark_parse_file(utstring_body(build_file));
+    struct node_s *root = starlark_parse_file(utstring_body(build_file));
     log_debug("parsed file %s", utstring_body(build_file));
     dump_node(root);
 

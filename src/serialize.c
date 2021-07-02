@@ -22,29 +22,29 @@
 
 #include "serialize.h"
 
-void root2string(struct node_s *node, UT_string *buffer)
+void starlark_node2string(struct node_s *node, UT_string *buffer)
 {
     /* log_debug("root2string, line %d", line); */
     line = col = 0;
-    node2string(node, buffer);
+    _node2string(node, buffer);
     /* if (utstring_body(buffer)[utstring_len(buffer)-1] != '\n') { */
         utstring_printf(buffer, "\n");
     /* } */
 }
 
-void rootlist2string(UT_array *nodes, UT_string *buffer)
+void starlark_nodelist2string(UT_array *nodes, UT_string *buffer)
 {
     /* log_debug("rootlist2string, line %d", line); */
     line = col = 0;
-    nodelist2string(nodes, buffer);
+    _nodelist2string(nodes, buffer);
     if (utstring_body(buffer)[utstring_len(buffer)-1] != '\n') {
         utstring_printf(buffer, "\n");
     }
 }
 
-void node2string(struct node_s *node, UT_string *buffer)
+LOCAL void _node2string(struct node_s *node, UT_string *buffer)
 {
-    /* log_debug("node2string, line %d", line); */
+    /* log_debug("_node2string, line %d", line); */
     int i;
     /* node->line is absolute; relativize it; */
     /* int l = node->line - line; */
@@ -99,25 +99,25 @@ void node2string(struct node_s *node, UT_string *buffer)
     }
     if (node->subnodes) {
         if (utarray_len(node->subnodes) > 0) {
-            nodelist2string(node->subnodes, buffer);
+            _nodelist2string(node->subnodes, buffer);
         }
     }
 }
 
-void comments2string(UT_array *nodes, UT_string *buffer)
-{
-    struct node_s *node=NULL;
-    while( (node=(struct node_s*)utarray_next(nodes, node))) {
-        node2string(node, buffer);
-    }
-}
-
-void nodelist2string(UT_array *nodes, UT_string *buffer)
+LOCAL void _nodelist2string(UT_array *nodes, UT_string *buffer)
 {
     /* log_debug("nodelist2string"); */
     /* line = col = 0; */
     struct node_s *node=NULL;
     while( (node=(struct node_s*)utarray_next(nodes, node))) {
-        node2string(node, buffer);
+        _node2string(node, buffer);
+    }
+}
+
+LOCAL void comments2string(UT_array *nodes, UT_string *buffer)
+{
+    struct node_s *node=NULL;
+    while( (node=(struct node_s*)utarray_next(nodes, node))) {
+        _node2string(node, buffer);
     }
 }

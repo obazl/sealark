@@ -25,8 +25,6 @@
 
 UT_string *build_file;
 
-/* struct obazl_buildfile_s *ast; */
-
 int line;
 int col;
 
@@ -55,11 +53,11 @@ struct parse_state_s *parser_init(struct bf_lexer_s *lexer, struct node_s *root)
     return ps;
 }
 
-UT_array *obazl_starlark_lex_string(const char *buffer)
+UT_array *starlark_lex_string(const char *buffer)
 {
     log_set_quiet(false);
 
-    log_info("obazl_starlark_lex_string:\n%s", buffer);
+    log_info("starlark_lex_string:\n%s", buffer);
 
     UT_array *token_list;
     utarray_new(token_list, &node_icd);
@@ -93,7 +91,7 @@ UT_array *obazl_starlark_lex_string(const char *buffer)
     return token_list;
 }
 
-UT_array *obazl_starlark_lex_file(char *fname)
+UT_array *starlark_lex_file(char *fname)
 {
     log_set_quiet(false);
 
@@ -161,11 +159,11 @@ UT_array *obazl_starlark_lex_file(char *fname)
 }
 
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-struct node_s *obazl_starlark_parse_string(char *buffer)
+struct node_s *starlark_parse_string(char *buffer)
 {
     log_set_quiet(false);
 
-    log_info("obazl_starlark_parse_string: %s", buffer);
+    log_info("starlark_parse_string: %s", buffer);
 
     int tok;
     struct node_s *btok = calloc(sizeof(struct node_s), 1);
@@ -231,11 +229,11 @@ struct node_s *obazl_starlark_parse_string(char *buffer)
     return parse_state->root;
 }
 
-struct node_s *obazl_starlark_parse_file(char *fname)
+struct node_s *starlark_parse_file(char *fname)
 {
     log_set_quiet(false);
 
-    log_info("obazl_starlark_parse_file: %s", fname);
+    log_info("starlark_parse_file: %s", fname);
     FILE *f;
 
     f = fopen(fname, "r");

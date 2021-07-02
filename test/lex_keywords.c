@@ -45,9 +45,9 @@ void test_kw(void) {
         utstring_printf(test_s, "%s\n",
                         token_name[tk[i]][1]);
         /* printf(utstring_body(test_s)); */
-        result = obazl_starlark_lex_string(utstring_body(test_s));
+        result = starlark_lex_string(utstring_body(test_s));
         utstring_renew(buf);
-        rootlist2string(result, buf);
+        starlark_nodelist2string(result, buf);
         /* printf(utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(utstring_body(test_s), utstring_body(buf));
         utarray_free(result);
@@ -63,9 +63,9 @@ void test_kw_cmt(void) {
                         token_name[tk[i]][1],
                         " #cmt1\n");
         /* printf(utstring_body(test_s)); */
-        result = obazl_starlark_lex_string(utstring_body(test_s));
+        result = starlark_lex_string(utstring_body(test_s));
         utstring_renew(buf);
-        rootlist2string(result, buf);
+        starlark_nodelist2string(result, buf);
         /* printf(utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(utstring_body(test_s), utstring_body(buf));
         utarray_free(result);
@@ -81,9 +81,9 @@ void test_kw_nl_cmt(void) {
                         token_name[tk[i]][1],
                         "\n    #cmt1\n");
         /* printf(utstring_body(test_s)); */
-        result = obazl_starlark_lex_string(utstring_body(test_s));
+        result = starlark_lex_string(utstring_body(test_s));
         utstring_renew(buf);
-        rootlist2string(result, buf);
+        starlark_nodelist2string(result, buf);
         /* printf(utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(utstring_body(test_s), utstring_body(buf));
         utarray_free(result);
@@ -99,9 +99,9 @@ void test_kw_cmt_nl2_cmt(void) {
                         token_name[tk[i]][1],
                         "\n\n    #cmt1\n");
         /* printf(utstring_body(test_s)); */
-        result = obazl_starlark_lex_string(utstring_body(test_s));
+        result = starlark_lex_string(utstring_body(test_s));
         utstring_renew(buf);
-        rootlist2string(result, buf);
+        starlark_nodelist2string(result, buf);
         /* printf(utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(utstring_body(test_s), utstring_body(buf));
         utarray_free(result);
@@ -117,9 +117,9 @@ void test_kw_nl_cmt_nl_cmt(void) {
                         token_name[tk[i]][1],
                         "\n    #cmt1\n    #cmt2\n");
         /* printf(utstring_body(test_s)); */
-        result = obazl_starlark_lex_string(utstring_body(test_s));
+        result = starlark_lex_string(utstring_body(test_s));
         utstring_renew(buf);
-        rootlist2string(result, buf);
+        starlark_nodelist2string(result, buf);
         /* printf(utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(utstring_body(test_s), utstring_body(buf));
         utarray_free(result);
@@ -135,9 +135,9 @@ void test_kw_nl2_cmt_nl_cmt(void) {
                         token_name[tk[i]][1],
                         "\n\n    #cmt1\n    #cmt2\n");
         /* printf(utstring_body(test_s)); */
-        result = obazl_starlark_lex_string(utstring_body(test_s));
+        result = starlark_lex_string(utstring_body(test_s));
         utstring_renew(buf);
-        rootlist2string(result, buf);
+        starlark_nodelist2string(result, buf);
         /* printf(utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(utstring_body(test_s), utstring_body(buf));
         utarray_free(result);

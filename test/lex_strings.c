@@ -148,9 +148,9 @@ void tearDown(void) {
 
 void test_single_line_single_quote(void) {
     test_str = "'hello'\n";
-    result = obazl_starlark_lex_string(test_str);
+    result = starlark_lex_string(test_str);
     utstring_renew(buf);
-    rootlist2string(result, buf);
+    starlark_nodelist2string(result, buf);
     /* printf("t :]%s[:\n", test_str); */
     /* printf("buf :]%s[:\n", utstring_body(buf)); */
     int eq = strcmp(test_str, utstring_body(buf));
@@ -159,17 +159,17 @@ void test_single_line_single_quote(void) {
     utarray_free(result);
 
     /* test_str = "'hello' #cmt1\n"; */
-    /* result = obazl_starlark_lex_string(test_str); */
+    /* result = starlark_lex_string(test_str); */
     /* utstring_renew(buf); */
-    /* rootlist2string(result, buf); */
+    /* starlark_nodelist2string(result, buf); */
     /* /\* printf(":]%s[:\n", utstring_body(buf)); *\/ */
     /* TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf)); */
     /* utarray_free(result); */
 
     /* test_str = "'hello' #cmt1\n"; */
-    /* result = obazl_starlark_lex_string(test_str); */
+    /* result = starlark_lex_string(test_str); */
     /* utstring_renew(buf); */
-    /* rootlist2string(result, buf); */
+    /* starlark_nodelist2string(result, buf); */
     /* /\* printf(":]%s[:\n", utstring_body(buf)); *\/ */
     /* TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf)); */
     /* utarray_free(result); */
@@ -177,17 +177,17 @@ void test_single_line_single_quote(void) {
 
 void test_single_line_single_quote_cmt1_nl_cmt2a(void) {
     test_str = "'hello' #cmt1\n#cmt2a\n";
-    result = obazl_starlark_lex_string(test_str);
+    result = starlark_lex_string(test_str);
     utstring_renew(buf);
-    rootlist2string(result, buf);
+    starlark_nodelist2string(result, buf);
     /* printf(":]%s[:\n", utstring_body(buf)); */
     TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
     utarray_free(result);
 }
 void test_single_line_single_quote_cmt1_nl_cmt2b(void) {
     test_str = "'hello' #cmt1\n    #cmt2b\n";
-    result = obazl_starlark_lex_string(test_str);
-    rootlist2string(result, buf);
+    result = starlark_lex_string(test_str);
+    starlark_nodelist2string(result, buf);
     /* printf(":]%s[:\n", utstring_body(buf)); */
     TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
     utarray_free(result);
@@ -195,16 +195,16 @@ void test_single_line_single_quote_cmt1_nl_cmt2b(void) {
 
 void test_single_line_single_quote_cmt1_nl2_cmt2a(void) {
     test_str = "'hello' #cmt1\n\n#cmt2a\n";
-    result = obazl_starlark_lex_string(test_str);
-    rootlist2string(result, buf);
+    result = starlark_lex_string(test_str);
+    starlark_nodelist2string(result, buf);
     /* printf(":]%s[:\n", utstring_body(buf)); */
     TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
     utarray_free(result);
 }
 void test_single_line_single_quote_cmt1_nl2_cmt2b(void) {
     test_str = "'hello' #cmt1\n\n    #cmt2b\n";
-    result = obazl_starlark_lex_string(test_str);
-    rootlist2string(result, buf);
+    result = starlark_lex_string(test_str);
+    starlark_nodelist2string(result, buf);
     /* printf(":]%s[:\n", utstring_body(buf)); */
     TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
     utarray_free(result);
@@ -212,25 +212,25 @@ void test_single_line_single_quote_cmt1_nl2_cmt2b(void) {
 
 void test_single_line_single_quote_nl_cmt1(void) {
     test_str = "'hel\\\nlo'\n#cmt1\n";
-    result = obazl_starlark_lex_string(test_str);
-    rootlist2string(result, buf);
+    result = starlark_lex_string(test_str);
+    starlark_nodelist2string(result, buf);
     /* printf(":]%s[:\n", utstring_body(buf)); */
     TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
     utarray_free(result);
 }
 void test_single_line_single_quote_nl_cmt1_nl_cmt2a(void) {
     test_str = "'hello'\n#cmt1\n#cmt2a\n";
-    result = obazl_starlark_lex_string(test_str);
-    rootlist2string(result, buf);
+    result = starlark_lex_string(test_str);
+    starlark_nodelist2string(result, buf);
     /* printf(":]%s[:\n", utstring_body(buf)); */
     TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
     utarray_free(result);
 }
 void test_single_line_single_quote_nl_cmt1_nl_cmt2b(void) {
     test_str = "'hello'\n#cmt1\n    #cmt2b\n";
-    result = obazl_starlark_lex_string(test_str);
+    result = starlark_lex_string(test_str);
     dump_nodes(result);
-    rootlist2string(result, buf);
+    starlark_nodelist2string(result, buf);
     /* printf(":]%s[:\n", utstring_body(buf)); */
     TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
     utarray_free(result);
@@ -241,10 +241,10 @@ void test_mix1(void) {
 "'hello' #cmt1\n\
 'bye'  #cmt2\n\
 'foo' #cmt3\n";
-    result = obazl_starlark_lex_string(test_str);
+    result = starlark_lex_string(test_str);
     /* dump_nodes(result); */
     utstring_renew(buf);
-    rootlist2string(result, buf);
+    starlark_nodelist2string(result, buf);
     /* printf(":]%s[:\n", utstring_body(buf)); */
     TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
     utarray_free(result);
@@ -252,10 +252,10 @@ void test_mix1(void) {
     test_str =
 "'hello' 'bye' #cmt1\n\
 'foo' 'bar' #cmt2\n";
-    result = obazl_starlark_lex_string(test_str);
+    result = starlark_lex_string(test_str);
     /* dump_nodes(result); */
     utstring_renew(buf);
-    rootlist2string(result, buf);
+    starlark_nodelist2string(result, buf);
     /* printf(":]%s[:\n", utstring_body(buf)); */
     TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
     utarray_free(result);
@@ -267,11 +267,11 @@ void test_multicomments(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: %s\n", i, multicomments[i]); */
         test_str = multicomments[i];
-        result = obazl_starlark_lex_string(test_str);
+        result = starlark_lex_string(test_str);
         /* printf("\n"); */
         /* dump_nodes(result); */
         utstring_renew(buf);
-        rootlist2string(result, buf);
+        starlark_nodelist2string(result, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         utarray_free(result);
@@ -284,11 +284,11 @@ void test_mix_quotes(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: %s\n", i, mixed[i]); */
         test_str = mixed[i];
-        result = obazl_starlark_lex_string(test_str);
+        result = starlark_lex_string(test_str);
         /* printf("\n"); */
         /* dump_nodes(result); */
         utstring_renew(buf);
-        rootlist2string(result, buf);
+        starlark_nodelist2string(result, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         utarray_free(result);
@@ -302,11 +302,11 @@ void test_escaped_nls(void) {
         /* printf("case %d\n", i); */
         test_str = escaped_nls[i];
         /* printf("test_str: %s", escaped_nls[i]); */
-        result = obazl_starlark_lex_string(test_str);
+        result = starlark_lex_string(test_str);
         /* printf("\n"); */
         /* dump_nodes(result); */
         utstring_renew(buf);
-        rootlist2string(result, buf);
+        starlark_nodelist2string(result, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         utarray_free(result);

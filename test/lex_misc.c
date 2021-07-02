@@ -51,9 +51,9 @@ void test_p(void) {
         utstring_printf(test_s, "%s%s",
                         token_name[tk[i]][1],
                         " #cmt1\n    #cmt2\n");
-        result = obazl_starlark_lex_string(utstring_body(test_s));
+        result = starlark_lex_string(utstring_body(test_s));
         utstring_renew(buf);
-        rootlist2string(result, buf);
+        starlark_nodelist2string(result, buf);
         /* printf(utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(utstring_body(test_s), utstring_body(buf));
         utarray_free(result);
