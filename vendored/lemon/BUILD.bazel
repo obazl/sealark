@@ -1,0 +1,17 @@
+load("@rules_cc//cc:defs.bzl",
+     "cc_binary",
+     "cc_library")
+load("@rules_foreign_cc//foreign_cc:defs.bzl",
+     "configure_make",
+     "make")
+
+## re2c lemon tutorial: https://github.com/tokuhirom/re2c-lemon-tutorial
+
+exports_files(["lempar.c"])
+
+##########
+cc_binary(
+    name  = "lemon",
+    srcs  = ["lemon.c"],
+    visibility = ["//visibility:public"]
+)

@@ -1,0 +1,43 @@
+; obazl config
+
+[obazl]
+version = 0.1.0
+grammar=1.0.0-BETA  ;; version number of config grammar, not obazl program
+
+[srcs]
+
+dirs = src
+
+[watch]
+
+dirs = data tmp
+dirs = src
+dirs = watch
+
+;; repos = coq_equations coq-simple-io ocaml-containers ocaml-ctypes
+
+;; [repos]
+;; coq   = coq_equations coq-simple-io
+;; ocaml = ocaml-containers ocaml-ctypes
+
+;; [repo:coq_sdk]  ;; get this info from .coqrc files?
+;; coqpath = theories user-contrib/Ltac2
+;; ocamlpath = clib lib theories user-contrib/Ltac2 ;; etc.
+
+;; [repo:coq_equations]
+;; ;; coqpath = theories
+;; ;; ocamlpath = src
+
+;; [ocamllibs]
+;; ofoo = $HOME/o/foo
+;; obar = $HOME/o/bar
+
+;; [ocamlopts]
+;; mllib1 = opt1 opt2 opt3
+;; mllib2 = opt1 opt2 opt3
+;; module1 = opt1 opt2 opt3
+;; module2 = opt1 opt2 opt3
+
+;; [coqlibs]
+;; foo = $HOME/foo
+;; bar = $HOME/bar

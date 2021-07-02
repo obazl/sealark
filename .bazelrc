@@ -1,0 +1,4 @@
+## for parser testing, data file won't be read without this. why???
+build --nobuild_runfile_links
+
+try-import user.bazelrc

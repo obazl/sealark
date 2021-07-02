@@ -1,0 +1,8 @@
+build --color=yes
+build --subcommands=pretty_print
+build --verbose_failures
+build --sandbox_debug
+
+test --test_output=all
+
+run -c dbg

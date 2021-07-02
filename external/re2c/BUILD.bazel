@@ -1,0 +1,33 @@
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
+
+###############
+configure_make(
+    name = "re2c",
+    out_binaries = ["re2c"],
+    # static_libraries = [
+    #     "libre2c.a",
+    # ],
+    # shared_libraries = [
+    #     "libre2c.so"
+    # ],
+    autogen = True,
+    autoreconf = True,
+    autoreconf_options = ["-i", "-W", "all"],
+    configure_in_place = True,
+    configure_env_vars = select({
+        "//bzl/host:macos": {
+            "AR": "",
+        },
+        "//conditions:default": {}
+    }),
+    configure_options = [
+        "--prefix", "${INSTALLDIR}",
+        "--disable-golang",
+        "--disable-docs",
+        "--disable-libs",
+        "--disable-static",
+        "--disable-shared"
+    ],
+    lib_source = "@libre2c//:all",
+    visibility = ["//visibility:public"]
+)

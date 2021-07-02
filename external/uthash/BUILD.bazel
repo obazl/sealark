@@ -1,0 +1,14 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+###########
+cc_library(
+    name = "uthash",
+    srcs = [
+        "@uthash//:include"
+    ],
+    includes = [
+        "@uthash//:include"
+    ],
+    linkstatic=1,
+    visibility = ["//visibility:public"]
+)

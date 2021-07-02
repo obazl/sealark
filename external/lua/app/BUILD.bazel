@@ -1,0 +1,29 @@
+cc_binary(
+    name = "lua",
+    srcs = [
+        "@lua//:src/lua.c",
+    ],
+    linkopts = [
+        "-lm",
+        "-ldl",
+    ],
+    deps = [
+        "//external/lua/lib:lua"
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_binary(
+    name = "luac",
+    srcs = [
+        "@lua//:src/luac.c",
+    ],
+    linkopts = [
+        "-lm",
+        "-ldl",
+    ],
+    deps = [
+        "//external/lua/lib:lua"
+    ],
+    visibility = ["//visibility:public"],
+)

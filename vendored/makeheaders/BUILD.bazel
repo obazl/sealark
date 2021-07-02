@@ -1,0 +1,11 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+package(default_visibility = ["//visibility:public"])
+
+##########
+cc_binary(
+    name  = "makeheaders",
+    srcs  = ["makeheaders.c"],
+    copts = ["-O3"],
+    linkstatic=1
+)

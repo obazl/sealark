@@ -1,0 +1,18 @@
+## https://github.com/rxi/log.c
+
+exports_files(["log.c", "log.h"])
+
+##########
+cc_library(
+    name  = "logc",
+    srcs  = ["log.c"],
+    hdrs = ["log.h"],
+    copts = [
+        "-std=c11",
+        # "-g",
+    ],
+    local_defines = ["LOG_USE_COLOR"],
+    # alwayslink = True,
+    visibility = ["//visibility:public"]
+)
+

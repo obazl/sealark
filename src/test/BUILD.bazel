@@ -1,0 +1,307 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+test_suite(
+    name = "test",
+    tests = [
+        ":call",
+        ":dict",
+        ":expressions",
+        ":keywords",
+        ":lists",
+        ":numbers",
+        ":punctuation",
+        ":slices",
+        ":statements",
+        ":strings",
+    ])
+
+# LEXIS
+cc_test(
+    name = "keywords",
+    srcs = [
+        "lex_keywords.c",
+        "lex_keywords.h",
+        "@uthash//:include",
+    ],
+    copts = [
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src/test",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
+
+cc_test(
+    name = "numbers",
+    srcs = [
+        "lex_numbers.c",
+        "lex_numbers.h",
+        "//src:obazl_starlark.c",
+        "//src:obazl_starlark.h",
+        "@uthash//:include",
+    ],
+    copts = [
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src/test",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
+
+cc_test(
+    name = "punctuation",
+    srcs = [
+        "lex_punctuation.c",
+        "lex_punctuation.h",
+        "//src:obazl_starlark.c",
+        "//src:obazl_starlark.h",
+        "@uthash//:include",
+    ],
+    copts = [
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src/test",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
+
+cc_test(
+    name = "strings",
+    srcs = [
+        "lex_strings.c",
+        "lex_strings.h",
+        "//src:obazl_starlark.c",
+        "//src:obazl_starlark.h",
+        # "obazl_starlark.h",
+        "@uthash//:include",
+    ],
+    copts = [
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src/test",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
+
+# SYNTAX
+cc_test(
+    name = "call",
+    srcs = [
+        "syntax_call_expr.c",
+        "syntax_call_expr.h",
+        # "//src:obazl_starlark.c",
+        # "//src:obazl_starlark.h",
+        "@uthash//:include",
+    ],
+    copts = [
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src/test",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
+
+cc_test(
+    name = "dict",
+    srcs = [
+        "syntax_dict.c",
+        "syntax_dict.h",
+        "//src:obazl_starlark.c",
+        "//src:obazl_starlark.h",
+        "@uthash//:include",
+    ],
+    copts = [
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src/test",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
+
+cc_test(
+    name = "expressions",
+    srcs = [
+        "syntax_expressions.c",
+        "syntax_expressions.h",
+        "//src:obazl_starlark.c",
+        "//src:obazl_starlark.h",
+        "@uthash//:include",
+    ],
+    copts = [
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src/test",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
+
+cc_test(
+    name = "lists",
+    srcs = [
+        "syntax_lists.c",
+        "syntax_lists.h",
+        "//src:obazl_starlark.c",
+        "//src:obazl_starlark.h",
+        "@uthash//:include",
+    ],
+    copts = [
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src/test",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
+
+cc_test(
+    name = "slices",
+    srcs = [
+        "syntax_slices.c",
+        "syntax_slices.h",
+        "//src:obazl_starlark.c",
+        "//src:obazl_starlark.h",
+        "@uthash//:include",
+    ],
+    copts = [
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src/test",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
+
+cc_test(
+    name = "statements",
+    srcs = [
+        "syntax_statements.c",
+        "syntax_statements.h",
+        "//src:obazl_starlark.c",
+        "//src:obazl_starlark.h",
+        "@uthash//:include",
+    ],
+    copts = [
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src/test",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
+
+genrule(
+    name = "mkhdrs",
+    srcs = [
+        "lex_keywords.c",
+        "lex_numbers.c",
+        "lex_punctuation.c",
+        "lex_strings.c",
+        "syntax_call_expr.c",
+        "syntax_dict.c",
+        "syntax_expressions.c",
+        "syntax_lists.c",
+        "syntax_slices.c",
+        "syntax_statements.c",
+        "//src:obazl_starlark.c",
+        "//src:obazl_starlark_lexer.c",
+        "//src:obazl_starlark_nodes.c",
+        "//src:obazl_starlark_parser.c",
+        "//src:obazl_starlark_serialize.c",
+        "//src:token_debug.c",
+    ],
+    outs = [
+        "lex_keywords.h",
+        "lex_numbers.h",
+        "lex_punctuation.h",
+        "lex_strings.h",
+        "syntax_call_expr.h",
+        "syntax_dict.h",
+        "syntax_expressions.h",
+        "syntax_lists.h",
+        "syntax_slices.h",
+        "syntax_statements.h",
+    ],
+    cmd = "\n".join([
+        "SRC1=$(location lex_strings.c)",
+        "SRCDIR1=`dirname $$SRC1`",
+        "SRC2=$(location //src:obazl_starlark.c)",
+        "SRCDIR2=`dirname $$SRC2`",
+        "$(location @makeheaders//:makeheaders) \\",
+        "    $(location lex_keywords.c) \\",
+        "    $(location lex_numbers.c) \\",
+        "    $(location lex_punctuation.c) \\",
+        "    $(location lex_strings.c) \\",
+        "    $(location syntax_call_expr.c) \\",
+        "    $(location syntax_dict.c) \\",
+        "    $(location syntax_expressions.c) \\",
+        "    $(location syntax_lists.c) \\",
+        "    $(location syntax_slices.c) \\",
+        "    $(location syntax_statements.c) \\",
+        "    $(location //src:obazl_starlark.c) \\",
+        "    $(location //src:obazl_starlark_lexer.c) \\",
+        "    $(location //src:obazl_starlark_nodes.c) \\",
+        "    $(location //src:obazl_starlark_parser.c) \\",
+        "    $(location //src:obazl_starlark_serialize.c) \\",
+        "    $(location //src:token_debug.c)",
+        "cp $${SRCDIR1}/*.h $(@D)",
+    ]),
+    tools = ["@makeheaders//:makeheaders"],
+    visibility = ["//visibility:public"]
+)

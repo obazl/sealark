@@ -1,0 +1,386 @@
+;; #!/usr/bin/env joker
+
+;; See https://github.com/candid82/joker
+;; $ ocamlfind ocamldep -I src src/* > .obazl.d/ocaml.depends
+
+;; codept -one-line -I src -I /usr/local/lib/coq/engine -I /usr/local/lib/coq/lib src/* > .obazl.d/ocaml.depends
+
+;; codept -args bzl/codept.cfg > .obazld./ocaml.depends
+
+;; "ocamlfind" ocamldep -slash -ml-synonym .mlpack -I src -I test-suite -I theories -I examples "src/sigma_types.ml" > "src/sigma_types.ml.d" || ( RV=$?; rm -f "src/sigma_types.ml.d"; exit $RV )
+
+
+;; $ joker bzl/tools/genbuildfiles_ocaml.joke --deps .obazl.d/ocaml/depends
+
+(ns script
+    (:require [joker.tools.cli :as cli]
+              [joker.filepath :as fpath]
+              [joker.os :as os]
+              [joker.pprint :as pp]
+              [joker.string :as string]
+              [joker.strconv :refer [atoi]]))
+
+(def dep-tree (atom {}))
+
+(def packages (atom {}))
+
+(def coqc
+  (let [xr (os/exec "which" {:args ["coqc"]})]
+    (if (:success xr)
+      (:out xr)
+      (do
+        (println "fail on 'which coqc': " (:err xr))
+        (os/exit -1)))))
+(println "COQC: " coqc)
+
+(def coqlib
+  (let [xr (os/exec "coqc" {:args ["-where"]})]
+    (if (:success xr)
+      (string/trim (:out xr))
+      (do
+        (println "fail on 'coqc -where': " (:err xr))
+        (os/exit -1)))))
+(println "COQLIB: " coqlib)
+
+(def opts
+  [[nil "--deps FILE" "File containing output of `ocamldep`."]
+    ;; :parse-fn atoi
+    ;; :validate [#(<= 1 % 5) "level must be 1 to 5"]]
+   ["-v" "--version" "Show version information"]
+   ["-h" "--help" "Show this summary"]])
+
+(defn show-options
+  [summary errors]
+  (println "norad OPTIONS\n")
+  (println summary)
+  (when errors
+    (println "\nErrors:")
+    (run! println errors)))
+
+(defn make-deps [pkg type spec]
+  (println "MAKE-DEPS: " (:deps spec))
+  (let [dep-targets (map (fn [dep]
+                           (println ">>>>>>>>DEP: " dep)
+                           (let [;; plugin (some #{".cmxs" ".cmo"} [(fpath/ext dep)])
+                                 src (fpath/base dep)
+                                 _ (println "SRC: " src)
+                                 ext (fpath/ext src)
+                                 _ (println "EXT: " ext)
+                                 pkg-path (string/replace dep (str "/" src) "")
+                                 _ (println "PKG-PATH: " pkg-path)
+                                 tgt-base (string/replace src (re-pattern (str (fpath/ext src) "$")) "")
+                                 _ (println "TGT: " tgt-base)
+                                 tgt (str (string/capitalize (first tgt-base))
+                                          (string/replace
+                                           (string/join "" (rest tgt-base))
+                                           (re-pattern (str ext "$")) ""))
+                                 local (= pkg pkg-path)
+                                 _ (println "LOCAL: " local)
+                                 relative (string/starts-with? pkg-path (str pkg "/../"))
+                                 _ (println "RELATIVE: " relative)
+                                 coq_repo (string/starts-with? pkg-path coqlib)
+                                 _ (println "COQLIB: " coq_repo)
+                                 label (if local
+                                         (str ":" tgt)
+                                         (if (string/starts-with? pkg coqlib)
+                                           (str "//coq_sdk/" pkg-path ":" tgt)
+                                           (if relative
+                                             (str (string/replace-first pkg-path (str pkg "/../") "//")
+                                                  ":" tgt)
+                                             (if coq_repo
+                                               (str (string/replace-first pkg-path
+                                                                          coqlib
+                                                                          "@coq_sdk/")
+                                                    ":" tgt)
+                                               (if (empty? tgt)
+                                                 nil
+                                                 (str "//" pkg-path ":" tgt
+                                                      #_(if plugin
+                                                          tgt ;; (s/capital tgt)
+                                                          tgt)))))))]
+                             {:dep label}
+                             #_(if plugin
+                                 {:ocamldep label}
+                                 {:dep label})))
+                         (remove string/blank? (:deps spec)))
+        ;; _ (println (str "MAKEDEPS: " (seq dep-targets)))
+        ;; deps (remove #(nil? (:dep %)) (filter :dep dep-targets))
+        ;; ;; _ (println (str "DEPS: " (seq deps)))
+        ;; ocamldeps (filter :ocamldep dep-targets)
+        ;; ;; _ (println (str "OCAMLDEPS: " (seq ocamldeps)))
+        ]
+    ;; [deps ocamldeps]
+    (string/join
+     \newline
+     (for [dep dep-targets]
+       (str "            \"" (:dep dep) "\",")))
+    ))
+
+(defn update-modules-list [modules pkg tgt src vdeps viodeps ocamldeps]
+  ;; (println (str "UPDATE-MODULES-LIST: " pkg " " tgt))
+  ;; (println "MODULES: " modules)
+  (let [m (some (fn [module] (if (= tgt (:target module)) module)) modules)
+        mm (assoc m :ocamldeps ocamldeps)]
+    (if m
+      (cons (if (seq vdeps)
+              (assoc mm :vdeps vdeps)
+              (assoc mm :viodeps viodeps))
+            (remove (fn [item] (= tgt (:target item))) modules))
+      (cons
+       {:target tgt :src src :vdeps vdeps :viodeps viodeps :ocamldeps ocamldeps}
+       modules))))
+
+(defn swap-ext [s new-ext]
+  (let [old-ext (fpath/ext s)]
+    (string/replace s (re-pattern (str old-ext "$")) new-ext)))
+
+(defn is-sigdep [dep]
+  (string/ends-with? dep ".cmi"))
+
+(defn process-deps [line]
+  (println (str ">>>> PROCESSING " line))
+  (let [[depender deps] (string/split line #" *: *")
+        _ (println (str "depender: " depender))
+
+        pkg (fpath/dir depender)
+        ;; _ (println "PKG: " pkg)
+
+        tgt (fpath/base depender)
+        _ (println (format "TGT: %s" tgt))
+
+        ext (string/trim (fpath/ext tgt))
+        _ (println (format "ext: %s" ext))
+
+        type (if (= ".cmx" ext) :cmx
+                 (if (= ".cmo" ext) :cmo
+                     (if (= ".cmi" ext) :cmi
+                         (do (println "FAIL: unknown extension: " ext)
+                             (os/exit -1)))))
+        _ (println "type: " type)
+
+        module (str (string/capitalize (first tgt))
+                    (string/replace
+                     (string/join "" (rest tgt))
+                     (re-pattern (str ext "$")) ""))
+        _ (println "module: " module)
+
+        src (swap-ext tgt (if (= type :cmx) ".ml"
+                              (if (= type :cmo) ".ml"
+                                  (if (= type :cmi) ".mli"
+                                      (do
+                                        (println "FAIL: unexpected type: " type)
+                                        (os/exit -1))))))
+        _ (println "SRC: " src)
+
+        deps (if deps (string/split deps #" +") nil)
+        _ (println "DEPS: " deps)
+
+        sigdeps (filter is-sigdep deps)
+        _ (println "SIGDEPS: " sigdeps)
+
+        deps (filter (comp not is-sigdep) deps)
+        _ (println "DEPS: " deps)
+
+        ]
+    (swap! packages (fn [old-list]
+                      (update-in old-list [pkg module type]
+                                 (fn [old] {:file src
+                                            :deps deps}))))
+    ))
+
+(defn process-file-by-lines
+  "Process file reading it line-by-line"
+  ([file]
+   (process-file-by-lines file identity))
+  ([file process-fn]
+   (process-file-by-lines file process-fn println))
+  ([file process-fn output-fn]
+   (let [contents (slurp file)
+         lines (remove string/blank? (string/split-lines contents))]
+     (doseq [line lines]
+       ;;(println (str "X: " line))
+       ;; (output-fn
+       (process-fn line)
+       ;; )
+     ))))
+
+(defn make-header []
+  (string/join \newline
+               ["load("
+                "    \"@obazl_rules_ocaml//ocaml:rules.bzl\","
+                "    \"ocaml_library\","
+                "    \"ocaml_module\","
+                "    \"ocaml_signature\""
+                ")"
+                ""
+                "package(default_visibility = [\"//visibility:public\"])"
+                ;; "exports_files(glob([\"*.v\"]))"
+                ;; ""
+                ;; "filegroup("
+                ;; "    name = \"vfiles\","
+                ;; "    srcs = glob([\"*.v\"])"
+                ;; ")"
+                ;; ""
+                ]
+               ))
+
+(defn make-lib-rule [pkg rules]
+  (let [sublibs (string/join
+                 \newline
+                 (for [rule (sort-by :target (:modules rules))]
+                   (str "        \":" (:target rule) "\",")))]
+    (format (string/join
+             \newline
+             [
+              ""
+              "coq_library("
+              "    name = \"Lib%s\","
+              "    modules = ["
+              sublibs
+              "    ]"
+              ")"
+              ])
+            (fpath/base pkg))))
+
+;; FIXME: ocamldeps does not list plugin deps
+(defn make-plugins [plugins]
+  ;; (println (str "plugins: " plugins))
+  (if (empty? plugins)
+    nil
+    (string/join
+     \newline
+     (concat
+      ["    deps    = ["]
+      (for [dep (sort-by :dep plugins)]
+        (let [d (string/replace (dep :dep) #"//bzl/../" "//")]
+          (str "        \"" d "\",")))
+      ["    ],"]))))
+
+(defn make-vdeps [vdeps]
+  ;; (println (str "vdeps: " vdeps))
+  ;; (doseq [vdep vdeps]
+  ;;   (println "VDEP: " vdep))
+  (if (empty? vdeps)
+    nil
+    (string/join
+     \newline
+     (concat
+      ["    deps    = ["]
+      (for [dep (sort-by :dep vdeps)]
+        (let [d (string/replace (dep :dep) #"//bzl/../" "//")]
+          (str "        \"" d "\",")))
+      ["    ],"]))))
+
+(defn make-module-rules [pkg module specs]
+  ;; (println "PKG: " pkg)
+  ;; (println "MODULE: " module)
+  ;; (println "SPECS: " specs)
+  ;; (doseq [spec specs]
+  ;;   (println "SPEC: " spec))
+  (string/join
+   \newline
+   ;; (remove nil?
+   (for [[type spec] specs]
+     (string/join
+      \newline
+      (remove nil?
+      [
+       (if (= type :cmx)
+         (string/join \newline
+                      (remove nil?
+                              ["#############"
+                               "ocaml_module("
+                               (str "    name   = \"" module "\",")
+                               (str "    struct = \"" (:file spec) "\",")
+                               (if (:cmi spec)
+                                 (str "    sig    = \"" module ".cmi\","))
+                               "    deps   = ["
+                               (make-deps pkg type spec)
+                               #_(string/join \newline
+                                            (for [dep (:deps spec)]
+                                              (str "        \"" dep "\",")))
+                               "    ]"
+                               ")"]))
+         (if (= type :cmi)
+           (str \newline
+                (string/join \newline
+                             (remove nil?
+                                     ["ocaml_signature("
+                                      (str "    name   = \"" module ".cmi\",")
+                                      (str "    src    = \"" (:file spec) "\",")
+                                      "    deps = ["
+                                      (make-deps pkg type spec)
+                                      #_(string/join \newline
+                                            (for [dep (:deps spec)]
+                                              (str "        \"" dep "\",")))
+                                      "    ]"
+                                      ")"
+                                      ""])))))
+               ]))))
+
+  #_(let [rules (sort-by :target (:modules rules))]
+    (string/join "\n"
+                 (for [rule rules]
+                   ;; (println (str "RULE: " rule))
+                   (format
+                    (string/join \newline
+                                 (remove nil?
+                                         [
+                                          \newline
+                                          "###############"
+                                          "coq_module("
+                                          "    name    = \"%s\","
+                                          "    src     = \"%s\","
+                                          ;; FIXME: ocamldeps does not list plugin deps
+                                          (make-plugins (rule :plugins))
+                                          (make-vdeps (rule :vdeps))
+                                          ")"
+                                          ]))
+                                  ;; "    tool = \"//topbin:coqc\""
+                    (rule :target)
+                    (rule :src)
+                    )))))
+
+(defn gen-build-files
+  [ocamldeps]
+  ;; (println "Generating BUILD.bazel files from " ocamldeps)
+  (process-file-by-lines ocamldeps process-deps)
+  ;; (pp/pprint @packages)
+  ;; (pp/pprint (sort (keys @packages)))
+  (doseq [[pkg data] @packages]
+    ;; (println "PKG:")
+    ;; (pp/pprint pkg)
+    (let [build-file (str pkg "/BUILD.bazel")
+          ;; _ (println "BUILD FILE: " build-file)
+          header (make-header)
+          ;; _ (println data)
+          ;; sorted-modules (sort-by :target (:modules data))
+          lib-rule "\n" ;; (make-lib-rule pkg data)
+          modules (string/join \newline
+                               (for [[module deps] data]
+                                 (make-module-rules pkg module deps)))]
+      (spit build-file (str header lib-rule modules))))
+  )
+
+
+(let [{:keys [options summary errors]} (cli/parse-opts *command-line-args* opts)
+      {:keys [help deps version]} options]
+  (cond
+    errors
+    (do
+      (show-options summary errors)
+      (os/exit -1))
+
+    help
+    (show-options summary nil)
+
+    version
+    (println "version: 1")
+
+    (some? deps)
+    (gen-build-files deps)
+
+    :else
+    (do
+      (show-options summary ["Must specify a value for --deps"])
+      (os/exit -1))))
