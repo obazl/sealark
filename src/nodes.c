@@ -1,5 +1,5 @@
 #include "log.h"
-#include "obazl_starlark_nodes.h"
+#include "nodes.h"
 
 #if INTERFACE
 #include "utarray.h"

@@ -21,7 +21,7 @@
 #include "utstring.h"
 #endif
 
-#include "obazl_starlark.h"
+#include "starlark.h"
 
 UT_string *build_file;
 

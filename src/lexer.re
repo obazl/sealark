@@ -22,7 +22,7 @@
 #include "utarray.h"
 #include "log.h"
 /* #include "tokens.h" */
-#include "obazl_starlark_lexer.h"
+#include "lexer.h"
 
 #if EXPORT_INTERFACE
 #define BUFSIZE 1024
@@ -446,6 +446,8 @@ loop:
     curr_tag = 0;
     lexer->tok = lexer->cursor;
     /*!re2c
+    //docs say !include should work, but it does not: unexpected char !
+/* !include "literals.re"; */
 
       end    = "\x00";
       eol    = "\n";
@@ -638,8 +640,6 @@ loop:
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
     /* LITERALS: integer, floating point, string, byte  */
-    //docs say !include should work, but it does not: unexpected char !
-    /* !include "literals.re"; */
 
     /* NUMBER  LITERALS */
     /* INTEGER literals. NB: treat '0' as decimal int  */

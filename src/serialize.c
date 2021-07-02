@@ -20,7 +20,7 @@
 #include "utstring.h"
 #endif
 
-#include "obazl_starlark_serialize.h"
+#include "serialize.h"
 
 void root2string(struct node_s *node, UT_string *buffer)
 {
