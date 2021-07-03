@@ -1,6 +1,6 @@
 #include "log.h"
 #include "utarray.h"
-#include "token_debug.h"
+#include "debug.h"
 
 const char *token_name[256][2] =
 {

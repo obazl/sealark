@@ -276,7 +276,7 @@ genrule(
         # "    $(location //src:lexer.c) \\",
         # "    $(location //src:nodes.c) \\",
         # "    $(location //src:parser.c) \\",
-        # "    $(location //src:token_debug.c)",
+        # "    $(location //src:debug.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),
     tools = ["@makeheaders//:makeheaders"],
