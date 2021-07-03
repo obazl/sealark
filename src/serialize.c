@@ -22,7 +22,7 @@
 
 #include "serialize.h"
 
-void starlark_node2string(struct node_s *node, UT_string *buffer)
+EXPORT void starlark_node2string(struct node_s *node, UT_string *buffer)
 {
     /* log_debug("root2string, line %d", line); */
     line = col = 0;
@@ -32,7 +32,7 @@ void starlark_node2string(struct node_s *node, UT_string *buffer)
     /* } */
 }
 
-void starlark_nodelist2string(UT_array *nodes, UT_string *buffer)
+EXPORT void starlark_nodelist2string(UT_array *nodes, UT_string *buffer)
 {
     /* log_debug("rootlist2string, line %d", line); */
     line = col = 0;

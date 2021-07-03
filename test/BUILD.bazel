@@ -24,6 +24,7 @@ cc_test(
         "@uthash//:include",
     ],
     copts = [
+        "-I$(GENDIR)/src",
         "-I$(GENDIR)/test",
         "-Ivendored/logc",
         "-Ivendored/unity",
@@ -44,6 +45,8 @@ cc_test(
         "@uthash//:include",
     ],
     copts = [
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src/include",
         "-I$(GENDIR)/test",
         "-Ivendored/logc",
         "-Ivendored/unity",
@@ -64,6 +67,7 @@ cc_test(
         "@uthash//:include",
     ],
     copts = [
+        "-I$(GENDIR)/src",
         "-I$(GENDIR)/test",
         "-Ivendored/logc",
         "-Ivendored/unity",
@@ -84,6 +88,7 @@ cc_test(
         "@uthash//:include",
     ],
     copts = [
+        "-I$(GENDIR)/src",
         "-I$(GENDIR)/test",
         "-Ivendored/logc",
         "-Ivendored/unity",
@@ -105,6 +110,7 @@ cc_test(
         "@uthash//:include",
     ],
     copts = [
+        "-I$(GENDIR)/src",
         "-I$(GENDIR)/test",
         "-Ivendored/logc",
         "-Ivendored/unity",
@@ -125,6 +131,7 @@ cc_test(
         "@uthash//:include",
     ],
     copts = [
+        "-I$(GENDIR)/src",
         "-I$(GENDIR)/test",
         "-Ivendored/logc",
         "-Ivendored/unity",
@@ -145,6 +152,7 @@ cc_test(
         "@uthash//:include",
     ],
     copts = [
+        "-I$(GENDIR)/src",
         "-I$(GENDIR)/test",
         "-Ivendored/logc",
         "-Ivendored/unity",
@@ -165,6 +173,7 @@ cc_test(
         "@uthash//:include",
     ],
     copts = [
+        "-I$(GENDIR)/src",
         "-I$(GENDIR)/test",
         "-Ivendored/logc",
         "-Ivendored/unity",
@@ -185,6 +194,7 @@ cc_test(
         "@uthash//:include",
     ],
     copts = [
+        "-I$(GENDIR)/src",
         "-I$(GENDIR)/test",
         "-Ivendored/logc",
         "-Ivendored/unity",
@@ -205,6 +215,7 @@ cc_test(
         "@uthash//:include",
     ],
     copts = [
+        "-I$(GENDIR)/src",
         "-I$(GENDIR)/test",
         "-Ivendored/logc",
         "-Ivendored/unity",
@@ -220,6 +231,7 @@ cc_test(
 genrule(
     name = "mkhdrs",
     srcs = [
+        # "//src:syntaxis.h",
         "lex_keywords.c",
         "lex_numbers.c",
         "lex_punctuation.c",
@@ -230,12 +242,6 @@ genrule(
         "syntax_lists.c",
         "syntax_slices.c",
         "syntax_statements.c",
-        "//src:starlark.c",
-        "//src:lexer.c",
-        "//src:nodes.c",
-        "//src:parser.c",
-        "//src:serialize.c",
-        "//src:token_debug.c",
     ],
     outs = [
         "lex_keywords.h",
@@ -252,9 +258,10 @@ genrule(
     cmd = "\n".join([
         "SRC1=$(location lex_strings.c)",
         "SRCDIR1=`dirname $$SRC1`",
-        "SRC2=$(location //src:starlark.c)",
-        "SRCDIR2=`dirname $$SRC2`",
+        # "SRC2=$(location //src:starlark.c)",
+        # "SRCDIR2=`dirname $$SRC2`",
         "$(location @makeheaders//:makeheaders) \\",
+        # "    $(location //src:syntaxis.h) \\",
         "    $(location lex_keywords.c) \\",
         "    $(location lex_numbers.c) \\",
         "    $(location lex_punctuation.c) \\",
@@ -264,13 +271,12 @@ genrule(
         "    $(location syntax_expressions.c) \\",
         "    $(location syntax_lists.c) \\",
         "    $(location syntax_slices.c) \\",
-        "    $(location syntax_statements.c) \\",
-        "    $(location //src:starlark.c) \\",
-        "    $(location //src:lexer.c) \\",
-        "    $(location //src:nodes.c) \\",
-        "    $(location //src:parser.c) \\",
-        "    $(location //src:serialize.c) \\",
-        "    $(location //src:token_debug.c)",
+        "    $(location syntax_statements.c)",
+        # "    $(location //src:starlark.c)",
+        # "    $(location //src:lexer.c) \\",
+        # "    $(location //src:nodes.c) \\",
+        # "    $(location //src:parser.c) \\",
+        # "    $(location //src:token_debug.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),
     tools = ["@makeheaders//:makeheaders"],

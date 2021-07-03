@@ -1,3 +1,6 @@
+#if INTERFACE
+#include <stdbool.h>
+#endif
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -21,7 +24,7 @@
 #include "utstring.h"
 #endif
 
-#include "starlark.h"
+#include "parse.h"
 
 UT_string *build_file;
 
@@ -53,7 +56,7 @@ struct parse_state_s *parser_init(struct bf_lexer_s *lexer, struct node_s *root)
     return ps;
 }
 
-UT_array *starlark_lex_string(const char *buffer)
+EXPORT UT_array *starlark_lex_string(const char *buffer)
 {
     log_set_quiet(false);
 
@@ -91,7 +94,7 @@ UT_array *starlark_lex_string(const char *buffer)
     return token_list;
 }
 
-UT_array *starlark_lex_file(char *fname)
+EXPORT UT_array *starlark_lex_file(char *fname)
 {
     log_set_quiet(false);
 
@@ -159,7 +162,7 @@ UT_array *starlark_lex_file(char *fname)
 }
 
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-struct node_s *starlark_parse_string(char *buffer)
+EXPORT struct node_s *starlark_parse_string(char *buffer)
 {
     log_set_quiet(false);
 
@@ -171,7 +174,7 @@ struct node_s *starlark_parse_string(char *buffer)
     struct bf_lexer_s * lexer = malloc(sizeof(struct bf_lexer_s));
     lexer_init(lexer, buffer);
 
-    struct node_s *root;
+    struct node_s *root = NULL;
 
     void* pParser = ParseAlloc (malloc);
     struct parse_state_s *parse_state = parser_init(lexer, root);
@@ -229,7 +232,7 @@ struct node_s *starlark_parse_string(char *buffer)
     return parse_state->root;
 }
 
-struct node_s *starlark_parse_file(char *fname)
+EXPORT struct node_s *starlark_parse_file(char *fname)
 {
     log_set_quiet(false);
 
@@ -269,7 +272,7 @@ struct node_s *starlark_parse_file(char *fname)
     struct bf_lexer_s * lexer = malloc(sizeof(struct bf_lexer_s));
     lexer_init(lexer, buffer);
 
-    struct node_s *root;
+    struct node_s *root = NULL;
 
     void* pParser = ParseAlloc (malloc);
 

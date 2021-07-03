@@ -22,7 +22,7 @@
 #include "utarray.h"
 #include "log.h"
 /* #include "tokens.h" */
-#include "lexer.h"
+#include "lexis.h"
 
 #if EXPORT_INTERFACE
 #define BUFSIZE 1024

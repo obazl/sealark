@@ -1,7 +1,8 @@
 #include "log.h"
 #include "utarray.h"
-
 #include "unity.h"
+#include "starlark.h"
+
 #include "syntax_call_expr.h"
 
 UT_string *buf;

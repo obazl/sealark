@@ -9,6 +9,7 @@ cc_library(
     includes = [
         "@uthash//:include"
     ],
-    linkstatic=1,
+    linkstatic = 1,
+    # alwayslink = 1,
     visibility = ["//visibility:public"]
 )

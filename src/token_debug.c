@@ -156,7 +156,7 @@ const char *token_name[256][2] =
 [TK_Unary_Expr] = { "TK_Unary_Expr", "" },
 };
 
-void dump_node(struct node_s *node)
+EXPORT void dump_node(struct node_s *node)
 {
     log_debug("dump_node: %p", node);
     log_debug("%s[%d] %c (%d:%d)",
@@ -181,7 +181,7 @@ void dump_node(struct node_s *node)
     log_debug("/dump_node");
 }
 
-void dump_nodes(UT_array *nodes)
+EXPORT void dump_nodes(UT_array *nodes)
 {
     log_debug("dump_nodes: %p, ct: %d", nodes, utarray_len(nodes));
 

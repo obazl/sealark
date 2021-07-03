@@ -1,7 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
-# we export these srcs so //src/include/obazl:mkhdrs can generate the export interface obazl.h
-exports_files(glob(["*.c"]))
+# exports_files(["serialize.h"])
 
 ##########
 cc_library(
@@ -9,14 +8,15 @@ cc_library(
     # alwayslink = True,
     linkstatic = 1,
     srcs  = [
-        "starlark.c",
-        "starlark.h",
+        "parse.c",
+        "parse.h",          # local impl hdr
         "serialize.c",
         "serialize.h",
-    ],
-    hdrs = [
         "@uthash//:include",
         "//vendored/logc:log.h"
+   ],
+    hdrs = [
+        "starlark.h",           # api hdr
     ],
     defines = select({
         "//bzl/host:debug": ["DEBUG_TRACE"],
@@ -27,16 +27,14 @@ cc_library(
         "-g", "-O0",
         "-I", ".",
         "-I", "$(GENDIR)/src",
-        "-I", "$(GENDIR)/external/obazl/src",
-        "-I", "$(GENDIR)/external/tools_obazl/src",
+        "-I", "$(GENDIR)/external/src",
 
         "-I", "external/uthash/include",
         "-I", "vendored/logc",
-        "-I", "external/obazl/vendored/logc",
-        "-I", "external/tools_obazl/vendored/logc"
+        "-I", "external/vendored/logc",
     ],
     deps = [
-        ":lexer",
+        ":lexis",
         ":parser",
         "//vendored/logc"
     ],
@@ -48,8 +46,8 @@ cc_library(
     name  = "parser",
     visibility = ["//visibility:public"],
     srcs  = [
-        "parser.c",
-        "parser.h",
+        "syntaxis.c",
+        "syntaxis.h",
         "nodes.c",
         "nodes.h",
         "@uthash//:include"
@@ -78,17 +76,17 @@ cc_library(
 genrule(
     name = "gen_parser",
     srcs = [
-        "parser.y",
+        "syntaxis.y",
         "//vendored/lemon:lempar.c"
     ],
     tools = ["//vendored/lemon"],
     outs  = [
-        "parser.c",
-        "parser.out"
+        "syntaxis.c",
+        "syntaxis.out"
     ],
     cmd   = "\n".join([
         "$(location //vendored/lemon) -m \\",
-        "$(location parser.y) \\",
+        "$(location syntaxis.y) \\",
         "-T$(location //vendored/lemon:lempar.c) \\",
         "-DTEST \\",
         "-d$(RULEDIR)",
@@ -98,11 +96,11 @@ genrule(
 
 ###########
 cc_library(
-    name  = "lexer",
+    name  = "lexis",
     visibility = ["//visibility:public"],
     srcs  = [
-        "lexer.c",
-        "lexer.h",
+        "lexis.c",
+        "lexis.h",
         "nodes.c",
         "nodes.h",
         "token_debug.c",
@@ -132,14 +130,14 @@ cc_library(
 
 ########
 genrule(
-    name = "gen_lexer",
+    name = "gen_lexis",
     srcs = [
-        "lexer.re",
+        "lexis.re",
         # "test.re",
     ],
     tools = ["//external/re2c"],
     outs  = [
-        "lexer.c"
+        "lexis.c"
     ],
     cmd   = "\n".join([
         "for f in $(locations //external/re2c)",
@@ -152,7 +150,7 @@ genrule(
         "        fi",
         "    fi",
         "done",
-        "$$f --conditions --tags -o $(@D)/lexer.c $(location lexer.re)",
+        "$$f --conditions --tags -o $(@D)/lexis.c $(location lexis.re)",
     ]),
     visibility = ["//visibility:public"]
 )
@@ -161,33 +159,33 @@ genrule(
 genrule(
     name = "mkhdrs",
     srcs = [
-        "starlark.c",
-        "lexer.c",
+        "parse.c",
+        "lexis.c",
         "nodes.c",
-        "parser.c",
+        "syntaxis.c",
         "serialize.c",
         "token_debug.c",
         "test_lex.c",
         "test_parse.c",
     ],
     outs = [
-        "starlark.h",
-        "lexer.h",
+        "parse.h",
+        "lexis.h",
         "nodes.h",
-        "parser.h",
+        "syntaxis.h",
         "serialize.h",
         "token_debug.h",
         "test_lex.h",
         "test_parse.h"
     ],
     cmd = "\n".join([
-        "SRC1=$(location starlark.c)",
+        "SRC1=$(location parse.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "$(location @makeheaders//:makeheaders) \\",
-        "    $(location starlark.c) \\",
-        "    $(location lexer.c) \\",
+        "    $(location parse.c) \\",
+        "    $(location lexis.c) \\",
         "    $(location nodes.c) \\",
-        "    $(location parser.c) \\",
+        "    $(location syntaxis.c) \\",
         "    $(location serialize.c) \\",
         "    $(location token_debug.c) \\",
         "    $(location test_lex.c) \\",
@@ -198,22 +196,56 @@ genrule(
     visibility = ["//visibility:public"]
 )
 
+genrule(
+    name = "mkhdrs-export",
+    srcs = [
+        "parse.c",
+        "lexis.c",
+        "nodes.c",
+        "syntaxis.c",
+        "serialize.c",
+        "token_debug.c",
+        "test_lex.c",
+        "test_parse.c",
+    ],
+    outs = [
+        "starlark.h",
+    ],
+    cmd = "\n".join([
+        "SRC1=$(location parse.c)",
+        "SRCDIR1=`dirname $$SRC1`",
+        "$(location @makeheaders//:makeheaders) -H \\",
+        "    $(location parse.c) \\",
+        "    $(location lexis.c) \\",
+        "    $(location nodes.c) \\",
+        "    $(location syntaxis.c) \\",
+        "    $(location serialize.c) \\",
+        "    $(location token_debug.c) \\",
+        "    $(location test_lex.c) \\",
+        "    $(location test_parse.c) \\",
+        "    > $@"
+        # "cp $${SRCDIR1}/*.h $(@D)",
+    ]),
+    tools = ["@makeheaders//:makeheaders"],
+    visibility = ["//visibility:public"]
+)
+
 ################################################################
-## testing lexer, parser
+## testing lexis, parser
 
 cc_binary(
     name  = "test_lex",
     srcs  = [
         "test_lex.c",
         "test_lex.h",
-        "starlark.c",
-        "starlark.h",
+        "parse.c",
+        "parse.h",
         "token_debug.c",
         "token_debug.h",
         "nodes.c",
         "nodes.h",
-        "lexer.c",
-        "lexer.h",
+        "lexis.c",
+        "lexis.h",
         "serialize.c",
         "serialize.h",
         "@uthash//:include",
@@ -234,7 +266,7 @@ cc_binary(
         "-I", "external/uthash/include",
     ],
     deps = [
-        ":lexer",
+        ":lexis",
         ":parser",
         "//vendored/logc"
     ],
@@ -251,8 +283,8 @@ cc_binary(
     srcs  = [
         "test_parse.c",
         "test_parse.h",
-        "starlark.c",
-        "starlark.h",
+        "parse.c",
+        "parse.h",
         "token_debug.c",
         "token_debug.h",
         "nodes.c",
@@ -277,7 +309,7 @@ cc_binary(
         "-I", "external/uthash/include",
     ],
     deps = [
-        ":lexer",
+        ":lexis",
         ":parser",
         "//vendored/logc"
     ],

@@ -1,8 +1,11 @@
 #include "utarray.h"
 #include "utstring.h"
-
 #include "unity.h"
+#include "starlark.h"
+#include "syntaxis.h"
+
 #include "lex_keywords.h"
+
 
 UT_string *buf;
 UT_string *test_s;

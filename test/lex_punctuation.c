@@ -1,7 +1,9 @@
 #include "utarray.h"
 #include "utstring.h"
-
 #include "unity.h"
+#include "starlark.h"
+#include "syntaxis.h"
+
 #include "lex_punctuation.h"
 
 UT_string *buf;

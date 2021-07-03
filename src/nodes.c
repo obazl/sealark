@@ -1,15 +1,14 @@
 #include "log.h"
 #include "nodes.h"
 
-#if INTERFACE
-#include "utarray.h"
-
 struct obazl_buildfile_s {
     char *fname;
     struct node_s *root;
     /* UT_array *nodelist; */
 };
 
+#if INTERFACE
+#include "utarray.h"
 struct node_s {
     /* enum node_type_e type; */
     int type;
@@ -54,7 +53,7 @@ void node_copy(void *_dst, const void *_src)
     /*               utarray_len(dst->subnodes)); */
 }
 
-void node_dtor(void *_elt) {
+EXPORT void node_dtor(void *_elt) {
     /* log_debug("NODE_DTOR: %s (%d)", */
     /*           token_name[((struct node_s*)_elt)->type][0], */
     /*           ((struct node_s*)_elt)->type); */
