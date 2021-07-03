@@ -27,15 +27,16 @@ cc_library(
         "-g", "-O0",
         "-I", ".",
         "-I", "$(GENDIR)/src",
-        "-I", "$(GENDIR)/external/src",
+        "-I", "$(GENDIR)/external/libstarlark/src",
 
         "-I", "external/uthash/include",
+
         "-I", "vendored/logc",
-        "-I", "external/vendored/logc",
+        "-I", "external/libstarlark/vendored/logc",
     ],
     deps = [
         ":lexis",
-        ":parser",
+        ":syntaxis",
         "//vendored/logc"
     ],
     visibility = ["//visibility:public"]
@@ -43,23 +44,31 @@ cc_library(
 
 ##########
 cc_library(
-    name  = "parser",
+    name  = "syntaxis",
     visibility = ["//visibility:public"],
     srcs  = [
         "syntaxis.c",
         "syntaxis.h",
         "nodes.c",
         "nodes.h",
+        "//vendored/logc:log.h",
         "@uthash//:include"
     ],
     copts = [
         "-std=c11",
         # "-g",
+
+        "-I", ".",              # syntaxis.h
+
+        # mkhdrs output:
         "-I", "$(GENDIR)/src",
-        "-I", "external/uthash/include",
+        "-I", "$(GENDIR)/external/libstarlark/src",
+
         "-I", "vendored/logc",
-        "-I", "external/obazl/vendored/logc",
-        "-I", "external/tools_obazl/vendored/logc",
+        "-I", "external/libstarlark/vendored/logc",
+
+        "-I", "external/uthash/include",
+
         "-U", "NDEBUG"
     ],
     defines = select({
@@ -74,7 +83,7 @@ cc_library(
 
 ########
 genrule(
-    name = "gen_parser",
+    name = "gen_syntaxis",
     srcs = [
         "syntaxis.y",
         "//vendored/lemon:lempar.c"
@@ -105,18 +114,21 @@ cc_library(
         "nodes.h",
         "debug.c",
         "debug.h",
+        "//vendored/logc:log.h",
         "@uthash//:include",
     ],
     copts = [
         "-std=c11",
-        "-I", ".",
         "-I", "src",
+
+        # mkhdrs output:
         "-I", "$(GENDIR)/src",
+        "-I", "$(GENDIR)/external/libstarlark/src",
 
         "-I", "external/uthash/include",
+
         "-I", "vendored/logc",
-        "-I", "external/obazl/vendored/logc",
-        "-I", "external/tools_obazl/vendored/logc",
+        "-I", "external/libstarlark/vendored/logc",
     ],
     defines = select({
         "//bzl/host:debug": ["DEBUG_TRACE"],
@@ -231,7 +243,7 @@ genrule(
 )
 
 ################################################################
-## testing lexis, parser
+## testing lexis, syntaxis
 
 cc_binary(
     name  = "test_lex",
@@ -267,7 +279,7 @@ cc_binary(
     ],
     deps = [
         ":lexis",
-        ":parser",
+        ":syntaxis",
         "//vendored/logc"
     ],
     # linkopts = select({
@@ -310,7 +322,7 @@ cc_binary(
     ],
     deps = [
         ":lexis",
-        ":parser",
+        ":syntaxis",
         "//vendored/logc"
     ],
     linkstatic = 1
