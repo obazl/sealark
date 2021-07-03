@@ -19,6 +19,8 @@
 
 UT_string *build_file;
 
+UT_string *buffer;
+
 int main(int argc, char *argv[])
 {
     int opt;
@@ -48,11 +50,26 @@ int main(int argc, char *argv[])
     log_debug("parsed file %s", utstring_body(build_file));
     dump_node(root);
 
-    /* for(p=(intpair_t*)utarray_front((*ast)->nodelist); */
-    /*     p!=NULL; */
-    /*     p=(intpair_t*)utarray_next((*ast)->nodelist,p)) { */
-    /*     printf("%d %d\n", p->a, p->b); */
-    /* } */
-    /* utarray_free((*ast)->nodelist); */
-    /* free(ast); */
+    /* serialization routines expect a UT_string, not a char buffer */
+    utstring_new(buffer);
+    starlark_node2string(root, buffer);
+    /* printf("%s", utstring_body(buffer)); */
+
+    char *wd = getenv("BUILD_WORKING_DIRECTORY");
+    /* log_info("BUILD_WORKING_DIRECTORY: %s", wd); */
+    chdir(wd);
+
+    FILE *fp;
+    fp = fopen("./test.BUILD.bazel", "w+");
+    if (fp == NULL) {
+        printf("fopen error: %d\n", errno);
+    /* } else { */
+    /*     printf("opened test.BUILD.bazel\n"); */
+    }
+    int r = fputs(utstring_body(buffer), fp);
+    printf("fputs r: %d\n", r);
+    fclose(fp);
+
+    utstring_free(buffer);
+    node_dtor(root);
 }
