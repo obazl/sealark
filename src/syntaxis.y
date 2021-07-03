@@ -574,7 +574,12 @@ stmt_list(Stmts) ::= stmt_list(Stmts_rhs) statement(Stmt) . [PLUS]
 statement(Stmt) ::= COMMENT(C) . [FOR]
 {
     log_trace(">>statement ::= COMMENT");
-    Stmt = C;
+    Stmt = calloc(sizeof(struct node_s), 1);
+    Stmt->type = TK_Stmt;
+    Stmt->line  = C->line;
+    Stmt->col   = C->col;
+    utarray_new(Stmt->subnodes, &node_icd);
+    utarray_push_back(Stmt->subnodes, C);
 }
 
 /* comment(Comment) ::= COMMENT(C) . [TILDE] */

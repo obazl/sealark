@@ -621,7 +621,12 @@ loop:
         (*mtok)->col = lexer->tok - lexer->sol;
         return TK_LPAREN;
     }
-    <init> "#"[^\n]+ eol { return TK_COMMENT; }
+    <init> @s1 "#"[^\n]+ eol @s2 {
+        /* n->line = line; // - newlines; */
+        /* n->col  = scmt - sol; // lexer->pos.col; */
+        (*mtok)->s = strndup(s1, (size_t)(s2 - s1));
+        return TK_COMMENT;
+    }
 
     <init> ")" COMMENTS {
             log_debug("<init> RPAREN, mode: %d", lexer->mode);
