@@ -26,9 +26,12 @@ cc_test(
         "roundtrip.h",
         "@uthash//:include",
     ],
-    data = [
-        "//data/bazel/examples:BUILD.test",
-        "//data/bazel/examples/cpp:BUILD.test"
+    data = [ # NB: globbing does not seem to work
+        "//test/data:BUILD.cpp",
+        "//test/data:BUILD.filegroup",
+        "//test/data:BUILD.gen",
+        "//test/data:BUILD.load_aliases_1",
+        "//test/data:BUILD.load_aliases_2",
     ],
     copts = [
         "-I$(GENDIR)/src",

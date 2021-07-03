@@ -92,23 +92,30 @@ int roundtrip(char *_file)
         printf("Error : Files not open");
         goto cleanup;
     }
-    r = compareFiles(file1, file2);
-    if (r < 0) {
-        printf("mismatch %d\n", r);
-    } else {
-        printf("match!\n");
+    static int diff;
+    diff = compareFiles(file1, file2);
+    if (diff < 0) {
+        log_fatal("mismatch at %d for\n\t%s and\n\t%s\n",
+                  r,
+                  utstring_body(build_file),
+                  outfile);
+    /* } else { */
+    /*     printf("match!\n"); */
     }
+
     fclose(file1);
     fclose(file2);
 
  cleanup:
-    r = remove(outfile);
-    if (r < 0) {
-        printf("remove(%s) failed, rc: %d", outfile, errno);
-    /* } else { */
-    /*     printf("removed tmp file %s\n", outfile); */
+    if (diff == 0) {
+        r = remove(outfile);
+        if (r < 0) {
+            printf("remove(%s) failed, rc: %d", outfile, errno);
+        /* } else { */
+        /*     printf("removed tmp file %s\n", outfile); */
+        }
     }
     /* utstring_free(buffer); */
     node_dtor(root);
-    return EXIT_SUCCESS; // r;
+    return diff; // r;
 }

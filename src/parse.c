@@ -241,8 +241,8 @@ EXPORT struct node_s *starlark_parse_file(char *fname)
 
     f = fopen(fname, "r");
     if (f == NULL) {
-        perror(fname);
         log_error("fopen failure for %s", fname);
+        perror(fname);
         /* log_error("Value of errno: %d", errnum); */
         /* log_error("fopen error %s", strerror( errnum )); */
         exit(EXIT_FAILURE);
