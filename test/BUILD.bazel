@@ -13,7 +13,36 @@ test_suite(
         ":slices",
         ":statements",
         ":strings",
+
+        ":roundtrip",
     ])
+
+cc_test(
+    name = "roundtrip",
+    srcs = [
+        "test_roundtrip.c",
+        "test_roundtrip.h",
+        "roundtrip.c",
+        "roundtrip.h",
+        "@uthash//:include",
+    ],
+    data = [
+        "//data/bazel/examples:BUILD.test",
+        "//data/bazel/examples/cpp:BUILD.test"
+    ],
+    copts = [
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/test",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
 
 # LEXIS
 cc_test(
@@ -231,7 +260,7 @@ cc_test(
 genrule(
     name = "mkhdrs",
     srcs = [
-        # "//src:syntaxis.h",
+        "roundtrip.c",
         "lex_keywords.c",
         "lex_numbers.c",
         "lex_punctuation.c",
@@ -242,8 +271,10 @@ genrule(
         "syntax_lists.c",
         "syntax_slices.c",
         "syntax_statements.c",
+        "test_roundtrip.c",
     ],
     outs = [
+        "roundtrip.h",
         "lex_keywords.h",
         "lex_numbers.h",
         "lex_punctuation.h",
@@ -254,14 +285,13 @@ genrule(
         "syntax_lists.h",
         "syntax_slices.h",
         "syntax_statements.h",
+        "test_roundtrip.h",
     ],
     cmd = "\n".join([
         "SRC1=$(location lex_strings.c)",
         "SRCDIR1=`dirname $$SRC1`",
-        # "SRC2=$(location //src:starlark.c)",
-        # "SRCDIR2=`dirname $$SRC2`",
         "$(location @makeheaders//:makeheaders) \\",
-        # "    $(location //src:syntaxis.h) \\",
+        "    $(location roundtrip.c) \\",
         "    $(location lex_keywords.c) \\",
         "    $(location lex_numbers.c) \\",
         "    $(location lex_punctuation.c) \\",
@@ -271,12 +301,8 @@ genrule(
         "    $(location syntax_expressions.c) \\",
         "    $(location syntax_lists.c) \\",
         "    $(location syntax_slices.c) \\",
-        "    $(location syntax_statements.c)",
-        # "    $(location //src:starlark.c)",
-        # "    $(location //src:lexer.c) \\",
-        # "    $(location //src:nodes.c) \\",
-        # "    $(location //src:parser.c) \\",
-        # "    $(location //src:debug.c)",
+        "    $(location syntax_statements.c) \\",
+        "    $(location test_roundtrip.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),
     tools = ["@makeheaders//:makeheaders"],
