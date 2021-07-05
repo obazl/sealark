@@ -29,6 +29,17 @@ make it mostly invisible. The path of least resistence is C, since
 just about every system already has a C toolchain, and just about
 every language can integrate a C library with reasonable effort.
 
+[TODO: more detailed comparison with Gazelle. Gazelle is a powerful
+tool, why do we need another one? Short answer: The Unix Way - small,
+well-defined, single-purpose tools. Gazelle does a whole bunch of
+stuff. libstarlark does one thing, and the design intention is that it
+should be easy to combine it with other small, well-defined,
+single-purpose tools (e.g.
+[codept](https://github.com/Octachron/codept), which analyzes OCaml
+dependencies) to build composite tools. Actually `moonlark` is an
+example: it combines libstarlark with a Lua tool for analyzing the
+AST, and another tool for serializing the AST to a build file. All can
+be swapped out for alternative implementations.]
 
 ## libstarlark
 
