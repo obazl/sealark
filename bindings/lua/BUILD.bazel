@@ -1,0 +1,75 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+# Lua - Portugese for 'moon'
+
+exports_files(["moonlark.c"])
+
+##########
+cc_binary(
+    name  = "moonlark.so",
+    # alwayslink = 1,
+    linkshared = 1,
+    srcs  = [
+        "moonlark.c",
+        "moonlark.h",
+        # internal lua api:
+        "//src/lua:starlark_lua.c",
+        "//src/lua:starlark_lua.h",
+        "//src/lua:starlark_lua_config.c",
+        "//src/lua:starlark_lua_config.h"
+    ],
+    data = [
+        # "//external/lua/lib:lua",
+    ],
+    # linkopts = [
+    #     # no need to link -llua, we're compiling against it
+    # ],
+    copts = [
+        "-std=c11",
+        "-I", "$(GENDIR)/src", # starlark.h
+        "-I", "$(GENDIR)/src/lua", # starlark_lua.h,
+        "-I", "$(GENDIR)/bindings/lua", # moonlark.h
+        "-I", "external/uthash/include",
+        "-I", "vendored/logc",
+        "-I", "vendored/lua-5.4.3/src",
+    ],
+    deps = [
+        "//src:starlark",
+        # "//external/lua/lib:lua",
+        "//vendored/lua-5.4.3/src:lua",
+        "//vendored/logc",
+    ],
+    # linkstatic = 1,
+    visibility = ["//visibility:public"]
+)
+
+########
+genrule(
+    name = "mkhdrs",
+    visibility = ["//visibility:public"],
+    srcs = [
+        "moonlark.c",
+        "//src/lua:starlark_lua.c",
+        "//src/lua:starlark_lua_config.c",
+        "@uthash//:include",
+    ],
+    outs = [
+        "moonlark.h",
+        # "starlark_lua.h"
+    ],
+    cmd = "\n".join([
+        "SRC1=$(location moonlark.c)",
+        "SRCDIR1=`dirname $$SRC1`",
+        "SRC2=$(location //src/lua:starlark_lua.c)",
+        "SRCDIR2=`dirname $$SRC2`",
+        "$(location @makeheaders//:makeheaders) \\",
+        # "    $(locations @uthash//:include) \\",
+        "    $(locations //src/lua:starlark_lua.c) \\",
+        "    $(locations //src/lua:starlark_lua_config.c) \\",
+        "    $(location moonlark.c)",
+        "cp $${SRCDIR1}/*.h $(@D)",
+        "cp $${SRCDIR2}/*.h $(@D)",
+        # "    > $@",
+    ]),
+    tools = ["@makeheaders//:makeheaders"]
+)

@@ -23,7 +23,7 @@
 /* %extra_argument { struct node_s **root} */
 %extra_argument { struct parse_state_s *parse_state}
 
-/* TK_ prefix will be added by lemon */
+%token_prefix TK_ /* TK_ prefix will be added by lemon */
 %token AMP .
 %token AMP_EQ .
 %token AND .
@@ -32,8 +32,8 @@
 %token ASSERT .
 %token BANG .
 %token BANG_EQ .
+%token BLANK .                  /* blank line */
 %token BREAK .
-/* BSTRING below */
 %token CARET .
 %token CARET_EQ .
 %token CLASS .
@@ -63,8 +63,6 @@
 %token GE .
 %token GLOBAL .
 %token ID .
-/* ID_STAR - params & args */
-/* ID_STAR2 - params & args */
 %token IF .
 %token IMPORT .
 %token INT .
@@ -87,7 +85,6 @@
 %token NEWLINE .
 %token NONLOCAL .
 %token NOT .
-%token NUMBER .
 %token OR .
 %token PASS .
 %token PCT .                    /* remainder binop */
@@ -96,35 +93,27 @@
 %token PLUS_EQ .
 %token RAISE .
 %token RANGLE .
-%token RBDQ .
 %token RBRACE .
 %token RBRACK .
-%token RBSQ .
-%token RDQ .
 %token RETURN .
 %token RPAREN .
 %token RRANGLE .
 %token RRANGLE_EQ .
-%token RSQ .
 %token SEMI .
 %token SLASH .
 %token SQ .
-%token SQ3 .
 %token STAR .
-%token STAR_ARGS .
 %token STAR2 .
-%token STAR2_ARGS .
 %token STAR_EQ .
 %token STRING .
 %token BSTRING .
-%token BLANK .                  /* blank line */
 %token BRSTRING .
 %token RSTRING .
 %token RBSTRING .
 %token MLSTRING .
 %token MLBSTRING .
-%token MLRSTRING .
 %token MLBRSTRING .
+%token MLRSTRING .
 %token MLRBSTRING .
 %token TILDE .
 %token TRY .
@@ -177,8 +166,6 @@
 %token Stmt_List .
 %token Unary_Expr .
 /* %token SYM . */
-
-%token_prefix TK_
 
 /* Python op precedence: */
 /* https://docs.python.org/3/reference/expressions.html#operator-precedence */
@@ -939,13 +926,14 @@ expr(X) ::= if_expr(X_rhs) . [LAMBDA]
 expr(X) ::= primary_expr(X_rhs) . [LAMBDA]
 {
     log_trace(">>expr(X) ::= primary_expr(X_rhs)");
-    X = calloc(sizeof(struct node_s), 1);
-    X->type  = TK_Expr;
-    X->line  = X_rhs->line;
-    X->col   = X_rhs->col;
-    X->trailing_newline = X_rhs->trailing_newline;
-    utarray_new(X->subnodes, &node_icd);
-    utarray_push_back(X->subnodes, X_rhs);
+    /* X = calloc(sizeof(struct node_s), 1); */
+    /* X->type  = TK_Expr; */
+    /* X->line  = X_rhs->line; */
+    /* X->col   = X_rhs->col; */
+    /* X->trailing_newline = X_rhs->trailing_newline; */
+    /* utarray_new(X->subnodes, &node_icd); */
+    /* utarray_push_back(X->subnodes, X_rhs); */
+    X = X_rhs;
 }
 
 expr(X) ::= binary_expr(X_rhs) . [FOR]
@@ -1122,7 +1110,7 @@ call_suffix(CallSfx) ::= LPAREN(LParen) RPAREN(RParen) . [FOR]
 {
     log_trace(">>call_suffix(CallSfx) ::= LPAREN RPAREN");
     CallSfx = calloc(sizeof(struct node_s), 1);
-    CallSfx->type  = TK_Arg_List;
+    CallSfx->type  = TK_Call_Sfx;
     CallSfx->line  = LParen->line;
     CallSfx->col   = LParen->col;
     CallSfx->trailing_newline = RParen->trailing_newline;
@@ -1136,7 +1124,7 @@ call_suffix(CallSfx) ::= LPAREN(LParen) arg_list(Args) COMMA(Comma) RPAREN(RPare
 {
     log_trace(">>call_suffix(CallSfx) ::= LPAREN arg_list(Args) RPAREN");
     CallSfx = calloc(sizeof(struct node_s), 1);
-    CallSfx->type = TK_Arg_List;
+    CallSfx->type = TK_Call_Sfx;
     CallSfx->line  = LParen->line;
     CallSfx->col   = LParen->col;
     CallSfx->trailing_newline = RParen->trailing_newline;
@@ -1151,7 +1139,7 @@ call_suffix(CallSfx) ::= LPAREN(LParen) arg_list(Args) RPAREN(RParen) . [FOR]
 {
     log_trace(">>call_suffix(CallSfx) ::= LPAREN arg_list(Args) RPAREN");
     CallSfx = calloc(sizeof(struct node_s), 1);
-    CallSfx->type = TK_Arg_List;
+    CallSfx->type = TK_Call_Sfx;
     CallSfx->line  = LParen->line;
     CallSfx->col   = LParen->col;
     CallSfx->trailing_newline = RParen->trailing_newline;

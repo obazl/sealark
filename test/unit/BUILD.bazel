@@ -1,0 +1,467 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+test_suite(
+    name = "test",
+    tests = [
+        ":call",
+        ":dict",
+        ":expressions",
+        ":keywords",
+        ":lists",
+        ":numbers",
+        ":punctuation",
+        ":slices",
+        ":statements",
+        ":strings",
+
+        ":roundtrip",
+    ])
+
+# LEXIS
+cc_test(
+    name = "keywords",
+    srcs = [
+        "lex_keywords.c",
+        "lex_keywords.h",
+        "//src:debug.c",
+        "@uthash//:include",
+    ],
+    copts = [
+        "-std=c11",
+        "-pedantic-errors",
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/test/unit",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
+
+cc_test(
+    name = "numbers",
+    srcs = [
+        "lex_numbers.c",
+        "lex_numbers.h",
+        "//src:debug.c",
+        "@uthash//:include",
+    ],
+    copts = [
+        "-std=c11",
+        "-pedantic-errors",
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src/include",
+        "-I$(GENDIR)/test/unit",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
+
+cc_test(
+    name = "punctuation",
+    srcs = [
+        "lex_punctuation.c",
+        "lex_punctuation.h",
+        "@uthash//:include",
+    ],
+    copts = [
+        "-std=c11",
+        "-pedantic-errors",
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/test/unit",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
+
+cc_test(
+    name = "strings",
+    srcs = [
+        "lex_strings.c",
+        "lex_strings.h",
+        "//src:debug.c",
+        "@uthash//:include",
+    ],
+    copts = [
+        "-std=c11",
+        "-pedantic-errors",
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/test/unit",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
+
+# SYNTAX
+cc_test(
+    name = "call",
+    srcs = [
+        "syntax_call_expr.c",
+        "syntax_call_expr.h",
+        "@uthash//:include",
+    ],
+    copts = [
+        "-std=c11",
+        "-pedantic-errors",
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/test/unit",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
+
+cc_test(
+    name = "dict",
+    srcs = [
+        "syntax_dict.c",
+        "syntax_dict.h",
+        "@uthash//:include",
+    ],
+    copts = [
+        "-std=c11",
+        "-pedantic-errors",
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/test/unit",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
+
+cc_test(
+    name = "expressions",
+    srcs = [
+        "syntax_expressions.c",
+        "syntax_expressions.h",
+        "@uthash//:include",
+    ],
+    copts = [
+        "-std=c11",
+        "-pedantic-errors",
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/test/unit",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
+
+cc_test(
+    name = "lists",
+    srcs = [
+        "syntax_lists.c",
+        "syntax_lists.h",
+        "@uthash//:include",
+    ],
+    copts = [
+        "-std=c11",
+        "-pedantic-errors",
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/test/unit",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
+
+cc_test(
+    name = "slices",
+    srcs = [
+        "syntax_slices.c",
+        "syntax_slices.h",
+        "@uthash//:include",
+    ],
+    copts = [
+        "-std=c11",
+        "-pedantic-errors",
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/test/unit",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
+
+cc_test(
+    name = "statements",
+    srcs = [
+        "syntax_statements.c",
+        "syntax_statements.h",
+        "@uthash//:include",
+    ],
+    copts = [
+        "-std=c11",
+        "-pedantic-errors",
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/test/unit",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
+
+################################################################
+## testing lexis, syntaxis
+
+# cc_binary(
+#     name  = "lex_file",
+#     srcs  = [
+#         "lex_file.c",
+#         "lex_file.h",
+#         "@uthash//:include",
+#     ],
+#     copts = [
+#         "-std=c11",
+#         "-pedantic-errors",
+
+#         "-I", "$(GENDIR)/src",
+#         "-I", "$(GENDIR)/test/unit",
+
+#         "-I", "vendored/logc",
+#         # "-I", "external/obazl/vendored/logc",
+#         # "-I", "external/tools_obazl/vendored/logc",
+
+#         "-I", "external/uthash/include",
+#     ],
+#     defines = ["DEBUG", "DEBUG_TRACE"],
+#     deps = [
+#         "//src:starlark",
+#         "//vendored/logc"
+#     ],
+#     # linkopts = select({
+#     #     "//bzl/host:linux": [],
+#     #     "//bzl/host:macos": ["-framework", "CoreServices"],
+#     # }),
+#     linkstatic = 1
+# )
+
+# ##########
+# cc_binary(
+#     name  = "lua_file",
+#     srcs  = [
+#         "lua_file.c",
+#         # "debug.c",
+#         # "debug.h",
+#         "@uthash//:include",
+#     ],
+#     defines = ["DEBUG", "DEBUG_TRACE"],
+#     copts = [
+#         "-std=c11",
+#         "-pedantic-errors",
+
+#         "-I", "src",
+#         "-I", "$(GENDIR)/src",     # starlark.h
+#         "-I", "$(GENDIR)/src/lua", # starlark_lua.h
+#         "-I", "$(GENDIR)/test/unit",
+
+#         "-I", "vendored/logc",
+#         "-I", "external/obazl/vendored/logc",
+#         "-I", "external/tools_obazl/vendored/logc",
+
+#         "-I", "vendored/lua-5.4.3/src",
+
+#         "-I", "external/uthash/include",
+#     ],
+#     deps = [
+#         # "//src:starlark",
+#         "//src/lua:starlark_lua",
+#         "//vendored/logc",
+#         "//vendored/lua-5.4.3/src:lua"
+#     ],
+#     linkstatic = 1
+# )
+
+# ##########
+# cc_binary(
+#     name  = "parse_file",
+#     srcs  = [
+#         "parse_file.c",
+#         "parse_file.h",
+#         # "parse.c",
+#         # "parse.h",
+#         # "debug.c",
+#         # "debug.h",
+#         # "nodes.c",
+#         # "nodes.h",
+#         # "serialize.c",
+#         # "serialize.h",
+#         "@uthash//:include",
+#     ],
+#     copts = [
+#         "-std=c11",
+#         "-pedantic-errors",
+
+#         "-I", "$(GENDIR)/src",
+#         "-I", "$(GENDIR)/test/unit",
+
+#         "-I", "vendored/logc",
+#         # "-I", "external/obazl/vendored/logc",
+#         # "-I", "external/tools_obazl/vendored/logc",
+
+#         "-I", "external/uthash/include",
+#     ],
+#     defines = ["DEBUG", "DEBUG_TRACE"],
+#     deps = [
+#         "//src:starlark",
+#         "//vendored/logc"
+#     ],
+#     linkstatic = 1
+# )
+
+cc_test(
+    name = "roundtrip",
+    srcs = [
+        "roundtrip.c",
+        "roundtrip.h",
+        "roundtrip_helper.c",
+        "roundtrip_helper.h",
+        "@uthash//:include",
+    ],
+    data = [ # NB: globbing does not seem to work
+        "//test/data:android.BUILD",
+        "//test/data:cpp.BUILD",
+        "//test/data:filegroup.BUILD",
+        "//test/data:gen.BUILD",
+        "//test/data:load_1.BUILD",
+        "//test/data:load_2.BUILD",
+        "//test/data:load_3.BUILD",
+        "//test/data:load_aliases_1.BUILD",
+        "//test/data:load_aliases_2.BUILD",
+        "//test/data:py.BUILD",
+        "//test/data:py_native.BUILD",
+        "//test/data:shell.BUILD",
+        "//test/data:windows_dll.BUILD",
+    ],
+    copts = [
+        "-std=c11",
+        "-pedantic-errors",
+
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/test/unit",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
+
+################################################################
+genrule(
+    name = "mkhdrs",
+    srcs = [
+        "//src:debug.c",
+        "roundtrip.c",
+        "roundtrip_helper.c",
+        "lex_keywords.c",
+        "lex_numbers.c",
+        "lex_punctuation.c",
+        "lex_strings.c",
+        "syntax_call_expr.c",
+        "syntax_dict.c",
+        "syntax_expressions.c",
+        "syntax_lists.c",
+        "syntax_slices.c",
+        "syntax_statements.c",
+        # "lex_file.c",
+        # "lua_file.c",
+        # "parse_file.c",
+    ],
+    outs = [
+        "roundtrip.h",
+        "roundtrip_helper.h",
+        "lex_keywords.h",
+        "lex_numbers.h",
+        "lex_punctuation.h",
+        "lex_strings.h",
+        "syntax_call_expr.h",
+        "syntax_dict.h",
+        "syntax_expressions.h",
+        "syntax_lists.h",
+        "syntax_slices.h",
+        "syntax_statements.h",
+        # "lex_file.h",
+        # "lua_file.h",
+        # "parse_file.h",
+    ],
+    cmd = "\n".join([
+        "SRC1=$(location lex_strings.c)",
+        "SRCDIR1=`dirname $$SRC1`",
+        "$(location @makeheaders//:makeheaders) \\",
+        "    $(location //src:debug.c) \\",
+        "    $(location roundtrip.c) \\",
+        "    $(location roundtrip_helper.c) \\",
+        "    $(location lex_keywords.c) \\",
+        "    $(location lex_numbers.c) \\",
+        "    $(location lex_punctuation.c) \\",
+        "    $(location lex_strings.c) \\",
+        "    $(location syntax_call_expr.c) \\",
+        "    $(location syntax_dict.c) \\",
+        "    $(location syntax_expressions.c) \\",
+        "    $(location syntax_lists.c) \\",
+        "    $(location syntax_slices.c) \\",
+        "    $(location syntax_statements.c)",
+        # "    $(location lex_file.c) \\",
+        # "    $(location lua_file.c) \\",
+        # "    $(location parse_file.c)",
+        "cp $${SRCDIR1}/*.h $(@D)",
+    ]),
+    tools = ["@makeheaders//:makeheaders"],
+    visibility = ["//visibility:public"]
+)

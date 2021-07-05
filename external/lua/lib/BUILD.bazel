@@ -63,6 +63,10 @@ cc_library(
         "@lua//:src/lvm.h",
         "@lua//:src/lzio.c",
         "@lua//:src/lzio.h",
+        "//bindings/lua:estrelark.c",
+        "//bindings/lua:estrelark.h",
+        "//src/lua:starlark_lua.c",
+        "//src/lua:starlark_lua.h",
     ],
     strip_include_prefix = "/src",
     hdrs = [
@@ -72,6 +76,27 @@ cc_library(
         "@lua//:src/luaconf.h",
         "@lua//:src/lualib.h",
     ],
+    copts = [
+        "-I", "bindings/lua",
+        "-I", "external/uthash/include",
+        "-I", "$(GENDIR)/src", # starlark.h
+        "-I", "$(GENDIR)/src/lua", # starlark_lua.h,
+        "-I", "$(GENDIR)/bindings/lua", # estrelark.h
+        "-I", "vendored/logc",
+
+        # "-DLUA_CPATH_DEFAULT='\"'/Users/gar/bazel/obazl/libstarlark/bazel-out/darwin-fastbuild/bin/bindings/lua/?.so;./?so;'\"'"
+        # "-DLUA_CPATH_DEFAULT='\"'$(GENDIR)/bindings/lua/?.so;./?so;'\"'"
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+    ],
+    defines = [
+        "LUA_USE_MACOSX",
+    ],
+    # deps = [
+    #     "//bindings/lua:depper"
+    # ],
     linkopts = [
         "-lm",
         "-ldl",

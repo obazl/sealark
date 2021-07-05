@@ -1,13 +1,15 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
-# exports_files(["serialize.h"])
+exports_files(["debug.c"])
 
 ##########
 cc_library(
     name  = "starlark",
-    # alwayslink = True,
+    alwayslink = True,
     linkstatic = 1,
     srcs  = [
+        # "constants.c",
+        # "constants.h",
         "parse.c",
         "parse.h",          # local impl hdr
         "serialize.c",
@@ -171,37 +173,36 @@ genrule(
 genrule(
     name = "mkhdrs",
     srcs = [
+        # "constants.c",
         "parse.c",
         "lexis.c",
         "nodes.c",
         "syntaxis.c",
         "serialize.c",
         "debug.c",
-        "test_lex.c",
-        "test_parse.c",
+        "@uthash//:include",
     ],
     outs = [
+        # "constants.h",
         "parse.h",
         "lexis.h",
         "nodes.h",
         "syntaxis.h",
         "serialize.h",
         "debug.h",
-        "test_lex.h",
-        "test_parse.h"
     ],
     cmd = "\n".join([
         "SRC1=$(location parse.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "$(location @makeheaders//:makeheaders) \\",
+        "    $(locations @uthash//:include) \\",
+        # "    $(location constants.c) \\",
         "    $(location parse.c) \\",
         "    $(location lexis.c) \\",
         "    $(location nodes.c) \\",
         "    $(location syntaxis.c) \\",
         "    $(location serialize.c) \\",
-        "    $(location debug.c) \\",
-        "    $(location test_lex.c) \\",
-        "    $(location test_parse.c)",
+        "    $(location debug.c) ",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),
     tools = ["@makeheaders//:makeheaders"],
@@ -211,14 +212,16 @@ genrule(
 genrule(
     name = "mkhdrs-export",
     srcs = [
+        "constants.c",
         "parse.c",
         "lexis.c",
         "nodes.c",
-        "syntaxis.c",
+        "syntaxis.h",
         "serialize.c",
-        "debug.c",
-        "test_lex.c",
-        "test_parse.c",
+        # "debug.c",
+        # "test_lex.c",
+        # "test_parse.c",
+        "@uthash//:include",
     ],
     outs = [
         "starlark.h",
@@ -227,103 +230,16 @@ genrule(
         "SRC1=$(location parse.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "$(location @makeheaders//:makeheaders) -H \\",
-        "    $(location parse.c) \\",
+        "    $(locations @uthash//:include) \\",
+        "    $(location constants.c) \\",
         "    $(location lexis.c) \\",
         "    $(location nodes.c) \\",
-        "    $(location syntaxis.c) \\",
+        "    $(location parse.c) \\",
         "    $(location serialize.c) \\",
-        "    $(location debug.c) \\",
-        "    $(location test_lex.c) \\",
-        "    $(location test_parse.c) \\",
-        "    > $@"
-        # "cp $${SRCDIR1}/*.h $(@D)",
+        "    $(location syntaxis.h) \\",
+        # "    $(location debug.c) \\",
+        "    > $@",
     ]),
     tools = ["@makeheaders//:makeheaders"],
     visibility = ["//visibility:public"]
-)
-
-################################################################
-## testing lexis, syntaxis
-
-cc_binary(
-    name  = "test_lex",
-    srcs  = [
-        "test_lex.c",
-        "test_lex.h",
-        "parse.c",
-        "parse.h",
-        "debug.c",
-        "debug.h",
-        "nodes.c",
-        "nodes.h",
-        "lexis.c",
-        "lexis.h",
-        "serialize.c",
-        "serialize.h",
-        "@uthash//:include",
-    ],
-    copts = [
-        "-std=c11",
-        "-pedantic-errors",
-
-        "-I", "src",
-
-        "-I", "$(GENDIR)/src",
-        # "-I", "$(GENDIR)/external/tools_obazl/src",
-
-        "-I", "vendored/logc",
-        # "-I", "external/obazl/vendored/logc",
-        # "-I", "external/tools_obazl/vendored/logc",
-
-        "-I", "external/uthash/include",
-    ],
-    deps = [
-        ":lexis",
-        ":syntaxis",
-        "//vendored/logc"
-    ],
-    # linkopts = select({
-    #     "//bzl/host:linux": [],
-    #     "//bzl/host:macos": ["-framework", "CoreServices"],
-    # }),
-    linkstatic = 1
-)
-
-##########
-cc_binary(
-    name  = "test_parse",
-    srcs  = [
-        "test_parse.c",
-        "test_parse.h",
-        "parse.c",
-        "parse.h",
-        "debug.c",
-        "debug.h",
-        "nodes.c",
-        "nodes.h",
-        "serialize.c",
-        "serialize.h",
-        "@uthash//:include",
-    ],
-    defines = ["DEBUG", "DEBUG_TRACE"],
-    copts = [
-        "-std=c11",
-        "-pedantic-errors",
-
-        "-I", "src",
-        "-I", "$(GENDIR)/src",
-        "-I", "$(GENDIR)/external/tools_obazl/src",
-
-        "-I", "vendored/logc",
-        "-I", "external/obazl/vendored/logc",
-        "-I", "external/tools_obazl/vendored/logc",
-
-        "-I", "external/uthash/include",
-    ],
-    deps = [
-        ":lexis",
-        ":syntaxis",
-        "//vendored/logc"
-    ],
-    linkstatic = 1
 )

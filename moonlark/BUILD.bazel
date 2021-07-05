@@ -1,0 +1,57 @@
+exports_files(["moonlark_edit.lua", "moonlark_serialize.lua"])
+
+cc_binary(
+    name = "repl",
+    srcs = [
+        "//vendored/lua-5.4.3/src:lua.c",
+    ],
+    defines = [
+        "LUA_USE_MACOSX",
+    ],
+    linkopts = [
+        "-lm",
+        "-ldl",
+    ],
+    deps = [
+        "//vendored/lua-5.4.3/src:lua"
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_binary(
+    name  = "edit",
+    srcs  = [
+        "edit.c",
+        "//src:debug.c",
+        "//src:debug.h",
+        "@uthash//:include",
+    ],
+    defines = ["DEBUG", "DEBUG_TRACE"],
+    copts = [
+        "-std=c11",
+        "-pedantic-errors",
+
+        "-I", "src",
+        "-I", "$(GENDIR)/src",     # starlark.h
+        "-I", "$(GENDIR)/src/lua", # starlark_lua.h
+
+        "-I", "vendored/logc",
+        "-I", "external/obazl/vendored/logc",
+        "-I", "external/tools_obazl/vendored/logc",
+
+        "-I", "vendored/lua-5.4.3/src",
+
+        "-I", "external/uthash/include",
+    ],
+    deps = [
+        # # ":lexis",
+        # # ":syntaxis",
+        # "//src:starlark",
+        "//src/lua:starlark_lua",
+        "//vendored/logc",
+        "//vendored/lua-5.4.3/src:lua"
+    ],
+    linkstatic = 1
+)
+
+

@@ -1,0 +1,89 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+exports_files(["starlark_lua.c", "starlark_lua_config.c"])
+
+##########
+cc_library(
+    name  = "starlark_lua",
+    # alwayslink = True,
+    # linkstatic = 1,
+    srcs  = [
+        "starlark_lua.c",
+        "starlark_lua_config.c",
+        "lua_debug.c",
+        "//src:debug.c",
+        "@uthash//:include",
+        "//vendored/logc:log.h"
+    ],
+    hdrs = [
+        "starlark_lua.h",
+        "starlark_lua_config.h",
+        "lua_debug.h",
+    ],
+    data = [
+        "//moonlark:moonlark_edit.lua",
+        "//moonlark:moonlark_serialize.lua"
+    ],
+    defines = select({
+        "//bzl/host:debug": ["DEBUG_TRACE"],
+        "//conditions:default":   []
+    }),
+    copts = [
+        "-std=c11",
+        "-pedantic-errors",
+        "-g", "-O0",
+
+        "-I", "$(GENDIR)/src",  # starlark.h
+        "-I", "$(GENDIR)/src/lua", # starlark_lua.h
+
+        "-I", "external/uthash/include",
+
+        "-I", "vendored/logc",
+        "-I", "vendored/lua-5.4.3/src",
+
+        # "-I", "external/obazl/vendored/logc",
+    #     "-I", "external/tools_obazl/vendored/logc"
+    ],
+    linkopts = [
+        "-L/usr/local/lib",     # FIXME
+        "-llua",
+    ],
+    deps = [
+        "//src:starlark",
+        # "//src/lib/obazl_utils",
+        # "//external/lua/lib:lua",
+        "//vendored/lua-5.4.3/src:lua",
+        "//vendored/logc"
+    ],
+    visibility = ["//visibility:public"]
+)
+
+########
+genrule(
+    name = "mkhdrs",
+    visibility = ["//visibility:public"],
+    srcs = [
+        "starlark_lua.c",
+        "starlark_lua_config.c",
+        "lua_debug.c",
+        "//src:debug.c"
+    ],
+    outs = [
+        "starlark_lua.h",
+        "starlark_lua_config.h",
+        "lua_debug.h",
+    ],
+    cmd = "\n".join([
+        "SRC1=$(location starlark_lua.c)",
+        "SRCDIR1=`dirname $$SRC1`",
+        "SRC2=$(location //src:debug.c)",
+        "SRCDIR2=`dirname $$SRC2`",
+        "$(location @makeheaders//:makeheaders) \\",
+        "    $(location //src:debug.c) \\",
+        "    $(location starlark_lua.c) \\",
+        "    $(location starlark_lua_config.c) \\",
+        "    $(location lua_debug.c)",
+        "cp $$SRCDIR1/*.h $(@D)",
+    ]),
+    tools = ["@makeheaders//:makeheaders"]
+)

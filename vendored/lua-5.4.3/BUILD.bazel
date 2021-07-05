@@ -1,0 +1,32 @@
+cc_binary(
+    name = "lua",
+    srcs = [
+        "//vendored/lua-5.4.3/src:lua.c",
+    ],
+    defines = [
+        "LUA_USE_MACOSX",
+    ],
+    linkopts = [
+        "-lm",
+        "-ldl",
+    ],
+    deps = [
+        "//vendored/lua-5.4.3/src:lua"
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_binary(
+    name = "luac",
+    srcs = [
+        "@lua//:src/luac.c",
+    ],
+    linkopts = [
+        "-lm",
+        "-ldl",
+    ],
+    deps = [
+        "//external/lua/lib:lua"
+    ],
+    visibility = ["//visibility:public"],
+)

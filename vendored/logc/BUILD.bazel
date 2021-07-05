@@ -5,6 +5,8 @@ exports_files(["log.c", "log.h"])
 ##########
 cc_library(
     name  = "logc",
+    # linkstatic = 1,
+    # alwayslink = 1,
     srcs  = ["log.c"],
     hdrs = ["log.h"],
     copts = [

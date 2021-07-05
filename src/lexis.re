@@ -37,7 +37,7 @@ int curr_tag = 0;
 
 UT_icd loadsyms_icd = {sizeof(char**), NULL, NULL, NULL};
 
-#if INTERFACE
+#if EXPORT_INTERFACE
 struct position_s {
     int line; // line in input (starting at 1)
     int col; // col in input (starting at 0)
@@ -45,7 +45,7 @@ struct position_s {
 
 struct bf_lexer_s
 {
-    const char *filename;
+    char *fname;
     /* from gazelle */
     struct position_s pos;  // current input position
     int extra_lines;
@@ -82,11 +82,13 @@ int return_token(int tok)
     return tok;
 }
 
-void lexer_init(struct bf_lexer_s *lexer,
+void lexer_init(char *fname,
+                struct bf_lexer_s *lexer,
                 const char *sob /* start of buffer */ )
 {
     /* need to initialize the '@@' fields inserted by re2c */
     memset(lexer, 0, sizeof(struct bf_lexer_s));
+    lexer->fname = fname;
     lexer->sob = lexer->cursor = sob;
     /* lexer->cursor = lexer->marker = lexer->tok = */
     lexer->limit = sob + strlen(sob);
@@ -95,6 +97,11 @@ void lexer_init(struct bf_lexer_s *lexer,
     utarray_new(lexer->indent_kws, &ut_int_icd);
 }
 
+void lexer_free(bf_lexer_s *lexer)
+{
+    /* log_debug("lexer_free: %s", lexer->fname); */
+    utarray_free(lexer->indent_kws);
+}
 
 /* static int fill(struct bf_lexer_s *lexer) */
 /* { */

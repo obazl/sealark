@@ -17,10 +17,8 @@
 #include <unistd.h>
 
 #include "log.h"
+#if EXPORT_INTERFACE
 #include "utarray.h"
-#include "utstring.h"
-
-#if INTERFACE
 #include "utstring.h"
 #endif
 
@@ -31,8 +29,9 @@ UT_string *build_file;
 int line;
 int col;
 
-#if INTERFACE
+#if EXPORT_INTERFACE
 struct parse_state_s {
+    /* char *fname; */
     struct bf_lexer_s *lexer;
     struct node_s     *root;
 };
@@ -56,6 +55,13 @@ struct parse_state_s *parser_init(struct bf_lexer_s *lexer, struct node_s *root)
     return ps;
 }
 
+EXPORT void parser_free(parse_state_s *parser)
+{
+    log_debug("parser_free %s", parser->lexer->fname);
+    lexer_free(parser->lexer);
+    node_dtor(parser->root);
+}
+
 EXPORT UT_array *starlark_lex_string(const char *buffer)
 {
     log_set_quiet(false);
@@ -69,7 +75,7 @@ EXPORT UT_array *starlark_lex_string(const char *buffer)
     struct node_s *btok = calloc(sizeof(struct node_s), 1);
 
     struct bf_lexer_s * lexer = malloc(sizeof(struct bf_lexer_s));
-    lexer_init(lexer, buffer);
+    lexer_init(NULL, lexer, buffer);
 
 
     log_set_quiet(false);
@@ -132,7 +138,7 @@ EXPORT UT_array *starlark_lex_file(char *fname)
     }
 
     struct bf_lexer_s * lexer = malloc(sizeof(struct bf_lexer_s));
-    lexer_init(lexer, buffer);
+    lexer_init(fname, lexer, buffer);
 
     int tok;
     struct node_s *btok = calloc(sizeof(struct node_s), 1);
@@ -172,7 +178,7 @@ EXPORT struct node_s *starlark_parse_string(char *buffer)
     struct node_s *btok = calloc(sizeof(struct node_s), 1);
 
     struct bf_lexer_s * lexer = malloc(sizeof(struct bf_lexer_s));
-    lexer_init(lexer, buffer);
+    lexer_init(NULL, lexer, buffer);
 
     struct node_s *root = NULL;
 
@@ -232,7 +238,7 @@ EXPORT struct node_s *starlark_parse_string(char *buffer)
     return parse_state->root;
 }
 
-EXPORT struct node_s *starlark_parse_file(char *fname)
+EXPORT struct parse_state_s *starlark_parse_file(char *fname)
 {
     log_set_quiet(false);
 
@@ -245,7 +251,8 @@ EXPORT struct node_s *starlark_parse_file(char *fname)
         perror(fname);
         /* log_error("Value of errno: %d", errnum); */
         /* log_error("fopen error %s", strerror( errnum )); */
-        exit(EXIT_FAILURE);
+        /* exit(EXIT_FAILURE); */
+        return NULL;
     }
     fseek(f, 0, SEEK_END);
     const size_t fsize = (size_t) ftell(f);
@@ -270,7 +277,7 @@ EXPORT struct node_s *starlark_parse_file(char *fname)
     /* struct bzl_token_s *btok = calloc(sizeof(struct bzl_token_s), 1); */
     struct node_s *btok = calloc(sizeof(struct node_s), 1);
     struct bf_lexer_s * lexer = malloc(sizeof(struct bf_lexer_s));
-    lexer_init(lexer, buffer);
+    lexer_init(fname, lexer, buffer);
 
     struct node_s *root = NULL;
 
@@ -333,5 +340,5 @@ EXPORT struct node_s *starlark_parse_file(char *fname)
     /* dump_node(parse_state->root); */
 
     free(buffer);
-    return parse_state->root;
+    return parse_state;
 }
