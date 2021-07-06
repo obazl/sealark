@@ -1,6 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
-exports_files(["starlark_lua.c", "starlark_lua_config.c"])
+exports_files(["starlark_lua_api.c", "starlark_lua_config.c"])
 
 ##########
 cc_library(
@@ -8,17 +8,18 @@ cc_library(
     # alwayslink = True,
     # linkstatic = 1,
     srcs  = [
-        "starlark_lua.c",
+        "starlark_lua_api.c",
+        "starlark_lua_api.h",
         "starlark_lua_config.c",
+        "starlark_lua_config.h",
         "lua_debug.c",
+        "lua_debug.h",
         "//src:debug.c",
         "@uthash//:include",
         "//vendored/logc:log.h"
     ],
     hdrs = [
-        "starlark_lua.h",
-        "starlark_lua_config.h",
-        "lua_debug.h",
+        "starlark_lua.h"
     ],
     data = [
         "//moonlark:moonlark_edit.lua",
@@ -34,7 +35,7 @@ cc_library(
         "-g", "-O0",
 
         "-I", "$(GENDIR)/src",  # starlark.h
-        "-I", "$(GENDIR)/src/lua", # starlark_lua.h
+        "-I", "$(GENDIR)/src/lua", # starlark_lua_api.h
 
         "-I", "external/uthash/include",
 
@@ -63,27 +64,75 @@ genrule(
     name = "mkhdrs",
     visibility = ["//visibility:public"],
     srcs = [
-        "starlark_lua.c",
+        "starlark_lua_api.c",
         "starlark_lua_config.c",
         "lua_debug.c",
-        "//src:debug.c"
+        "//src:debug.c",
+        # "//src:nodes.c",
+        "//src:starlark.h"
     ],
     outs = [
-        "starlark_lua.h",
+        "starlark_lua_api.h",
         "starlark_lua_config.h",
         "lua_debug.h",
     ],
     cmd = "\n".join([
-        "SRC1=$(location starlark_lua.c)",
+        "SRC1=$(location starlark_lua_api.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "SRC2=$(location //src:debug.c)",
         "SRCDIR2=`dirname $$SRC2`",
         "$(location @makeheaders//:makeheaders) \\",
         "    $(location //src:debug.c) \\",
-        "    $(location starlark_lua.c) \\",
+        # "    $(location //src:nodes.c) \\",
+        "    $(location //src:starlark.h) \\",
+        "    $(location starlark_lua_api.c) \\",
         "    $(location starlark_lua_config.c) \\",
         "    $(location lua_debug.c)",
         "cp $$SRCDIR1/*.h $(@D)",
+    ]),
+    tools = ["@makeheaders//:makeheaders"]
+)
+
+genrule(
+    name = "mkhdrs-export",
+    visibility = ["//visibility:public"],
+    srcs = [
+        "starlark_lua_api.c",
+        "starlark_lua_config.c",
+        "lua_debug.c",
+
+        "//src:debug.c",
+        "//src:constants.c",
+        "//src:parse.c",
+        "//src:lexis.c",
+        "//src:nodes.c",
+        "//src:syntaxis.h",
+        "//src:serialize.c",
+        # "//src:starlark.h"
+        "@uthash//:include",
+    ],
+    outs = [
+        "starlark_lua.h",
+    ],
+    cmd = "\n".join([
+        "SRC1=$(location starlark_lua_api.c)",
+        "SRCDIR1=`dirname $$SRC1`",
+        "SRC2=$(location //src:debug.c)",
+        "SRCDIR2=`dirname $$SRC2`",
+        "$(location @makeheaders//:makeheaders) -H \\",
+        "    $(locations @uthash//:include) \\",
+        "    $(location //src:constants.c) \\",
+        "    $(location //src:lexis.c) \\",
+        "    $(location //src:nodes.c) \\",
+        "    $(location //src:parse.c) \\",
+        "    $(location //src:serialize.c) \\",
+        "    $(location //src:syntaxis.h) \\",
+        # "    $(location //src:starlark.h) \\",
+        "    $(location starlark_lua_api.c) \\",
+        "    $(location starlark_lua_config.c) \\",
+        "    $(location lua_debug.c) \\",
+        "    > $@"
+        # "cp $$SRCDIR1/*.h $(@D)",
     ]),
     tools = ["@makeheaders//:makeheaders"]
 )

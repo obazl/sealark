@@ -21,9 +21,9 @@
 #include "log.h"
 #include "utarray.h"
 #include "utstring.h"
-#include "starlark.h"
+/* #include "starlark.h" */
 #include "starlark_lua.h"
-#include "starlark_lua_config.h"
+/* #include "starlark_lua_config.h" */
 
 /* #include "test_lua.h" */
 
@@ -62,6 +62,7 @@ int main(int argc, char *argv[])
         chdir(wd);
     }
 
+    /* FIXME: extract lua code common to this and bindings/lua */
     /* LUA setup */
     lua_State *L;
     L = luaL_newstate();        /* set global lua state var */
@@ -75,7 +76,7 @@ int main(int argc, char *argv[])
     /* load default and user handlers (Lua files) */
     starlark_lua_load_handlers(L);
 
-    /* create global bazel table */
+    /* create global bazel table, token tables, etc. */
     starlark_lua_init(L);
 
     /* now parse the file */

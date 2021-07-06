@@ -9,8 +9,8 @@ cc_library(
         "//bindings/lua:moonlark.c",
         "//bindings/lua:moonlark.h",
         # moonlark C impl code:
-        "//src/lua:starlark_lua.c",
-        "//src/lua:starlark_lua.h",
+        "//src/lua:starlark_lua_api.c",
+        "//src/lua:starlark_lua_api.h",
         "//src/lua:starlark_lua_config.c",
         "//src/lua:starlark_lua_config.h",
 
@@ -89,13 +89,16 @@ cc_library(
         "-I", "bindings/lua",
         "-I", "external/uthash/include",
         "-I", "$(GENDIR)/src", # starlark.h
-        "-I", "$(GENDIR)/src/lua", # starlark_lua.h,
+        "-I", "$(GENDIR)/src/lua", # starlark_lua_api.h,
         "-I", "$(GENDIR)/bindings/lua", # moonlark.h
         "-I", "vendored/logc",
         "-I", "vendored/lua-5.4.3/src",
     ],
     deps = [
         "//src:starlark",
+        # we cannot depend on starlark_lua on pain of circularity
+        # instead we are compiling it here
+        # "//src/lua:starlark_lua",
         "//vendored/logc",
     ],
     defines = [

@@ -607,7 +607,7 @@ loop:
     <init> "*" COMMENTS { return TK_STAR; }
     <init> "//=" COMMENTS { return TK_SLASH2_EQ; }
     <init> "//" COMMENTS { return TK_SLASH2; }
-    <init> "/=" COMMENTS { return TK_DIV_EQ; }
+    <init> "/=" COMMENTS { return TK_SLASH_EQ; }
     <init> "/" COMMENTS { return TK_SLASH; }
     <init> "%=" COMMENTS { return TK_PCT_EQ; }
     <init> "%" COMMENTS { return TK_PCT; }
@@ -648,7 +648,7 @@ loop:
     <init> ">"   COMMENTS { return TK_RANGLE; }
     <init> "=="  COMMENTS { return TK_EQ2; }
     <init> "="   COMMENTS { return TK_EQ; }
-    <init> "\\"  COMMENTS { return TK_ESC_BACKSLASH; }
+    <init> "\\"  COMMENTS { return TK_BACKSLASH2; }
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
     /* LITERALS: integer, floating point, string, byte  */

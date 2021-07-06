@@ -1,6 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
-exports_files(["debug.c"])
+exports_files(glob(["*.c"]))
 
 ##########
 cc_library(
@@ -10,6 +10,8 @@ cc_library(
     srcs  = [
         # "constants.c",
         # "constants.h",
+        "nodes.c",
+        "nodes.h",
         "parse.c",
         "parse.h",          # local impl hdr
         "serialize.c",
@@ -27,6 +29,7 @@ cc_library(
     copts = [
         "-std=c11",
         "-g", "-O0",
+        "-pedantic-errors",
         "-I", ".",
         "-I", "$(GENDIR)/src",
         "-I", "$(GENDIR)/external/libstarlark/src",

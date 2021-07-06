@@ -15,15 +15,36 @@
 #include "log.h"
 #include "utstring.h"
 
-#include "starlark.h"
+/* #include "starlark.h" */
 
-#include "starlark_lua.h"
+#include "starlark_lua_api.h"
 
 int x;
 
 void starlark_comments2lua(lua_State *L, struct node_s *node)
 {
     log_debug("starlark_comments2lua");
+}
+
+void starlark_nodelist2lua(lua_State *L, UT_array *_nodelist, int level)
+{
+    log_debug("starlark_nodelist2lua level %d ct: %d",
+              level, utarray_len(_nodelist));
+
+    struct node_s *node=NULL;
+    int i = 1;
+    while( (node=(struct node_s*)utarray_next(_nodelist, node))) {
+        log_debug("subnode %d", i);
+        starlark_node2lua(L, node, level); /* puts node tbl on ToS */
+        log_debug("pushing node %d to subnode list", i);
+        /* lua_newtable(L); */
+        /* lua_pushstring(L, "subnode");  /\* key *\/ */
+        lua_rawseti(L, -2, i);
+        /* lua_settable(L, -3);        /\* add to node table *\/ */
+        i++;
+    }
+
+    log_debug("/starlark_nodelist2lua level %d", utarray_len(_nodelist));
 }
 
 void starlark_node2lua(lua_State *L, struct node_s *node, int level)
@@ -81,28 +102,7 @@ void starlark_node2lua(lua_State *L, struct node_s *node, int level)
     log_debug("/starlark_node2lua %d", level);
 }
 
-void starlark_nodelist2lua(lua_State *L, UT_array *_nodelist, int level)
-{
-    log_debug("starlark_nodelist2lua level %d ct: %d",
-              level, utarray_len(_nodelist));
-
-    struct node_s *node=NULL;
-    int i = 1;
-    while( (node=(struct node_s*)utarray_next(_nodelist, node))) {
-        log_debug("subnode %d", i);
-        starlark_node2lua(L, node, level); /* puts node tbl on ToS */
-        log_debug("pushing node %d to subnode list", i);
-        /* lua_newtable(L); */
-        /* lua_pushstring(L, "subnode");  /\* key *\/ */
-        lua_rawseti(L, -2, i);
-        /* lua_settable(L, -3);        /\* add to node table *\/ */
-        i++;
-    }
-
-    log_debug("/starlark_nodelist2lua level %d", utarray_len(_nodelist));
-}
-
-void starlark_ast2lua(lua_State *L, struct parse_state_s *parse)
+EXPORT void starlark_ast2lua(lua_State *L, struct parse_state_s *parse)
 {
     log_debug("starlark_buildfile2lua");
 
@@ -161,7 +161,7 @@ void starlark_ast2lua(lua_State *L, struct parse_state_s *parse)
     return;
 }
 
-void starlark_lua_call_user_handler(lua_State *L)
+EXPORT void starlark_lua_call_user_handler(lua_State *L)
 {
     log_debug("starlark_lua_call_user_handler");
 
@@ -182,33 +182,4 @@ void starlark_lua_call_user_handler(lua_State *L)
     /* lua_pop(L, 1);  /\* pop returned value *\/ */
 
     log_debug("lua user-provided 'init' returned");
-}
-
-void starlark_lua_create_tokens_enum(lua_State *L)
-{
-    log_debug("starlark_lua_create_tokens_enum");
-    lua_pushstring(L, "TOK");
-    lua_newtable(L);
-    int i;
-    for (i = 0; i < 256; i++) {
-        if (token_name[i][0] != NULL) {
-        /* log_debug("tok[%d]: %s", i, token_name[i][0] + 3); */
-        lua_pushstring(L, token_name[i][0] + 3);
-        lua_pushinteger(L, i);
-        lua_settable(L, -3);
-        }
-    }
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "iTOK");
-    lua_newtable(L);
-    for (i = 0; i < 256; i++) {
-        if (token_name[i][0] != NULL) {
-        /* log_debug("tok[%d]: %s", i, token_name[i][0] + 3); */
-        lua_pushinteger(L, i);
-        lua_pushstring(L, token_name[i][0] + 3);
-        lua_settable(L, -3);
-        }
-    }
-    lua_settable(L, -3);
 }

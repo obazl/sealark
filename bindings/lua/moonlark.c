@@ -19,8 +19,8 @@
 #include "uthash.h"
 #include "utstring.h"
 
-#include "starlark.h"           /* libstarlark public API */
-#include "starlark_lua.h"
+// #include "starlark.h"           /* libstarlark public API */
+/* #include "starlark_lua.h" */
 #include "moonlark.h"
 
 /* **************************************************************** */

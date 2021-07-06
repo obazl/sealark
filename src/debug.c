@@ -91,7 +91,8 @@ EXPORT void dump_nodes(UT_array *nodes)
             if (utarray_len(node->subnodes) > 0) {
                 log_debug("  subnodes:");
                 dump_nodes(node->subnodes);
-                log_debug("  /subnodes");
+                log_debug("  /subnodes %s[%d]",
+                          token_name[node->type][0], node->type);
             }
         }
     }

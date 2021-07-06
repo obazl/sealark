@@ -1,6 +1,26 @@
 #include "log.h"
 #include "nodes.h"
 
+EXPORT const int printable_tokens[] =
+    {
+     TK_AMP, TK_AMP_EQ, TK_AND, TK_ARROW, TK_AS,
+     TK_ASSERT, TK_BANG, TK_BANG_EQ, TK_BREAK, TK_CARET,
+     TK_CARET_EQ, TK_CLASS, TK_COLON, TK_COMMA, TK_CONTINUE,
+     TK_DEF, TK_DEL, TK_DOT, TK_ELIF, TK_ELSE,
+     TK_EQ, TK_EQ2, TK_BACKSLASH2, TK_EXCEPT, TK_FINALLY,
+     TK_FLOAT, TK_FOR, TK_FROM, TK_GE, TK_GLOBAL,
+     TK_IF, TK_IMPORT, TK_IN, TK_IS, TK_LAMBDA,
+     TK_LANGLE, TK_LBRACE, TK_LBRACK, TK_LE, TK_LLANGLE,
+     TK_LLANGLE_EQ, TK_LOAD, TK_LPAREN, TK_MINUS, TK_MINUS_EQ,
+     TK_NONLOCAL, TK_NOT, TK_OR, TK_PASS, TK_PCT,
+     TK_PCT_EQ, TK_PLUS, TK_PLUS_EQ, TK_RAISE, TK_RANGLE,
+     TK_RBRACE, TK_RBRACK, TK_RETURN, TK_RPAREN, TK_RRANGLE,
+     TK_RRANGLE_EQ, TK_SEMI, TK_SLASH, TK_SLASH_EQ, TK_SLASH2,
+     TK_SLASH2_EQ, TK_STAR, TK_STAR2, TK_STAR_EQ, TK_TILDE,
+     TK_TRY, TK_VBAR, TK_WHILE, TK_WITH, TK_YIELD,
+     0
+    };
+
 EXPORT const char *token_name[256][2] =
     {
      [TK_ALIAS] = { "TK_ALIAS", "" },
@@ -18,22 +38,19 @@ EXPORT const char *token_name[256][2] =
      [TK_CARET_EQ] = { "TK_CARET_EQ", "^=" },
      [TK_CLASS] = { "TK_CLASS", "class" },
      [TK_COLON] = { "TK_COLON", ":" },
-     [TK_ICOLON] = { "TK_ICOLON", ":" },
+     /* [TK_ICOLON] = { "TK_ICOLON", ":" }, */
      [TK_COMMA] = { "TK_COMMA", "," },
      [TK_COMMENT] = { "TK_COMMENT", "" },
      [TK_CONTINUE] = { "TK_CONTINUE", "continue" },
      [TK_DEF] = { "TK_DEF", "def" },
      [TK_DEL] = { "TK_DEL", "del" },
-     [TK_SLASH2] = { "TK_SLASH2", "//" },
-     [TK_SLASH2_EQ] = { "TK_SLASH2_EQ", "//=" },
-     [TK_DIV_EQ] = { "TK_DIV_EQ", "/=" },
      [TK_DOT] = { "TK_DOT", "." },
-     [TK_DQ] = { "TK_DQ", "\"" },
+     /* [TK_DQ] = { "TK_DQ", "\"" }, */
      [TK_ELIF] = { "TK_ELIF", "elif" },
      [TK_ELSE] = { "TK_ELSE", "else" },
      [TK_EQ] = { "TK_EQ", "=" },
      [TK_EQ2] = { "TK_EQ2", "==" },
-     [TK_ESC_BACKSLASH] = { "TK_ESC_BACKSLASH", "\\" },
+     [TK_BACKSLASH2] = { "TK_BACKSLASH2", "\\" },
      [TK_EXCEPT] = { "TK_EXCEPT", "except" },
      [TK_FINALLY] = { "TK_FINALLY", "finally" },
      [TK_FLOAT] = { "TK_FLOAT", "float" },
@@ -80,20 +97,14 @@ EXPORT const char *token_name[256][2] =
      [TK_RRANGLE_EQ] = { "TK_RRANGLE_EQ", ">>=" },
      [TK_SEMI] = { "TK_SEMI", ";" },
      [TK_SLASH] = { "TK_SLASH", "/" },
-     [TK_SQ] = { "TK_SQ", "'" },
+     [TK_SLASH_EQ] = { "TK_SLASH_EQ", "/=" },
+     [TK_SLASH2] = { "TK_SLASH2", "//" },
+     [TK_SLASH2_EQ] = { "TK_SLASH2_EQ", "//=" },
+     /* [TK_SQ] = { "TK_SQ", "'" }, */
      [TK_STAR] = { "TK_STAR", "*" },
-     [TK_STAR2] = { "TK_STAR2", "**" },
      [TK_STAR_EQ] = { "TK_STAR_EQ", "*=" },
+     [TK_STAR2] = { "TK_STAR2", "**" },
      [TK_STRING] = { "TK_STRING", ""},
-     [TK_BSTRING] = { "TK_BSTRING", ""},    /* byte string */
-     [TK_BRSTRING] = { "TK_BRSTRING", ""},    /* raw byte string */
-     [TK_RSTRING] = { "TK_RSTRING", ""},
-     [TK_RBSTRING] = { "TK_RBSTRING", ""},    /* raw byte string */
-     [TK_MLSTRING] = { "TK_MLSTRING", ""},    /* multi-line string */
-     [TK_MLBSTRING] = { "TK_MLBSTRING", ""},
-     [TK_MLBRSTRING] = { "TK_MLBRSTRING", ""},
-     [TK_MLRSTRING] = { "TK_MLRSTRING", ""},
-     [TK_MLRBSTRING] = { "TK_MLRBSTRING", ""},
      [TK_TILDE] = { "TK_TILDE", "~" },
      [TK_TRY] = { "TK_TRY", "try" },
      [TK_VBAR] = { "TK_VBAR", "|" },
@@ -113,6 +124,7 @@ EXPORT const char *token_name[256][2] =
      [TK_Call_Expr] = { "TK_Call_Expr", "" },
      [TK_Call_Sfx] = { "TK_Call_Sfx", "" },
      [TK_Comp_Clause] = { "TK_Comp_Clause", "" },
+     [TK_Def_Compound] = { "TK_Def_Compound", "" },
      [TK_Def_Stmt] = { "TK_Def_Stmt", "" },
      [TK_Dict_Comp] = { "TK_Dict_Comp", "" },
      [TK_Dict_Entry] = { "TK_Dict_Entry", "" },
@@ -183,6 +195,112 @@ struct node_s {
 };
 #endif
 
+UT_array *split_small_stmt_list(struct node_s *iblock,
+                                struct node_s* list, int indent)
+{
+    log_debug("split_small_stmt_list, indent: %d", indent);
+
+    UT_array *blocks;
+    utarray_new(blocks, &node_icd);
+
+    UT_array *instmts;
+    utarray_new(instmts, &node_icd);
+
+    struct node_s *outblock = calloc(sizeof(struct node_s), 1);
+    utarray_new(outblock->subnodes, &node_icd);
+    outblock->type = list->type;
+    /* outblock->line = list->line; */
+    /* outblock->col  = list->col; */
+
+    int block_indent;
+    struct node_s *node=NULL;
+    int len = utarray_len(list->subnodes);
+    log_debug("small stmt list len: %d", len);
+    int i;
+    for (i = 0; i < len; i++) {
+        log_debug("small stmt list item %d", i);
+        node = utarray_eltptr(list->subnodes, i);
+        log_debug("small stmt list node t: %s[%d] indent %d",
+                  token_name[node->type][0], node->type, node->col);
+
+        if (i == 0) {
+            if (node->col > indent) {
+                log_debug("first: IN");
+                block_indent = node->col;
+                utarray_push_back(instmts, node);
+            } else {
+                log_debug("EMPTY BLOCK");
+            }
+        } else {
+            if (node->col == block_indent) {
+                log_debug("IN");
+                utarray_push_back(instmts, node);
+            } else {
+                if (node->col > block_indent) {
+                    log_warn("EXTRA INDENTATION at line %d", node->line);
+                    utarray_push_back(instmts, node);
+                } else {
+                    if (node->col > indent) {
+                        log_error("ERROR: bad indent on line %d", node->line);
+                        exit(EXIT_FAILURE);
+                    } else {
+                        log_debug("OUT");
+                        utarray_push_back(outblock->subnodes, node);
+                    }
+                }
+            }
+        }
+    }
+    iblock->subnodes = instmts;
+    utarray_push_back(blocks, iblock);
+    utarray_push_back(blocks, outblock);
+    /* dump_nodes(blocks); */
+    /* return blocks; */
+
+    /* testing */
+    /* utarray_push_back(blocks, list); */
+    return blocks;
+}
+
+UT_array *split_stmt_list(struct node_s* iblock, int indent)
+{
+    log_debug("split_stmt_list, indent: %d", indent);
+}
+
+UT_array *split_iblock(struct node_s* iblock, int indent)
+{
+    log_debug("split_iblock, indent: %d", indent);
+    UT_array *blocks;
+    utarray_new(blocks, &node_icd);
+
+    int block_indent;
+    /* struct node_s *front = utarray_front(iblock->subnodes); */
+    /* block_indent = front->col; */
+    /* struct node_s * = utarray_next(iblock->subnodes, front); */
+
+    struct node_s *node=NULL;
+    int len = utarray_len(iblock->subnodes);
+    UT_array *test_blocks;
+    for (int i = 0; i < len; i++) {
+        node = utarray_eltptr(iblock->subnodes, i);
+        log_debug("iblock node t: %s[%d] indent %d",
+                  token_name[node->type][0], node->type, node->col);
+
+        if (node->type == TK_SmallStmt_List) {
+            blocks = split_small_stmt_list(iblock, node, indent);
+        } else {
+            if (node->type == TK_Stmt_List) {
+                blocks = split_stmt_list(node, indent);
+            } else {
+            }
+        }
+        i++;
+    }
+    /* first block is iblock */
+    
+    return blocks;
+}
+
 void nodelist_copy(UT_array *_dst, UT_array *_src)
 {
     log_debug("node_copy: %p <- %p", _dst, _src);
@@ -205,7 +323,6 @@ void node_copy(void *_dst, const void *_src)
               : ' ',
               src->line, src->col,
               (src->s == NULL? "" : src->s));
-
     /* if (src->subnodes) */
     /*     log_trace("  src subnode ct: %d", */
     /*               utarray_len(src->subnodes)); */

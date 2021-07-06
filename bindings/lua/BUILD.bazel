@@ -13,9 +13,10 @@ cc_binary(
         "moonlark.c",
         "moonlark.h",
         # internal lua api:
-        "//src/lua:starlark_lua.c",
+        "//src/starlark.h",
+        # "//src/lua:starlark_lua.c",
         "//src/lua:starlark_lua.h",
-        "//src/lua:starlark_lua_config.c",
+        # "//src/lua:starlark_lua_config.c",
         "//src/lua:starlark_lua_config.h"
     ],
     data = [
@@ -49,8 +50,8 @@ genrule(
     visibility = ["//visibility:public"],
     srcs = [
         "moonlark.c",
-        "//src/lua:starlark_lua.c",
-        "//src/lua:starlark_lua_config.c",
+        "//src/lua:starlark_lua.h",
+        # "//src/lua:starlark_lua_config.h",
         "@uthash//:include",
     ],
     outs = [
@@ -60,12 +61,12 @@ genrule(
     cmd = "\n".join([
         "SRC1=$(location moonlark.c)",
         "SRCDIR1=`dirname $$SRC1`",
-        "SRC2=$(location //src/lua:starlark_lua.c)",
+        "SRC2=$(location //src/lua:starlark_lua.h)",
         "SRCDIR2=`dirname $$SRC2`",
         "$(location @makeheaders//:makeheaders) \\",
         # "    $(locations @uthash//:include) \\",
-        "    $(locations //src/lua:starlark_lua.c) \\",
-        "    $(locations //src/lua:starlark_lua_config.c) \\",
+        "    $(locations //src/lua:starlark_lua.h) \\",
+        # "    $(locations //src/lua:starlark_lua_config.h) \\",
         "    $(location moonlark.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
         "cp $${SRCDIR2}/*.h $(@D)",

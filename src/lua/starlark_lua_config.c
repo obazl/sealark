@@ -15,6 +15,7 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
+/* #include "starlark.h" */
 #include "starlark_lua_config.h"
 
 UT_string *proj_root;
@@ -55,6 +56,7 @@ void lerror (lua_State *L, const char *fmt, ...) {
     for runtime files: see https://github.com/bazelbuild/bazel/issues/10022
         https://github.com/laszlocsomor/bazel/commit/21989926c1a002709ec3eba9ee7a992506f2d50a
  */
+
 EXPORT void starlark_lua_set_path(lua_State *L)
 {
     log_debug("starlark_lua_config");
@@ -161,7 +163,7 @@ int starlark_bazel_config(void) /* was: obazl_config.c:obazl_configure */
     /* } */
 }
 
-void starlark_lua_load_handlers(lua_State *L)
+EXPORT void starlark_lua_load_handlers(lua_State *L)
 {
     log_debug("starlark_lua_load_handlers");
 
@@ -207,7 +209,48 @@ void starlark_lua_load_handlers(lua_State *L)
     /* } */
 }
 
-void starlark_lua_init(lua_State *L)
+LOCAL void starlark_lua_create_tokens_enum(lua_State *L)
+{
+    log_debug("starlark_lua_create_tokens_enum");
+    lua_pushstring(L, "TOK");
+    lua_newtable(L);
+    int i;
+    for (i = 0; i < 256; i++) {
+        if (token_name[i][0] != NULL) {
+        /* log_debug("tok[%d]: %s", i, token_name[i][0] + 3); */
+        lua_pushstring(L, token_name[i][0] + 3);
+        lua_pushinteger(L, i);
+        lua_settable(L, -3);
+        }
+    }
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "iTOK");
+    lua_newtable(L);
+    for (i = 0; i < 256; i++) {
+        if (token_name[i][0] != NULL) {
+        /* log_debug("tok[%d]: %s", i, token_name[i][0] + 3); */
+        lua_pushinteger(L, i);
+        lua_pushstring(L, token_name[i][0] + 3);
+        lua_settable(L, -3);
+        }
+    }
+    lua_settable(L, -3);
+
+    /* pTOK: printable tokens */
+    lua_pushstring(L, "pTOK");
+    lua_newtable(L);
+    for (i = 0; printable_tokens[i] != 0; i++) {
+        log_debug("%d: printable_token[%d]: %s",
+                  i, printable_tokens[i], token_name[printable_tokens[i]][0]);
+        lua_pushinteger(L, printable_tokens[i]);
+        lua_pushstring(L, token_name[printable_tokens[i]][1]);
+        lua_settable(L, -3);
+    }
+    lua_settable(L, -3);
+}
+
+EXPORT void starlark_lua_init(lua_State *L)
 {
     /* log_debug("starlark_lua_init"); */
     lua_newtable(L);

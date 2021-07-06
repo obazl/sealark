@@ -38,7 +38,7 @@
 %token CARET_EQ .
 %token CLASS .
 %token COLON .
-%token ICOLON .
+/* %token ICOLON . */
 %token COMMA .
 %token COMMENT .
 %token CONTINUE .
@@ -46,14 +46,14 @@
 %token DEL .
 %token SLASH2 .                 /* floored division binop */
 %token SLASH2_EQ .
-%token DIV_EQ .
+%token SLASH_EQ .
 %token DOT .
-%token DQ .
+/* %token DQ . */
 %token ELIF .
 %token ELSE .
 %token EQ .
 %token EQ2 .
-%token ESC_BACKSLASH .
+%token BACKSLASH2 .
 %token EXCEPT .
 %token FINALLY .
 %token FLOAT_LIT .
@@ -101,20 +101,20 @@
 %token RRANGLE_EQ .
 %token SEMI .
 %token SLASH .
-%token SQ .
+/* %token SQ . */
 %token STAR .
-%token STAR2 .
 %token STAR_EQ .
+%token STAR2 .
 %token STRING .
-%token BSTRING .
-%token BRSTRING .
-%token RSTRING .
-%token RBSTRING .
-%token MLSTRING .
-%token MLBSTRING .
-%token MLBRSTRING .
-%token MLRSTRING .
-%token MLRBSTRING .
+/* %token BSTRING . */
+/* %token BRSTRING . */
+/* %token RSTRING . */
+/* %token RBSTRING . */
+/* %token MLSTRING . */
+/* %token MLBSTRING . */
+/* %token MLBRSTRING . */
+/* %token MLRSTRING . */
+/* %token MLRBSTRING . */
 %token TILDE .
 %token TRY .
 %token VBAR .
@@ -134,6 +134,7 @@
 %token Call_Expr .
 %token Call_Sfx .
 %token Comp_Clause .
+%token Def_Compound .
 %token Def_Stmt .
 %token Dict_Comp .
 %token Dict_Entry .
@@ -201,7 +202,7 @@
  FLOAT reduce       32      ** Parsing conflict **
  {default} reduce       32     return_stmt ::= RETURN
 */
-%nonassoc FLOAT ID INT STRING BSTRING .
+%nonassoc FLOAT ID INT STRING . // BSTRING .
 
 %left COMMA .
 %right FOR .
@@ -519,20 +520,29 @@ expr_list(Xs) ::= expr_list(Xs_rhs) COMMA(Comma) expr(X) . [PLUS]
 
 stmt_list(Stmts) ::= statement(Stmt) . [FOR]
 {
-    log_trace("\n");
     log_trace(">>stmt_list ::= statement");
     Stmts = calloc(sizeof(struct node_s), 1);
     Stmts->type = TK_Stmt_List;
     Stmts->line = Stmt->line;
     Stmts->col  = Stmt->col;
     utarray_new(Stmts->subnodes, &node_icd);
-    utarray_push_back(Stmts->subnodes, Stmt);
+    if (Stmt->type == TK_Def_Compound) {
+        log_debug("HIT DEF COMPOUND");
+        utarray_concat(Stmts->subnodes, Stmt->subnodes);
+    } else {
+        utarray_push_back(Stmts->subnodes, Stmt);
+    }
 }
 
 stmt_list(Stmts) ::= stmt_list(Stmts_rhs) statement(Stmt) . [PLUS]
 {
     log_trace(">>stmt_list ::= stmt_list statement");
-    utarray_push_back(Stmts_rhs->subnodes, Stmt);
+    if (Stmt->type == TK_Def_Compound) {
+        log_debug("HIT DEF COMPOUND");
+        utarray_concat(Stmts_rhs->subnodes, Stmt->subnodes);
+    } else {
+        utarray_push_back(Stmts_rhs->subnodes, Stmt);
+    }
     Stmts = Stmts_rhs;
 }
 
@@ -632,7 +642,8 @@ statement(Stmt) ::= small_stmt_list(SmallStmts) SEMI(Semi) . [AMP]
     Stmt = SmallStmts;
 }
 
-indent_block(Block) ::= small_stmt_list(SmallStmts) . [PLUS]
+/* must be left-associative */
+indent_block(Block) ::= small_stmt_list(SmallStmts) . [RBRACK]
 {
     log_trace(">>indent_block(Block) ::= simple_stmt(SmallStmts)");
     Block = calloc(sizeof(struct node_s), 1);
@@ -714,20 +725,44 @@ loop_vars(LoopVars) ::= loop_vars(LoopVars_rhs) COMMA(Comma) primary_expr(X) . {
 /* DefStmt = 'def' identifier '(' [Parameters [',']] ')' ':' Suite . */
 def_stmt(Stmt) ::= DEF(Def) ID(Id) LPAREN(Lparen) param_list(Params) RPAREN(Rparen) COLON(Colon) indent_block(IBlock). [LAMBDA]
 {
-    log_trace(">>def_stmt ::= DEF ID LPAREN params RPAREN COLON stmt_list");
+    log_trace(">>def_stmt ::= DEF ID LPAREN params RPAREN COLON indent_block");
     Stmt = calloc(sizeof(struct node_s), 1);
-    Stmt->type = TK_Def_Stmt;
+    Stmt->type = TK_Def_Compound;
     Stmt->line = Def->line;
     Stmt->col  = Def->col;
     utarray_new(Stmt->subnodes, &node_icd);
 
-    utarray_push_back(Stmt->subnodes, Def);
-    utarray_push_back(Stmt->subnodes, Id);
-    utarray_push_back(Stmt->subnodes, Lparen);
-    utarray_push_back(Stmt->subnodes, Params);
-    utarray_push_back(Stmt->subnodes, Rparen);
-    utarray_push_back(Stmt->subnodes, Colon);
-    utarray_push_back(Stmt->subnodes, IBlock);
+    struct node_s *DefStmt = calloc(sizeof(struct node_s), 1);
+    DefStmt->type = TK_Def_Stmt;
+    DefStmt->line = Def->line;
+    DefStmt->col  = Def->col;
+    utarray_new(DefStmt->subnodes, &node_icd);
+
+    /* blocks must not be freed until the entire tree is processed */
+    UT_array *blocks = split_iblock(IBlock, Def->col);
+    log_debug("split ct: %d", utarray_len(blocks));
+
+    struct node_s *defblock = utarray_front(blocks);
+
+    utarray_push_back(DefStmt->subnodes, Def);
+    utarray_push_back(DefStmt->subnodes, Id);
+    utarray_push_back(DefStmt->subnodes, Lparen);
+    utarray_push_back(DefStmt->subnodes, Params);
+    utarray_push_back(DefStmt->subnodes, Rparen);
+    utarray_push_back(DefStmt->subnodes, Colon);
+    utarray_push_back(DefStmt->subnodes, defblock);
+    utarray_push_back(Stmt->subnodes, DefStmt);
+
+    int len = utarray_len(blocks);
+    struct node_s *node=NULL;
+    for (int i = 1; i < len; i++) {
+        log_debug("trailing %d", i);
+        node = utarray_eltptr(blocks, i);
+        /* log_debug("block t: %s[%d] indent %d", */
+        /*           token_name[node->type][0], node->type, node->col); */
+        utarray_push_back(Stmt->subnodes, node);
+    }
+
 }
 
 def_stmt(Stmt) ::= DEF(Def) ID(Id) LPAREN(Lparen) RPAREN(Rparen) COLON(Colon) indent_block(IBlock). [FOR]
@@ -803,6 +838,13 @@ small_stmt_list(SmallList) ::= small_stmt(SmallStmt) . [FOR]
     SmallList->trailing_newline = SmallStmt->trailing_newline;
     utarray_new(SmallList->subnodes, &node_icd);
     utarray_push_back(SmallList->subnodes, SmallStmt);
+}
+
+small_stmt_list(SmallStmts) ::= small_stmt_list(SmallStmts_rhs) small_stmt(SmallStmt) . [FOR]
+{
+    log_trace(">>small_stmt_list ::= small_stmt_list small_stmt");
+    utarray_push_back(SmallStmts_rhs->subnodes, SmallStmt);
+    SmallStmts = SmallStmts_rhs;
 }
 
 small_stmt_list(SmallStmts) ::= small_stmt_list(SmallStmts_rhs) SEMI(Semi) small_stmt(SmallStmt) . [FOR]
@@ -896,7 +938,7 @@ assign_op ::= EQ .
 assign_op ::= PLUS_EQ .
 assign_op ::= MINUS_EQ .
 assign_op ::= STAR_EQ .
-assign_op ::= DIV_EQ .
+assign_op ::= SLASH_EQ .
 assign_op ::= SLASH2_EQ .
 assign_op ::= PCT_EQ .
 assign_op ::= AMP_EQ .
@@ -1038,10 +1080,10 @@ primx(PrimX) ::= STRING(S) . {       /* includes rawstrings */
     log_trace(">>primx ::= STRING(S) .");
     PrimX = S;
 }
-primx(PrimX) ::= BSTRING(B) . [COMMA] {      /* bytes */
-    log_trace(">>primx ::= BSTRING(B) .");
-    PrimX = B;
-}
+/* primx(PrimX) ::= BSTRING(B) . [COMMA] {      /\* bytes *\/ */
+/*     log_trace(">>primx ::= BSTRING(B) ."); */
+/*     PrimX = B; */
+/* } */
 primx(PrimX) ::= list_expr(ListX) . [COMMA] {
     log_trace(">>primx ::= list_expr(ListX) .");
     PrimX = ListX;
