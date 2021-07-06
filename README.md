@@ -1,7 +1,7 @@
 # moonlark/libstarlark
 Starlark parser in C11 and Lua module
 
-**STATUS** Pre-pre-alpha. The parser works, the Lua code works; i.e. it can parse a BUILD.bazel file expose the AST as a Lua table.  The moonlark repl works too. But the (Lua) code to edit the AST and emit Starlark code is still under construction.  Also: testing has been limited to this repo; iow it has not been tested as an external repo. Some of the paths will probably need adjusting.
+**STATUS** Pre-pre-alpha. The parser works, the Lua code works; i.e. it can parse a BUILD.bazel file and expose the AST as a Lua table.  The moonlark repl works too. But the (Lua) code to edit the AST and emit Starlark code is still under construction.  Also: testing has been limited to this repo; iow it has not been tested as an external repo. Some of the paths will probably need adjusting. Also, only tested on MacOS. Linux will be supported Real Soon Now.
 
 **NOTE** The main branch does the stuff described below, but will not be updated until a beta version is reached. Development now occurs on the dev branch, which is what you should use if you want to monitor progress or contribute.
 
