@@ -153,7 +153,8 @@ mls.emit(bazel.build["foo/bar/BUILD.bazel"], "foo/bar/BUILD.test.bazel")
 ### Unit tests
 
 ```
-$ bazel test/unit:test   # run all tests
+$ bazel test/unit   # run all tests
+# test suites are targets within test/unit
 $ bazel test/unit:expressions
 $ bazel test/unit:strings
 etc.
