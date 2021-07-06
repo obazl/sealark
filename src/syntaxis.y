@@ -23,6 +23,8 @@
 /* %extra_argument { struct node_s **root} */
 %extra_argument { struct parse_state_s *parse_state}
 
+/* WARNING WARNING: if you change these tokens, you must update the
+#defines in const.c! */
 %token_prefix TK_ /* TK_ prefix will be added by lemon */
 %token AMP .
 %token AMP_EQ .

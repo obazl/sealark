@@ -34,9 +34,9 @@ void starlark_nodelist2lua(lua_State *L, UT_array *_nodelist, int level)
     struct node_s *node=NULL;
     int i = 1;
     while( (node=(struct node_s*)utarray_next(_nodelist, node))) {
-        log_debug("subnode %d", i);
+        /* log_debug("subnode %d", i); */
         starlark_node2lua(L, node, level); /* puts node tbl on ToS */
-        log_debug("pushing node %d to subnode list", i);
+        /* log_debug("pushing node %d to subnode list", i); */
         /* lua_newtable(L); */
         /* lua_pushstring(L, "subnode");  /\* key *\/ */
         lua_rawseti(L, -2, i);
@@ -61,8 +61,8 @@ void starlark_node2lua(lua_State *L, struct node_s *node, int level)
     /* debugging only: */
     lua_pushstring(L, "t");  /* key */
     if (token_name[node->type][0] != NULL) {
-        log_debug("pushing typestring %s",
-                  token_name[node->type][0]);
+        /* log_debug("pushing typestring %s", */
+        /*           token_name[node->type][0]); */
         lua_pushstring(L, token_name[node->type][0]);
     } else {
         lua_pushstring(L, "FOOBAR");
@@ -70,11 +70,43 @@ void starlark_node2lua(lua_State *L, struct node_s *node, int level)
     lua_settable(L, -3);
 
     if (node->s != NULL) {
-        log_debug("pushing string %s", node->s);
+        log_debug("pushing string[%d] %s", node->type, node->s);
         lua_pushstring(L, "s");  /* key */
         lua_pushstring(L, node->s);
         lua_settable(L, -3);
     }
+    if (node->type == TK_STRING) {
+        /* which kind of quote? */
+        lua_pushstring(L, "q");
+        if (node->qtype & SQUOTE)
+            lua_pushstring(L, "'");
+        else
+            if (node->qtype & DQUOTE)
+                lua_pushstring(L, "\"");
+        lua_settable(L, -3);
+
+        /* how many quotes? */
+        lua_pushstring(L, "qq");
+        if (node->qtype & TRIPLE)
+            lua_pushinteger(L, 3);
+        else
+            lua_pushinteger(L, 1);
+        lua_settable(L, -3);
+
+        /* raw, binary, or plain? */
+        if (node->qtype & BINARY_STR) {
+            lua_pushstring(L, "binary");
+            lua_pushboolean(L, 1);
+            lua_settable(L, -3);
+        }
+        if (node->qtype & RAW_STR) {
+            lua_pushstring(L, "raw");
+            lua_pushboolean(L, 1);
+            lua_settable(L, -3);
+        }
+
+    }
+
     /* log_debug("pushing line %d", node->line); */
     lua_pushstring(L, "line");
     lua_pushinteger(L, node->line);

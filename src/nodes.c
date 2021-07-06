@@ -3,6 +3,7 @@
 
 EXPORT const int printable_tokens[] =
     {
+     TK_ID, TK_STRING,
      TK_AMP, TK_AMP_EQ, TK_AND, TK_ARROW, TK_AS,
      TK_ASSERT, TK_BANG, TK_BANG_EQ, TK_BREAK, TK_CARET,
      TK_CARET_EQ, TK_CLASS, TK_COLON, TK_COMMA, TK_CONTINUE,

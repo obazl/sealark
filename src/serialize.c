@@ -92,13 +92,6 @@ LOCAL void _node2string(struct node_s *node, UT_string *buffer)
                 }
             }
 
-            /* = */
-            /*       (node->qtype & S3QUOTE)? "'''" */
-            /*       : (node->qtype & D3QUOTE)? "\"\"\"" */
-            /*       : (node->qtype & SQUOTE)? "'" */
-            /*       : (node->qtype & DQUOTE)? "\"" */
-            /*     : "???"; */
-            /* log_debug("br: %s; q: %s; s: %s", br, q, node->s); */
             utstring_printf(buffer,
                             "%s%s%s%s",
                             br,
