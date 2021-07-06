@@ -412,7 +412,7 @@ int get_column(struct bf_lexer_s *lexer)
 int get_next_token(struct bf_lexer_s *lexer, struct node_s **mtok)
 {
     log_debug("get_next_token");
-    log_debug("lexer->limit: %p", lexer->limit);
+    /* log_debug("lexer->limit: %p", lexer->limit); */
     /*!re2c
       re2c:api:style = free-form;
       re2c:define:YYCTYPE = char;
@@ -699,23 +699,8 @@ loop:
             log_debug("\tlexer->tok: %p: :]%s[:", lexer->tok, lexer->tok);
             log_debug("\tlexer->cursor (10) %p :]%.10s[:",
                       lexer->cursor, lexer->cursor, lexer->cursor);
-            /* log_debug("\tlexer->cursor - 4 :]%s[:", (lexer->cursor - 4)); */
-
-            (*mtok)->q = '\'';
-
             /* lexer->cursor pts to one past end (including comments) */
             (*mtok)->s = strndup(s1, (size_t)(s2 - s1));
-
-            /* if (lexer->extra_lines > 0) { */
-            /*     lexer->pos.line += lexer->extra_lines; */
-            /*     lexer->extra_lines = 0; */
-            /*     lexer->pos.col = 0; */
-            /* } else { */
-            /*     lexer->pos.col += strlen((*mtok)->s) */
-            /*         + 2 ;       /\* account for quotes *\/ */
-            /* } */
-
-            /* (*mtok)->col = s1 - lexer->sol; */
 
             /* if we have a comment, we need to bump lexer->pos.line */
             if ((*mtok)->comments) {
@@ -731,10 +716,19 @@ loop:
                 }
             }
             (*mtok)->col = get_column(lexer);
-            if (strncmp(t1, "br", 2) == 0)  return TK_BRSTRING;
-            if (strncmp(t1, "rb", 2) == 0)  return TK_RBSTRING;
-            if (*t1 == 'b') return TK_BSTRING;
-            if (*t1 == 'r') return TK_RSTRING;
+
+            (*mtok)->qtype = SQUOTE;
+            if (strncmp(t1, "br", 2) == 0) {
+                (*mtok)->qtype |= (RAW_STR | BINARY_STR);
+                return TK_STRING;
+            }
+            if (strncmp(t1, "rb", 2) == 0) {
+                (*mtok)->qtype |= (RAW_STR | BINARY_STR);
+                return TK_STRING;
+            }
+            //FIXME: check len t1 == 1?
+            if (*t1 == 'b') { (*mtok)->qtype |= BINARY_STR; }
+            if (*t1 == 'r') { (*mtok)->qtype |= RAW_STR; }
             return TK_STRING;
       }
 
@@ -745,17 +739,7 @@ loop:
             log_debug("matched DOUBLE_QUOTE TK_STRING (%d:%d)",
                       lexer->pos.line, lexer->pos.col);
 
-            (*mtok)->q = '"';
             (*mtok)->s = strndup(s1, (size_t)(s2 - s1));
-
-            /* if (lexer->extra_lines > 0) { */
-            /*     lexer->pos.line += lexer->extra_lines; */
-            /*     lexer->extra_lines = 0; */
-            /*     lexer->pos.col = 0; */
-            /* } else { */
-            /*     lexer->pos.col += strlen((*mtok)->s) */
-            /*         + 2 ;       /\* account for quotes *\/ */
-            /* } */
 
             /* if we have a comment, we need to bump lexer->pos.line */
             if ((*mtok)->comments) {
@@ -767,10 +751,18 @@ loop:
             }
             (*mtok)->col = get_column(lexer);
 
-            if (strncmp(t1, "br", 2) == 0)  return TK_BRSTRING;
-            if (strncmp(t1, "rb", 2) == 0)  return TK_RBSTRING;
-            if (*t1 == 'b') return TK_BSTRING;
-            if (*t1 == 'r') return TK_RSTRING;
+            (*mtok)->qtype = DQUOTE;
+            if (strncmp(t1, "br", 2) == 0) {
+                (*mtok)->qtype |= (RAW_STR | BINARY_STR);
+                return TK_STRING;
+            }
+            if (strncmp(t1, "rb", 2) == 0) {
+                (*mtok)->qtype |= (RAW_STR | BINARY_STR);
+                return TK_STRING;
+            }
+            //FIXME: check len t1 == 1?
+            if (*t1 == 'b') { (*mtok)->qtype |= BINARY_STR; }
+            if (*t1 == 'r') { (*mtok)->qtype |= RAW_STR; }
             return TK_STRING;
       }
 
@@ -780,24 +772,42 @@ loop:
            COMMENTS
         {
             (*mtok)->s = strndup(s1, (size_t)(s2 - s1));
-            if (strncmp(t1, "br", 2) == 0)  return TK_MLBRSTRING;
-            if (strncmp(t1, "rb", 2) == 0)  return TK_MLRBSTRING;
-            if (*t1 == 'b') return TK_MLBSTRING;
-            if (*t1 == 'r') return TK_MLRSTRING;
-            return TK_MLSTRING;
+
+            (*mtok)->qtype = SQUOTE | TRIPLE;
+            if (strncmp(t1, "br", 2) == 0) {
+                (*mtok)->qtype |= (RAW_STR | BINARY_STR);
+                return TK_STRING;
+            }
+            if (strncmp(t1, "rb", 2) == 0) {
+                (*mtok)->qtype |= (RAW_STR | BINARY_STR);
+                return TK_STRING;
+            }
+            //FIXME: check len t1 == 1?
+            if (*t1 == 'b') { (*mtok)->qtype |= BINARY_STR; }
+            if (*t1 == 'r') { (*mtok)->qtype |= RAW_STR; }
+            return TK_STRING;
       }
 
     /* double-quote */
     <init> @t1 ([br]|"br"|"rb")? @t2 "\"\"\"" @s1 [^"]* @s2 "\"\"\""
            COMMENTS
     {
-     (*mtok)->s = strndup(s1, (size_t)(s2 - s1));
-     if (strncmp(t1, "br", 2) == 0)  return TK_MLBRSTRING;
-     if (strncmp(t1, "rb", 2) == 0)  return TK_MLRBSTRING;
-     if (*t1 == 'b') return TK_MLBSTRING;
-     if (*t1 == 'r') return TK_MLRSTRING;
-     return TK_MLSTRING;
-    }
+        (*mtok)->s = strndup(s1, (size_t)(s2 - s1));
+
+        (*mtok)->qtype = DQUOTE | TRIPLE;
+        if (strncmp(t1, "br", 2) == 0) {
+            (*mtok)->qtype |= (RAW_STR | BINARY_STR);
+            return TK_STRING;
+        }
+        if (strncmp(t1, "rb", 2) == 0) {
+            (*mtok)->qtype |= (RAW_STR | BINARY_STR);
+            return TK_STRING;
+        }
+        //FIXME: check len t1 == 1?
+        if (*t1 == 'b') { (*mtok)->qtype |= BINARY_STR; }
+        if (*t1 == 'r') { (*mtok)->qtype |= RAW_STR; }
+        return TK_STRING;
+   }
 
     /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
     /* KEYWORDS */

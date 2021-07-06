@@ -67,8 +67,44 @@ LOCAL void _node2string(struct node_s *node, UT_string *buffer)
         /*           node->type, token_name[node->type][0], */
         /*           node->s); */
         if (node->type == TK_STRING) {
-            utstring_printf(buffer, "%c%s%c",
-                            node->q, node->s, node->q);
+            char * br =
+                ((node->qtype & BINARY_STR) &&
+                 (node->qtype & RAW_STR))? "br"
+                : (node->qtype & BINARY_STR)? "b"
+                : (node->qtype & RAW_STR)? "r"
+                : "";
+            char *q;
+            if (node->qtype & SQUOTE) {
+                if (node->qtype & TRIPLE) {
+                    q = "'''";
+                } else {
+                    q = "'";
+                }
+            } else {
+                if (node->qtype & DQUOTE) {
+                    if (node->qtype & TRIPLE) {
+                        q = "\"\"\"";
+                    } else {
+                        q = "\"";
+                    }
+                } else {
+                    q = "";
+                }
+            }
+
+            /* = */
+            /*       (node->qtype & S3QUOTE)? "'''" */
+            /*       : (node->qtype & D3QUOTE)? "\"\"\"" */
+            /*       : (node->qtype & SQUOTE)? "'" */
+            /*       : (node->qtype & DQUOTE)? "\"" */
+            /*     : "???"; */
+            /* log_debug("br: %s; q: %s; s: %s", br, q, node->s); */
+            utstring_printf(buffer,
+                            "%s%s%s%s",
+                            br,
+                            q,
+                            node->s,
+                            q);
             /* adjust line count for embedded escaped newlines */
             for (char *p = node->s; *p != 0; p++) {
                 if (*p == '\n') {

@@ -8,7 +8,10 @@ EXPORT void dump_node(struct node_s *node)
     log_debug("%s[%d] %c (%d:%d)",
               token_name[node->type][0],
               node->type,
-              node->type == TK_STRING? node->q: ' ',
+              /* node->type == TK_STRING? node->q: ' ', */
+              (node->qtype == SQUOTE)? '\''
+              : (node->qtype == DQUOTE)? '"'
+              : ' ',
               node->line, node->col);
     switch (node->type) {
     case TK_COMMENT: log_debug("\tstarttok: %s", node->s); break;
@@ -32,15 +35,42 @@ EXPORT void dump_nodes(UT_array *nodes)
     log_debug("dump_nodes: %p, ct: %d", nodes, utarray_len(nodes));
 
     struct node_s *node=NULL;
+    char *q;
     while( (node=(struct node_s*)utarray_next(nodes, node))) {
-        /* log_debug("type: %d %s", */
+        log_debug("qtype: %#x", node->qtype);
         /*           node->type, */
         /*           token_name[node->type][0]); */
-        log_debug("%s[%d] %c (%d:%d)",
+        if (node->qtype & SQUOTE) {
+            if (node->qtype & TRIPLE) {
+                q = "'''";
+            } else {
+                q = "'";
+            }
+        } else {
+            if (node->qtype & DQUOTE) {
+                if (node->qtype & TRIPLE) {
+                    q = "\"\"\"";
+                } else {
+                    q = "\"";
+                }
+            } else {
+                q = "";
+            }
+        }
+
+        log_debug("%s[%d] %s %s (%d:%d)",
                   token_name[node->type][0],
                   node->type,
-                  node->type == TK_STRING? node->q: ' ',
+
+                  ((node->qtype & BINARY_STR) &&
+                    (node->qtype & RAW_STR))? "br"
+                  : (node->qtype & BINARY_STR)? "b"
+                  : (node->qtype & RAW_STR)? "r"
+                  : "",
+
+                  q,
                   node->line, node->col);
+
         /* if (node->s) log_debug("\tstarttok: :]%s[:", node->s); */
         switch (node->type) {
         case TK_COMMENT: log_debug("\tstarttok: %s", node->s); break;

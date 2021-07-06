@@ -1,3 +1,2 @@
-cc_library(
-    srcs = glob(a),
-)
+r"hello"
+

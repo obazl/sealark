@@ -1,7 +1,7 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
 test_suite(
-    name = "test",
+    name = "unit",
     tests = [
         ":call",
         ":dict",

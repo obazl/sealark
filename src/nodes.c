@@ -149,20 +149,32 @@ EXPORT const char *token_name[256][2] =
      NULL
     };
 
-struct obazl_buildfile_s {
-    char *fname;
-    struct node_s *root;
-    /* UT_array *nodelist; */
-};
+/* struct obazl_buildfile_s { */
+/*     char *fname; */
+/*     struct node_s *root; */
+/*     /\* UT_array *nodelist; *\/ */
+/* }; */
 
 #if EXPORT_INTERFACE
 #include "utarray.h"
+
+enum quote_type_e
+    {
+     SQUOTE     = 1,  /* single quote */
+     DQUOTE     = 2,  /* double quote */
+     TRIPLE     = 4, /* triple single quote */
+     BINARY_STR = 8,
+     RAW_STR    = 16
+     /* D3QUOTE    = 8, /\* triple double quote *\/ */
+    };
+
 struct node_s {
     /* enum node_type_e type; */
     int type;
     int line, col;
     bool trailing_newline;
-    char q;
+    enum quote_type_e qtype;
+    /* char q;                     /\* single or double quote *\/ */
     /* union { */
         char *s;
         UT_array *subnodes;
@@ -188,7 +200,9 @@ void node_copy(void *_dst, const void *_src)
     log_debug("\t%s[%d] %c (%d:%d) %s",
               token_name[src->type][0],
               src->type,
-              src->q? src->q : ' ',
+              (src->qtype == SQUOTE)? '\''
+              : (src->qtype == DQUOTE)? '"'
+              : ' ',
               src->line, src->col,
               (src->s == NULL? "" : src->s));
 

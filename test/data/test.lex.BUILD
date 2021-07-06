@@ -1,3 +1,2 @@
-for x in range(10):
-   print(10)
+r'''hello'''
 
