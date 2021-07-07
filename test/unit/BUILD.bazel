@@ -22,7 +22,6 @@ cc_test(
         "lex_keywords.c",
         "lex_keywords.h",
         "//src/lib/starlark:debug.c",
-        "@uthash//:include",
     ],
     copts = [
         "-std=c11",
@@ -31,13 +30,14 @@ cc_test(
         "-I$(GENDIR)/test/unit",
         "-Ivendored/logc",
         "-Ivendored/unity",
-        "-Iexternal/uthash/include",
+        "-Ivendored/uthash",
     ],
     linkstatic = 1,
     deps = [
         "//src/lib/starlark",
         "//vendored/logc",
-        "//vendored/unity"
+        "//vendored/unity",
+        "//vendored/uthash",
     ],
 )
 
@@ -47,7 +47,6 @@ cc_test(
         "lex_numbers.c",
         "lex_numbers.h",
         "//src/lib/starlark:debug.c",
-        "@uthash//:include",
     ],
     copts = [
         "-std=c11",
@@ -57,13 +56,14 @@ cc_test(
         "-I$(GENDIR)/test/unit",
         "-Ivendored/logc",
         "-Ivendored/unity",
-        "-Iexternal/uthash/include",
+        "-Ivendored/uthash",
     ],
     linkstatic = 1,
     deps = [
         "//src/lib/starlark",
         "//vendored/logc",
-        "//vendored/unity"
+        "//vendored/unity",
+        "//vendored/uthash",
     ],
 )
 
@@ -72,7 +72,6 @@ cc_test(
     srcs = [
         "lex_punctuation.c",
         "lex_punctuation.h",
-        "@uthash//:include",
     ],
     copts = [
         "-std=c11",
@@ -81,13 +80,14 @@ cc_test(
         "-I$(GENDIR)/test/unit",
         "-Ivendored/logc",
         "-Ivendored/unity",
-        "-Iexternal/uthash/include",
+        "-Ivendored/uthash",
     ],
     linkstatic = 1,
     deps = [
         "//src/lib/starlark",
         "//vendored/logc",
-        "//vendored/unity"
+        "//vendored/unity",
+        "//vendored/uthash",
     ],
 )
 
@@ -97,7 +97,6 @@ cc_test(
         "lex_strings.c",
         "lex_strings.h",
         "//src/lib/starlark:debug.c",
-        "@uthash//:include",
     ],
     copts = [
         "-std=c11",
@@ -106,13 +105,14 @@ cc_test(
         "-I$(GENDIR)/test/unit",
         "-Ivendored/logc",
         "-Ivendored/unity",
-        "-Iexternal/uthash/include",
+        "-Ivendored/uthash",
     ],
     linkstatic = 1,
     deps = [
         "//src/lib/starlark",
         "//vendored/logc",
-        "//vendored/unity"
+        "//vendored/unity",
+        "//vendored/uthash",
     ],
 )
 
@@ -122,7 +122,6 @@ cc_test(
     srcs = [
         "syntax_call_expr.c",
         "syntax_call_expr.h",
-        "@uthash//:include",
     ],
     copts = [
         "-std=c11",
@@ -131,13 +130,14 @@ cc_test(
         "-I$(GENDIR)/test/unit",
         "-Ivendored/logc",
         "-Ivendored/unity",
-        "-Iexternal/uthash/include",
+        "-Ivendored/uthash",
     ],
     linkstatic = 1,
     deps = [
         "//src/lib/starlark",
         "//vendored/logc",
-        "//vendored/unity"
+        "//vendored/unity",
+        "//vendored/uthash",
     ],
 )
 
@@ -146,7 +146,6 @@ cc_test(
     srcs = [
         "syntax_dict.c",
         "syntax_dict.h",
-        "@uthash//:include",
     ],
     copts = [
         "-std=c11",
@@ -155,13 +154,14 @@ cc_test(
         "-I$(GENDIR)/test/unit",
         "-Ivendored/logc",
         "-Ivendored/unity",
-        "-Iexternal/uthash/include",
+        "-Ivendored/uthash",
     ],
     linkstatic = 1,
     deps = [
         "//src/lib/starlark",
         "//vendored/logc",
-        "//vendored/unity"
+        "//vendored/unity",
+        "//vendored/uthash",
     ],
 )
 
@@ -170,7 +170,6 @@ cc_test(
     srcs = [
         "syntax_expressions.c",
         "syntax_expressions.h",
-        "@uthash//:include",
     ],
     copts = [
         "-std=c11",
@@ -179,13 +178,14 @@ cc_test(
         "-I$(GENDIR)/test/unit",
         "-Ivendored/logc",
         "-Ivendored/unity",
-        "-Iexternal/uthash/include",
+        "-Ivendored/uthash",
     ],
     linkstatic = 1,
     deps = [
         "//src/lib/starlark",
         "//vendored/logc",
-        "//vendored/unity"
+        "//vendored/unity",
+        "//vendored/uthash",
     ],
 )
 
@@ -194,7 +194,6 @@ cc_test(
     srcs = [
         "syntax_lists.c",
         "syntax_lists.h",
-        "@uthash//:include",
     ],
     copts = [
         "-std=c11",
@@ -203,13 +202,14 @@ cc_test(
         "-I$(GENDIR)/test/unit",
         "-Ivendored/logc",
         "-Ivendored/unity",
-        "-Iexternal/uthash/include",
+        "-Ivendored/uthash",
     ],
     linkstatic = 1,
     deps = [
         "//src/lib/starlark",
         "//vendored/logc",
-        "//vendored/unity"
+        "//vendored/unity",
+        "//vendored/uthash",
     ],
 )
 
@@ -218,7 +218,6 @@ cc_test(
     srcs = [
         "syntax_slices.c",
         "syntax_slices.h",
-        "@uthash//:include",
     ],
     copts = [
         "-std=c11",
@@ -227,13 +226,14 @@ cc_test(
         "-I$(GENDIR)/test/unit",
         "-Ivendored/logc",
         "-Ivendored/unity",
-        "-Iexternal/uthash/include",
+        "-Ivendored/uthash",
     ],
     linkstatic = 1,
     deps = [
         "//src/lib/starlark",
         "//vendored/logc",
-        "//vendored/unity"
+        "//vendored/unity",
+        "//vendored/uthash",
     ],
 )
 
@@ -242,7 +242,6 @@ cc_test(
     srcs = [
         "syntax_statements.c",
         "syntax_statements.h",
-        "@uthash//:include",
     ],
     copts = [
         "-std=c11",
@@ -251,13 +250,14 @@ cc_test(
         "-I$(GENDIR)/test/unit",
         "-Ivendored/logc",
         "-Ivendored/unity",
-        "-Iexternal/uthash/include",
+        "-Ivendored/uthash",
     ],
     linkstatic = 1,
     deps = [
         "//src/lib/starlark",
         "//vendored/logc",
-        "//vendored/unity"
+        "//vendored/unity",
+        "//vendored/uthash",
     ],
 )
 
@@ -269,7 +269,7 @@ cc_test(
 #     srcs  = [
 #         "lex_file.c",
 #         "lex_file.h",
-#         "@uthash//:include",
+#         "//vendored/uthash",
 #     ],
 #     copts = [
 #         "-std=c11",
@@ -303,7 +303,7 @@ cc_test(
 #         "lua_file.c",
 #         # "debug.c",
 #         # "debug.h",
-#         "@uthash//:include",
+#         "//vendored/uthash",
 #     ],
 #     defines = ["DEBUG", "DEBUG_TRACE"],
 #     copts = [
@@ -346,7 +346,7 @@ cc_test(
 #         # "nodes.h",
 #         # "serialize.c",
 #         # "serialize.h",
-#         "@uthash//:include",
+#         "//vendored/uthash",
 #     ],
 #     copts = [
 #         "-std=c11",
@@ -376,7 +376,7 @@ cc_test(
 #         "roundtrip_moonlark.h",
 #         "roundtrip_helper.c",
 #         "roundtrip_helper.h",
-#         "@uthash//:include",
+#         "//vendored/uthash",
 #     ],
 #     data = [ # NB: globbing does not seem to work
 #         "//test/data:android.BUILD",
@@ -401,7 +401,7 @@ cc_test(
 #         "-I$(GENDIR)/test/unit",
 #         "-Ivendored/logc",
 #         "-Ivendored/unity",
-#         "-Iexternal/uthash/include",
+#         "-Ivendored/uthash",
 #     ],
 #     deps = [
 #         "//src/lib/moonlark",
@@ -417,7 +417,7 @@ cc_test(
 #         "roundtrip_starlark.h",
 #         "roundtrip_helper.c",
 #         "roundtrip_helper.h",
-#         "@uthash//:include",
+#         "//vendored/uthash",
 #     ],
 #     data = [ # NB: globbing does not seem to work
 #         "//test/data:android.BUILD",
@@ -442,7 +442,7 @@ cc_test(
 #         "-I$(GENDIR)/test/unit",
 #         "-Ivendored/logc",
 #         "-Ivendored/unity",
-#         "-Iexternal/uthash/include",
+#         "-Ivendored/uthash",
 #     ],
 #     deps = [
 #         "//src/lib/starlark:starlark",

@@ -67,9 +67,11 @@ int main(int argc, char *argv[])
 
     char *wd = getenv("BUILD_WORKING_DIRECTORY");
     if (wd) {
-        /* log_info("BUILD_WORKING_DIRECTORY: %s", wd); */
+        log_info("BUILD_WORKING_DIRECTORY: %s", wd);
         chdir(wd);
     }
+    char *wsd = getenv("BUILD_WORKSPACE_DIRECTORY");
+    log_info("BUILD_WORKSPACE_DIRECTORY: %s", wsd);
 
     moonlark_setup(build_file, lua_file);
     /* FIXME: extract lua code common to this, test/lua/sys, and

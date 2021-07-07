@@ -1,5 +1,1 @@
-def f(a):
-    print(a)
-x
-def g(b):
-    print(b)
+a = 3.14

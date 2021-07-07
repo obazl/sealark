@@ -15,8 +15,6 @@
 #include "log.h"
 #include "utstring.h"
 
-/* #include "starlark.h" */
-
 #include "moonlark_api.h"
 
 int x;
@@ -28,8 +26,8 @@ void starlark_comments2lua(lua_State *L, struct node_s *node)
 
 void starlark_nodelist2lua(lua_State *L, UT_array *_nodelist, int level)
 {
-    log_debug("starlark_nodelist2lua level %d ct: %d",
-              level, utarray_len(_nodelist));
+    /* log_debug("starlark_nodelist2lua level %d ct: %d", */
+    /*           level, utarray_len(_nodelist)); */
 
     struct node_s *node=NULL;
     int i = 1;
@@ -43,13 +41,12 @@ void starlark_nodelist2lua(lua_State *L, UT_array *_nodelist, int level)
         /* lua_settable(L, -3);        /\* add to node table *\/ */
         i++;
     }
-
-    log_debug("/starlark_nodelist2lua level %d", utarray_len(_nodelist));
+    /* log_debug("/starlark_nodelist2lua level %d", utarray_len(_nodelist)); */
 }
 
 void starlark_node2lua(lua_State *L, struct node_s *node, int level)
 {
-    log_debug("starlark_node2lua %d", level);
+    /* log_debug("starlark_node2lua %d", level); */
     lua_newtable(L);            /* one table per node  */
 
     /* log_debug("pushing type %d %s", */
@@ -70,7 +67,7 @@ void starlark_node2lua(lua_State *L, struct node_s *node, int level)
     lua_settable(L, -3);
 
     if (node->s != NULL) {
-        log_debug("pushing string[%d] %s", node->type, node->s);
+        /* log_debug("pushing string[%d] %s", node->type, node->s); */
         lua_pushstring(L, "s");  /* key */
         lua_pushstring(L, node->s);
         lua_settable(L, -3);
@@ -131,7 +128,7 @@ void starlark_node2lua(lua_State *L, struct node_s *node, int level)
             lua_settable(L, -3);
         }
     }
-    log_debug("/starlark_node2lua %d", level);
+    /* log_debug("/starlark_node2lua %d", level); */
 }
 
 EXPORT void starlark_ast2lua(lua_State *L, struct parse_state_s *parse)
@@ -139,26 +136,27 @@ EXPORT void starlark_ast2lua(lua_State *L, struct parse_state_s *parse)
     log_debug("starlark_buildfile2lua");
 
     lua_getglobal(L, "bazel");
-    lua_getfield(L, -1, "build");
+    /* lua_getfield(L, -1, "build"); */
 
-    /* lua_pushstring(L, "ast"); */
-    lua_pushstring(L, parse->lexer->fname); /* key: build file name */
-
+    lua_pushstring(L, "build");
     lua_newtable(L);
+
+    lua_pushstring(L, parse->lexer->fname); /* key: build file name */
+    lua_setfield(L, -2, "build_file");
+
     lua_pushstring(L, "type");  /* key */
     lua_pushinteger(L, parse->root->type); // token_name[parse->root->type][0]);
     lua_settable(L, -3);
 
     lua_pushstring(L, "t");  /* key */
     if (token_name[parse->root->type][0] != NULL) {
-        log_debug("pushing type string %s",
-                  token_name[parse->root->type][0]);
+        /* log_debug("pushing type string %s", */
+        /*           token_name[parse->root->type][0]); */
         lua_pushstring(L, token_name[parse->root->type][0]);
     } else {
-        lua_pushstring(L, "FOOBAR");
+        /* lua_pushstring(L, "FOOBAR"); */
     }
     lua_settable(L, -3);
-    log_debug("xxxxxxxxxxxxxxxx");
 
     if (parse->root->s != NULL) {
         log_debug("pushing string %s", parse->root->s);

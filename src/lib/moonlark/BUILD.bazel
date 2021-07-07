@@ -13,7 +13,6 @@ cc_library(
         "moonlark_config.c",
         "moonlark_config.h",
         "//src/lib/starlark:debug.c",
-        "@uthash//:include",
         "//vendored/logc:log.h",
         "libmoonlark.h"
     ],
@@ -42,7 +41,7 @@ cc_library(
         "-I", "$(GENDIR)/external/src/lib/moonlark", # moonlark_*.h
         "-I", "src/lib/moonlark", # moonlark_*.h
 
-        "-I", "external/uthash/include",
+        "-I", "vendored/uthash",
 
         "-I", "vendored/logc",
         "-I", "vendored/lua-5.4.3/src",
@@ -59,7 +58,8 @@ cc_library(
         # "//src/lib/obazl_utils",
         # "//external/lua/lib:lua",
         "//vendored/lua-5.4.3/src:lua",
-        "//vendored/logc"
+        "//vendored/logc",
+        "//vendored/uthash",
     ],
     visibility = ["//visibility:public"]
 )
@@ -74,7 +74,8 @@ genrule(
         # "lua_debug.c",
         "//src/lib/starlark:debug.c",
         # "//src/lib/starlark:nodes.c",
-        "//src/lib/starlark:starlark.h"
+        "//src/lib/starlark:starlark.h",
+        # "//vendored/uthash"
     ],
     outs = [
         "moonlark_api.h",
@@ -87,6 +88,7 @@ genrule(
         "SRC2=$(location //src/lib/starlark:debug.c)",
         "SRCDIR2=`dirname $$SRC2`",
         "$(location @makeheaders//:makeheaders) \\",
+        # "    $(locations //vendored/uthash) \\",
         "    $(location //src/lib/starlark:debug.c) \\",
         # "    $(location //src/lib/starlark:nodes.c) \\",
         "    $(location //src/lib/starlark:starlark.h) \\",
@@ -107,14 +109,14 @@ genrule(
         # "lua_debug.c",
 
         "//src/lib/starlark:debug.c",
-        "//src/lib/starlark:constants.c",
+        # "//src/lib/starlark:constants.c",
         "//src/lib/starlark:parse.c",
         "//src/lib/starlark:lexis.c",
         "//src/lib/starlark:nodes.c",
         "//src/lib/starlark:syntaxis.h",
         "//src/lib/starlark:serialize.c",
         # "//src/lib/starlark:starlark.h"
-        "@uthash//:include",
+        # "//vendored/uthash",
     ],
     outs = [
         "libmoonlark.h",
@@ -125,8 +127,8 @@ genrule(
         "SRC2=$(location //src/lib/starlark:debug.c)",
         "SRCDIR2=`dirname $$SRC2`",
         "$(location @makeheaders//:makeheaders) -H \\",
-        "    $(locations @uthash//:include) \\",
-        "    $(location //src/lib/starlark:constants.c) \\",
+        # "    $(locations //vendored/uthash) \\",
+        # "    $(location //src/lib/starlark:constants.c) \\",
         "    $(location //src/lib/starlark:lexis.c) \\",
         "    $(location //src/lib/starlark:nodes.c) \\",
         "    $(location //src/lib/starlark:parse.c) \\",

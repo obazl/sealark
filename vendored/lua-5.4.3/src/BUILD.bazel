@@ -131,11 +131,13 @@ cc_library(
         "-I", "$(GENDIR)/bindings/lua", # moonlark.h
         "-I", "vendored/logc",
         "-I", "vendored/lua-5.4.3/src",
+        "-I", "vendored/uthash",
     ],
     deps = [
         "//src/lib/starlark",
         "//src/lib/moonlark",
         "//vendored/logc",
+        "//vendored/uthash",
     ],
     defines = select({
         "//bzl/host:macos": [

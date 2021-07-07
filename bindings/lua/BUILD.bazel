@@ -28,7 +28,7 @@ cc_library(
         "-I", "$(GENDIR)/src", # starlark.h
         "-I", "$(GENDIR)/src/lib/moonlark", # libmoonlark.h
         "-I", "$(GENDIR)/bindings/lua", # moonlark.h
-        "-I", "external/uthash/include",
+        "-I", "vendored/uthash",
         "-I", "vendored/logc",
         "-I", "vendored/lua-5.4.3/src",
     ],
@@ -37,6 +37,7 @@ cc_library(
         "//src/lib/moonlark",
         "//vendored/lua-5.4.3/src:lua",
         "//vendored/logc",
+        "//vendored/uthash",
     ],
     # linkstatic = 1,
     visibility = ["//visibility:public"]
@@ -50,7 +51,7 @@ genrule(
         "moonlark.c",
         # "//src/lib/moonlark:moonlark.c",
         # "//src/lib/moonlark:moonlark_config.h",
-        "@uthash//:include",
+        # "//vendored/uthash",
     ],
     outs = [
         "moonlark.h",
@@ -62,7 +63,7 @@ genrule(
         # "SRC2=$(location //src/lib/moonlark:moonlark.h)",
         # "SRCDIR2=`dirname $$SRC2`",
         "$(location @makeheaders//:makeheaders) \\",
-        # "    $(locations @uthash//:include) \\",
+        # "    $(locations //vendored/uthash) \\",
         # "    $(locations //src/lib/moonlark:moonlark.c) \\",
         # "    $(locations //src/lib/moonlark:moonlark_config.h) \\",
         "    $(location moonlark.c)",

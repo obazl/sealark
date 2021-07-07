@@ -16,9 +16,9 @@
 #include "utarray.h"
 #include "utstring.h"
 
-#if INTERFACE
-#include "utstring.h"
-#endif
+/* #if INTERFACE */
+/* #include "utstring.h" */
+/* #endif */
 
 #include "serialize.h"
 

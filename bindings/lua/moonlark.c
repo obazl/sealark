@@ -81,8 +81,9 @@ EXPORT LUAMOD_API int luaopen_moonlark(lua_State *L) {
     lua_setfield(L, -2, "version");
 
     /* bazel-specific */
-    starlark_lua_set_path(L);
-    starlark_lua_init(L);    /* create global bazel table */
+    /* create global bazel table with bazel.config */
+    starlark_lua_init(L);
+    starlark_lua_set_path(L);   /* elaborates 'bazel' table created by init */
 
     return 1;
 }

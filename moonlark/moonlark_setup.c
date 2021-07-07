@@ -62,12 +62,13 @@ int moonlark_setup(char *build_file, char *lua_file)
 
     luaL_openlibs(L);
 
+    /* create global bazel table, token tables, etc. */
+    starlark_lua_init(L);
     starlark_lua_set_path(L);
+
     /* load default and user handlers (Lua files) */
     starlark_lua_load_handlers(L, lua_file);
 
-    /* create global bazel table, token tables, etc. */
-    starlark_lua_init(L);
 
     /* now parse the file using libstarlark */
     struct parse_state_s *parse_state = starlark_parse_file(build_file);

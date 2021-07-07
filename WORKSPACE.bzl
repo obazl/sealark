@@ -44,20 +44,6 @@ def cc_fetch_repos():
     ######
     maybe(
         http_archive,
-        name = "uthash",
-        build_file_content = """
-filegroup(name = "include", srcs = glob(["include/*.h"]), visibility = ["//visibility:public"])
-    """,
-        urls = [
-            "https://github.com/troydhanson/uthash/archive/refs/tags/v2.3.0.tar.gz"
-        ],
-        strip_prefix = "uthash-2.3.0",
-        sha256 = "e10382ab75518bad8319eb922ad04f907cb20cccb451a3aa980c9d005e661acc"
-    )
-
-    ######
-    maybe(
-        http_archive,
         name = "sfsexp",
         build_file_content = all_content,
         urls = [

@@ -1,0 +1,5 @@
+cc_library(
+    name  = "uthash",
+    hdrs = glob(["*.h"]),
+    visibility = ["//visibility:public"]
+)

@@ -1,5 +1,6 @@
 exports_files(["moonlark_setup.c"])
 
+# Target //moonlark:repl launches a lua interpreter with integrated moonlark support.  The load path
 cc_binary(
     name = "repl",
     srcs = [
@@ -37,7 +38,6 @@ cc_binary(
         "moonlark_setup.h",
         "//src/lib/starlark:debug.c",
         "//src/lib/starlark:debug.h",
-        "@uthash//:include",
     ],
     defines = ["DEBUG", "DEBUG_TRACE"],
     copts = [
@@ -55,12 +55,13 @@ cc_binary(
 
         "-I", "vendored/lua-5.4.3/src",
 
-        "-I", "external/uthash/include",
+        "-I", "vendored/uthash",
     ],
     deps = [
         # "//src/lib/starlark:starlark",
         "//src/lib/moonlark:moonlark",
         "//vendored/logc",
+        "//vendored/uthash",
         # libmoonlark pulls in liblualark
         # "//vendored/lua-5.4.3/src:lua"
     ],

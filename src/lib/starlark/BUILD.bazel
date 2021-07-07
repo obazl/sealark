@@ -13,10 +13,9 @@ cc_library(
         "nodes.c",
         "nodes.h",
         "parse.c",
-        "parse.h",          # local impl hdr
+        "parse.h",
         "serialize.c",
         "serialize.h",
-        "@uthash//:include",
         "//vendored/logc:log.h"
    ],
     hdrs = [
@@ -34,7 +33,9 @@ cc_library(
         "-I", "$(GENDIR)/src/lib/starlark",
         "-I", "$(GENDIR)/external/libstarlark/src",
 
-        "-I", "external/uthash/include",
+        "-I", "vendored",
+        "-I", "vendored/uthash",
+        "-I", "$(GENDIR)/vendored/uthash",
 
         "-I", "vendored/logc",
         "-I", "external/libstarlark/vendored/logc",
@@ -42,7 +43,8 @@ cc_library(
     deps = [
         ":lexis",
         ":syntaxis",
-        "//vendored/logc"
+        "//vendored/logc",
+        "//vendored/uthash"
     ],
     visibility = ["//visibility:public"]
 )
@@ -57,7 +59,7 @@ cc_library(
         "nodes.c",
         "nodes.h",
         "//vendored/logc:log.h",
-        "@uthash//:include"
+        # "//vendored/uthash"
     ],
     copts = [
         "-std=c11",
@@ -65,14 +67,13 @@ cc_library(
 
         "-I", ".",              # syntaxis.h
 
-        # mkhdrs output:
         "-I", "$(GENDIR)/src/lib/starlark",
         "-I", "$(GENDIR)/external/libstarlark/src",
 
         "-I", "vendored/logc",
         "-I", "external/libstarlark/vendored/logc",
 
-        "-I", "external/uthash/include",
+        "-I", "vendored/uthash",
 
         "-U", "NDEBUG"
     ],
@@ -82,7 +83,8 @@ cc_library(
     }),
     linkstatic = 1,
     deps = [
-        "//vendored/logc"
+        "//vendored/logc",
+        "//vendored/uthash"
     ]
 )
 
@@ -120,17 +122,15 @@ cc_library(
         "debug.c",
         "debug.h",
         "//vendored/logc:log.h",
-        "@uthash//:include",
     ],
     copts = [
         "-std=c11",
         "-I", "src",
 
-        # mkhdrs output:
         "-I", "$(GENDIR)/src/lib/starlark",
         "-I", "$(GENDIR)/external/libstarlark/src",
 
-        "-I", "external/uthash/include",
+        "-I", "vendored/uthash",
 
         "-I", "vendored/logc",
         "-I", "external/libstarlark/vendored/logc",
@@ -141,7 +141,8 @@ cc_library(
     }),
     linkstatic = 1,
     deps = [
-        "//vendored/logc"
+        "//vendored/logc",
+        "//vendored/uthash",
     ]
 )
 
@@ -183,7 +184,7 @@ genrule(
         "syntaxis.c",
         "serialize.c",
         "debug.c",
-        "@uthash//:include",
+        # "//vendored/uthash",
     ],
     outs = [
         # "constants.h",
@@ -197,8 +198,10 @@ genrule(
     cmd = "\n".join([
         "SRC1=$(location parse.c)",
         "SRCDIR1=`dirname $$SRC1`",
+        # "SRC2=$(location //vendored/uthash/utarray.h)",
+        # "SRCDIR2=`dirname $$SRC2`",
         "$(location @makeheaders//:makeheaders) \\",
-        "    $(locations @uthash//:include) \\",
+        # "    $(locations //vendored/uthash) \\",
         # "    $(location constants.c) \\",
         "    $(location parse.c) \\",
         "    $(location lexis.c) \\",
@@ -224,7 +227,7 @@ genrule(
         # "debug.c",
         # "test_lex.c",
         # "test_parse.c",
-        "@uthash//:include",
+        # "//vendored/uthash",
     ],
     outs = [
         "starlark.h",
@@ -233,7 +236,7 @@ genrule(
         "SRC1=$(location parse.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "$(location @makeheaders//:makeheaders) -H \\",
-        "    $(locations @uthash//:include) \\",
+        # "    $(locations //vendored/uthash) \\",
         "    $(location constants.c) \\",
         "    $(location lexis.c) \\",
         "    $(location nodes.c) \\",

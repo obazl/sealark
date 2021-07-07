@@ -148,27 +148,27 @@ static void comment_push(int type, /* 1: comment, 0: null */
     static int newlines;
     static int col;           /* start of token (column nbr, not ptr) */
 
-    log_debug("");
-    log_debug("new PUSH %d: idx %d, null ct: %d, push_ct: %d; line: %d newlines: %d",
-              type, *idx, null_ct, push_ct, line, newlines);
-    /* log_debug("\t@s1: %s, @s2: %s", s1, s2); */
-    log_debug("idx: %p (%d)", idx, *idx);
+    /* log_debug(""); */
+    /* log_debug("new PUSH %d: idx %d, null ct: %d, push_ct: %d; line: %d newlines: %d", */
+    /*           type, *idx, null_ct, push_ct, line, newlines); */
+    /* /\* log_debug("\t@s1: %s, @s2: %s", s1, s2); *\/ */
+    /* log_debug("idx: %p (%d)", idx, *idx); */
 
-    log_debug("\tlexer: %p; lexer->pos (%d:%d)",
-              lexer, lexer->pos.line, lexer->pos.col);
+    /* log_debug("\tlexer: %p; lexer->pos (%d:%d)", */
+    /*           lexer, lexer->pos.line, lexer->pos.col); */
 
-    log_debug("\tmtok: %p (%d:%d)", *mtok, (*mtok)->line, (*mtok)->col);
-    log_debug("\tlexer->tok: %p: :]%s[:", lexer->tok, lexer->tok);
-    log_debug("\tscmt (10) %p :]%.10s[:", scmt, scmt);
-    log_debug("\tlexer->cursor (10) %p :]%.10s[:", lexer->cursor, lexer->cursor);
-    log_debug("\tlexer->marker (10) %p :]%.10s[:", lexer->marker, lexer->marker);
-    log_debug("\tlexer->pos: (%d:%d)", lexer->pos.line, lexer->pos.col);
-    log_debug("\tpos: (%d:%d)", line, col);
-    log_debug("\tlexer->sol (10): %p: :]%.10s:[", lexer->sol, lexer->sol);
-    log_debug("\tsol (10): %p: :]%.10s", sol, sol);
+    /* log_debug("\tmtok: %p (%d:%d)", *mtok, (*mtok)->line, (*mtok)->col); */
+    /* log_debug("\tlexer->tok: %p: :]%s[:", lexer->tok, lexer->tok); */
+    /* log_debug("\tscmt (10) %p :]%.10s[:", scmt, scmt); */
+    /* log_debug("\tlexer->cursor (10) %p :]%.10s[:", lexer->cursor, lexer->cursor); */
+    /* log_debug("\tlexer->marker (10) %p :]%.10s[:", lexer->marker, lexer->marker); */
+    /* log_debug("\tlexer->pos: (%d:%d)", lexer->pos.line, lexer->pos.col); */
+    /* log_debug("\tpos: (%d:%d)", line, col); */
+    /* log_debug("\tlexer->sol (10): %p: :]%.10s:[", lexer->sol, lexer->sol); */
+    /* log_debug("\tsol (10): %p: :]%.10s", sol, sol); */
 
     if (type == 0) {
-        log_debug("NULL push");
+        /* log_debug("NULL push"); */
         scmt = lexer->cursor;
         /* log_debug("lexer->tok: %p :]%s", lexer->tok, lexer->tok); */
         /* log_debug("lexer->marker: %p :]%s", lexer->marker, lexer->marker); */
@@ -178,7 +178,7 @@ static void comment_push(int type, /* 1: comment, 0: null */
 
         /* NB: idx is not reliable */
         if ( (null_ct == 0) && push_ct == 0) {
-            log_debug("FIRST NULL, first push");
+            /* log_debug("FIRST NULL, first push"); */
             /* first newline precedes comment  */
             newlines = 1;
             line        = lexer->pos.line;
@@ -187,7 +187,7 @@ static void comment_push(int type, /* 1: comment, 0: null */
                to account for case where first cmt comes after newline */
             for (const char *p = lexer->tok; p < (lexer->cursor - 1); p++) {
                 if (*p == '\n') {
-                    log_debug("    *NEWLINE (inc linect)");
+                    /* log_debug("    *NEWLINE (inc linect)"); */
                     line++;
                     lexer->extra_lines++;
                     /* break; */
@@ -200,13 +200,12 @@ static void comment_push(int type, /* 1: comment, 0: null */
         } else {
             /* if ( (null_ct == 0) && push_ct == 0) { */
             if ( (null_ct == 1) && (push_ct == 0) ) {
-                log_debug("FIRST NULL, second push: 0x%" PRIx64 "\n",
-                          *(lexer->cursor));
+                /* log_debug("FIRST NULL, second push: 0x%" PRIx64 "\n", */
+                /*           *(lexer->cursor)); */
                 /* if (scmt == lexer->cursor) { */
-                /*     log_debug("VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV"); */
                 /* } */
                 if (*(lexer->cursor) == '\n') {
-                    log_debug("    NEWLINE");
+                    /* log_debug("    NEWLINE"); */
                     /* (*mtok)->line++; */
                     lexer->extra_lines++;
                     /* struct node_s *n = calloc(sizeof(struct node_s), 1); */
@@ -219,15 +218,15 @@ static void comment_push(int type, /* 1: comment, 0: null */
                 }
             } else {
                 if ( (null_ct % 2) == 0 ) { // && (push_ct != 0) ) {
-                    log_debug("TAIL NULL, first push");
+                    /* log_debug("TAIL NULL, first push"); */
                 } else {
-                    log_debug("TAIL NULL, second push");
+                    /* log_debug("TAIL NULL, second push"); */
             if ((*mtok)->comments == NULL) {
-                log_debug("    creating new (*mtok)->comments array");
+                /* log_debug("    creating new (*mtok)->comments array"); */
                 utarray_new((*mtok)->comments, &node_icd);
             }
 
-                    log_debug("    creating TK_BLANK");
+                    /* log_debug("    creating TK_BLANK"); */
                     /* lexer->pos.line++; */
                     line++;
                     lexer->extra_lines++;
@@ -246,15 +245,15 @@ static void comment_push(int type, /* 1: comment, 0: null */
         null_ct++;
         return;
     }
-    log_debug("COMMENT push (%d:%d)", line, col);
+    /* log_debug("COMMENT push (%d:%d)", line, col); */
 
     if ( (push_ct % 2) == 0) {
-        log_debug("    *EVENS (%d:%d)", line, col);
+        /* log_debug("    *EVENS (%d:%d)", line, col); */
 
         /* line++; */
         scmt = lexer->cursor;   /* := scmt, ptr to initial char of cmt */
         if ( push_ct == 0) { /* first comment in list */
-            log_debug("    *FIRST COMMENT");
+            /* log_debug("    *FIRST COMMENT"); */
             if (null_ct == 0) { /* no preceding blank line */
                 line = lexer->pos.line;
                 /* is 1st comment on same line as primary token? */
@@ -265,7 +264,7 @@ static void comment_push(int type, /* 1: comment, 0: null */
                     /* log_debug("*p: %.1s", p); */
                     if (*p == '\n') {
                         /* sol = p + 1; */
-                        log_debug("    *NEWLINE");
+                        /* log_debug("    *NEWLINE"); */
                         line++;
                         nlct++;
                         /* break; */
@@ -284,36 +283,16 @@ static void comment_push(int type, /* 1: comment, 0: null */
             }
 
             if ((*mtok)->comments == NULL) {
-                log_debug("\tcreating new (*mtok)->comments array");
+                /* log_debug("\tcreating new (*mtok)->comments array"); */
                 utarray_new((*mtok)->comments, &node_icd);
             }
-            /* adjust for newlines - only on first cmt! */
-            /* const char *lastnl; */
-            /* const char *tmp = lexer->tok; */
-            /* int i, nlct=0; */
-            /* log_debug("xBEFORE LINE nbr: %d", line);//lexer->pos.line); */
-            /* for (i=0; */
-            /*      tmp < scmt; */
-            /*      (*tmp == '\n') */
-            /*          ? line++, col = 0, sol = tmp, nlct++ */
-            /*          : 0, */
-            /*          tmp++); */
-            /* if (nlct > 0) { */
-            /*     sol++;          /\* one past newline *\/ */
-            /* } else { */
-            /*     sol = lexer->sol; */
-            /*     line = lexer->pos.line; */
-            /*     col  = lexer->pos.col; */
-            /* } */
         } else {
             line++;
         }
-        /* log_debug("xAFTER LINE nbr: %d", line); // lexer->pos.line); */
-        /* log_debug("xSOL: %p: %s", sol, sol); */
     } else {
-        log_debug("    *ODDS (%d:%d)", line, col);
-        log_debug("(lexer->cursor - 1: %p: :]%.5s",
-                  lexer->cursor-2, lexer->cursor-1);
+        /* log_debug("    *ODDS (%d:%d)", line, col); */
+        /* log_debug("(lexer->cursor - 1: %p: :]%.5s", */
+        /*           lexer->cursor-2, lexer->cursor-1); */
 
         if ( *(lexer->cursor) == '\n') {
 
@@ -321,8 +300,8 @@ static void comment_push(int type, /* 1: comment, 0: null */
         }
         /* to find start of line, start at start-of-commment and
            backup until newline or start-of-buffer */
-        log_debug("scmt: %s", scmt);
-        log_debug("lexer->sob: %s", lexer->sob);
+        /* log_debug("scmt: %s", scmt); */
+        /* log_debug("lexer->sob: %s", lexer->sob); */
         for (sol = scmt; // lexer->cursor - 1;
              *sol != '\n' && sol > lexer->sob;
              --sol) {
@@ -331,21 +310,6 @@ static void comment_push(int type, /* 1: comment, 0: null */
         if (*sol == '\n') sol++; /* \n is end-of-line  */
         log_debug("SOL: %s", sol);
 
-        /* if we're parsing a string that does not end in a newline,
-           the COMMENTS regex will not detect terminating null of
-           the string, so we need to do that here. */
-        /* log_debug("CHECK FOR EMBEDDED NULL"); */
-        /* for (const char *p = lexer->tok; p < lexer->cursor; p++) { */
-        /*     if (*p == '\x00') { */
-        /*         log_debug("    *EMBEDDED NULL"); */
-        /*     } */
-        /* } */
-        /* log_debug("CHECK DONE"); */
-
-        /* lexer->cursor := ecmt, ptr to char preceding \n */
-        /* log_debug("\tlexer->cursor (10): :]%.10s[:", */
-        /*           lexer->cursor, lexer->cursor); */
-        /* log_debug("lexer->tok: :]%s[:", lexer->tok); */
         log_debug("\tcreating TK_COMMENT node (5): :]%.5s...", scmt);
 
         /* starting at #ecmt, find first preceding newline */
@@ -368,33 +332,16 @@ static void comment_push(int type, /* 1: comment, 0: null */
         newlines = 0;  /* why? */
     }
     /* } */
-    log_debug("\txlexer->pos: (%d:%d)", lexer->pos.line, lexer->pos.col);
-    log_debug("\txpos: (%d:%d)", line, col);
-    log_debug("\txsol:  %p: :]%.10s[:", sol, sol);
-    log_debug("\txscmt: %p: :]%.5s", scmt, scmt);
-    log_debug("\txmtok pos: (%d:%d)", (*mtok)->line, (*mtok)->col);
-    log_debug("\txlexer->cursor (10) %p :]%.10s[:",
-              lexer->cursor, lexer->cursor, lexer->cursor);
+    /* log_debug("\txlexer->pos: (%d:%d)", lexer->pos.line, lexer->pos.col); */
+    /* log_debug("\txpos: (%d:%d)", line, col); */
+    /* log_debug("\txsol:  %p: :]%.10s[:", sol, sol); */
+    /* log_debug("\txscmt: %p: :]%.5s", scmt, scmt); */
+    /* log_debug("\txmtok pos: (%d:%d)", (*mtok)->line, (*mtok)->col); */
+    /* log_debug("\txlexer->cursor (10) %p :]%.10s[:", */
+    /*           lexer->cursor, lexer->cursor, lexer->cursor); */
     (*idx)++;
     push_ct++;
 }
-
-/* called for mtags (#smct, #ecmt) when no matching subexpr */
-/* static void comment_null(int *idx, bf_lexer_s *lexer, struct node_s **mtok) */
-/* { */
-/*     log_debug("comment_null: %d, ct: %d", *idx, push_ct); */
-/*     log_debug("\tmtok: %p (%d:%d)", *mtok, (*mtok)->line, (*mtok)->col); */
-/*     log_debug("\tmtok: %p (%d:%d)", *mtok, (*mtok)->line, (*mtok)->col); */
-/*     log_debug("\tlexer->sol: %p", lexer->sol); */
-/*     log_debug("\tlexer->tok: %p", lexer->tok); */
-/*     log_debug("\tlexer->cursor: %p", lexer->cursor); */
-/*     log_debug("\tlexer->pos: (%d:%d)", lexer->pos.line, lexer->pos.col); */
-/*     /\* log_debug("\tsol: %p", sol); *\/ */
-/*     /\* log_debug("\tscmt: %p", scmt); *\/ */
-/*     /\* log_debug("\tpos: (%d:%d)", line, col); *\/ */
-/*     (*idx)++; */
-/*     push_ct++; */
-/* } */
 
 int get_column(struct bf_lexer_s *lexer)
 {

@@ -9,7 +9,6 @@ cc_binary(
         "lex_file.c",
         "lex_file.h",
         "//src/lib/starlark:debug.c",
-        "@uthash//:include",
     ],
     copts = [
         "-std=c11",
@@ -22,12 +21,13 @@ cc_binary(
         # "-I", "external/obazl/vendored/logc",
         # "-I", "external/tools_obazl/vendored/logc",
 
-        "-I", "external/uthash/include",
+        "-I", "vendored/uthash",
     ],
     defines = ["DEBUG", "DEBUG_TRACE"],
     deps = [
         "//src/lib/starlark:starlark",
-        "//vendored/logc"
+        "//vendored/logc",
+        "//vendored/uthash",
     ],
     # linkopts = select({
     #     "//bzl/host:linux": [],
@@ -44,7 +44,6 @@ cc_binary(
         "lua_file.c",
         "lua_file.h",
         "//src/lib/starlark:debug.c",
-        "@uthash//:include",
     ],
     defines = ["DEBUG", "DEBUG_TRACE"],
     copts = [
@@ -62,13 +61,14 @@ cc_binary(
 
         "-I", "vendored/lua-5.4.3/src",
 
-        "-I", "external/uthash/include",
+        "-Ivendored/uthash",
     ],
     deps = [
         # "//src/lib/starlark",
         "//src/lib/moonlark",
         "//vendored/logc",
-        "//vendored/lua-5.4.3/src:lua"
+        "//vendored/lua-5.4.3/src:lua",
+        "//vendored/uthash",
     ],
     linkstatic = 1
 )
@@ -80,7 +80,6 @@ cc_binary(
         "parse_file.c",
         "parse_file.h",
         "//src/lib/starlark:debug.c",
-        "@uthash//:include",
     ],
     copts = [
         "-std=c11",
@@ -93,12 +92,13 @@ cc_binary(
         # "-I", "external/obazl/vendored/logc",
         # "-I", "external/tools_obazl/vendored/logc",
 
-        "-I", "external/uthash/include",
+        "-Ivendored/uthash",
     ],
     defines = ["DEBUG", "DEBUG_TRACE"],
     deps = [
         "//src/lib/starlark",
-        "//vendored/logc"
+        "//vendored/logc",
+        "//vendored/uthash",
     ],
     linkstatic = 1
 )
