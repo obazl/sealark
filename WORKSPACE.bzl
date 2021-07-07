@@ -26,23 +26,6 @@ def cc_fetch_repos():
 
     ######
     maybe(
-        git_repository,
-        name = "makeheaders",
-        remote = "https://github.com/obazl/makeheaders",
-        # branch = "main"
-        commit = "bb528f3edac6c00953010e28d51e4a52da7555aa",
-        shallow_since = "1618495335 -0500"
-        # http_archive,
-        # name = "makeheaders",
-        # urls = [
-        #     "https://github.com/obazl/makeheaders/archive/57bae6cc7e88783b060acf711bc21f99d8380ca5.tar.gz"
-        # ],
-        # strip_prefix = "makeheaders-57bae6cc7e88783b060acf711bc21f99d8380ca5",
-        # sha256 = "83ef79d69c02348efd1f52a85fa10e9bd57333e89a23c2fe66a9b298c055d164"
-    )
-
-    ######
-    maybe(
         http_archive,
         name = "sfsexp",
         build_file_content = all_content,

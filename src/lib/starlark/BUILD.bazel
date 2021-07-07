@@ -200,7 +200,7 @@ genrule(
         "SRCDIR1=`dirname $$SRC1`",
         # "SRC2=$(location //vendored/uthash/utarray.h)",
         # "SRCDIR2=`dirname $$SRC2`",
-        "$(location @makeheaders//:makeheaders) \\",
+        "$(location //vendored/makeheaders) \\",
         # "    $(locations //vendored/uthash) \\",
         # "    $(location constants.c) \\",
         "    $(location parse.c) \\",
@@ -211,7 +211,7 @@ genrule(
         "    $(location debug.c) ",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),
-    tools = ["@makeheaders//:makeheaders"],
+    tools = ["//vendored/makeheaders"],
     visibility = ["//visibility:public"]
 )
 
@@ -235,7 +235,7 @@ genrule(
     cmd = "\n".join([
         "SRC1=$(location parse.c)",
         "SRCDIR1=`dirname $$SRC1`",
-        "$(location @makeheaders//:makeheaders) -H \\",
+        "$(location //vendored/makeheaders) -H \\",
         # "    $(locations //vendored/uthash) \\",
         "    $(location constants.c) \\",
         "    $(location lexis.c) \\",
@@ -246,6 +246,6 @@ genrule(
         # "    $(location debug.c) \\",
         "    > $@",
     ]),
-    tools = ["@makeheaders//:makeheaders"],
+    tools = ["//vendored/makeheaders"],
     visibility = ["//visibility:public"]
 )

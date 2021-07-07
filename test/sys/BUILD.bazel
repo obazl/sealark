@@ -145,7 +145,7 @@ genrule(
     cmd = "\n".join([
         "SRC1=$(location starlark_roundtrip.c)",
         "SRCDIR1=`dirname $$SRC1`",
-        "$(location @makeheaders//:makeheaders) \\",
+        "$(location //vendored/makeheaders) \\",
         "    $(location //moonlark:moonlark_setup.c) \\",
         "    $(location //src/lib/starlark:debug.c) \\",
         "    $(location moonlark_roundtrip.c) \\",
@@ -164,6 +164,6 @@ genrule(
         # "    $(location syntax_statements.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),
-    tools = ["@makeheaders//:makeheaders"],
+    tools = ["//vendored/makeheaders"],
     visibility = ["//visibility:public"]
 )

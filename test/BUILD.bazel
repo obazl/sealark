@@ -121,13 +121,13 @@ genrule(
     cmd = "\n".join([
         "SRC1=$(location lex_file.c)",
         "SRCDIR1=`dirname $$SRC1`",
-        "$(location @makeheaders//:makeheaders) \\",
+        "$(location //vendored/makeheaders) \\",
         "    $(location //src/lib/starlark:debug.c) \\",
         "    $(location lex_file.c) \\",
         "    $(location lua_file.c) \\",
         "    $(location parse_file.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),
-    tools = ["@makeheaders//:makeheaders"],
+    tools = ["//vendored/makeheaders"],
     visibility = ["//visibility:public"]
 )

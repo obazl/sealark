@@ -81,12 +81,12 @@ genrule(
     cmd = "\n".join([
         "SRC1=$(location edit.c)",
         "SRCDIR1=`dirname $$SRC1`",
-        "$(location @makeheaders//:makeheaders) \\",
+        "$(location //vendored/makeheaders) \\",
         # "    $(location //src/lib/starlark:debug.c) \\",
         "    $(location edit.c) \\",
         "    $(location moonlark_setup.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),
-    tools = ["@makeheaders//:makeheaders"],
+    tools = ["//vendored/makeheaders"],
     visibility = ["//visibility:public"]
 )

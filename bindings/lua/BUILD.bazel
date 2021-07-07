@@ -62,7 +62,7 @@ genrule(
         "SRCDIR1=`dirname $$SRC1`",
         # "SRC2=$(location //src/lib/moonlark:moonlark.h)",
         # "SRCDIR2=`dirname $$SRC2`",
-        "$(location @makeheaders//:makeheaders) \\",
+        "$(location //vendored/makeheaders) \\",
         # "    $(locations //vendored/uthash) \\",
         # "    $(locations //src/lib/moonlark:moonlark.c) \\",
         # "    $(locations //src/lib/moonlark:moonlark_config.h) \\",
@@ -71,5 +71,5 @@ genrule(
         # "cp $${SRCDIR2}/*.h $(@D)",
         # "    > $@",
     ]),
-    tools = ["@makeheaders//:makeheaders"]
+    tools = ["//vendored/makeheaders"]
 )
