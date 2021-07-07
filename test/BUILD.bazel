@@ -37,6 +37,7 @@ cc_binary(
 )
 
 ##########
+# parse a buildfile and pass it to lua handler
 cc_binary(
     name  = "lua_file",
     srcs  = [

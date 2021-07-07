@@ -3,36 +3,26 @@ exports_files(["moonlark_setup.c"])
 cc_binary(
     name = "repl",
     srcs = [
+        # we build the  lua interpreter here ....
         "//vendored/lua-5.4.3/src:lua.c",
         "//vendored/lua-5.4.3/src:lua.h",
-        "//vendored/lua-5.4.3/src:srcs",
-        "//bindings/lua:moonlark.c",
-        "//bindings/lua:moonlark.h",
-        # moonlark C impl code:
-        # "//src/lib/moonlark:libmoonlark.h",
-        # "//src/lib/moonlark:moonlark_api.h",
-        # "//src/lib/moonlark:moonlark_config.c",
-        # "//src/lib/moonlark:moonlark_config.h",
+    ],
+    # ... linking to augmented liblua:
+    deps = [
+        # lua runtime with integrated moonlark
+        "//vendored/lua-5.4.3/src:lualark"
     ],
     copts = [
-        "-I$(GENDIR)/bindings/lua", # moonlark.h
-        # "-I$(GENDIR)/moonlark",
-        "-I$(GENDIR)/src/lib/moonlark", # libmoonlark.h
-        "-Iexternal/uthash/include",
-        "-Ivendored/logc",
-        "-Ivendored/lua-5.4.3/src",
+        "-std=c11",
+        "-pedantic-errors",
     ],
     defines = [
         "LUA_USE_MACOSX",
+        "MOONLARK"
     ],
     linkopts = [
         "-lm",
         "-ldl",
-    ],
-    deps = [
-        "//src/lib/moonlark",   # C libmoonlark
-        "//vendored/logc",
-        "//vendored/lua-5.4.3/src:lualark" # lua runtime
     ],
     visibility = ["//visibility:public"],
 )

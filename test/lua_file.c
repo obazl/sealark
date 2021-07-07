@@ -21,9 +21,8 @@
 #include "log.h"
 #include "utarray.h"
 #include "utstring.h"
-#include "starlark.h"
-#include "starlark_lua.h"
-#include "starlark_lua_config.h"
+/* #include "starlark.h" */
+#include "libmoonlark.h"
 
 #include "lua_file.h"
 
@@ -66,6 +65,7 @@ int main(int argc, char *argv[])
     log_debug("parsed file %s", parse_state->lexer->fname);
     dump_node(parse_state->root);
 
+    // FIXME: use moonlark api to config lua?
     lua_State *L;
     L = luaL_newstate();        /* set global lua state var */
     if (L == NULL) {
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
     /* log_debug("LUA PATH: %s", p); */
 
     /* load default and user handlers (Lua files) */
-    starlark_lua_load_handlers(L);
+    starlark_lua_load_handlers(L, "test/lua/lua_file.lua");
 
     /* parse and convert build file to Lua AST table */
     /* call handler on (Lua) AST */

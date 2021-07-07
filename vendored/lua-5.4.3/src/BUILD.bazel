@@ -74,7 +74,6 @@ filegroup(
 cc_library(
     name = "lua",
     srcs = [":srcs"],
-    # strip_include_prefix = "/src",
     hdrs = [
         "lauxlib.h",
         "lprefix.h",
@@ -83,33 +82,22 @@ cc_library(
         "lualib.h",
     ],
     copts = [
-        "-I", "bindings/lua",
-        "-I", "external/uthash/include",
-        "-I", "$(GENDIR)/src", # starlark.h
-        # "-I", "$(GENDIR)/src/lua", # starlark_lua_api.h,
-        # "-I", "$(GENDIR)/bindings/lua", # moonlark.h
-        # "-I", "vendored/logc",
-        "-I", "vendored/lua-5.4.3/src",
+        "-std=c11",
+        # "-pedantic-errors",
     ],
-    deps = [
-        # "//src/lib/starlark:starlark",
-        # we cannot depend on starlark_lua on pain of circularity
-        # instead we are compiling it here
-        # # "//src/lib/moonlark:moonlark,
-        # "//vendored/logc",
-    ],
-    defines = [
-        "LUA_USE_MACOSX",       # FIXME: select platform
+    defines = select({
+        "//bzl/host:macos": [
+            "LUA_USE_MACOSX",
+        ],
+        "//conditions:default": {}
+    }) + [
         ## FIXME: use libedit or editline
         "LUA_USE_READLINE"      # FIXME: select
     ],
-    # deps = [
-    #     "//bindings/lua:depper"
-    # ],
     linkopts = [
         "-lm",
         "-ldl",
-        "-lreadline"
+        "-lreadline" ## FIXME: use libedit or editline
     ],
     visibility = ["//visibility:public"],
 )
@@ -128,70 +116,6 @@ cc_library(
             "//src/lib/moonlark:moonlark_config.h",
         ]
     }) + [":srcs"],
-    #     "lapi.c",
-    #     "lapi.h",
-    #     "lauxlib.c",
-    #     # "lauxlib.h",
-    #     "lbaselib.c",
-    #     "lcode.c",
-    #     "lcode.h",
-    #     "lcorolib.c",
-    #     "lctype.c",
-    #     "lctype.h",
-    #     "ldblib.c",
-    #     "ldebug.c",
-    #     "ldebug.h",
-    #     "ldo.c",
-    #     "ldo.h",
-    #     "ldump.c",
-    #     "lfunc.c",
-    #     "lfunc.h",
-    #     "lgc.c",
-    #     "lgc.h",
-    #     "linit.c",
-    #     "liolib.c",
-    #     "ljumptab.h",
-    #     "llex.c",
-    #     "llex.h",
-    #     "llimits.h",
-    #     "lmathlib.c",
-    #     "lmem.c",
-    #     "lmem.h",
-    #     "loadlib.c",
-    #     "lobject.c",
-    #     "lobject.h",
-    #     "lopcodes.c",
-    #     "lopcodes.h",
-    #     "lopnames.h",
-    #     "loslib.c",
-    #     "lparser.c",
-    #     "lparser.h",
-    #     "lprefix.h",
-    #     "lstate.c",
-    #     "lstate.h",
-    #     "lstring.c",
-    #     "lstring.h",
-    #     "lstrlib.c",
-    #     "ltable.c",
-    #     "ltable.h",
-    #     "ltablib.c",
-    #     "ltm.c",
-    #     "ltm.h",
-    #     # "lua.c",
-    #     # "lua.h",
-    #     "lua.hpp",
-    #     # "luac.c",
-    #     "luaconf.h",
-    #     "lualib.h",
-    #     "lundump.c",
-    #     "lundump.h",
-    #     "lutf8lib.c",
-    #     "lvm.c",
-    #     "lvm.h",
-    #     "lzio.c",
-    #     "lzio.h",
-    # ],
-    # strip_include_prefix = "/src",
     hdrs = [
         "lauxlib.h",
         "lprefix.h",
@@ -213,15 +137,16 @@ cc_library(
         "//src/lib/moonlark",
         "//vendored/logc",
     ],
-    defines = [
+    defines = select({
+        "//bzl/host:macos": [
+            "LUA_USE_MACOSX",
+        ],
+        "//conditions:default": {}
+    }) + [
         "MOONLARK",
-        "LUA_USE_MACOSX",       # FIXME: select platform
         ## FIXME: use libedit or editline
         "LUA_USE_READLINE"      # FIXME: select
     ],
-    # deps = [
-    #     "//bindings/lua:depper"
-    # ],
     linkopts = [
         "-lm",
         "-ldl",

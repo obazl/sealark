@@ -1,14 +1,16 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 
-# Lua - Portugese for 'moon'
-
 exports_files(["moonlark.c"])
 
 ##########
-cc_binary(
-    name  = "moonlark.so",
+# cc_binary(
+#     name  = "moonlark.so",
+#     # alwayslink = 1,
+#     linkshared = 1,
+cc_library(
+    name  = "moonlark",
     # alwayslink = 1,
-    linkshared = 1,
+    # linkshared = 1,
     srcs  = [
         "moonlark.c",
         "moonlark.h",
@@ -21,6 +23,7 @@ cc_binary(
     # ],
     copts = [
         "-std=c11",
+        "-pedantic-errors",
         "-Isrc/lib/moonlark", # libmoonlark.h
         "-I", "$(GENDIR)/src", # starlark.h
         "-I", "$(GENDIR)/src/lib/moonlark", # libmoonlark.h
@@ -32,7 +35,7 @@ cc_binary(
     deps = [
         "//src/lib/starlark",
         "//src/lib/moonlark",
-        "//vendored/lua-5.4.3/src:lualark",
+        "//vendored/lua-5.4.3/src:lua",
         "//vendored/logc",
     ],
     # linkstatic = 1,

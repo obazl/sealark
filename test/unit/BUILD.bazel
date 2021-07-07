@@ -33,8 +33,9 @@ cc_test(
         "-Ivendored/unity",
         "-Iexternal/uthash/include",
     ],
+    linkstatic = 1,
     deps = [
-        "//src/lib/starlark:starlark",
+        "//src/lib/starlark",
         "//vendored/logc",
         "//vendored/unity"
     ],
@@ -58,8 +59,9 @@ cc_test(
         "-Ivendored/unity",
         "-Iexternal/uthash/include",
     ],
+    linkstatic = 1,
     deps = [
-        "//src/lib/starlark:starlark",
+        "//src/lib/starlark",
         "//vendored/logc",
         "//vendored/unity"
     ],
@@ -81,8 +83,9 @@ cc_test(
         "-Ivendored/unity",
         "-Iexternal/uthash/include",
     ],
+    linkstatic = 1,
     deps = [
-        "//src/lib/starlark:starlark",
+        "//src/lib/starlark",
         "//vendored/logc",
         "//vendored/unity"
     ],
@@ -105,8 +108,9 @@ cc_test(
         "-Ivendored/unity",
         "-Iexternal/uthash/include",
     ],
+    linkstatic = 1,
     deps = [
-        "//src/lib/starlark:starlark",
+        "//src/lib/starlark",
         "//vendored/logc",
         "//vendored/unity"
     ],
@@ -129,8 +133,9 @@ cc_test(
         "-Ivendored/unity",
         "-Iexternal/uthash/include",
     ],
+    linkstatic = 1,
     deps = [
-        "//src/lib/starlark:starlark",
+        "//src/lib/starlark",
         "//vendored/logc",
         "//vendored/unity"
     ],
@@ -152,8 +157,9 @@ cc_test(
         "-Ivendored/unity",
         "-Iexternal/uthash/include",
     ],
+    linkstatic = 1,
     deps = [
-        "//src/lib/starlark:starlark",
+        "//src/lib/starlark",
         "//vendored/logc",
         "//vendored/unity"
     ],
@@ -175,8 +181,9 @@ cc_test(
         "-Ivendored/unity",
         "-Iexternal/uthash/include",
     ],
+    linkstatic = 1,
     deps = [
-        "//src/lib/starlark:starlark",
+        "//src/lib/starlark",
         "//vendored/logc",
         "//vendored/unity"
     ],
@@ -198,8 +205,9 @@ cc_test(
         "-Ivendored/unity",
         "-Iexternal/uthash/include",
     ],
+    linkstatic = 1,
     deps = [
-        "//src/lib/starlark:starlark",
+        "//src/lib/starlark",
         "//vendored/logc",
         "//vendored/unity"
     ],
@@ -221,8 +229,9 @@ cc_test(
         "-Ivendored/unity",
         "-Iexternal/uthash/include",
     ],
+    linkstatic = 1,
     deps = [
-        "//src/lib/starlark:starlark",
+        "//src/lib/starlark",
         "//vendored/logc",
         "//vendored/unity"
     ],
@@ -244,8 +253,9 @@ cc_test(
         "-Ivendored/unity",
         "-Iexternal/uthash/include",
     ],
+    linkstatic = 1,
     deps = [
-        "//src/lib/starlark:starlark",
+        "//src/lib/starlark",
         "//vendored/logc",
         "//vendored/unity"
     ],
