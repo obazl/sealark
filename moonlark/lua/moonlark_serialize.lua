@@ -45,6 +45,12 @@ function node_handler(node)
       elseif (node.type == bazel.TOK.ID) then
          io.write(node.s)
          col = col + #(node.s)
+      elseif (node.type == bazel.TOK.INT) then
+         io.write(node.s)
+         col = col + #(node.s)
+      elseif (node.type == bazel.TOK.FLOAT) then
+         io.write(node.s)
+         col = col + #(node.s)
       else
          s = bazel.pTOK[node.type]
          io.write(s)
@@ -72,11 +78,12 @@ function test(node)
    -- for k,v in pairs(bazel.TOK) do
    --    print(k,v)
    -- end
-
+   print("serialize.test");
    handlers = {}
    handlers.default = node_handler
    walk(node, handlers)
    print()
+   io.flush()
 end
 
 function emit(node)
