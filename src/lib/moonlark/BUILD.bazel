@@ -42,6 +42,7 @@ cc_library(
         "-I", "src/lib/moonlark", # moonlark_*.h
 
         "-I", "vendored/uthash",
+        "-I", "external/moonlark/vendored/uthash",
 
         "-I", "vendored/logc",
         "-I", "vendored/lua-5.4.3/src",

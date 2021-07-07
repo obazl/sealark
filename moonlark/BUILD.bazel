@@ -56,6 +56,7 @@ cc_binary(
         "-I", "vendored/lua-5.4.3/src",
 
         "-I", "vendored/uthash",
+        "-I", "external/moonlark/vendored/uthash",
     ],
     deps = [
         # "//src/lib/starlark:starlark",
