@@ -21,16 +21,23 @@ cc_test(
     srcs = [
         "lex_keywords.c",
         "lex_keywords.h",
-        "//src/lib/starlark:debug.c",
     ],
     copts = [
         "-std=c11",
         "-pedantic-errors",
-        "-I$(GENDIR)/src/lib/starlark",
+
         "-I$(GENDIR)/test/unit",
+        "-I$(GENDIR)/external/moonlark/test/unit",
+
+        "-I$(GENDIR)/src/lib/starlark",
+        "-I$(GENDIR)/external/moonlark/src/lib/starlark",
+
         "-Ivendored/logc",
+        "-Iexternal/moonlark/vendored/logc",
         "-Ivendored/unity",
+        "-Iexternal/moonlark/vendored/unity",
         "-Ivendored/uthash",
+        "-Iexternal/moonlark/vendored/uthash",
     ],
     linkstatic = 1,
     deps = [
@@ -46,17 +53,24 @@ cc_test(
     srcs = [
         "lex_numbers.c",
         "lex_numbers.h",
-        "//src/lib/starlark:debug.c",
+        # "//src/lib/starlark:debug.c",
     ],
     copts = [
         "-std=c11",
         "-pedantic-errors",
-        "-I$(GENDIR)/src/lib/starlark",
-        "-I$(GENDIR)/src/include",
+
         "-I$(GENDIR)/test/unit",
+        "-I$(GENDIR)/external/moonlark/test/unit",
+
+        "-I$(GENDIR)/src/lib/starlark",
+        "-I$(GENDIR)/external/moonlark/src/lib/starlark",
+
         "-Ivendored/logc",
+        "-Iexternal/moonlark/vendored/logc",
         "-Ivendored/unity",
+        "-Iexternal/moonlark/vendored/unity",
         "-Ivendored/uthash",
+        "-Iexternal/moonlark/vendored/uthash",
     ],
     linkstatic = 1,
     deps = [
@@ -76,11 +90,19 @@ cc_test(
     copts = [
         "-std=c11",
         "-pedantic-errors",
-        "-I$(GENDIR)/src/lib/starlark",
+
         "-I$(GENDIR)/test/unit",
+        "-I$(GENDIR)/external/moonlark/test/unit",
+
+        "-I$(GENDIR)/src/lib/starlark",
+        "-I$(GENDIR)/external/moonlark/src/lib/starlark",
+
         "-Ivendored/logc",
         "-Ivendored/unity",
         "-Ivendored/uthash",
+        "-Iexternal/moonlark/vendored/logc",
+        "-Iexternal/moonlark/vendored/unity",
+        "-Iexternal/moonlark/vendored/uthash",
     ],
     linkstatic = 1,
     deps = [
@@ -96,16 +118,24 @@ cc_test(
     srcs = [
         "lex_strings.c",
         "lex_strings.h",
-        "//src/lib/starlark:debug.c",
+        # "//src/lib/starlark:debug.c",
     ],
     copts = [
         "-std=c11",
         "-pedantic-errors",
-        "-I$(GENDIR)/src/lib/starlark",
+
         "-I$(GENDIR)/test/unit",
+        "-I$(GENDIR)/external/moonlark/test/unit",
+
+        "-I$(GENDIR)/src/lib/starlark",
+        "-I$(GENDIR)/external/moonlark/src/lib/starlark",
+
         "-Ivendored/logc",
         "-Ivendored/unity",
         "-Ivendored/uthash",
+        "-Iexternal/moonlark/vendored/logc",
+        "-Iexternal/moonlark/vendored/unity",
+        "-Iexternal/moonlark/vendored/uthash",
     ],
     linkstatic = 1,
     deps = [
@@ -126,11 +156,19 @@ cc_test(
     copts = [
         "-std=c11",
         "-pedantic-errors",
-        "-I$(GENDIR)/src/lib/starlark",
+
         "-I$(GENDIR)/test/unit",
+        "-I$(GENDIR)/external/moonlark/test/unit",
+
+        "-I$(GENDIR)/src/lib/starlark",
+        "-I$(GENDIR)/external/moonlark/src/lib/starlark",
+
         "-Ivendored/logc",
         "-Ivendored/unity",
         "-Ivendored/uthash",
+        "-Iexternal/moonlark/vendored/logc",
+        "-Iexternal/moonlark/vendored/unity",
+        "-Iexternal/moonlark/vendored/uthash",
     ],
     linkstatic = 1,
     deps = [
@@ -150,11 +188,19 @@ cc_test(
     copts = [
         "-std=c11",
         "-pedantic-errors",
-        "-I$(GENDIR)/src/lib/starlark",
+
         "-I$(GENDIR)/test/unit",
+        "-I$(GENDIR)/external/moonlark/test/unit",
+
+        "-I$(GENDIR)/src/lib/starlark",
+        "-I$(GENDIR)/external/moonlark/src/lib/starlark",
+
         "-Ivendored/logc",
         "-Ivendored/unity",
         "-Ivendored/uthash",
+        "-Iexternal/moonlark/vendored/logc",
+        "-Iexternal/moonlark/vendored/unity",
+        "-Iexternal/moonlark/vendored/uthash",
     ],
     linkstatic = 1,
     deps = [
@@ -174,11 +220,20 @@ cc_test(
     copts = [
         "-std=c11",
         "-pedantic-errors",
-        "-I$(GENDIR)/src/lib/starlark",
+
         "-I$(GENDIR)/test/unit",
+        "-I$(GENDIR)/external/moonlark/test/unit",
+
+        "-I$(GENDIR)/src/lib/starlark",
+        "-I$(GENDIR)/external/moonlark/src/lib/starlark",
+
         "-Ivendored/logc",
         "-Ivendored/unity",
         "-Ivendored/uthash",
+
+        "-Iexternal/moonlark/vendored/logc",
+        "-Iexternal/moonlark/vendored/unity",
+        "-Iexternal/moonlark/vendored/uthash",
     ],
     linkstatic = 1,
     deps = [
@@ -198,11 +253,19 @@ cc_test(
     copts = [
         "-std=c11",
         "-pedantic-errors",
-        "-I$(GENDIR)/src/lib/starlark",
+
         "-I$(GENDIR)/test/unit",
+        "-I$(GENDIR)/external/moonlark/test/unit",
+
+        "-I$(GENDIR)/src/lib/starlark",
+        "-I$(GENDIR)/external/moonlark/src/lib/starlark",
+
         "-Ivendored/logc",
         "-Ivendored/unity",
         "-Ivendored/uthash",
+        "-Iexternal/moonlark/vendored/logc",
+        "-Iexternal/moonlark/vendored/unity",
+        "-Iexternal/moonlark/vendored/uthash",
     ],
     linkstatic = 1,
     deps = [
@@ -222,11 +285,19 @@ cc_test(
     copts = [
         "-std=c11",
         "-pedantic-errors",
-        "-I$(GENDIR)/src/lib/starlark",
+
         "-I$(GENDIR)/test/unit",
+        "-I$(GENDIR)/external/moonlark/test/unit",
+
+        "-I$(GENDIR)/src/lib/starlark",
+        "-I$(GENDIR)/external/moonlark/src/lib/starlark",
+
         "-Ivendored/logc",
         "-Ivendored/unity",
         "-Ivendored/uthash",
+        "-Iexternal/moonlark/vendored/logc",
+        "-Iexternal/moonlark/vendored/unity",
+        "-Iexternal/moonlark/vendored/uthash",
     ],
     linkstatic = 1,
     deps = [
@@ -246,11 +317,19 @@ cc_test(
     copts = [
         "-std=c11",
         "-pedantic-errors",
-        "-I$(GENDIR)/src/lib/starlark",
+
         "-I$(GENDIR)/test/unit",
+        "-I$(GENDIR)/external/moonlark/test/unit",
+
+        "-I$(GENDIR)/src/lib/starlark",
+        "-I$(GENDIR)/external/moonlark/src/lib/starlark",
+
         "-Ivendored/logc",
         "-Ivendored/unity",
         "-Ivendored/uthash",
+        "-Iexternal/moonlark/vendored/logc",
+        "-Iexternal/moonlark/vendored/unity",
+        "-Iexternal/moonlark/vendored/uthash",
     ],
     linkstatic = 1,
     deps = [

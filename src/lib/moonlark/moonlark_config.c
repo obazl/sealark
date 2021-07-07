@@ -17,6 +17,7 @@
 
 /* #include "starlark.h" */
 #include "moonlark_config.h"
+/* #include "libmoonlark.h" */
 
 UT_string *proj_root;
 UT_string *runfiles_root;

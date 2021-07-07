@@ -110,10 +110,11 @@ cc_library(
             "//bindings/lua:moonlark.c",
             "//bindings/lua:moonlark.h",
             # moonlark C impl code:
-            "//src/lib/moonlark:moonlark_api.c",
-            "//src/lib/moonlark:moonlark_api.h",
-            "//src/lib/moonlark:moonlark_config.c",
-            "//src/lib/moonlark:moonlark_config.h",
+            # "//src/lib/moonlark:moonlark_api.c",
+            # # "//src/lib/moonlark:moonlark_api.h",
+            # "//src/lib/moonlark:moonlark_config.c",
+            # "//src/lib/moonlark:moonlark_config.h",
+        "//src/lib/moonlark:mkhdrs",
         ]
     }) + [":srcs"],
     hdrs = [
@@ -125,13 +126,24 @@ cc_library(
     ],
     copts = [
         "-I", "bindings/lua",
-        "-I", "external/uthash/include",
-        "-I", "$(GENDIR)/src", # starlark.h
-        "-I", "$(GENDIR)/src/lib/moonlark", # libmoonlark.h
-        "-I", "$(GENDIR)/bindings/lua", # moonlark.h
+        "-I", "$(GENDIR)/bindings/lua",
+        "-I", "$(GENDIR)/external/moonlark/bindings/lua",
+
+        "-I", "$(GENDIR)/src/lib/starlark",
+        "-I", "$(GENDIR)/external/moonlark/src/lib/starlark",
+
+        "-I$(GENDIR)/src/lib/moonlark",
+        "-I$(GENDIR)/external/moonlark/src/lib/moonlark",
+        "-Iexternal/moonlark/src/lib/moonlark",
+
         "-I", "vendored/logc",
+        "-I", "external/moonlark/vendored/logc",
+
         "-I", "vendored/lua-5.4.3/src",
+        "-I", "external/moonlark/vendored/lua-5.4.3/src",
+
         "-I", "vendored/uthash",
+        "-I", "external/moonlark/vendored/uthash",
     ],
     deps = [
         "//src/lib/starlark",

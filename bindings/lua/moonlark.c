@@ -22,7 +22,7 @@
 /* #include "starlark.h"           /\* libstarlark public API *\/ */
 
 #include "libmoonlark.h"
-#include "moonlark.h"
+/* #include "moonlark.h" */
 
 /* **************************************************************** */
 /**
@@ -68,7 +68,7 @@ static const luaL_Reg moonlark[] = {
 /*
 ** Open library - e.g. require 'starlark'
 */
-EXPORT LUAMOD_API int luaopen_moonlark(lua_State *L) {
+LUAMOD_API int luaopen_moonlark(lua_State *L) {
     /* log_set_level(LOG_TRACE); */
     /* log_set_quiet(false); */
 

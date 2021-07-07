@@ -67,7 +67,7 @@ cc_library(
         "-I", ".",              # syntaxis.h
 
         "-I", "$(GENDIR)/src/lib/starlark",
-        "-I", "$(GENDIR)/external/moonlark/src",
+        "-I", "$(GENDIR)/external/moonlark/src/lib/starlark",
 
         "-I", "vendored/logc",
         "-I", "external/moonlark/vendored/logc",

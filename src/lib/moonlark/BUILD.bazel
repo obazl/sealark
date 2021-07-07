@@ -36,19 +36,23 @@ cc_library(
         "-I$(GENDIR)",
         "-IFOOBAR",
 
-        "-I", "$(GENDIR)/src/lib/starlark",  # starlark.h
-        "-I", "$(GENDIR)/src/lib/moonlark", # moonlark_*.h
-        "-I", "$(GENDIR)/external/src/lib/moonlark", # moonlark_*.h
-        "-I", "src/lib/moonlark", # moonlark_*.h
+        "-Isrc/lib/starlark",  # starlark.h
+        "-I$(GENDIR)/src/lib/starlark",  # starlark.h
+        "-I$(GENDIR)/external/moonlark/src/lib/starlark",  # starlark.h
 
-        "-I", "vendored/uthash",
-        "-I", "external/moonlark/vendored/uthash",
+        "-Isrc/lib/moonlark", # moonlark_*.h
+        "-I$(GENDIR)/src/lib/moonlark", # moonlark_*.h
+        "-I$(GENDIR)/external/moonlark/src/lib/moonlark",
 
-        "-I", "vendored/logc",
-        "-I", "vendored/lua-5.4.3/src",
+        "-Ivendored/uthash",
+        "-Iexternal/moonlark/vendored/uthash",
 
-        # "-I", "external/obazl/vendored/logc",
-    #     "-I", "external/tools_obazl/vendored/logc"
+        "-Ivendored/logc",
+        "-Iexternal/moonlark/vendored/logc",
+
+        "-Ivendored/lua-5.4.3/src",
+        "-Iexternal/moonlark/vendored/lua-5.4.3/src",
+
     ],
     # linkopts = [
     #     "-L/usr/local/lib",     # FIXME

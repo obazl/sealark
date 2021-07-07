@@ -16,6 +16,7 @@
 #include "utstring.h"
 
 #include "moonlark_api.h"
+/* #include "libmoonlark.h" */
 
 int x;
 
@@ -44,7 +45,7 @@ void starlark_nodelist2lua(lua_State *L, UT_array *_nodelist, int level)
     /* log_debug("/starlark_nodelist2lua level %d", utarray_len(_nodelist)); */
 }
 
-void starlark_node2lua(lua_State *L, struct node_s *node, int level)
+EXPORT void starlark_node2lua(lua_State *L, struct node_s *node, int level)
 {
     /* log_debug("starlark_node2lua %d", level); */
     lua_newtable(L);            /* one table per node  */

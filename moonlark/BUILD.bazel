@@ -36,24 +36,28 @@ cc_binary(
         "edit.h",
         "moonlark_setup.c",
         "moonlark_setup.h",
-        "//src/lib/starlark:debug.c",
-        "//src/lib/starlark:debug.h",
+        # "//src/lib/starlark:debug.c",
+        # "//src/lib/starlark:debug.h",
     ],
     defines = ["DEBUG", "DEBUG_TRACE"],
     copts = [
         "-std=c11",
         "-pedantic-errors",
 
-        "-I", "src",
-        "-I", "$(GENDIR)/moonlark",
-        "-I", "$(GENDIR)/src/lib/starlark", # starlark.h etc.
-        "-I", "$(GENDIR)/src/lib/moonlark", # libmoonlark.h
+        "-I$(GENDIR)/moonlark",
+        "-I$(GENDIR)/external/moonlark/moonlark",
+
+        "-I", "$(GENDIR)/src/lib/starlark",
+        "-I", "$(GENDIR)external/moonlark/src/lib/starlark",
+
+        "-I", "$(GENDIR)/src/lib/moonlark",
+        "-I", "$(GENDIR)/external/moonlark/src/lib/moonlark", # libmoonlark.h
 
         "-I", "vendored/logc",
-        "-I", "external/obazl/vendored/logc",
-        "-I", "external/tools_obazl/vendored/logc",
+        "-I", "external/moonlark/vendored/logc",
 
         "-I", "vendored/lua-5.4.3/src",
+        "-I", "external/moonlark/vendored/lua-5.4.3/src",
 
         "-I", "vendored/uthash",
         "-I", "external/moonlark/vendored/uthash",
