@@ -1,9 +1,4 @@
-load("@rules_cc//cc:defs.bzl",
-     "cc_binary",
-     "cc_library")
-load("@rules_foreign_cc//foreign_cc:defs.bzl",
-     "configure_make",
-     "make")
+load("@rules_cc//cc:defs.bzl", "cc_binary")
 
 ## re2c lemon tutorial: https://github.com/tokuhirom/re2c-lemon-tutorial
 
