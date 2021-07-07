@@ -16,7 +16,7 @@
 #include "lualib.h"
 
 /* #include "starlark.h" */
-#include "starlark_lua_config.h"
+#include "moonlark_config.h"
 
 UT_string *proj_root;
 UT_string *runfiles_root;
@@ -50,7 +50,8 @@ void lerror (lua_State *L, const char *fmt, ...) {
    lua search path always contains:
        <proj_root>/.moonlark.d/  -- contains user-defined handler
        if run by `bazel run`:
-           <exec_root>/<runfiles_dir>/  -- contains default handler
+           <exec_root>/<runfiles_dir>/moonlark/lua -- default handler
+           (linked from @moonlark//moonlark/lua)
        else:
            ???
     for runtime files: see https://github.com/bazelbuild/bazel/issues/10022
@@ -73,7 +74,7 @@ EXPORT void starlark_lua_set_path(lua_State *L)
     /* NB: trailing ';;' means append previous val of LUA_PATH */
     utstring_printf(lua_path, ";%s/%s/?.lua;;",
                     utstring_body(runfiles_root),
-                    "moonlark");
+                    "moonlark/lua");
     log_debug("lua_path: %s", utstring_body(lua_path));
 
     lua_getglobal(L, "package");
@@ -163,37 +164,29 @@ int starlark_bazel_config(void) /* was: obazl_config.c:obazl_configure */
     /* } */
 }
 
-EXPORT void starlark_lua_load_handlers(lua_State *L)
+EXPORT void starlark_lua_load_handlers(lua_State *L, char *lua_file)
 {
     log_debug("starlark_lua_load_handlers");
 
-    /* utstring_new(user_lua_file); */
-    /* utstring_printf(user_lua_file, "%s/%s", */
-    /*                 utstring_body(default_lua_dir), */
-    /*                 utstring_body(default_lua_file)); */
-
-    /* utstring_new(handler_file); */
-    /* utstring_printf(handler_file, */
-    /*                 "%s/%s", */
-    /*                 utstring_body(default_lua_dir), */
-    /*                 utstring_body(default_lua_file)); */
-
-    log_debug("loading lua file: %s", default_handler_file_name);
-    if (luaL_dostring(L, "require'handler'")) {
-        lerror(L, "luaL_dostring fail for: %s\n",
-               lua_tostring(L, -1));
-    }
-    log_debug("loaded");
-    /* if (luaL_dofile(L, handler)) { */
-    /*     lerror(L, "luaL_dofile fail for: %s\n", */
+    /* log_debug("loading lua file: %s", default_handler_file_name); */
+    /* if (luaL_dostring(L, "require'handler'")) { */
+    /*     lerror(L, "luaL_dostring fail for: %s\n", */
     /*            lua_tostring(L, -1)); */
     /* } */
+    /* log_debug("loaded"); */
 
-    /* if (luaL_loadfile(L, handler) || lua_pcall(L, 0, 0, 0)) */
-    /*         lerror(L, "cannot run configuration file: %s\n", */
-    /*                lua_tostring(L, -1)); */
-    /* log_debug("loaded lua handler: %s", utstring_body(user_lua_file)); */
-
+    if (lua_file == NULL) {
+        if (luaL_dostring(L, "require'handler'")) {
+            lerror(L, "luaL_dostring fail for: %s\n",
+                   lua_tostring(L, -1));
+        }
+        log_debug("loaded default lua handler");
+    } else {
+        if (luaL_loadfile(L, lua_file) || lua_pcall(L, 0, 0, 0))
+            lerror(L, "cannot run configuration file: %s\n",
+                   lua_tostring(L, -1));
+        log_debug("loaded lua handler: %s", lua_file);
+    }
     /* utstring_clear(user_lua_file); */
     /* utstring_printf(user_lua_file, "%s/%s", utstring_body(obazl_d), utstring_body(default_lua_file)); */
     /* int rc = access(utstring_body(user_lua_file), R_OK); */

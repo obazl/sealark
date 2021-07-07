@@ -3,22 +3,22 @@ package(default_visibility = ["//visibility:public"])
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
 
 cc_library(
-    name = "hello-lib",
-    srcs = ["hello-lib.cc"],
-    hdrs = ["hello-lib.h"],
+    name = r"hello-lib",
+    srcs = [b"hello-lib.cc"],
+    hdrs = [br"hello-lib.h"],
 )
 
 cc_binary(
-    name = "hello-world",
+    name = """hello-world""",
     srcs = ["hello-world.cc"],
     deps = [":hello-lib"],
 )
 
 cc_test(
-    name = "hello-success_test",
-    srcs = ["hello-world.cc"],
-    deps = [":hello-lib"],
-    br   = [":hello-lib"],
+    name = '''hello-success_test''',
+    srcs = [b'''hello-world.cc'''],
+    deps = [r''':hello-lib'''],
+    br   = [br''':hello-lib'''],
 )
 
 cc_test(

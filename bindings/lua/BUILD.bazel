@@ -13,11 +13,11 @@ cc_binary(
         "moonlark.c",
         "moonlark.h",
         # internal lua api:
-        "//src/starlark.h",
-        # "//src/lua:starlark_lua.c",
-        "//src/lua:starlark_lua.h",
-        # "//src/lua:starlark_lua_config.c",
-        "//src/lua:starlark_lua_config.h"
+        # "//src/starlark.h",
+        # "//src/lib/moonlark:moonlark.c",
+        # "//src/lib/moonlark:moonlark.h",
+        # "//src/lib/moonlark:moonlark_config.c",
+        # "//src/lib/moonlark:moonlark_config.h"
     ],
     data = [
         # "//external/lua/lib:lua",
@@ -27,8 +27,9 @@ cc_binary(
     # ],
     copts = [
         "-std=c11",
+        "-Isrc/lib/moonlark", # libmoonlark.h
         "-I", "$(GENDIR)/src", # starlark.h
-        "-I", "$(GENDIR)/src/lua", # starlark_lua.h,
+        "-I", "$(GENDIR)/src/lib/moonlark", # libmoonlark.h
         "-I", "$(GENDIR)/bindings/lua", # moonlark.h
         "-I", "external/uthash/include",
         "-I", "vendored/logc",
@@ -36,8 +37,8 @@ cc_binary(
     ],
     deps = [
         "//src:starlark",
-        # "//external/lua/lib:lua",
-        "//vendored/lua-5.4.3/src:lua",
+        "//src/lib/moonlark",
+        "//vendored/lua-5.4.3/src:lualark",
         "//vendored/logc",
     ],
     # linkstatic = 1,
@@ -50,8 +51,8 @@ genrule(
     visibility = ["//visibility:public"],
     srcs = [
         "moonlark.c",
-        "//src/lua:starlark_lua.h",
-        # "//src/lua:starlark_lua_config.h",
+        # "//src/lib/moonlark:moonlark.c",
+        # "//src/lib/moonlark:moonlark_config.h",
         "@uthash//:include",
     ],
     outs = [
@@ -61,15 +62,15 @@ genrule(
     cmd = "\n".join([
         "SRC1=$(location moonlark.c)",
         "SRCDIR1=`dirname $$SRC1`",
-        "SRC2=$(location //src/lua:starlark_lua.h)",
-        "SRCDIR2=`dirname $$SRC2`",
+        # "SRC2=$(location //src/lib/moonlark:moonlark.h)",
+        # "SRCDIR2=`dirname $$SRC2`",
         "$(location @makeheaders//:makeheaders) \\",
         # "    $(locations @uthash//:include) \\",
-        "    $(locations //src/lua:starlark_lua.h) \\",
-        # "    $(locations //src/lua:starlark_lua_config.h) \\",
+        # "    $(locations //src/lib/moonlark:moonlark.c) \\",
+        # "    $(locations //src/lib/moonlark:moonlark_config.h) \\",
         "    $(location moonlark.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
-        "cp $${SRCDIR2}/*.h $(@D)",
+        # "cp $${SRCDIR2}/*.h $(@D)",
         # "    > $@",
     ]),
     tools = ["@makeheaders//:makeheaders"]

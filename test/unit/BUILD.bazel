@@ -14,7 +14,7 @@ test_suite(
         ":statements",
         ":strings",
 
-        ":roundtrip",
+        ":roundtrip_starlark",
     ])
 
 # LEXIS
@@ -362,10 +362,51 @@ cc_test(
 # )
 
 cc_test(
-    name = "roundtrip",
+    name = "roundtrip_moonlark",
     srcs = [
-        "roundtrip.c",
-        "roundtrip.h",
+        "roundtrip_moonlark.c",
+        "roundtrip_moonlark.h",
+        "roundtrip_helper.c",
+        "roundtrip_helper.h",
+        "@uthash//:include",
+    ],
+    data = [ # NB: globbing does not seem to work
+        "//test/data:android.BUILD",
+        "//test/data:cpp.BUILD",
+        "//test/data:filegroup.BUILD",
+        "//test/data:gen.BUILD",
+        "//test/data:load_1.BUILD",
+        "//test/data:load_2.BUILD",
+        "//test/data:load_3.BUILD",
+        "//test/data:load_aliases_1.BUILD",
+        "//test/data:load_aliases_2.BUILD",
+        "//test/data:py.BUILD",
+        "//test/data:py_native.BUILD",
+        "//test/data:shell.BUILD",
+        "//test/data:windows_dll.BUILD",
+    ],
+    copts = [
+        "-std=c11",
+        "-pedantic-errors",
+
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/test/unit",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark_lua",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
+
+cc_test(
+    name = "roundtrip_starlark",
+    srcs = [
+        "roundtrip_starlark.c",
+        "roundtrip_starlark.h",
         "roundtrip_helper.c",
         "roundtrip_helper.h",
         "@uthash//:include",
@@ -407,7 +448,8 @@ genrule(
     name = "mkhdrs",
     srcs = [
         "//src:debug.c",
-        "roundtrip.c",
+        "roundtrip_starlark.c",
+        "roundtrip_moonlark.c",
         "roundtrip_helper.c",
         "lex_keywords.c",
         "lex_numbers.c",
@@ -424,7 +466,8 @@ genrule(
         # "parse_file.c",
     ],
     outs = [
-        "roundtrip.h",
+        "roundtrip_starlark.h",
+        "roundtrip_moonlark.h",
         "roundtrip_helper.h",
         "lex_keywords.h",
         "lex_numbers.h",
@@ -445,7 +488,8 @@ genrule(
         "SRCDIR1=`dirname $$SRC1`",
         "$(location @makeheaders//:makeheaders) \\",
         "    $(location //src:debug.c) \\",
-        "    $(location roundtrip.c) \\",
+        "    $(location roundtrip_starlark.c) \\",
+        "    $(location roundtrip_moonlark.c) \\",
         "    $(location roundtrip_helper.c) \\",
         "    $(location lex_keywords.c) \\",
         "    $(location lex_numbers.c) \\",

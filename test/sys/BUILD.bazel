@@ -1,0 +1,169 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+test_suite(
+    name = "sys",
+    tests = [
+        ":moonlark",
+        ":starlark",
+    ])
+
+cc_test(
+    name = "moonlark",
+    srcs = [
+        "test_moonlark.c",
+        "test_moonlark.h",
+        "moonlark_roundtrip.c",
+        "moonlark_roundtrip.h",
+        "//moonlark:moonlark_setup.c",
+        "//moonlark:moonlark_setup.h",
+        "@uthash//:include",
+    ],
+    data = [ # NB: globbing does not seem to work
+        "//test/lua:serialize.lua",
+
+        "//test/data:android.BUILD",
+        "//test/data:cpp.BUILD",
+        "//test/data:filegroup.BUILD",
+        "//test/data:gen.BUILD",
+        "//test/data:load_1.BUILD",
+        "//test/data:load_2.BUILD",
+        "//test/data:load_3.BUILD",
+        "//test/data:load_aliases_1.BUILD",
+        "//test/data:load_aliases_2.BUILD",
+        "//test/data:py.BUILD",
+        "//test/data:py_native.BUILD",
+        "//test/data:shell.BUILD",
+        "//test/data:windows_dll.BUILD",
+    ],
+    copts = [
+        "-std=c11",
+        "-pedantic-errors",
+
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/moonlark",
+        "-I", "$(GENDIR)/src/lib/moonlark", # libmoonlark.h
+        "-I$(GENDIR)/test/sys",
+
+        "-Ivendored/logc",
+        "-I", "vendored/lua-5.4.3/src",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    linkopts = [
+        "-L/Users/gar/bazel/obazl/moonlark/bazel-bin/vendored/lua-5.4.3/src", # /liblua.a
+        "-llua"
+    ],
+    deps = [
+        "//src/lib/moonlark",
+        "//vendored/logc",
+        "//vendored/unity",
+        "//vendored/lua-5.4.3/src:lua"
+    ],
+)
+
+cc_test(
+    name = "starlark",
+    srcs = [
+        "test_starlark.c",
+        "test_starlark.h",
+        "starlark_roundtrip.c",
+        "starlark_roundtrip.h",
+        "@uthash//:include",
+    ],
+    data = [ # NB: globbing does not seem to work
+        "//test/data:android.BUILD",
+        "//test/data:cpp.BUILD",
+        "//test/data:filegroup.BUILD",
+        "//test/data:gen.BUILD",
+        "//test/data:load_1.BUILD",
+        "//test/data:load_2.BUILD",
+        "//test/data:load_3.BUILD",
+        "//test/data:load_aliases_1.BUILD",
+        "//test/data:load_aliases_2.BUILD",
+        "//test/data:py.BUILD",
+        "//test/data:py_native.BUILD",
+        "//test/data:shell.BUILD",
+        "//test/data:windows_dll.BUILD",
+    ],
+    copts = [
+        "-std=c11",
+        "-pedantic-errors",
+
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/test/sys",
+        "-Ivendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/uthash/include",
+    ],
+    deps = [
+        "//src:starlark",
+        "//vendored/logc",
+        "//vendored/unity"
+    ],
+)
+
+################################################################
+genrule(
+    name = "mkhdrs",
+    srcs = [
+        "//moonlark:moonlark_setup.c",
+        "//src:debug.c",
+        "moonlark_roundtrip.c",
+        "starlark_roundtrip.c",
+        "test_starlark.c",
+        "test_moonlark.c"
+        # "lex_keywords.c",
+        # "lex_numbers.c",
+        # "lex_punctuation.c",
+        # "lex_strings.c",
+        # "syntax_call_expr.c",
+        # "syntax_dict.c",
+        # "syntax_expressions.c",
+        # "syntax_lists.c",
+        # "syntax_slices.c",
+        # "syntax_statements.c",
+        # "lex_file.c",
+        # "lua_file.c",
+        # "parse_file.c",
+    ],
+    outs = [
+        "moonlark_roundtrip.h",
+        "starlark_roundtrip.h",
+        "test_moonlark.h",
+        "test_starlark.h",
+        # "lex_keywords.h",
+        # "lex_numbers.h",
+        # "lex_punctuation.h",
+        # "lex_strings.h",
+        # "syntax_call_expr.h",
+        # "syntax_dict.h",
+        # "syntax_expressions.h",
+        # "syntax_lists.h",
+        # "syntax_slices.h",
+        # "syntax_statements.h",
+    ],
+    cmd = "\n".join([
+        "SRC1=$(location starlark_roundtrip.c)",
+        "SRCDIR1=`dirname $$SRC1`",
+        "$(location @makeheaders//:makeheaders) \\",
+        "    $(location //moonlark:moonlark_setup.c) \\",
+        "    $(location //src:debug.c) \\",
+        "    $(location moonlark_roundtrip.c) \\",
+        "    $(location starlark_roundtrip.c) \\",
+        "    $(location test_starlark.c) \\",
+        "    $(location test_moonlark.c)",
+        # "    $(location lex_keywords.c) \\",
+        # "    $(location lex_numbers.c) \\",
+        # "    $(location lex_punctuation.c) \\",
+        # "    $(location lex_strings.c) \\",
+        # "    $(location syntax_call_expr.c) \\",
+        # "    $(location syntax_dict.c) \\",
+        # "    $(location syntax_expressions.c) \\",
+        # "    $(location syntax_lists.c) \\",
+        # "    $(location syntax_slices.c) \\",
+        # "    $(location syntax_statements.c)",
+        "cp $${SRCDIR1}/*.h $(@D)",
+    ]),
+    tools = ["@makeheaders//:makeheaders"],
+    visibility = ["//visibility:public"]
+)

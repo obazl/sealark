@@ -18,7 +18,7 @@ LOCAL const int tk[42] = {
     TK_MINUS_EQ, TK_MINUS,
     TK_STAR_EQ, TK_STAR,
     TK_SLASH2_EQ, TK_SLASH2,
-    TK_DIV_EQ, TK_SLASH,
+    TK_SLASH_EQ, TK_SLASH,
     TK_PCT_EQ, TK_PCT,          /* 20 */
     TK_AMP_EQ, TK_AMP,
     TK_VBAR_EQ, TK_VBAR,
@@ -31,7 +31,7 @@ LOCAL const int tk[42] = {
     TK_LLANGLE_EQ, TK_LLANGLE, TK_LANGLE,
     TK_RRANGLE_EQ, TK_RRANGLE, TK_RANGLE,
     TK_EQ2, TK_EQ,
-    TK_ESC_BACKSLASH /* 42 */
+    TK_BACKSLASH2 /* 42 */
 };
 
 void setUp(void) {

@@ -38,7 +38,9 @@
 ** these libs are loaded by lua.c and are readily available to any Lua
 ** program
 */
+#ifdef MOONLARK
 #include "moonlark.h"
+#endif
 static const luaL_Reg loadedlibs[] = {
   {LUA_GNAME, luaopen_base},
   {LUA_LOADLIBNAME, luaopen_package},
@@ -50,7 +52,9 @@ static const luaL_Reg loadedlibs[] = {
   {LUA_MATHLIBNAME, luaopen_math},
   {LUA_UTF8LIBNAME, luaopen_utf8},
   {LUA_DBLIBNAME, luaopen_debug},
+#ifdef MOONLARK
   {"moonlark", luaopen_moonlark},
+#endif
 
   {NULL, NULL}
 };

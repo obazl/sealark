@@ -1,9 +1,26 @@
-exports_files(["moonlark_edit.lua", "moonlark_serialize.lua"])
+exports_files(["moonlark_setup.c"])
 
 cc_binary(
     name = "repl",
     srcs = [
         "//vendored/lua-5.4.3/src:lua.c",
+        "//vendored/lua-5.4.3/src:lua.h",
+        "//vendored/lua-5.4.3/src:srcs",
+        "//bindings/lua:moonlark.c",
+        "//bindings/lua:moonlark.h",
+        # moonlark C impl code:
+        # "//src/lib/moonlark:libmoonlark.h",
+        # "//src/lib/moonlark:moonlark_api.h",
+        # "//src/lib/moonlark:moonlark_config.c",
+        # "//src/lib/moonlark:moonlark_config.h",
+    ],
+    copts = [
+        "-I$(GENDIR)/bindings/lua", # moonlark.h
+        # "-I$(GENDIR)/moonlark",
+        "-I$(GENDIR)/src/lib/moonlark", # libmoonlark.h
+        "-Iexternal/uthash/include",
+        "-Ivendored/logc",
+        "-Ivendored/lua-5.4.3/src",
     ],
     defines = [
         "LUA_USE_MACOSX",
@@ -13,15 +30,21 @@ cc_binary(
         "-ldl",
     ],
     deps = [
-        "//vendored/lua-5.4.3/src:lua"
+        "//src/lib/moonlark",   # C libmoonlark
+        "//vendored/logc",
+        "//vendored/lua-5.4.3/src:lualark" # lua runtime
     ],
     visibility = ["//visibility:public"],
 )
 
 cc_binary(
     name  = "edit",
+    linkstatic = 1,
     srcs  = [
         "edit.c",
+        "edit.h",
+        "moonlark_setup.c",
+        "moonlark_setup.h",
         "//src:debug.c",
         "//src:debug.h",
         "@uthash//:include",
@@ -32,8 +55,9 @@ cc_binary(
         "-pedantic-errors",
 
         "-I", "src",
+        "-I", "$(GENDIR)/moonlark",
         "-I", "$(GENDIR)/src",     # starlark.h
-        "-I", "$(GENDIR)/src/lua", # starlark_lua.h
+        "-I", "$(GENDIR)/src/lib/moonlark", # libmoonlark.h
 
         "-I", "vendored/logc",
         "-I", "external/obazl/vendored/logc",
@@ -44,14 +68,34 @@ cc_binary(
         "-I", "external/uthash/include",
     ],
     deps = [
-        # # ":lexis",
-        # # ":syntaxis",
         # "//src:starlark",
-        "//src/lua:starlark_lua",
+        "//src/lib/moonlark:moonlark",
         "//vendored/logc",
-        "//vendored/lua-5.4.3/src:lua"
+        # libmoonlark pulls in liblualark
+        # "//vendored/lua-5.4.3/src:lua"
     ],
-    linkstatic = 1
 )
 
-
+genrule(
+    name = "mkhdrs",
+    srcs = [
+        # "//src:debug.c",
+        "edit.c",
+        "moonlark_setup.c",
+    ],
+    outs = [
+        "edit.h",
+        "moonlark_setup.h",
+    ],
+    cmd = "\n".join([
+        "SRC1=$(location edit.c)",
+        "SRCDIR1=`dirname $$SRC1`",
+        "$(location @makeheaders//:makeheaders) \\",
+        # "    $(location //src:debug.c) \\",
+        "    $(location edit.c) \\",
+        "    $(location moonlark_setup.c)",
+        "cp $${SRCDIR1}/*.h $(@D)",
+    ]),
+    tools = ["@makeheaders//:makeheaders"],
+    visibility = ["//visibility:public"]
+)

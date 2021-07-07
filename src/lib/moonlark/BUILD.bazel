@@ -1,30 +1,29 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
-exports_files(["starlark_lua_api.c", "starlark_lua_config.c"])
+exports_files(["moonlark_api.c", "moonlark_config.c"])
 
 ##########
 cc_library(
-    name  = "starlark_lua",
+    name  = "moonlark",
     # alwayslink = True,
     # linkstatic = 1,
     srcs  = [
-        "starlark_lua_api.c",
-        "starlark_lua_api.h",
-        "starlark_lua_config.c",
-        "starlark_lua_config.h",
-        "lua_debug.c",
-        "lua_debug.h",
+        "moonlark_api.c",
+        "moonlark_api.h",
+        "moonlark_config.c",
+        "moonlark_config.h",
         "//src:debug.c",
         "@uthash//:include",
-        "//vendored/logc:log.h"
+        "//vendored/logc:log.h",
+        "libmoonlark.h"
     ],
     hdrs = [
-        "starlark_lua.h"
+        "libmoonlark.h"
     ],
-    data = [
-        "//moonlark:moonlark_edit.lua",
-        "//moonlark:moonlark_serialize.lua"
-    ],
+    # data = [
+    #     "//moonlark/lua:moonlark_edit.lua",
+    #     "//moonlark/lua:moonlark_serialize.lua"
+    # ],
     defines = select({
         "//bzl/host:debug": ["DEBUG_TRACE"],
         "//conditions:default":   []
@@ -34,8 +33,14 @@ cc_library(
         "-pedantic-errors",
         "-g", "-O0",
 
+        "-I.",
+        "-I$(GENDIR)",
+        "-IFOOBAR",
+
         "-I", "$(GENDIR)/src",  # starlark.h
-        "-I", "$(GENDIR)/src/lua", # starlark_lua_api.h
+        "-I", "$(GENDIR)/src/lib/moonlark", # moonlark_*.h
+        "-I", "$(GENDIR)/external/src/lib/moonlark", # moonlark_*.h
+        "-I", "src/lib/moonlark", # moonlark_*.h
 
         "-I", "external/uthash/include",
 
@@ -45,10 +50,10 @@ cc_library(
         # "-I", "external/obazl/vendored/logc",
     #     "-I", "external/tools_obazl/vendored/logc"
     ],
-    linkopts = [
-        "-L/usr/local/lib",     # FIXME
-        "-llua",
-    ],
+    # linkopts = [
+    #     "-L/usr/local/lib",     # FIXME
+    #     "-llua",
+    # ],
     deps = [
         "//src:starlark",
         # "//src/lib/obazl_utils",
@@ -64,20 +69,20 @@ genrule(
     name = "mkhdrs",
     visibility = ["//visibility:public"],
     srcs = [
-        "starlark_lua_api.c",
-        "starlark_lua_config.c",
-        "lua_debug.c",
+        "moonlark_api.c",
+        "moonlark_config.c",
+        # "lua_debug.c",
         "//src:debug.c",
         # "//src:nodes.c",
         "//src:starlark.h"
     ],
     outs = [
-        "starlark_lua_api.h",
-        "starlark_lua_config.h",
-        "lua_debug.h",
+        "moonlark_api.h",
+        "moonlark_config.h",
+        # "lua_debug.h",
     ],
     cmd = "\n".join([
-        "SRC1=$(location starlark_lua_api.c)",
+        "SRC1=$(location moonlark_api.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "SRC2=$(location //src:debug.c)",
         "SRCDIR2=`dirname $$SRC2`",
@@ -85,9 +90,9 @@ genrule(
         "    $(location //src:debug.c) \\",
         # "    $(location //src:nodes.c) \\",
         "    $(location //src:starlark.h) \\",
-        "    $(location starlark_lua_api.c) \\",
-        "    $(location starlark_lua_config.c) \\",
-        "    $(location lua_debug.c)",
+        "    $(location moonlark_api.c) \\",
+        "    $(location moonlark_config.c)",
+        # "    $(location lua_debug.c)",
         "cp $$SRCDIR1/*.h $(@D)",
     ]),
     tools = ["@makeheaders//:makeheaders"]
@@ -97,9 +102,9 @@ genrule(
     name = "mkhdrs-export",
     visibility = ["//visibility:public"],
     srcs = [
-        "starlark_lua_api.c",
-        "starlark_lua_config.c",
-        "lua_debug.c",
+        "moonlark_api.c",
+        "moonlark_config.c",
+        # "lua_debug.c",
 
         "//src:debug.c",
         "//src:constants.c",
@@ -112,10 +117,10 @@ genrule(
         "@uthash//:include",
     ],
     outs = [
-        "starlark_lua.h",
+        "libmoonlark.h",
     ],
     cmd = "\n".join([
-        "SRC1=$(location starlark_lua_api.c)",
+        "SRC1=$(location moonlark_api.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "SRC2=$(location //src:debug.c)",
         "SRCDIR2=`dirname $$SRC2`",
@@ -128,9 +133,9 @@ genrule(
         "    $(location //src:serialize.c) \\",
         "    $(location //src:syntaxis.h) \\",
         # "    $(location //src:starlark.h) \\",
-        "    $(location starlark_lua_api.c) \\",
-        "    $(location starlark_lua_config.c) \\",
-        "    $(location lua_debug.c) \\",
+        "    $(location moonlark_api.c) \\",
+        "    $(location moonlark_config.c) \\",
+        # "    $(location lua_debug.c) \\",
         "    > $@"
         # "cp $$SRCDIR1/*.h $(@D)",
     ]),
