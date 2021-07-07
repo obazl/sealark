@@ -8,14 +8,14 @@ cc_binary(
     srcs  = [
         "lex_file.c",
         "lex_file.h",
-        "//src:debug.c",
+        "//src/lib/starlark:debug.c",
         "@uthash//:include",
     ],
     copts = [
         "-std=c11",
         "-pedantic-errors",
 
-        "-I", "$(GENDIR)/src",
+        "-I", "$(GENDIR)/src/lib/starlark",
         "-I", "$(GENDIR)/test",
 
         "-I", "vendored/logc",
@@ -26,7 +26,7 @@ cc_binary(
     ],
     defines = ["DEBUG", "DEBUG_TRACE"],
     deps = [
-        "//src:starlark",
+        "//src/lib/starlark:starlark",
         "//vendored/logc"
     ],
     # linkopts = select({
@@ -42,7 +42,7 @@ cc_binary(
     srcs  = [
         "lua_file.c",
         "lua_file.h",
-        "//src:debug.c",
+        "//src/lib/starlark:debug.c",
         "@uthash//:include",
     ],
     defines = ["DEBUG", "DEBUG_TRACE"],
@@ -51,8 +51,8 @@ cc_binary(
         "-pedantic-errors",
 
         "-I", "src",
-        "-I", "$(GENDIR)/src",     # starlark.h
-        "-I", "$(GENDIR)/src/lua", # starlark_lua.h
+        "-I", "$(GENDIR)/src/lib/starlark", # starlark.h
+        "-I", "$(GENDIR)/src/lib/moonlark", # libmoonlark.h
         "-I", "$(GENDIR)/test",
 
         "-I", "vendored/logc",
@@ -64,8 +64,8 @@ cc_binary(
         "-I", "external/uthash/include",
     ],
     deps = [
-        # "//src:starlark",
-        "//src/lua:starlark_lua",
+        # "//src/lib/starlark",
+        "//src/lib/moonlark",
         "//vendored/logc",
         "//vendored/lua-5.4.3/src:lua"
     ],
@@ -78,14 +78,14 @@ cc_binary(
     srcs  = [
         "parse_file.c",
         "parse_file.h",
-        "//src:debug.c",
+        "//src/lib/starlark:debug.c",
         "@uthash//:include",
     ],
     copts = [
         "-std=c11",
         "-pedantic-errors",
 
-        "-I", "$(GENDIR)/src",
+        "-I", "$(GENDIR)/src/lib/starlark",
         "-I", "$(GENDIR)/test",
 
         "-I", "vendored/logc",
@@ -96,7 +96,7 @@ cc_binary(
     ],
     defines = ["DEBUG", "DEBUG_TRACE"],
     deps = [
-        "//src:starlark",
+        "//src/lib/starlark",
         "//vendored/logc"
     ],
     linkstatic = 1
@@ -107,7 +107,7 @@ cc_binary(
 genrule(
     name = "mkhdrs",
     srcs = [
-        "//src:debug.c",
+        "//src/lib/starlark:debug.c",
         "lex_file.c",
         "lua_file.c",
         "parse_file.c",
@@ -121,7 +121,7 @@ genrule(
         "SRC1=$(location lex_file.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "$(location @makeheaders//:makeheaders) \\",
-        "    $(location //src:debug.c) \\",
+        "    $(location //src/lib/starlark:debug.c) \\",
         "    $(location lex_file.c) \\",
         "    $(location lua_file.c) \\",
         "    $(location parse_file.c)",

@@ -13,8 +13,6 @@ test_suite(
         ":slices",
         ":statements",
         ":strings",
-
-        ":roundtrip_starlark",
     ])
 
 # LEXIS
@@ -23,20 +21,20 @@ cc_test(
     srcs = [
         "lex_keywords.c",
         "lex_keywords.h",
-        "//src:debug.c",
+        "//src/lib/starlark:debug.c",
         "@uthash//:include",
     ],
     copts = [
         "-std=c11",
         "-pedantic-errors",
-        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src/lib/starlark",
         "-I$(GENDIR)/test/unit",
         "-Ivendored/logc",
         "-Ivendored/unity",
         "-Iexternal/uthash/include",
     ],
     deps = [
-        "//src:starlark",
+        "//src/lib/starlark:starlark",
         "//vendored/logc",
         "//vendored/unity"
     ],
@@ -47,13 +45,13 @@ cc_test(
     srcs = [
         "lex_numbers.c",
         "lex_numbers.h",
-        "//src:debug.c",
+        "//src/lib/starlark:debug.c",
         "@uthash//:include",
     ],
     copts = [
         "-std=c11",
         "-pedantic-errors",
-        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src/lib/starlark",
         "-I$(GENDIR)/src/include",
         "-I$(GENDIR)/test/unit",
         "-Ivendored/logc",
@@ -61,7 +59,7 @@ cc_test(
         "-Iexternal/uthash/include",
     ],
     deps = [
-        "//src:starlark",
+        "//src/lib/starlark:starlark",
         "//vendored/logc",
         "//vendored/unity"
     ],
@@ -77,14 +75,14 @@ cc_test(
     copts = [
         "-std=c11",
         "-pedantic-errors",
-        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src/lib/starlark",
         "-I$(GENDIR)/test/unit",
         "-Ivendored/logc",
         "-Ivendored/unity",
         "-Iexternal/uthash/include",
     ],
     deps = [
-        "//src:starlark",
+        "//src/lib/starlark:starlark",
         "//vendored/logc",
         "//vendored/unity"
     ],
@@ -95,20 +93,20 @@ cc_test(
     srcs = [
         "lex_strings.c",
         "lex_strings.h",
-        "//src:debug.c",
+        "//src/lib/starlark:debug.c",
         "@uthash//:include",
     ],
     copts = [
         "-std=c11",
         "-pedantic-errors",
-        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src/lib/starlark",
         "-I$(GENDIR)/test/unit",
         "-Ivendored/logc",
         "-Ivendored/unity",
         "-Iexternal/uthash/include",
     ],
     deps = [
-        "//src:starlark",
+        "//src/lib/starlark:starlark",
         "//vendored/logc",
         "//vendored/unity"
     ],
@@ -125,14 +123,14 @@ cc_test(
     copts = [
         "-std=c11",
         "-pedantic-errors",
-        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src/lib/starlark",
         "-I$(GENDIR)/test/unit",
         "-Ivendored/logc",
         "-Ivendored/unity",
         "-Iexternal/uthash/include",
     ],
     deps = [
-        "//src:starlark",
+        "//src/lib/starlark:starlark",
         "//vendored/logc",
         "//vendored/unity"
     ],
@@ -148,14 +146,14 @@ cc_test(
     copts = [
         "-std=c11",
         "-pedantic-errors",
-        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src/lib/starlark",
         "-I$(GENDIR)/test/unit",
         "-Ivendored/logc",
         "-Ivendored/unity",
         "-Iexternal/uthash/include",
     ],
     deps = [
-        "//src:starlark",
+        "//src/lib/starlark:starlark",
         "//vendored/logc",
         "//vendored/unity"
     ],
@@ -171,14 +169,14 @@ cc_test(
     copts = [
         "-std=c11",
         "-pedantic-errors",
-        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src/lib/starlark",
         "-I$(GENDIR)/test/unit",
         "-Ivendored/logc",
         "-Ivendored/unity",
         "-Iexternal/uthash/include",
     ],
     deps = [
-        "//src:starlark",
+        "//src/lib/starlark:starlark",
         "//vendored/logc",
         "//vendored/unity"
     ],
@@ -194,14 +192,14 @@ cc_test(
     copts = [
         "-std=c11",
         "-pedantic-errors",
-        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src/lib/starlark",
         "-I$(GENDIR)/test/unit",
         "-Ivendored/logc",
         "-Ivendored/unity",
         "-Iexternal/uthash/include",
     ],
     deps = [
-        "//src:starlark",
+        "//src/lib/starlark:starlark",
         "//vendored/logc",
         "//vendored/unity"
     ],
@@ -217,14 +215,14 @@ cc_test(
     copts = [
         "-std=c11",
         "-pedantic-errors",
-        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src/lib/starlark",
         "-I$(GENDIR)/test/unit",
         "-Ivendored/logc",
         "-Ivendored/unity",
         "-Iexternal/uthash/include",
     ],
     deps = [
-        "//src:starlark",
+        "//src/lib/starlark:starlark",
         "//vendored/logc",
         "//vendored/unity"
     ],
@@ -240,14 +238,14 @@ cc_test(
     copts = [
         "-std=c11",
         "-pedantic-errors",
-        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src/lib/starlark",
         "-I$(GENDIR)/test/unit",
         "-Ivendored/logc",
         "-Ivendored/unity",
         "-Iexternal/uthash/include",
     ],
     deps = [
-        "//src:starlark",
+        "//src/lib/starlark:starlark",
         "//vendored/logc",
         "//vendored/unity"
     ],
@@ -267,7 +265,7 @@ cc_test(
 #         "-std=c11",
 #         "-pedantic-errors",
 
-#         "-I", "$(GENDIR)/src",
+#         "-I", "$(GENDIR)/src/lib/starlark",
 #         "-I", "$(GENDIR)/test/unit",
 
 #         "-I", "vendored/logc",
@@ -278,7 +276,7 @@ cc_test(
 #     ],
 #     defines = ["DEBUG", "DEBUG_TRACE"],
 #     deps = [
-#         "//src:starlark",
+#         "//src/lib/starlark:starlark",
 #         "//vendored/logc"
 #     ],
 #     # linkopts = select({
@@ -303,21 +301,21 @@ cc_test(
 #         "-pedantic-errors",
 
 #         "-I", "src",
-#         "-I", "$(GENDIR)/src",     # starlark.h
-#         "-I", "$(GENDIR)/src/lua", # starlark_lua.h
+#         "-I", "$(GENDIR)/src/lib/starlark",     # starlark.h
+#         "-I", "$(GENDIR)/src/lib/moonlark",
 #         "-I", "$(GENDIR)/test/unit",
 
 #         "-I", "vendored/logc",
 #         "-I", "external/obazl/vendored/logc",
 #         "-I", "external/tools_obazl/vendored/logc",
 
-#         "-I", "vendored/lua-5.4.3/src",
+#         "-I", "vendored/lua-5.4.3/src/lib/starlark",
 
 #         "-I", "external/uthash/include",
 #     ],
 #     deps = [
-#         # "//src:starlark",
-#         "//src/lua:starlark_lua",
+#         # "//src/lib/starlark:starlark",
+#         "//src/lib/moonlark",
 #         "//vendored/logc",
 #         "//vendored/lua-5.4.3/src:lua"
 #     ],
@@ -344,7 +342,7 @@ cc_test(
 #         "-std=c11",
 #         "-pedantic-errors",
 
-#         "-I", "$(GENDIR)/src",
+#         "-I", "$(GENDIR)/src/lib/starlark",
 #         "-I", "$(GENDIR)/test/unit",
 
 #         "-I", "vendored/logc",
@@ -355,102 +353,102 @@ cc_test(
 #     ],
 #     defines = ["DEBUG", "DEBUG_TRACE"],
 #     deps = [
-#         "//src:starlark",
+#         "//src/lib/starlark:starlark",
 #         "//vendored/logc"
 #     ],
 #     linkstatic = 1
 # )
 
-cc_test(
-    name = "roundtrip_moonlark",
-    srcs = [
-        "roundtrip_moonlark.c",
-        "roundtrip_moonlark.h",
-        "roundtrip_helper.c",
-        "roundtrip_helper.h",
-        "@uthash//:include",
-    ],
-    data = [ # NB: globbing does not seem to work
-        "//test/data:android.BUILD",
-        "//test/data:cpp.BUILD",
-        "//test/data:filegroup.BUILD",
-        "//test/data:gen.BUILD",
-        "//test/data:load_1.BUILD",
-        "//test/data:load_2.BUILD",
-        "//test/data:load_3.BUILD",
-        "//test/data:load_aliases_1.BUILD",
-        "//test/data:load_aliases_2.BUILD",
-        "//test/data:py.BUILD",
-        "//test/data:py_native.BUILD",
-        "//test/data:shell.BUILD",
-        "//test/data:windows_dll.BUILD",
-    ],
-    copts = [
-        "-std=c11",
-        "-pedantic-errors",
+# cc_test(
+#     name = "roundtrip_moonlark",
+#     srcs = [
+#         "roundtrip_moonlark.c",
+#         "roundtrip_moonlark.h",
+#         "roundtrip_helper.c",
+#         "roundtrip_helper.h",
+#         "@uthash//:include",
+#     ],
+#     data = [ # NB: globbing does not seem to work
+#         "//test/data:android.BUILD",
+#         "//test/data:cpp.BUILD",
+#         "//test/data:filegroup.BUILD",
+#         "//test/data:gen.BUILD",
+#         "//test/data:load_1.BUILD",
+#         "//test/data:load_2.BUILD",
+#         "//test/data:load_3.BUILD",
+#         "//test/data:load_aliases_1.BUILD",
+#         "//test/data:load_aliases_2.BUILD",
+#         "//test/data:py.BUILD",
+#         "//test/data:py_native.BUILD",
+#         "//test/data:shell.BUILD",
+#         "//test/data:windows_dll.BUILD",
+#     ],
+#     copts = [
+#         "-std=c11",
+#         "-pedantic-errors",
 
-        "-I$(GENDIR)/src",
-        "-I$(GENDIR)/test/unit",
-        "-Ivendored/logc",
-        "-Ivendored/unity",
-        "-Iexternal/uthash/include",
-    ],
-    deps = [
-        "//src:starlark_lua",
-        "//vendored/logc",
-        "//vendored/unity"
-    ],
-)
+#         "-I$(GENDIR)/src/lib/starlark",
+#         "-I$(GENDIR)/test/unit",
+#         "-Ivendored/logc",
+#         "-Ivendored/unity",
+#         "-Iexternal/uthash/include",
+#     ],
+#     deps = [
+#         "//src/lib/moonlark",
+#         "//vendored/logc",
+#         "//vendored/unity"
+#     ],
+# )
 
-cc_test(
-    name = "roundtrip_starlark",
-    srcs = [
-        "roundtrip_starlark.c",
-        "roundtrip_starlark.h",
-        "roundtrip_helper.c",
-        "roundtrip_helper.h",
-        "@uthash//:include",
-    ],
-    data = [ # NB: globbing does not seem to work
-        "//test/data:android.BUILD",
-        "//test/data:cpp.BUILD",
-        "//test/data:filegroup.BUILD",
-        "//test/data:gen.BUILD",
-        "//test/data:load_1.BUILD",
-        "//test/data:load_2.BUILD",
-        "//test/data:load_3.BUILD",
-        "//test/data:load_aliases_1.BUILD",
-        "//test/data:load_aliases_2.BUILD",
-        "//test/data:py.BUILD",
-        "//test/data:py_native.BUILD",
-        "//test/data:shell.BUILD",
-        "//test/data:windows_dll.BUILD",
-    ],
-    copts = [
-        "-std=c11",
-        "-pedantic-errors",
+# cc_test(
+#     name = "roundtrip_starlark",
+#     srcs = [
+#         "roundtrip_starlark.c",
+#         "roundtrip_starlark.h",
+#         "roundtrip_helper.c",
+#         "roundtrip_helper.h",
+#         "@uthash//:include",
+#     ],
+#     data = [ # NB: globbing does not seem to work
+#         "//test/data:android.BUILD",
+#         "//test/data:cpp.BUILD",
+#         "//test/data:filegroup.BUILD",
+#         "//test/data:gen.BUILD",
+#         "//test/data:load_1.BUILD",
+#         "//test/data:load_2.BUILD",
+#         "//test/data:load_3.BUILD",
+#         "//test/data:load_aliases_1.BUILD",
+#         "//test/data:load_aliases_2.BUILD",
+#         "//test/data:py.BUILD",
+#         "//test/data:py_native.BUILD",
+#         "//test/data:shell.BUILD",
+#         "//test/data:windows_dll.BUILD",
+#     ],
+#     copts = [
+#         "-std=c11",
+#         "-pedantic-errors",
 
-        "-I$(GENDIR)/src",
-        "-I$(GENDIR)/test/unit",
-        "-Ivendored/logc",
-        "-Ivendored/unity",
-        "-Iexternal/uthash/include",
-    ],
-    deps = [
-        "//src:starlark",
-        "//vendored/logc",
-        "//vendored/unity"
-    ],
-)
+#         "-I$(GENDIR)/src/lib/starlark",
+#         "-I$(GENDIR)/test/unit",
+#         "-Ivendored/logc",
+#         "-Ivendored/unity",
+#         "-Iexternal/uthash/include",
+#     ],
+#     deps = [
+#         "//src/lib/starlark:starlark",
+#         "//vendored/logc",
+#         "//vendored/unity"
+#     ],
+# )
 
 ################################################################
 genrule(
     name = "mkhdrs",
     srcs = [
-        "//src:debug.c",
-        "roundtrip_starlark.c",
-        "roundtrip_moonlark.c",
-        "roundtrip_helper.c",
+        "//src/lib/starlark:debug.c",
+        # "roundtrip_starlark.c",
+        # "roundtrip_moonlark.c",
+        # "roundtrip_helper.c",
         "lex_keywords.c",
         "lex_numbers.c",
         "lex_punctuation.c",
@@ -466,9 +464,6 @@ genrule(
         # "parse_file.c",
     ],
     outs = [
-        "roundtrip_starlark.h",
-        "roundtrip_moonlark.h",
-        "roundtrip_helper.h",
         "lex_keywords.h",
         "lex_numbers.h",
         "lex_punctuation.h",
@@ -487,10 +482,7 @@ genrule(
         "SRC1=$(location lex_strings.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "$(location @makeheaders//:makeheaders) \\",
-        "    $(location //src:debug.c) \\",
-        "    $(location roundtrip_starlark.c) \\",
-        "    $(location roundtrip_moonlark.c) \\",
-        "    $(location roundtrip_helper.c) \\",
+        "    $(location //src/lib/starlark:debug.c) \\",
         "    $(location lex_keywords.c) \\",
         "    $(location lex_numbers.c) \\",
         "    $(location lex_punctuation.c) \\",

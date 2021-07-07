@@ -45,8 +45,8 @@ cc_binary(
         "edit.h",
         "moonlark_setup.c",
         "moonlark_setup.h",
-        "//src:debug.c",
-        "//src:debug.h",
+        "//src/lib/starlark:debug.c",
+        "//src/lib/starlark:debug.h",
         "@uthash//:include",
     ],
     defines = ["DEBUG", "DEBUG_TRACE"],
@@ -56,7 +56,7 @@ cc_binary(
 
         "-I", "src",
         "-I", "$(GENDIR)/moonlark",
-        "-I", "$(GENDIR)/src",     # starlark.h
+        "-I", "$(GENDIR)/src/lib/starlark", # starlark.h etc.
         "-I", "$(GENDIR)/src/lib/moonlark", # libmoonlark.h
 
         "-I", "vendored/logc",
@@ -68,7 +68,7 @@ cc_binary(
         "-I", "external/uthash/include",
     ],
     deps = [
-        # "//src:starlark",
+        # "//src/lib/starlark:starlark",
         "//src/lib/moonlark:moonlark",
         "//vendored/logc",
         # libmoonlark pulls in liblualark
@@ -79,7 +79,7 @@ cc_binary(
 genrule(
     name = "mkhdrs",
     srcs = [
-        # "//src:debug.c",
+        # "//src/lib/starlark:debug.c",
         "edit.c",
         "moonlark_setup.c",
     ],
@@ -91,7 +91,7 @@ genrule(
         "SRC1=$(location edit.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "$(location @makeheaders//:makeheaders) \\",
-        # "    $(location //src:debug.c) \\",
+        # "    $(location //src/lib/starlark:debug.c) \\",
         "    $(location edit.c) \\",
         "    $(location moonlark_setup.c)",
         "cp $${SRCDIR1}/*.h $(@D)",

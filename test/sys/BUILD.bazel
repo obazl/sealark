@@ -39,13 +39,13 @@ cc_test(
         "-std=c11",
         "-pedantic-errors",
 
-        "-I$(GENDIR)/src",
         "-I$(GENDIR)/moonlark",
-        "-I", "$(GENDIR)/src/lib/moonlark", # libmoonlark.h
+        "-I$(GENDIR)/src/lib/starlark",
+        "-I$(GENDIR)/src/lib/moonlark", # libmoonlark.h
         "-I$(GENDIR)/test/sys",
 
         "-Ivendored/logc",
-        "-I", "vendored/lua-5.4.3/src",
+        "-Ivendored/lua-5.4.3/src",
         "-Ivendored/unity",
         "-Iexternal/uthash/include",
     ],
@@ -89,14 +89,14 @@ cc_test(
         "-std=c11",
         "-pedantic-errors",
 
-        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src/lib/starlark",
         "-I$(GENDIR)/test/sys",
         "-Ivendored/logc",
         "-Ivendored/unity",
         "-Iexternal/uthash/include",
     ],
     deps = [
-        "//src:starlark",
+        "//src/lib/starlark",
         "//vendored/logc",
         "//vendored/unity"
     ],
@@ -107,7 +107,7 @@ genrule(
     name = "mkhdrs",
     srcs = [
         "//moonlark:moonlark_setup.c",
-        "//src:debug.c",
+        "//src/lib/starlark:debug.c",
         "moonlark_roundtrip.c",
         "starlark_roundtrip.c",
         "test_starlark.c",
@@ -147,7 +147,7 @@ genrule(
         "SRCDIR1=`dirname $$SRC1`",
         "$(location @makeheaders//:makeheaders) \\",
         "    $(location //moonlark:moonlark_setup.c) \\",
-        "    $(location //src:debug.c) \\",
+        "    $(location //src/lib/starlark:debug.c) \\",
         "    $(location moonlark_roundtrip.c) \\",
         "    $(location starlark_roundtrip.c) \\",
         "    $(location test_starlark.c) \\",

@@ -12,12 +12,6 @@ cc_binary(
     srcs  = [
         "moonlark.c",
         "moonlark.h",
-        # internal lua api:
-        # "//src/starlark.h",
-        # "//src/lib/moonlark:moonlark.c",
-        # "//src/lib/moonlark:moonlark.h",
-        # "//src/lib/moonlark:moonlark_config.c",
-        # "//src/lib/moonlark:moonlark_config.h"
     ],
     data = [
         # "//external/lua/lib:lua",
@@ -36,7 +30,7 @@ cc_binary(
         "-I", "vendored/lua-5.4.3/src",
     ],
     deps = [
-        "//src:starlark",
+        "//src/lib/starlark",
         "//src/lib/moonlark",
         "//vendored/lua-5.4.3/src:lualark",
         "//vendored/logc",

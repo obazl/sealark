@@ -92,7 +92,7 @@ cc_library(
         "-I", "vendored/lua-5.4.3/src",
     ],
     deps = [
-        # "//src:starlark",
+        # "//src/lib/starlark:starlark",
         # we cannot depend on starlark_lua on pain of circularity
         # instead we are compiling it here
         # # "//src/lib/moonlark:moonlark,
@@ -209,7 +209,7 @@ cc_library(
         "-I", "vendored/lua-5.4.3/src",
     ],
     deps = [
-        "//src:starlark",
+        "//src/lib/starlark",
         "//src/lib/moonlark",
         "//vendored/logc",
     ],
