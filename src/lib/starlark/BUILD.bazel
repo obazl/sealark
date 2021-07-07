@@ -31,14 +31,14 @@ cc_library(
         "-pedantic-errors",
         "-I", ".",
         "-I", "$(GENDIR)/src/lib/starlark",
-        "-I", "$(GENDIR)/external/libstarlark/src",
+        "-I", "$(GENDIR)/external/moonlark/src/lib/starlark",
 
         "-I", "vendored",
         "-I", "vendored/uthash",
         "-I", "$(GENDIR)/vendored/uthash",
 
         "-I", "vendored/logc",
-        "-I", "external/libstarlark/vendored/logc",
+        "-I", "external/moonlark/vendored/logc",
     ],
     deps = [
         ":lexis",
@@ -68,10 +68,10 @@ cc_library(
         "-I", ".",              # syntaxis.h
 
         "-I", "$(GENDIR)/src/lib/starlark",
-        "-I", "$(GENDIR)/external/libstarlark/src",
+        "-I", "$(GENDIR)/external/moonlark/src",
 
         "-I", "vendored/logc",
-        "-I", "external/libstarlark/vendored/logc",
+        "-I", "external/moonlark/vendored/logc",
 
         "-I", "vendored/uthash",
 
@@ -128,12 +128,12 @@ cc_library(
         "-I", "src",
 
         "-I", "$(GENDIR)/src/lib/starlark",
-        "-I", "$(GENDIR)/external/libstarlark/src",
+        "-I", "$(GENDIR)/external/moonlark/src/lib/starlark",
 
         "-I", "vendored/uthash",
 
         "-I", "vendored/logc",
-        "-I", "external/libstarlark/vendored/logc",
+        "-I", "external/moonlark/vendored/logc",
     ],
     defines = select({
         "//bzl/host:debug": ["DEBUG_TRACE"],
