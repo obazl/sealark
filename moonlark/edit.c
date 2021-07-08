@@ -37,9 +37,21 @@ int main(int argc, char *argv[]) // , char **envp)
     /* } */
     /* return 0; */
 
+    /* CAVEAT: bazel behaves erratically when used as a launcher. The
+       RUNFILES env. vars may or may not be defined, depending on
+       whether run cmd was 'run' or 'test', and whether 'run' is used
+       to launch a cc_binary or a cc_test target. */
+    char *rfdir = getenv("RUNFILES_DIR");
+    log_debug("RUNFILES_DIR: %s", rfdir);
+    char *rfmanifest = getenv("RUNFILES_MANIFEST_FILE");
+    log_debug("RUNFILES_MANIFEST_FILE: %s", rfmanifest);
+
     int opt;
+    /* bazel_lua_cb is determined by data attrib of build rule; used
+       to find bazel_luadir */
+    char *bazel_lua_cb = "edit.lua";
     char *user_luadir;
-    char *lua_file;
+    char *lua_file = NULL;
     char *callback = "moonlark_handler"; /* callback defined in lua_file */
     char *build_file;
     /* utstring_new(build_file); */

@@ -233,7 +233,7 @@ EXPORT void moonlark_lua_call_user_handler(lua_State *L, char *handler)
     /* const char *msg = lua_tostring(L, -1); */
     /* lua_pop(L, 1);  /\* pop returned value *\/ */
 
-    log_debug("lua user-provided 'init' returned");
+    log_debug("lua user-provided callback '%s' returned", handler);
 }
 
 void lerror (lua_State *L, const char *fmt, ...) {
@@ -264,7 +264,10 @@ void lerror (lua_State *L, const char *fmt, ...) {
 
 EXPORT void moonlark_augment_load_path(lua_State *L, char *path)
 {
+    if (path == NULL) return;
+
     log_debug("moonlark_augment_load_path %s", path);
+
     UT_string *load_path;
     utstring_new(load_path);
 

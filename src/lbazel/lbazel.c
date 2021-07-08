@@ -33,8 +33,10 @@ char *lbazel_get_luadir(char *luafile)
     ssize_t read;
 
     fp = fopen(utstring_body(manifest), "r");
-    if (fp == NULL)
+    if (fp == NULL) {
+        log_error("fopen failure %s", utstring_body(manifest));
         exit(EXIT_FAILURE);
+    }
 
     char *token;
     while ((read = getline(&line, &len, fp)) != -1) {

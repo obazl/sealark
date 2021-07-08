@@ -1137,7 +1137,7 @@ dot_suffix(DotSfx) ::= DOT(Dot) ID(Id) .
 /* %%%% CallSuffix primary expr - type TK_Call_Expr */
 primary_expr(PrimX) ::= primary_expr(PrimX_rhs) call_suffix(CallSfx) .
 {
-    log_trace(">>primary_expr(PrimX) ::= primary_expr(PrimX_rhs) call_suffix(CallSfx)");
+    log_trace(">>primary_expr ::= primary_expr call_suffix");
     PrimX = calloc(sizeof(struct node_s), 1);
     PrimX->type = TK_Call_Expr; // TK_Primary_Expr;
     PrimX->line  = PrimX_rhs->line;
