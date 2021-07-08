@@ -65,56 +65,6 @@ char *bazel_get_luadir(char *luafile)
     return bazel_luadir;
 }
 
-LOCAL void _lua_create_tokens_enum(lua_State *L)
-{
-    /* log_debug("starlark_lua_create_tokens_enum"); */
-    lua_pushstring(L, "TOK");
-    lua_newtable(L);
-    int i;
-    for (i = 0; i < 256; i++) {
-        if (token_name[i][0] != NULL) {
-        /* log_debug("tok[%d]: %s", i, token_name[i][0] + 3); */
-        lua_pushstring(L, token_name[i][0] + 3);
-        lua_pushinteger(L, i);
-        lua_settable(L, -3);
-        }
-    }
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "iTOK");
-    lua_newtable(L);
-    for (i = 0; i < 256; i++) {
-        if (token_name[i][0] != NULL) {
-        /* log_debug("tok[%d]: %s", i, token_name[i][0] + 3); */
-        lua_pushinteger(L, i);
-        lua_pushstring(L, token_name[i][0] + 3);
-        lua_settable(L, -3);
-        }
-    }
-    lua_settable(L, -3);
-
-    /* pTOK: printable tokens */
-    lua_pushstring(L, "pTOK");
-    lua_newtable(L);
-    for (i = 0; printable_tokens[i] != 0; i++) {
-        /* log_debug("%d: printable_token[%d]: %s", */
-        /*           i, printable_tokens[i], token_name[printable_tokens[i]][0]); */
-        lua_pushinteger(L, printable_tokens[i]);
-        lua_pushstring(L, token_name[printable_tokens[i]][1]);
-        lua_settable(L, -3);
-    }
-    lua_settable(L, -3);
-}
-
-EXPORT void moonlark_config_bazel_table(lua_State *L)
-{
-    log_debug("moonlark_config_bazel_table");
-    lua_newtable(L);
-    _lua_create_tokens_enum(L);
-    lua_setglobal(L, "bazel");
-}
-
-
 /**
    sets: user_handlers_dir, runfiles_root
  */

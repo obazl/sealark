@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) // , char **envp)
      moonlark_augment_load_path(L, bazel_luadir);
      moonlark_augment_load_path(L, user_luadir);
 
-     moonlark_config_bazel_table(L);
+     moonlark_config_moonlark_table(L);
 
      starlark_lua_load_handlers(L, lua_file);
 

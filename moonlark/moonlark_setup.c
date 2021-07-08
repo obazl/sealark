@@ -43,8 +43,8 @@ int moonlark_process_buildfile(char *build_file, char *lua_file)
 
     luaL_openlibs(L);
 
-    /* create global bazel table, token tables, etc. */
-    moonlark_config_bazel_table(L);
+    /* create global moonlark table, token tables, etc. */
+    moonlark_config_moonlark_table(L);
     /* moonlark_augment_load_path(L, path); */
 
     /* load default and user handlers (Lua files) */
