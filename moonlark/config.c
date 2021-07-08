@@ -58,8 +58,7 @@ lua_State *moonlark_config_for_bazel(
 
     if (user_luadir) {
         if( access( user_luadir, F_OK ) != 0 ) {
-            log_error("ERROR: user_luadir does not exist %s", user_luadir);
-            exit(EXIT_FAILURE);
+            log_warn("WARNING: user_luadir does not exist: %s", user_luadir);
         } else {
             log_info("user_luadir: %s", user_luadir);
         }

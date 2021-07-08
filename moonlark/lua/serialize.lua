@@ -51,6 +51,9 @@ function emit_node_starlark(node)
       elseif (node.type == moonlark.TOK.FLOAT) then
          outfile:write(node.s)
          col = col + #(node.s)
+      elseif (node.type == moonlark.TOK.COMMENT) then
+         outfile:write(node.s)
+         col = col + #(node.s)
       else
          s = moonlark.pTOK[node.type]
          outfile:write(s)
@@ -65,6 +68,11 @@ function walk(t, handlers)
       handlers[t.type](t)
    else
       handlers.default(t)
+   end
+   if (t.comments) then
+      for k,v in ipairs(t.comments) do
+         walk(v, handlers)
+      end
    end
    if (t.subnodes) then
       for k,v in ipairs(t.subnodes) do

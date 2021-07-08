@@ -35,9 +35,23 @@ UT_string *user_lua_file;
 
 int x;
 
-void moonlark_comments2lua(lua_State *L, struct node_s *node)
+void moonlark_comment2lua(lua_State *L, struct node_s *_comment, int level)
+{
+    log_debug("moonlark_comment2lua");
+    lua_newtable(L);            /* one table per comment node  */
+
+}
+
+void moonlark_comments2lua(lua_State *L, UT_array *_comments, int level)
 {
     log_debug("moonlark_comments2lua");
+    struct node_s *node=NULL;
+    int i = 1;
+    while( (node=(struct node_s*)utarray_next(_comments, node))) {
+        moonlark_comment2lua(L, node, level); /* puts node tbl on ToS */
+        lua_rawseti(L, -2, i);
+        i++;
+    }
 }
 
 void moonlark_nodelist2lua(lua_State *L, UT_array *_nodelist, int level)
@@ -130,11 +144,12 @@ EXPORT void moonlark_node2lua(lua_State *L, struct node_s *node, int level)
     lua_pushinteger(L, node->col);
     lua_settable(L, -3);
 
-    /* if (node->comments != NULL) { */
-    /*     lua_pushstring(L, "comments");  /\* key *\/ */
-    /*     moonlark_comments2lua(L, node->comments); */
-    /*     lua_settable(L, -3); */
-    /* } */
+    if (node->comments != NULL) {
+        lua_pushstring(L, "comments");  /* key */
+        lua_newtable(L);
+        moonlark_nodelist2lua(L, node->comments, level + 1);
+        lua_settable(L, -3);
+    }
 
     if (node->subnodes != NULL) {
         if (utarray_len(node->subnodes) > 0) {
@@ -189,11 +204,12 @@ EXPORT void moonlark_ast2lua(lua_State *L, struct parse_state_s *parse)
     lua_pushinteger(L, parse->root->col);
     lua_settable(L, -3);
 
-    /* if (node->comments != NULL) { */
-    /*     lua_pushstring(L, "comments");  /\* key *\/ */
-    /*     moonlark_comments2lua(L, node->comments); */
-    /*     lua_settable(L, -3); */
-    /* } */
+    if (parse->root->comments != NULL) {
+        lua_pushstring(L, "comments");  /* key */
+        lua_newtable(L);
+        moonlark_nodelist2lua(L, parse->root->comments, 1);
+        lua_settable(L, -3);
+    }
 
     if (parse->root->subnodes != NULL) {
         if (utarray_len(parse->root->subnodes) > 0) {
