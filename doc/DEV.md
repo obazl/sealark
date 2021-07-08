@@ -92,7 +92,7 @@ However there is are a few complications. By making `moonlark/lua/edit.lua` a ru
     and error-prone.
 
 To make a long story a bit shorter: what we need to do is the
-    following:
+    following (not necessarily in this order):
 
 A. Get the current working directory at startup (`getcwd()`); this
     will be the runfiles directory.
@@ -106,7 +106,9 @@ B. Find and read the runfiles MANIFEST file; it will be in the
 (We designated `moonlark/lua/edit.lua` as a runfile; the first
     'moonlark' here is the directory name of the project root, which Bazel prefixes to get `moonlark/moonlark/lua/edit.lua`.)
 
-C. Add the (absolute path of the) runfiles directory to the Lua load
+C. Start up the Lua runtime - `luaL_newstate()`
+
+D. Add the (absolute path of the) runfiles directory to the Lua load
     path; in this example that would be
 
         /private/var/tmp/_bazel_gar/68...c637c/external/moonlark/moonlark/lua
@@ -114,7 +116,14 @@ C. Add the (absolute path of the) runfiles directory to the Lua load
 By using an absolute path, we ensure that files in the directory
     can be `require`d no matter what the current working directory is.
 
-D. Read env. var. `BUILD_WORKING_DIRECTORY`, which should be the
+E. Add the user lua dir to the path. This must be relative to the
+original launch dir (i.e. proj root). We cannot designate user files
+as runfiles, so we need to check at runtime to see if `.moonlark.d`
+exists, and if so add it to the path.
+
+FIXME: support a config option/file allowing user to set custom lua dir
+
+F. Read env. var. `BUILD_WORKING_DIRECTORY`, which should be the
     original launch directory; then switch to it (`chdir(wd)`).
 
 2.  Create `bazel` table and subtables
