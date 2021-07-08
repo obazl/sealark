@@ -8,8 +8,8 @@ for k,v in pairs(moonlark) do
    print(k,v)
 end
 
-function init(buildfile_ast)
-   print(".moonlark.d/edit.lua: init")
+function moonlark_handler(buildfile_ast)
+   print(".moonlark.d/edit.lua: moonlark_handler")
    print("ast for " .. buildfile_ast.build_file .. ":")
    for k,v in pairs(buildfile_ast) do
       print(k,v)

@@ -40,6 +40,7 @@ int main(int argc, char *argv[]) // , char **envp)
     int opt;
     char *user_luadir;
     char *lua_file;
+    char *callback = "moonlark_handler"; /* callback defined in lua_file */
     char *build_file;
     /* utstring_new(build_file); */
 
@@ -124,8 +125,8 @@ int main(int argc, char *argv[]) // , char **envp)
     /* L now contains global bazel.build array of ASTs */
     /* log_debug("stack gettop %d", lua_gettop(L)); */
 
-    /* call handler on (Lua) AST */
-    moonlark_lua_call_user_handler(L);
+    /* call callback on (Lua) AST */
+    moonlark_lua_call_user_handler(L, callback);
 
     /* moonlark_process_buildfile(build_file, lua_file); */
 }

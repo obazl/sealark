@@ -30,7 +30,7 @@
 UT_string *buffer;
 
 
-int moonlark_process_buildfile(char *build_file, char *lua_file)
+int moonlark_process_buildfile(char *build_file, char *lua_file, char *callback)
 {
     log_debug("moonlark_process_buildfile %s, %s",
               build_file, lua_file);
@@ -59,7 +59,7 @@ int moonlark_process_buildfile(char *build_file, char *lua_file)
     /* L now contains global bazel.build array of ASTs */
 
     /* call handler on (Lua) AST */
-    moonlark_lua_call_user_handler(L);
+    moonlark_lua_call_user_handler(L, callback);
 
     /* serialization routines expect a UT_string, not a char buffer */
     /* utstring_new(buffer); */

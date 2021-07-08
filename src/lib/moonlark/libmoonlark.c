@@ -213,11 +213,11 @@ EXPORT void moonlark_ast2lua(lua_State *L, struct parse_state_s *parse)
 /*
   Top of Stack: parsed lAST
  */
-EXPORT void moonlark_lua_call_user_handler(lua_State *L)
+EXPORT void moonlark_lua_call_user_handler(lua_State *L, char *handler)
 {
     log_debug("moonlark_lua_call_user_handler");
 
-    lua_getglobal(L, "init");   /* user-provided function */
+    lua_getglobal(L, handler);   /* user-provided function */
     lua_rotate(L, -1, 2); /* swap top 2 elts to put lAST on ToS */
 
     if (lua_pcall(L, 1, 0, 0) != 0) {
