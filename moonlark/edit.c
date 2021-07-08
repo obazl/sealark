@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) // , char **envp)
     /* bazel_lua_cb is determined by data attrib of build rule; used
        to find bazel_luadir */
     char *bazel_lua_cb = "edit.lua";
-    char *user_luadir;
+    char *user_luadir = NULL;
     char *lua_file = NULL;
     char *callback = "moonlark_handler"; /* callback defined in lua_file */
     char *build_file;
