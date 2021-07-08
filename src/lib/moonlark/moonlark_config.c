@@ -91,7 +91,7 @@ EXPORT void moonlark_augment_load_path(lua_State *L, char *path)
 /*
   called by //moonlark:edit, but not //moonlark:repl
  */
-EXPORT void starlark_lua_load_handlers(lua_State *L, char *lua_file)
+EXPORT void moonlark_lua_load_handlers(lua_State *L, char *lua_file)
 {
     log_debug("starlark_lua_load_handlers");
 

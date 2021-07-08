@@ -113,19 +113,19 @@ int main(int argc, char *argv[]) // , char **envp)
 
      moonlark_config_moonlark_table(L);
 
-     starlark_lua_load_handlers(L, lua_file);
+     moonlark_lua_load_handlers(L, lua_file);
 
     /* now parse the file using libstarlark */
     struct parse_state_s *parse_state = starlark_parse_file(build_file);
     log_debug("parsed file %s", parse_state->lexer->fname);
 
     /* convert build file to Lua AST table */
-    starlark_ast2lua(L, parse_state);
+    moonlark_ast2lua(L, parse_state);
     /* L now contains global bazel.build array of ASTs */
     /* log_debug("stack gettop %d", lua_gettop(L)); */
 
     /* call handler on (Lua) AST */
-    starlark_lua_call_user_handler(L);
+    moonlark_lua_call_user_handler(L);
 
     /* moonlark_process_buildfile(build_file, lua_file); */
 }

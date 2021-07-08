@@ -48,18 +48,18 @@ int moonlark_process_buildfile(char *build_file, char *lua_file)
     /* moonlark_augment_load_path(L, path); */
 
     /* load default and user handlers (Lua files) */
-    starlark_lua_load_handlers(L, lua_file);
+    moonlark_lua_load_handlers(L, lua_file);
 
     /* now parse the file using libstarlark */
     struct parse_state_s *parse_state = starlark_parse_file(build_file);
     log_debug("parsed file %s", parse_state->lexer->fname);
 
     /* convert build file to Lua AST table */
-    starlark_ast2lua(L, parse_state);
+    moonlark_ast2lua(L, parse_state);
     /* L now contains global bazel.build array of ASTs */
 
     /* call handler on (Lua) AST */
-    starlark_lua_call_user_handler(L);
+    moonlark_lua_call_user_handler(L);
 
     /* serialization routines expect a UT_string, not a char buffer */
     /* utstring_new(buffer); */

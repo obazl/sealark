@@ -20,21 +20,21 @@
 
 int x;
 
-void starlark_comments2lua(lua_State *L, struct node_s *node)
+void moonlark_comments2lua(lua_State *L, struct node_s *node)
 {
-    log_debug("starlark_comments2lua");
+    log_debug("moonlark_comments2lua");
 }
 
-void starlark_nodelist2lua(lua_State *L, UT_array *_nodelist, int level)
+void moonlark_nodelist2lua(lua_State *L, UT_array *_nodelist, int level)
 {
-    /* log_debug("starlark_nodelist2lua level %d ct: %d", */
+    /* log_debug("moonlark_nodelist2lua level %d ct: %d", */
     /*           level, utarray_len(_nodelist)); */
 
     struct node_s *node=NULL;
     int i = 1;
     while( (node=(struct node_s*)utarray_next(_nodelist, node))) {
         /* log_debug("subnode %d", i); */
-        starlark_node2lua(L, node, level); /* puts node tbl on ToS */
+        moonlark_node2lua(L, node, level); /* puts node tbl on ToS */
         /* log_debug("pushing node %d to subnode list", i); */
         /* lua_newtable(L); */
         /* lua_pushstring(L, "subnode");  /\* key *\/ */
@@ -42,12 +42,12 @@ void starlark_nodelist2lua(lua_State *L, UT_array *_nodelist, int level)
         /* lua_settable(L, -3);        /\* add to node table *\/ */
         i++;
     }
-    /* log_debug("/starlark_nodelist2lua level %d", utarray_len(_nodelist)); */
+    /* log_debug("/moonlark_nodelist2lua level %d", utarray_len(_nodelist)); */
 }
 
-EXPORT void starlark_node2lua(lua_State *L, struct node_s *node, int level)
+EXPORT void moonlark_node2lua(lua_State *L, struct node_s *node, int level)
 {
-    /* log_debug("starlark_node2lua %d", level); */
+    /* log_debug("moonlark_node2lua %d", level); */
     lua_newtable(L);            /* one table per node  */
 
     /* log_debug("pushing type %d %s", */
@@ -117,7 +117,7 @@ EXPORT void starlark_node2lua(lua_State *L, struct node_s *node, int level)
 
     /* if (node->comments != NULL) { */
     /*     lua_pushstring(L, "comments");  /\* key *\/ */
-    /*     starlark_comments2lua(L, node->comments); */
+    /*     moonlark_comments2lua(L, node->comments); */
     /*     lua_settable(L, -3); */
     /* } */
 
@@ -125,16 +125,16 @@ EXPORT void starlark_node2lua(lua_State *L, struct node_s *node, int level)
         if (utarray_len(node->subnodes) > 0) {
             lua_pushstring(L, "subnodes");  /* key */
             lua_newtable(L);
-            starlark_nodelist2lua(L, node->subnodes, level + 1);
+            moonlark_nodelist2lua(L, node->subnodes, level + 1);
             lua_settable(L, -3);
         }
     }
-    /* log_debug("/starlark_node2lua %d", level); */
+    /* log_debug("/moonlark_node2lua %d", level); */
 }
 
-EXPORT void starlark_ast2lua(lua_State *L, struct parse_state_s *parse)
+EXPORT void moonlark_ast2lua(lua_State *L, struct parse_state_s *parse)
 {
-    log_debug("starlark_buildfile2lua");
+    log_debug("moonlark_buildfile2lua");
     /* log_debug("stack gettop %d", lua_gettop(L)); */
 
     /* lua_getglobal(L, "bazel"); */
@@ -176,7 +176,7 @@ EXPORT void starlark_ast2lua(lua_State *L, struct parse_state_s *parse)
 
     /* if (node->comments != NULL) { */
     /*     lua_pushstring(L, "comments");  /\* key *\/ */
-    /*     starlark_comments2lua(L, node->comments); */
+    /*     moonlark_comments2lua(L, node->comments); */
     /*     lua_settable(L, -3); */
     /* } */
 
@@ -184,7 +184,7 @@ EXPORT void starlark_ast2lua(lua_State *L, struct parse_state_s *parse)
         if (utarray_len(parse->root->subnodes) > 0) {
             lua_pushstring(L, "subnodes");  /* key */
             lua_newtable(L);
-            starlark_nodelist2lua(L, parse->root->subnodes, 1);
+            moonlark_nodelist2lua(L, parse->root->subnodes, 1);
             lua_settable(L, -3);
         }
     }
@@ -198,9 +198,9 @@ EXPORT void starlark_ast2lua(lua_State *L, struct parse_state_s *parse)
 /*
   Top of Stack: parsed lAST
  */
-EXPORT void starlark_lua_call_user_handler(lua_State *L)
+EXPORT void moonlark_lua_call_user_handler(lua_State *L)
 {
-    log_debug("starlark_lua_call_user_handler");
+    log_debug("moonlark_lua_call_user_handler");
 
     lua_getglobal(L, "init");   /* user-provided function */
     lua_rotate(L, -1, 2); /* swap top 2 elts to put lAST on ToS */
