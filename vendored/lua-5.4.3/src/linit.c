@@ -39,7 +39,7 @@
 ** program
 */
 #ifdef MOONLARK
-#include "moonlark.h"
+#include "lmoonlark.h"
 #endif
 static const luaL_Reg loadedlibs[] = {
   {LUA_GNAME, luaopen_base},

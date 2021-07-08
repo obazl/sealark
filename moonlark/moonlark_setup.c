@@ -22,7 +22,7 @@
 #include "utarray.h"
 #include "utstring.h"
 
-#include "libmoonlark.h"
+#include "moonlark.h"
 #include "moonlark_setup.h"
 
 /* UT_string *build_file; */

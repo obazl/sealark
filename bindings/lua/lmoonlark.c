@@ -19,14 +19,13 @@
 #include "uthash.h"
 #include "utstring.h"
 
-/* #include "starlark.h"           /\* libstarlark public API *\/ */
-
-#include "libmoonlark.h"
-/* #include "moonlark.h" */
+#include "moonlark.h"           /* public api for libmoonlark */
+#include "lmoonlark.h"
 
 /* **************************************************************** */
 static int config_bazel (lua_State *L) {
     log_debug("config.bazel");
+    //TODO:  add bazel_luadir to load path?
     return 1;
 }
 
@@ -52,7 +51,7 @@ static int parse_file (lua_State *L) {
 
     /* prereq: starlark_lua_init has run, creating global bazel.build */
 
-    starlark_ast2lua(L, parsed);
+    moonlark_ast2lua(L, parsed);
     log_debug("/starlark_ast2lua");
     /* lua_settable(L, -3); */
 
@@ -80,6 +79,9 @@ LUAMOD_API int luaopen_moonlark(lua_State *L) {
     luaL_newlib(L, moonlark);
     lua_pushstring(L, "0.1.0");
     lua_setfield(L, -2, "version");
+
+    /* add starlark token enums to 'moonlark' table */
+    moonlark_create_token_enums(L);
 
     /* bazel-specific */
     /* create global bazel table with bazel.config, bazel.TOK, etc. */

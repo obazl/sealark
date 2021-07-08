@@ -107,13 +107,9 @@ cc_library(
     srcs = select({
         # ONLY FOR //moonlark:repl!
         "//conditions:default": [
-            "//bindings/lua:moonlark.c",
-            "//bindings/lua:moonlark.h",
+            "//bindings/lua:lmoonlark.c",
+            "//bindings/lua:lmoonlark.h",
             # moonlark C impl code:
-            # "//src/lib/moonlark:moonlark_api.c",
-            # # "//src/lib/moonlark:moonlark_api.h",
-            # "//src/lib/moonlark:moonlark_config.c",
-            # "//src/lib/moonlark:moonlark_config.h",
         "//src/lib/moonlark:mkhdrs",
         ]
     }) + [":srcs"],

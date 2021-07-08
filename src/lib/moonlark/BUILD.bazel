@@ -1,6 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
-exports_files(["moonlark_api.c", "moonlark_config.c"])
+# exports_files(["moonlark.c"])
 
 ##########
 cc_library(
@@ -8,21 +8,14 @@ cc_library(
     # alwayslink = True,
     # linkstatic = 1,
     srcs  = [
-        "moonlark_api.c",
-        "moonlark_api.h",
-        "moonlark_config.c",
-        "moonlark_config.h",
+        "libmoonlark.c",
+        "libmoonlark.h",
         "//src/lib/starlark:debug.c",
         "//vendored/logc:log.h",
-        "libmoonlark.h"
     ],
     hdrs = [
-        "libmoonlark.h"
+        "moonlark.h"
     ],
-    # data = [
-    #     "//moonlark/lua:moonlark_edit.lua",
-    #     "//moonlark/lua:moonlark_serialize.lua"
-    # ],
     defines = select({
         "//bzl/host:debug": ["DEBUG_TRACE"],
         "//conditions:default":   []
@@ -52,10 +45,6 @@ cc_library(
         "-Iexternal/moonlark/vendored/lua-5.4.3/src",
 
     ],
-    # linkopts = [
-    #     "-L/usr/local/lib",     # FIXME
-    #     "-llua",
-    # ],
     deps = [
         "//src/lbazel",
         "//src/lib/starlark",
@@ -72,20 +61,16 @@ genrule(
     name = "mkhdrs",
     visibility = ["//visibility:public"],
     srcs = [
-        "moonlark_api.c",
-        "moonlark_config.c",
+        "libmoonlark.c",
         "//src/lbazel:lbazel.c",
         "//src/lib/starlark:debug.c",
         "//src/lib/starlark:starlark.h",
-        # "//vendored/uthash"
     ],
     outs = [
-        "moonlark_api.h",
-        "moonlark_config.h",
-        # "lua_debug.h",
+        "libmoonlark.h",
     ],
     cmd = "\n".join([
-        "SRC1=$(location moonlark_api.c)",
+        "SRC1=$(location libmoonlark.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "SRC2=$(location //src/lib/starlark:debug.c)",
         "SRCDIR2=`dirname $$SRC2`",
@@ -93,9 +78,7 @@ genrule(
         "    $(location //src/lib/starlark:debug.c) \\",
         "    $(location //src/lbazel:lbazel.c) \\",
         "    $(location //src/lib/starlark:starlark.h) \\",
-        "    $(location moonlark_api.c) \\",
-        "    $(location moonlark_config.c)",
-        # "    $(location lua_debug.c)",
+        "    $(location libmoonlark.c)",
         "cp $$SRCDIR1/*.h $(@D)",
     ]),
     tools = ["//vendored/makeheaders"]
@@ -105,10 +88,7 @@ genrule(
     name = "mkhdrs-export",
     visibility = ["//visibility:public"],
     srcs = [
-        "moonlark_api.c",
-        "moonlark_config.c",
-        # "lua_debug.c",
-
+        "libmoonlark.c",
         "//src/lib/starlark:debug.c",
         # "//src/lib/starlark:constants.c",
         "//src/lib/starlark:parse.c",
@@ -116,31 +96,21 @@ genrule(
         "//src/lib/starlark:nodes.c",
         "//src/lib/starlark:syntaxis.h",
         "//src/lib/starlark:serialize.c",
-        # "//src/lib/starlark:starlark.h"
-        # "//vendored/uthash",
     ],
     outs = [
-        "libmoonlark.h",
+        "moonlark.h",
     ],
     cmd = "\n".join([
-        "SRC1=$(location moonlark_api.c)",
+        "SRC1=$(location libmoonlark.c)",
         "SRCDIR1=`dirname $$SRC1`",
-        "SRC2=$(location //src/lib/starlark:debug.c)",
-        "SRCDIR2=`dirname $$SRC2`",
         "$(location //vendored/makeheaders) -H \\",
-        # "    $(locations //vendored/uthash) \\",
-        # "    $(location //src/lib/starlark:constants.c) \\",
+        "    $(location libmoonlark.c) \\",
         "    $(location //src/lib/starlark:lexis.c) \\",
         "    $(location //src/lib/starlark:nodes.c) \\",
         "    $(location //src/lib/starlark:parse.c) \\",
         "    $(location //src/lib/starlark:serialize.c) \\",
         "    $(location //src/lib/starlark:syntaxis.h) \\",
-        # "    $(location //src/lib/starlark:starlark.h) \\",
-        "    $(location moonlark_api.c) \\",
-        "    $(location moonlark_config.c) \\",
-        # "    $(location lua_debug.c) \\",
         "    > $@"
-        # "cp $$SRCDIR1/*.h $(@D)",
     ]),
     tools = ["//vendored/makeheaders"]
 )

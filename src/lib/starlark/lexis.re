@@ -146,7 +146,7 @@ static void comment_push(int type, /* 1: comment, 0: null */
     static const char *sol;     /* start of line (ptr) */
     static int line;
     static int newlines;
-    static int col;           /* start of token (column nbr, not ptr) */
+    /* static int col;           /\* start of token (column nbr, not ptr) *\/ */
 
     /* log_debug(""); */
     /* log_debug("new PUSH %d: idx %d, null ct: %d, push_ct: %d; line: %d newlines: %d", */

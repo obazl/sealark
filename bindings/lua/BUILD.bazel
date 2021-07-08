@@ -1,6 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 
-exports_files(["moonlark.c"])
+exports_files(["lmoonlark.c"])
 
 ##########
 # cc_binary(
@@ -12,12 +12,11 @@ cc_library(
     # alwayslink = 1,
     # linkshared = 1,
     srcs  = [
-        "moonlark.c",
-        "moonlark.h",
+        "lmoonlark.c",
+        "lmoonlark.h",
     ],
-    data = [
-        # "//external/lua/lib:lua",
-    ],
+    # data = [
+    # ],
     copts = [
         "-std=c11",
         "-pedantic-errors",
@@ -30,6 +29,7 @@ cc_library(
 
         "-I", "$(GENDIR)/src/lib/starlark",
         "-I", "$(GENDIR)/external/moonlark/src/lib/starlark",
+
         "-I", "$(GENDIR)/src/lib/moonlark",
         "-I", "$(GENDIR)/external/moonlark/src/lib/moonlark",
 
@@ -58,28 +58,17 @@ genrule(
     name = "mkhdrs",
     visibility = ["//visibility:public"],
     srcs = [
-        "moonlark.c",
-        # "//src/lib/moonlark:moonlark.c",
-        # "//src/lib/moonlark:moonlark_config.h",
-        # "//vendored/uthash",
+        "lmoonlark.c",
     ],
     outs = [
-        "moonlark.h",
-        # "starlark_lua.h"
+        "lmoonlark.h",
     ],
     cmd = "\n".join([
-        "SRC1=$(location moonlark.c)",
+        "SRC1=$(location lmoonlark.c)",
         "SRCDIR1=`dirname $$SRC1`",
-        # "SRC2=$(location //src/lib/moonlark:moonlark.h)",
-        # "SRCDIR2=`dirname $$SRC2`",
         "$(location //vendored/makeheaders) \\",
-        # "    $(locations //vendored/uthash) \\",
-        # "    $(locations //src/lib/moonlark:moonlark.c) \\",
-        # "    $(locations //src/lib/moonlark:moonlark_config.h) \\",
-        "    $(location moonlark.c)",
+        "    $(location lmoonlark.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
-        # "cp $${SRCDIR2}/*.h $(@D)",
-        # "    > $@",
     ]),
     tools = ["//vendored/makeheaders"]
 )

@@ -1,1 +1,1 @@
-exports_files(["edit.lua", "serialize.lua"])
+exports_files(["edit.lua", "repl.lua", "serialize.lua"])
