@@ -1,21 +1,21 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
-exports_files(["bazel_lua.c"])
+exports_files(["lbazel.c"])
 
 ##########
 cc_library(
-    name  = "bazel",
+    name  = "lbazel",
     # alwayslink = True,
     # linkstatic = 1,
     srcs  = [
-        "bazel_lua.c",
-        "bazel_lua.h",
+        "lbazel.c",
+        "lbazel.h",
     ],
     data = [
         "//moonlark/lua:edit.lua"
     ],
     hdrs = [
-        "bazel_lua.h",
+        "lbazel.h",
     ],
     defines = select({
         "//bzl/host:debug": ["DEBUG_TRACE"],
@@ -26,8 +26,8 @@ cc_library(
         "-pedantic-errors",
         "-g", "-O0",
 
-        "-I$(GENDIR)/src/bazel",
-        "-I$(GENDIR)/external/moonlark/src/bazel",
+        "-I$(GENDIR)/src/lbazel",
+        "-I$(GENDIR)/external/moonlark/src/lbazel",
 
         "-Ivendored/uthash",
         "-Iexternal/moonlark/vendored/uthash",
@@ -56,20 +56,20 @@ genrule(
     name = "mkhdrs",
     visibility = ["//visibility:public"],
     srcs = [
-        "bazel_lua.c",
+        "lbazel.c",
         "//src/lib/starlark:constants.c",
         "//src/lib/starlark:nodes.c"
     ],
     outs = [
-        "bazel_lua.h",
+        "lbazel.h",
     ],
     cmd = "\n".join([
-        "SRC1=$(location bazel_lua.c)",
+        "SRC1=$(location lbazel.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "$(location //vendored/makeheaders) \\",
         "    $(location //src/lib/starlark:constants.c) \\",
         "    $(location //src/lib/starlark:nodes.c) \\",
-        "    $(location bazel_lua.c)",
+        "    $(location lbazel.c)",
         "cp $$SRCDIR1/*.h $@",
     ]),
     tools = ["//vendored/makeheaders"]

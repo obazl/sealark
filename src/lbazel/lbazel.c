@@ -12,12 +12,12 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
-#include "bazel_lua.h"
+#include "lbazel.h"
 
 char *bazel_get_luadir(char *luafile)
 {
     log_debug("bazel_get_luadir %s", luafile);
-    char *bazel_luadir;
+    char *bazel_luadir = NULL;
     char *s = getcwd(NULL, 0);
     /* log_info("CURRENT WORKING DIRECTORY: %s", s); */
     char *mdir = dirname(s);
@@ -118,7 +118,7 @@ EXPORT void moonlark_config_bazel_table(lua_State *L)
 /**
    sets: user_handlers_dir, runfiles_root
  */
-int starlark_bazel_config(lua_State *L)
+void starlark_bazel_config(lua_State *L)
 {
     log_debug("starlark_bazel_config");
 
