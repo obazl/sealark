@@ -1,5 +1,6 @@
 # vendored libraries
 
+* inih: https://github.com/benhoyt/inih
 * lemon: https://www.sqlite.org/cgi/src/doc/trunk/doc/lemon.html
 * logc: https://github.com/rxi/log.c
 * lua: version 5.4.3 https://www.lua.org/

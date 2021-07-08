@@ -81,9 +81,8 @@ int main(int argc, char *argv[]) // , char **envp)
 
      if (user_luadir == NULL) {
          /* user_luadir = config_get_luadir(); */
-         /* log_debug("bazel_luadir: %s", bazel_luadir); */
+         log_warn("WARNING: no user luadir specified");
      } else {
-         log_info("user luadir: %s", user_luadir);
      }
      //FIXME: verify user_luadir exists *after* chdir to launchdir
 
@@ -95,9 +94,14 @@ int main(int argc, char *argv[]) // , char **envp)
         log_error("BUILD_WORKING_DIRECTORY not found. This program must be run from the root directory of a Bazel repo.");
     }
 
-     if( access( user_luadir, F_OK ) != 0 ) {
-         log_error("ERROR: user_luadir does not exist %s", user_luadir);
-     }
+    if (user_luadir) {
+        if( access( user_luadir, F_OK ) != 0 ) {
+            log_error("ERROR: user_luadir does not exist %s", user_luadir);
+            exit(EXIT_FAILURE);
+        } else {
+            log_info("user_luadir: %s", user_luadir);
+        }
+    }
 
      /* startup lua (luaL_newstate()) */
      lua_State *L = luaL_newstate();

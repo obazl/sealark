@@ -67,7 +67,11 @@ EXPORT void moonlark_augment_load_path(lua_State *L, char *path)
 
     /* starlark_bazel_config(L); */
 
-    int r = lua_getglobal(L, "package");
+    int t = lua_getglobal(L, "package");
+    if (t == LUA_TNIL) {
+        log_error("ERROR: Lua table 'package' not found");
+        exit(EXIT_FAILURE);
+    }
     lua_getfield(L, -1, "path");
     const char *curr_path = lua_tostring(L, -1);
     log_debug("current load path: %s", curr_path);

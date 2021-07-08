@@ -135,7 +135,7 @@ EXPORT void starlark_node2lua(lua_State *L, struct node_s *node, int level)
 EXPORT void starlark_ast2lua(lua_State *L, struct parse_state_s *parse)
 {
     log_debug("starlark_buildfile2lua");
-    log_debug("stack gettop %d", lua_gettop(L));
+    /* log_debug("stack gettop %d", lua_gettop(L)); */
 
     /* lua_getglobal(L, "bazel"); */
     /* /\* lua_getfield(L, -1, "build"); *\/ */
@@ -190,7 +190,7 @@ EXPORT void starlark_ast2lua(lua_State *L, struct parse_state_s *parse)
     }
 
     /* lua_settable(L, -3);        /\* add to bazel table *\/ */
-    log_debug("stack gettop %d", lua_gettop(L));
+    /* log_debug("stack gettop %d", lua_gettop(L)); */
 
     return;
 }

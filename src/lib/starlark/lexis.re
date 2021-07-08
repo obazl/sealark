@@ -308,9 +308,9 @@ static void comment_push(int type, /* 1: comment, 0: null */
             /* log_debug("\txxxx sol: %s", sol); */
         };
         if (*sol == '\n') sol++; /* \n is end-of-line  */
-        log_debug("SOL: %s", sol);
+        /* log_debug("SOL: %s", sol); */
 
-        log_debug("\tcreating TK_COMMENT node (5): :]%.5s...", scmt);
+        /* log_debug("\tcreating TK_COMMENT node (5): :]%.5s...", scmt); */
 
         /* starting at #ecmt, find first preceding newline */
         struct node_s *n = calloc(sizeof(struct node_s), 1);
@@ -322,7 +322,7 @@ static void comment_push(int type, /* 1: comment, 0: null */
                           lexer->cursor /* #ecmt */ - scmt);
         /* log_debug("xxxx: %d:%d", n->line, n->col); */
         utarray_push_back((*mtok)->comments, n);
-        log_debug("\tnew mtok: %p (%d:%d)", *mtok, (*mtok)->line, (*mtok)->col);
+        /* log_debug("\tnew mtok: %p (%d:%d)", *mtok, (*mtok)->line, (*mtok)->col); */
         /* log_debug("yyyy"); */
 
         /* account for newline */
@@ -358,7 +358,7 @@ int get_column(struct bf_lexer_s *lexer)
 
 int get_next_token(struct bf_lexer_s *lexer, struct node_s **mtok)
 {
-    log_debug("get_next_token");
+    /* log_debug("get_next_token"); */
     /* log_debug("lexer->limit: %p", lexer->limit); */
     /*!re2c
       re2c:api:style = free-form;
@@ -583,7 +583,7 @@ loop:
     }
 
     <init> ")" COMMENTS {
-            log_debug("<init> RPAREN, mode: %d", lexer->mode);
+            /* log_debug("<init> RPAREN, mode: %d", lexer->mode); */
             return TK_RPAREN;
         }
 
@@ -683,8 +683,8 @@ loop:
     <init> @t1 ([br]|"br"|"rb")? @t2 "\"" @s1 ([^"\n] | "\\\n")* @s2 "\""
            COMMENTS
         {
-            log_debug("matched DOUBLE_QUOTE TK_STRING (%d:%d)",
-                      lexer->pos.line, lexer->pos.col);
+            /* log_debug("matched DOUBLE_QUOTE TK_STRING (%d:%d)", */
+            /*           lexer->pos.line, lexer->pos.col); */
 
             (*mtok)->s = strndup(s1, (size_t)(s2 - s1));
 
@@ -800,7 +800,7 @@ loop:
     <init> "yield" COMMENTS { return TK_YIELD; }
 
     <init> @s1 identifier @s2 COMMENTS {
-                       log_debug("<init> IDENTIFIER");
+                       /* log_debug("<init> IDENTIFIER"); */
             /* (*mtok)->s = strndup(lexer->tok, lexer->cursor - lexer->tok); */
             (*mtok)->s = strndup(s1, (size_t)(s2 - s1));
         return TK_ID;

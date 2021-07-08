@@ -484,8 +484,8 @@ expr_list(Xs) ::= expr(X) . [PLUS]
     Xs->trailing_newline = X->trailing_newline;
     utarray_new(Xs->subnodes, &node_icd);
     utarray_push_back(Xs->subnodes, X);
-    log_debug("expr_list type: %s[%d]",
-              token_name[Xs->type][0], Xs->type);
+    /* log_debug("expr_list type: %s[%d]", */
+    /*           token_name[Xs->type][0], Xs->type); */
 }
 
 /* expr_list_comma(XList) ::= expr_list(XList_rhs) COMMA(Comma) . [FOR] */
@@ -613,9 +613,9 @@ statement(Stmt) ::= small_stmt_list(SmallStmts) . [AMP]
     /* if present it will be embedded in the final token */
     log_trace(">>statement ::= small_stmt_list");
     struct node_s *n = utarray_back(SmallStmts->subnodes);
-    log_debug("LAST SMALL STMT nl? %d: %d %s: %s",
-              n->trailing_newline,
-              n->type, token_name[n->type][0], n->s);
+    /* log_debug("LAST SMALL STMT nl? %d: %d %s: %s", */
+    /*           n->trailing_newline, */
+    /*           n->type, token_name[n->type][0], n->s); */
     if ( ! n->trailing_newline ) {
         log_error("Missing newline after SimpleStmt %s", n->s);
         // FIXME: print entire expr
@@ -1079,7 +1079,7 @@ primx(PrimX) ::= FLOAT(Float) . {
     PrimX = Float;
 }
 primx(PrimX) ::= STRING(S) . {       /* includes rawstrings */
-    log_trace(">>primx ::= STRING(S) .");
+    log_trace(">>primx ::= STRING :]%s[:", S->s);
     PrimX = S;
 }
 /* primx(PrimX) ::= BSTRING(B) . [COMMA] {      /\* bytes *\/ */
@@ -1238,7 +1238,7 @@ arg(Arg) ::= expr(X) . {
 /*     log_trace(">>arg(Arg) ::= arg_named(Arg_rhs)"); */
 /* } */
 arg(Arg) ::= ID(Id) EQ(Eq) expr(X) . {
-    log_trace(">>arg(Arg) ::= ID(Id) EQ expr(X)");
+    log_trace(">>arg ::= ID EQ expr");
     Arg = calloc(sizeof(struct node_s), 1);
     Arg->type = TK_Arg_Named;
     Arg->line  = Id->line;

@@ -309,21 +309,21 @@ void nodelist_copy(UT_array *_dst, UT_array *_src)
 
 void node_copy(void *_dst, const void *_src)
 {
-    log_debug("node_copy"); // : %p <- %p", _dst, _src);
+    /* log_debug("node_copy"); // : %p <- %p", _dst, _src); */
     struct node_s *dst = (struct node_s*)_dst;
     struct node_s *src = (struct node_s*)_src;
     dst->type = src->type;
 
     /* log_debug("node posn: %d:%d", src->line, src->col); */
     /* log_debug("\tnode type: %d", src->type); */
-    log_debug("\t%s[%d] %c (%d:%d) %s",
-              token_name[src->type][0],
-              src->type,
-              (src->qtype == SQUOTE)? '\''
-              : (src->qtype == DQUOTE)? '"'
-              : ' ',
-              src->line, src->col,
-              (src->s == NULL? "" : src->s));
+    /* log_debug("\t%s[%d] %c (%d:%d) %s", */
+    /*           token_name[src->type][0], */
+    /*           src->type, */
+    /*           (src->qtype == SQUOTE)? '\'' */
+    /*           : (src->qtype == DQUOTE)? '"' */
+    /*           : ' ', */
+    /*           src->line, src->col, */
+    /*           (src->s == NULL? "" : src->s)); */
     /* if (src->subnodes) */
     /*     log_trace("  src subnode ct: %d", */
     /*               utarray_len(src->subnodes)); */
