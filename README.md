@@ -43,6 +43,17 @@ example: it combines libstarlark with a Lua tool for analyzing the
 AST, and another tool for serializing the AST to a build file. All can
 be swapped out for alternative implementations.]
 
+## build prerequisites
+
+re2c: autogen, autoconf, libtool, make - the usual suspects.
+
+Lua: we build liblua with readline. On linux, you must install
+libreadline-dev, e.g. `sudo apt-get install -y libreadline-dev`.
+
+Unfortunately readline is GPLed. But it is only used with liblua,
+so...? Replacing it with a free-license alternative is on the to-do
+list.
+
 ## libstarlark
 
 Target: `//src:starlark`
