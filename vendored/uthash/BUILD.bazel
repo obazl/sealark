@@ -1,5 +1,6 @@
 cc_library(
     name  = "uthash",
+    # srcs  = ["strdup.c", "strdup.h"],
     hdrs = glob(["*.h"]),
     visibility = ["//visibility:public"]
 )

@@ -22,8 +22,12 @@ cc_test(
         "lex_keywords.c",
         "lex_keywords.h",
     ],
-    copts = [
-        "-std=c11",
+    copts = select({
+        # strdup is non-standard, not supported on linux in strict c11 mode
+        "//bzl/host:macos": ["-std=c11"],
+        "//bzl/host:linux": ["-std=gnu11"],
+        "//conditions:default": ["-std=c11"],
+    }) + [
         "-pedantic-errors",
 
         "-I$(GENDIR)/test/unit",
@@ -55,8 +59,12 @@ cc_test(
         "lex_numbers.h",
         # "//src/lib/starlark:debug.c",
     ],
-    copts = [
-        "-std=c11",
+    copts = select({
+        # strdup is non-standard, not supported on linux in strict c11 mode
+        "//bzl/host:macos": ["-std=c11"],
+        "//bzl/host:linux": ["-std=gnu11"],
+        "//conditions:default": ["-std=c11"],
+    }) + [
         "-pedantic-errors",
 
         "-I$(GENDIR)/test/unit",
@@ -87,8 +95,12 @@ cc_test(
         "lex_punctuation.c",
         "lex_punctuation.h",
     ],
-    copts = [
-        "-std=c11",
+    copts = select({
+        # strdup is non-standard, not supported on linux in strict c11 mode
+        "//bzl/host:macos": ["-std=c11"],
+        "//bzl/host:linux": ["-std=gnu11"],
+        "//conditions:default": ["-std=c11"],
+    }) + [
         "-pedantic-errors",
 
         "-I$(GENDIR)/test/unit",
@@ -120,8 +132,12 @@ cc_test(
         "lex_strings.h",
         # "//src/lib/starlark:debug.c",
     ],
-    copts = [
-        "-std=c11",
+    copts = select({
+        # strdup is non-standard, not supported on linux in strict c11 mode
+        "//bzl/host:macos": ["-std=c11"],
+        "//bzl/host:linux": ["-std=gnu11"],
+        "//conditions:default": ["-std=c11"],
+    }) + [
         "-pedantic-errors",
 
         "-I$(GENDIR)/test/unit",
@@ -153,8 +169,12 @@ cc_test(
         "syntax_call_expr.c",
         "syntax_call_expr.h",
     ],
-    copts = [
-        "-std=c11",
+    copts = select({
+        # strdup is non-standard, not supported on linux in strict c11 mode
+        "//bzl/host:macos": ["-std=c11"],
+        "//bzl/host:linux": ["-std=gnu11"],
+        "//conditions:default": ["-std=c11"],
+    }) + [
         "-pedantic-errors",
 
         "-I$(GENDIR)/test/unit",
@@ -185,8 +205,12 @@ cc_test(
         "syntax_dict.c",
         "syntax_dict.h",
     ],
-    copts = [
-        "-std=c11",
+    copts = select({
+        # strdup is non-standard, not supported on linux in strict c11 mode
+        "//bzl/host:macos": ["-std=c11"],
+        "//bzl/host:linux": ["-std=gnu11"],
+        "//conditions:default": ["-std=c11"],
+    }) + [
         "-pedantic-errors",
 
         "-I$(GENDIR)/test/unit",
@@ -217,8 +241,12 @@ cc_test(
         "syntax_expressions.c",
         "syntax_expressions.h",
     ],
-    copts = [
-        "-std=c11",
+    copts = select({
+        # strdup is non-standard, not supported on linux in strict c11 mode
+        "//bzl/host:macos": ["-std=c11"],
+        "//bzl/host:linux": ["-std=gnu11"],
+        "//conditions:default": ["-std=c11"],
+    }) + [
         "-pedantic-errors",
 
         "-I$(GENDIR)/test/unit",
@@ -250,8 +278,12 @@ cc_test(
         "syntax_lists.c",
         "syntax_lists.h",
     ],
-    copts = [
-        "-std=c11",
+    copts = select({
+        # strdup is non-standard, not supported on linux in strict c11 mode
+        "//bzl/host:macos": ["-std=c11"],
+        "//bzl/host:linux": ["-std=gnu11"],
+        "//conditions:default": ["-std=c11"],
+    }) + [
         "-pedantic-errors",
 
         "-I$(GENDIR)/test/unit",
@@ -282,8 +314,12 @@ cc_test(
         "syntax_slices.c",
         "syntax_slices.h",
     ],
-    copts = [
-        "-std=c11",
+    copts = select({
+        # strdup is non-standard, not supported on linux in strict c11 mode
+        "//bzl/host:macos": ["-std=c11"],
+        "//bzl/host:linux": ["-std=gnu11"],
+        "//conditions:default": ["-std=c11"],
+    }) + [
         "-pedantic-errors",
 
         "-I$(GENDIR)/test/unit",
@@ -314,8 +350,12 @@ cc_test(
         "syntax_statements.c",
         "syntax_statements.h",
     ],
-    copts = [
-        "-std=c11",
+    copts = select({
+        # strdup is non-standard, not supported on linux in strict c11 mode
+        "//bzl/host:macos": ["-std=c11"],
+        "//bzl/host:linux": ["-std=gnu11"],
+        "//conditions:default": ["-std=c11"],
+    }) + [
         "-pedantic-errors",
 
         "-I$(GENDIR)/test/unit",
@@ -339,196 +379,6 @@ cc_test(
         "//vendored/uthash",
     ],
 )
-
-################################################################
-## testing lexis, syntaxis
-
-# cc_binary(
-#     name  = "lex_file",
-#     srcs  = [
-#         "lex_file.c",
-#         "lex_file.h",
-#         "//vendored/uthash",
-#     ],
-#     copts = [
-#         "-std=c11",
-#         "-pedantic-errors",
-
-#         "-I", "$(GENDIR)/src/lib/starlark",
-#         "-I", "$(GENDIR)/test/unit",
-
-#         "-I", "vendored/logc",
-#         # "-I", "external/obazl/vendored/logc",
-#         # "-I", "external/tools_obazl/vendored/logc",
-
-#         "-I", "external/uthash/include",
-#     ],
-#     defines = ["DEBUG", "DEBUG_TRACE"],
-#     deps = [
-#         "//src/lib/starlark:starlark",
-#         "//vendored/logc"
-#     ],
-#     # linkopts = select({
-#     #     "//bzl/host:linux": [],
-#     #     "//bzl/host:macos": ["-framework", "CoreServices"],
-#     # }),
-#     linkstatic = 1
-# )
-
-# ##########
-# cc_binary(
-#     name  = "lua_file",
-#     srcs  = [
-#         "lua_file.c",
-#         # "debug.c",
-#         # "debug.h",
-#         "//vendored/uthash",
-#     ],
-#     defines = ["DEBUG", "DEBUG_TRACE"],
-#     copts = [
-#         "-std=c11",
-#         "-pedantic-errors",
-
-#         "-I", "src",
-#         "-I", "$(GENDIR)/src/lib/starlark",     # starlark.h
-#         "-I", "$(GENDIR)/src/lib/moonlark",
-#         "-I", "$(GENDIR)/test/unit",
-
-#         "-I", "vendored/logc",
-#         "-I", "external/obazl/vendored/logc",
-#         "-I", "external/tools_obazl/vendored/logc",
-
-#         "-I", "vendored/lua-5.4.3/src/lib/starlark",
-
-#         "-I", "external/uthash/include",
-#     ],
-#     deps = [
-#         # "//src/lib/starlark:starlark",
-#         "//src/lib/moonlark",
-#         "//vendored/logc",
-#         "//vendored/lua-5.4.3/src:lua"
-#     ],
-#     linkstatic = 1
-# )
-
-# ##########
-# cc_binary(
-#     name  = "parse_file",
-#     srcs  = [
-#         "parse_file.c",
-#         "parse_file.h",
-#         # "parse.c",
-#         # "parse.h",
-#         # "debug.c",
-#         # "debug.h",
-#         # "nodes.c",
-#         # "nodes.h",
-#         # "serialize.c",
-#         # "serialize.h",
-#         "//vendored/uthash",
-#     ],
-#     copts = [
-#         "-std=c11",
-#         "-pedantic-errors",
-
-#         "-I", "$(GENDIR)/src/lib/starlark",
-#         "-I", "$(GENDIR)/test/unit",
-
-#         "-I", "vendored/logc",
-#         # "-I", "external/obazl/vendored/logc",
-#         # "-I", "external/tools_obazl/vendored/logc",
-
-#         "-I", "external/uthash/include",
-#     ],
-#     defines = ["DEBUG", "DEBUG_TRACE"],
-#     deps = [
-#         "//src/lib/starlark:starlark",
-#         "//vendored/logc"
-#     ],
-#     linkstatic = 1
-# )
-
-# cc_test(
-#     name = "roundtrip_moonlark",
-#     srcs = [
-#         "roundtrip_moonlark.c",
-#         "roundtrip_moonlark.h",
-#         "roundtrip_helper.c",
-#         "roundtrip_helper.h",
-#         "//vendored/uthash",
-#     ],
-#     data = [ # NB: globbing does not seem to work
-#         "//test/data:android.BUILD",
-#         "//test/data:cpp.BUILD",
-#         "//test/data:filegroup.BUILD",
-#         "//test/data:gen.BUILD",
-#         "//test/data:load_1.BUILD",
-#         "//test/data:load_2.BUILD",
-#         "//test/data:load_3.BUILD",
-#         "//test/data:load_aliases_1.BUILD",
-#         "//test/data:load_aliases_2.BUILD",
-#         "//test/data:py.BUILD",
-#         "//test/data:py_native.BUILD",
-#         "//test/data:shell.BUILD",
-#         "//test/data:windows_dll.BUILD",
-#     ],
-#     copts = [
-#         "-std=c11",
-#         "-pedantic-errors",
-
-#         "-I$(GENDIR)/src/lib/starlark",
-#         "-I$(GENDIR)/test/unit",
-#         "-Ivendored/logc",
-#         "-Ivendored/unity",
-#         "-Ivendored/uthash",
-#     ],
-#     deps = [
-#         "//src/lib/moonlark",
-#         "//vendored/logc",
-#         "//vendored/unity"
-#     ],
-# )
-
-# cc_test(
-#     name = "roundtrip_starlark",
-#     srcs = [
-#         "roundtrip_starlark.c",
-#         "roundtrip_starlark.h",
-#         "roundtrip_helper.c",
-#         "roundtrip_helper.h",
-#         "//vendored/uthash",
-#     ],
-#     data = [ # NB: globbing does not seem to work
-#         "//test/data:android.BUILD",
-#         "//test/data:cpp.BUILD",
-#         "//test/data:filegroup.BUILD",
-#         "//test/data:gen.BUILD",
-#         "//test/data:load_1.BUILD",
-#         "//test/data:load_2.BUILD",
-#         "//test/data:load_3.BUILD",
-#         "//test/data:load_aliases_1.BUILD",
-#         "//test/data:load_aliases_2.BUILD",
-#         "//test/data:py.BUILD",
-#         "//test/data:py_native.BUILD",
-#         "//test/data:shell.BUILD",
-#         "//test/data:windows_dll.BUILD",
-#     ],
-#     copts = [
-#         "-std=c11",
-#         "-pedantic-errors",
-
-#         "-I$(GENDIR)/src/lib/starlark",
-#         "-I$(GENDIR)/test/unit",
-#         "-Ivendored/logc",
-#         "-Ivendored/unity",
-#         "-Ivendored/uthash",
-#     ],
-#     deps = [
-#         "//src/lib/starlark:starlark",
-#         "//vendored/logc",
-#         "//vendored/unity"
-#     ],
-# )
 
 ################################################################
 genrule(
