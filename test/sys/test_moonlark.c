@@ -6,6 +6,11 @@
 #include "utstring.h"
 #include "unity.h"
 
+#include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
+
+#include "moonlark.h"
 #include "test_moonlark.h"
 
 UT_string *build_file;
@@ -15,6 +20,10 @@ UT_string *buffer;
 void setUp(void) {
     utstring_new(build_file);
     utstring_new(buffer);
+    /* struct parse_state_s *parse_state = starlark_parse_file("test/data/cpp/BUILD.test"); */
+    /* log_debug("parsed file %s", parse_state->lexer->fname); */
+    /* moonlark_roundtrip("test/data/cpp/BUILD.test", */
+    /*                    "test/lua/serialize.lua"); */
 }
 
 void tearDown(void) {
@@ -32,7 +41,7 @@ void test_android(void) {
 
 void test_cpp(void) {
     TEST_ASSERT_MESSAGE(
-        moonlark_roundtrip("test/data/cpp.BUILD",
+        moonlark_roundtrip("test/data/cpp/BUILD.test",
                            "test/lua/serialize.lua") == EXIT_SUCCESS,
         "Mismatch on test/data/cpp.BUILD"
     );
