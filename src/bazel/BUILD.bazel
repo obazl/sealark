@@ -1,0 +1,76 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+exports_files(["bazel_lua.c"])
+
+##########
+cc_library(
+    name  = "bazel",
+    # alwayslink = True,
+    # linkstatic = 1,
+    srcs  = [
+        "bazel_lua.c",
+        "bazel_lua.h",
+    ],
+    data = [
+        "//moonlark/lua:edit.lua"
+    ],
+    hdrs = [
+        "bazel_lua.h",
+    ],
+    defines = select({
+        "//bzl/host:debug": ["DEBUG_TRACE"],
+        "//conditions:default":   []
+    }),
+    copts = [
+        "-std=c11",
+        "-pedantic-errors",
+        "-g", "-O0",
+
+        "-I$(GENDIR)/src/bazel",
+        "-I$(GENDIR)/external/moonlark/src/bazel",
+
+        "-Ivendored/uthash",
+        "-Iexternal/moonlark/vendored/uthash",
+
+        "-Ivendored/logc",
+        "-Iexternal/moonlark/vendored/logc",
+
+        "-Ivendored/lua-5.4.3/src",
+        "-Iexternal/moonlark/vendored/lua-5.4.3/src",
+
+    ],
+    # linkopts = [
+    #     "-L/usr/local/lib",     # FIXME
+    #     "-llua",
+    # ],
+    deps = [
+        "//vendored/lua-5.4.3/src:lua",
+        "//vendored/logc",
+        "//vendored/uthash",
+    ],
+    visibility = ["//visibility:public"]
+)
+
+########
+genrule(
+    name = "mkhdrs",
+    visibility = ["//visibility:public"],
+    srcs = [
+        "bazel_lua.c",
+        "//src/lib/starlark:constants.c",
+        "//src/lib/starlark:nodes.c"
+    ],
+    outs = [
+        "bazel_lua.h",
+    ],
+    cmd = "\n".join([
+        "SRC1=$(location bazel_lua.c)",
+        "SRCDIR1=`dirname $$SRC1`",
+        "$(location //vendored/makeheaders) \\",
+        "    $(location //src/lib/starlark:constants.c) \\",
+        "    $(location //src/lib/starlark:nodes.c) \\",
+        "    $(location bazel_lua.c)",
+        "cp $$SRCDIR1/*.h $@",
+    ]),
+    tools = ["//vendored/makeheaders"]
+)

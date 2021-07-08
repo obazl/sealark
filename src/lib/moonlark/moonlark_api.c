@@ -135,11 +135,12 @@ EXPORT void starlark_node2lua(lua_State *L, struct node_s *node, int level)
 EXPORT void starlark_ast2lua(lua_State *L, struct parse_state_s *parse)
 {
     log_debug("starlark_buildfile2lua");
+    log_debug("stack gettop %d", lua_gettop(L));
 
-    lua_getglobal(L, "bazel");
-    /* lua_getfield(L, -1, "build"); */
+    /* lua_getglobal(L, "bazel"); */
+    /* /\* lua_getfield(L, -1, "build"); *\/ */
 
-    lua_pushstring(L, "build");
+    /* lua_pushstring(L, "build"); */
     lua_newtable(L);
 
     lua_pushstring(L, parse->lexer->fname); /* key: build file name */
@@ -188,18 +189,23 @@ EXPORT void starlark_ast2lua(lua_State *L, struct parse_state_s *parse)
         }
     }
 
-    lua_settable(L, -3);        /* add to bazel table */
+    /* lua_settable(L, -3);        /\* add to bazel table *\/ */
+    log_debug("stack gettop %d", lua_gettop(L));
+
     return;
 }
 
+/*
+  Top of Stack: ast
+ */
 EXPORT void starlark_lua_call_user_handler(lua_State *L)
 {
     log_debug("starlark_lua_call_user_handler");
 
-    lua_getglobal(L, "init");   /* user-provided */
-    /* FIXME: error handling */
+    lua_getglobal(L, "init");   /* user-provided function */
+    lua_rotate(L, -1, 2);       /* swap top 2 elts on stack */
 
-    if (lua_pcall(L, 0, 0, 0) != 0) {
+    if (lua_pcall(L, 1, 0, 0) != 0) {
         log_error("error running lua fn: init");
         lerror(L, "error running function `init': %s", lua_tostring(L, -1));
     }

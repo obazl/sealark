@@ -29,14 +29,21 @@ UT_string *build_file;
 
 UT_string *buffer;
 
-int main(int argc, char *argv[])
+int main(int argc, char *argv[]) // , char **envp)
 {
+    /* for (char **env = envp; *env != 0; env++) { */
+    /*     char *thisEnv = *env; */
+    /*     printf("%s\n", thisEnv); */
+    /* } */
+    /* return 0; */
+
     int opt;
+    char *user_luadir;
     char *lua_file;
     char *build_file;
     /* utstring_new(build_file); */
 
-    while ((opt = getopt(argc, argv, "f:l:hv")) != -1) {
+    while ((opt = getopt(argc, argv, "f:l:u:hv")) != -1) {
         switch (opt) {
         case 'f':
             /* BUILD.bazel or BUILD file */
@@ -47,6 +54,9 @@ int main(int argc, char *argv[])
         case 'l':
             log_info("lua file: %s", optarg);
             lua_file = optarg;
+            break;
+        case 'u':
+            user_luadir = optarg;
             break;
         case 'h':
             log_info("Help: ");
@@ -65,51 +75,53 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
+    /* Interrogate env to get lua load paths and cwd */
+     char *bazel_luadir = bazel_get_luadir("edit.lua");
+     log_debug("bazel_luadir: %s", bazel_luadir);
+
+     if (user_luadir == NULL) {
+         /* user_luadir = config_get_luadir(); */
+         /* log_debug("bazel_luadir: %s", bazel_luadir); */
+     } else {
+         log_info("user luadir: %s", user_luadir);
+     }
+     //FIXME: verify user_luadir exists *after* chdir to launchdir
+
     char *wd = getenv("BUILD_WORKING_DIRECTORY");
     if (wd) {
-        log_info("BUILD_WORKING_DIRECTORY: %s", wd);
+        /* log_info("BUILD_WORKING_DIRECTORY: %s", wd); */
         chdir(wd);
+    } else {
+        log_error("BUILD_WORKING_DIRECTORY not found. This program must be run from the root directory of a Bazel repo.");
     }
-    char *wsd = getenv("BUILD_WORKSPACE_DIRECTORY");
-    log_info("BUILD_WORKSPACE_DIRECTORY: %s", wsd);
 
-    moonlark_setup(build_file, lua_file);
-    /* FIXME: extract lua code common to this, test/lua/sys, and
-       bindings/lua */
-    /* LUA setup */
-    /* lua_State *L; */
-    /* L = luaL_newstate();        /\* set global lua state var *\/ */
-    /* if (L == NULL) { */
-    /*     log_error("luaL_newstate failure"); */
-    /* } */
-    /* luaL_openlibs(L); */
+     if( access( user_luadir, F_OK ) != 0 ) {
+         log_error("ERROR: user_luadir does not exist %s", user_luadir);
+     }
 
-    /* starlark_lua_set_path(L); */
+     /* startup lua (luaL_newstate()) */
+     lua_State *L = luaL_newstate();
+     luaL_openlibs(L);
 
-    /* /\* load default and user handlers (Lua files) *\/ */
-    /* starlark_lua_load_handlers(L, lua_file); */
+     /* set lua load paths */
+     moonlark_augment_load_path(L, bazel_luadir);
+     moonlark_augment_load_path(L, user_luadir);
 
-    /* /\* create global bazel table, token tables, etc. *\/ */
-    /* starlark_lua_init(L); */
+     moonlark_config_bazel_table(L);
 
-    /* /\* now parse the file *\/ */
-    /* struct parse_state_s *parse_state = starlark_parse_file(utstring_body(build_file)); */
-    /* log_debug("parsed file %s", parse_state->lexer->fname); */
+     starlark_lua_load_handlers(L, lua_file);
 
-    /* /\* convert build file to Lua AST table *\/ */
-    /* starlark_ast2lua(L, parse_state); */
-    /* /\* L now contains global bazel.build array of ASTs *\/ */
+    /* now parse the file using libstarlark */
+    struct parse_state_s *parse_state = starlark_parse_file(build_file);
+    log_debug("parsed file %s", parse_state->lexer->fname);
 
-    /* /\* call handler on (Lua) AST *\/ */
-    /* starlark_lua_call_user_handler(L); */
+    /* convert build file to Lua AST table */
+    starlark_ast2lua(L, parse_state);
+    /* L now contains global bazel.build array of ASTs */
+    /* log_debug("stack gettop %d", lua_gettop(L)); */
 
-    /* /\* serialization routines expect a UT_string, not a char buffer *\/ */
-    /* /\* utstring_new(buffer); *\/ */
-    /* /\* starlark_node2string(parse_state->root, buffer); *\/ */
-    /* /\* printf("%s", utstring_body(buffer)); *\/ */
+    /* call handler on (Lua) AST */
+    starlark_lua_call_user_handler(L);
 
-    /* utstring_free(buffer); */
-    /* /\* free(parse_state->lexer->fname); *\/ */
-    /* /\* node_dtor(parse_state->root); *\/ */
-    /* /\* return r; *\/ */
+    /* moonlark_process_buildfile(build_file, lua_file); */
 }

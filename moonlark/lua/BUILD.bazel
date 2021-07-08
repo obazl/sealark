@@ -1,1 +1,1 @@
-exports_files(["moonlark_edit.lua", "moonlark_serialize.lua"])
+exports_files(["edit.lua", "serialize.lua"])

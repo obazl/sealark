@@ -32,9 +32,7 @@ cc_library(
         "-pedantic-errors",
         "-g", "-O0",
 
-        "-I.",
-        "-I$(GENDIR)",
-        "-IFOOBAR",
+        "-I$(GENDIR)/src/bazel",
 
         "-Isrc/lib/starlark",  # starlark.h
         "-I$(GENDIR)/src/lib/starlark",  # starlark.h
@@ -59,8 +57,8 @@ cc_library(
     #     "-llua",
     # ],
     deps = [
+        "//src/bazel",
         "//src/lib/starlark",
-        # "//src/lib/obazl_utils",
         # "//external/lua/lib:lua",
         "//vendored/lua-5.4.3/src:lua",
         "//vendored/logc",
@@ -76,9 +74,8 @@ genrule(
     srcs = [
         "moonlark_api.c",
         "moonlark_config.c",
-        # "lua_debug.c",
+        "//src/bazel:bazel_lua.c",
         "//src/lib/starlark:debug.c",
-        # "//src/lib/starlark:nodes.c",
         "//src/lib/starlark:starlark.h",
         # "//vendored/uthash"
     ],
@@ -93,9 +90,8 @@ genrule(
         "SRC2=$(location //src/lib/starlark:debug.c)",
         "SRCDIR2=`dirname $$SRC2`",
         "$(location //vendored/makeheaders) \\",
-        # "    $(locations //vendored/uthash) \\",
         "    $(location //src/lib/starlark:debug.c) \\",
-        # "    $(location //src/lib/starlark:nodes.c) \\",
+        "    $(location //src/bazel:bazel_lua.c) \\",
         "    $(location //src/lib/starlark:starlark.h) \\",
         "    $(location moonlark_api.c) \\",
         "    $(location moonlark_config.c)",

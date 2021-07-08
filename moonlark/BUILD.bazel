@@ -8,6 +8,9 @@ cc_binary(
         "//vendored/lua-5.4.3/src:lua.c",
         "//vendored/lua-5.4.3/src:lua.h",
     ],
+    data = [
+        "//moonlark/lua:repl.lua"
+    ],
     # ... linking to augmented liblua:
     deps = [
         # lua runtime with integrated moonlark
@@ -39,6 +42,9 @@ cc_binary(
         # "//src/lib/starlark:debug.c",
         # "//src/lib/starlark:debug.h",
     ],
+    # data = [
+    #     "//moonlark/lua:edit.lua"
+    # ],
     defines = ["DEBUG", "DEBUG_TRACE"],
     copts = [
         "-std=c11",
@@ -63,7 +69,7 @@ cc_binary(
         "-I", "external/moonlark/vendored/uthash",
     ],
     deps = [
-        # "//src/lib/starlark:starlark",
+        "//src/bazel",
         "//src/lib/moonlark:moonlark",
         "//vendored/logc",
         "//vendored/uthash",
@@ -75,7 +81,7 @@ cc_binary(
 genrule(
     name = "mkhdrs",
     srcs = [
-        # "//src/lib/starlark:debug.c",
+        "//src/bazel:bazel_lua.c",
         "edit.c",
         "moonlark_setup.c",
     ],
@@ -87,7 +93,7 @@ genrule(
         "SRC1=$(location edit.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "$(location //vendored/makeheaders) \\",
-        # "    $(location //src/lib/starlark:debug.c) \\",
+        "    $(location //src/bazel:bazel_lua.c) \\",
         "    $(location edit.c) \\",
         "    $(location moonlark_setup.c)",
         "cp $${SRCDIR1}/*.h $(@D)",

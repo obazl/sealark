@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
     lua_settable(L, -3);
     lua_setglobal(L, "bazel");
 
-    starlark_lua_set_path(L);
+    moonlark_augment_load_path(L);
 
     /* lua_getglobal(L, "package"); */
     /* lua_getfield(L, -1, "path"); */

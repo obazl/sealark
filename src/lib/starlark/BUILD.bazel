@@ -154,12 +154,12 @@ genrule(
         "lexis.re",
         # "test.re",
     ],
-    tools = ["//external/re2c"],
+    tools = ["//vendored/re2c"],
     outs  = [
         "lexis.c"
     ],
     cmd   = "\n".join([
-        "for f in $(locations //external/re2c)",
+        "for f in $(locations //vendored/re2c)",
         "do",
         "    if [ -f $$f ]",
         "    then",

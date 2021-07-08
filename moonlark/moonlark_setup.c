@@ -30,29 +30,10 @@
 UT_string *buffer;
 
 
-int moonlark_setup(char *build_file, char *lua_file)
+int moonlark_process_buildfile(char *build_file, char *lua_file)
 {
-    /* char *wd = getenv("BUILD_WORKING_DIRECTORY"); */
-    /* if (wd) { */
-    /*     /\* log_info("BUILD_WORKING_DIRECTORY: %s", wd); *\/ */
-    /*     chdir(wd); */
-    /* } */
-    char *wd = getenv("BUILD_WORKING_DIRECTORY");
-    if (wd) {
-        log_info("BUILD_WORKING_DIRECTORY: %s", wd);
-        chdir(wd);
-    } else {
-        log_info("BUILD_WORKING_DIRECTORY not found");
-        chdir("/Users/gar/bazel/obazl/moonlark");
-    }
-
-    char cwd[PATH_MAX];
-    if (getcwd(cwd, sizeof(cwd)) != NULL) {
-        log_info("Current working dir: %s\n", cwd);
-    } else {
-        perror("getcwd() error");
-        return EXIT_FAILURE;
-    }
+    log_debug("moonlark_process_buildfile %s, %s",
+              build_file, lua_file);
 
     lua_State *L;
     L = luaL_newstate();        /* set global lua state var */
@@ -63,12 +44,11 @@ int moonlark_setup(char *build_file, char *lua_file)
     luaL_openlibs(L);
 
     /* create global bazel table, token tables, etc. */
-    starlark_lua_init(L);
-    starlark_lua_set_path(L);
+    moonlark_config_bazel_table(L);
+    /* moonlark_augment_load_path(L, path); */
 
     /* load default and user handlers (Lua files) */
     starlark_lua_load_handlers(L, lua_file);
-
 
     /* now parse the file using libstarlark */
     struct parse_state_s *parse_state = starlark_parse_file(build_file);
@@ -86,7 +66,7 @@ int moonlark_setup(char *build_file, char *lua_file)
     /* starlark_node2string(parse_state->root, buffer); */
     /* printf("%s", utstring_body(buffer)); */
 
-    utstring_free(buffer);
+    /* utstring_free(buffer); */
     /* free(parse_state->lexer->fname); */
     /* node_dtor(parse_state->root); */
     /* return r; */

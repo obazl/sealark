@@ -25,6 +25,11 @@
 /* #include "moonlark.h" */
 
 /* **************************************************************** */
+static int config_bazel (lua_State *L) {
+    log_debug("config.bazel");
+    return 1;
+}
+
 /**
    result: new table in global ns, representing BUILD.bazel file
      flds: fname, root
@@ -61,7 +66,8 @@ static int version (lua_State *L) {
 }
 
 static const luaL_Reg moonlark[] = {
-  {"parse_file" , parse_file},
+  {"config_bazel", config_bazel},
+  {"parse_file"  , parse_file},
   {NULL         , NULL}
 };
 
@@ -69,21 +75,17 @@ static const luaL_Reg moonlark[] = {
 ** Open library - e.g. require 'starlark'
 */
 LUAMOD_API int luaopen_moonlark(lua_State *L) {
-    /* log_set_level(LOG_TRACE); */
-    /* log_set_quiet(false); */
-
-    /* log_info("luaopen_starlark"); */
 
     /* create the library */
-
     luaL_newlib(L, moonlark);
     lua_pushstring(L, "0.1.0");
     lua_setfield(L, -2, "version");
 
     /* bazel-specific */
-    /* create global bazel table with bazel.config */
-    starlark_lua_init(L);
-    starlark_lua_set_path(L);   /* elaborates 'bazel' table created by init */
+    /* create global bazel table with bazel.config, bazel.TOK, etc. */
+    /* starlark_lua_init(L); */
+    /* elaborates 'bazel' table created by init */
+    /* moonlark_augment_load_path(L); */
 
     return 1;
 }
