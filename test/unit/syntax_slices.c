@@ -282,12 +282,12 @@ void test_slice_embed_a(void) {
     int ct;
     for (ct=0; slice_embed_a[ct] != NULL; ct++);
     for (int i=0; i < ct; i++) {
-        printf("case %d: :]%s[:\n", i, slice_embed_a[i]);
+        /* printf("case %d: :]%s[:\n", i, slice_embed_a[i]); */
         test_str = slice_embed_a[i];
         root = starlark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
-        printf(":]%s[:\n", utstring_body(buf));
+        /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         node_dtor(root);
     }
@@ -297,12 +297,12 @@ void test_slice_a_cmt(void) {
     int ct;
     for (ct=0; slice_a_cmt[ct] != NULL; ct++);
     for (int i=0; i < ct; i++) {
-        printf("case %d: :]%s[:\n", i, slice_a_cmt[i]);
+        /* printf("case %d: :]%s[:\n", i, slice_a_cmt[i]); */
         test_str = slice_a_cmt[i];
         root = starlark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
-        printf(":]%s[:\n", utstring_body(buf));
+        /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         node_dtor(root);
     }
@@ -312,12 +312,12 @@ void test_slice_int(void) {
     int ct;
     for (ct=0; slice_int[ct] != NULL; ct++);
     for (int i=0; i < ct; i++) {
-        printf("case %d: :]%s[:\n", i, slice_int[i]);
+        // printf("case %d: :]%s[:\n", i, slice_int[i]);
         test_str = slice_int[i];
         root = starlark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
-        printf(":]%s[:\n", utstring_body(buf));
+        // printf(":]%s[:\n", utstring_body(buf));
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         node_dtor(root);
     }
@@ -327,12 +327,12 @@ void test_slice_float(void) {
     int ct;
     for (ct=0; slice_float[ct] != NULL; ct++);
     for (int i=0; i < ct; i++) {
-        printf("case %d: :]%s[:\n", i, slice_float[i]);
+        // printf("case %d: :]%s[:\n", i, slice_float[i]);
         test_str = slice_float[i];
         root = starlark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
-        printf(":]%s[:\n", utstring_body(buf));
+        // printf(":]%s[:\n", utstring_body(buf));
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         node_dtor(root);
     }
@@ -342,12 +342,12 @@ void test_slice_a_float(void) {
     int ct;
     for (ct=0; slice_a_float[ct] != NULL; ct++);
     for (int i=0; i < ct; i++) {
-        printf("case %d: :]%s[:\n", i, slice_a_float[i]);
+        // printf("case %d: :]%s[:\n", i, slice_a_float[i]);
         test_str = slice_a_float[i];
         root = starlark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
-        printf(":]%s[:\n", utstring_body(buf));
+        // printf(":]%s[:\n", utstring_body(buf));
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         node_dtor(root);
     }
@@ -357,12 +357,12 @@ void test_slice_a_int(void) {
     int ct;
     for (ct=0; slice_a_int[ct] != NULL; ct++);
     for (int i=0; i < ct; i++) {
-        printf("case %d: :]%s[:\n", i, slice_a_int[i]);
+        // printf("case %d: :]%s[:\n", i, slice_a_int[i]);
         test_str = slice_a_int[i];
         root = starlark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
-        printf(":]%s[:\n", utstring_body(buf));
+        // printf(":]%s[:\n", utstring_body(buf));
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         node_dtor(root);
     }
@@ -372,12 +372,12 @@ void test_slice_fn(void) {
     int ct;
     for (ct=0; slice_fn[ct] != NULL; ct++);
     for (int i=0; i < ct; i++) {
-        printf("case %d: :]%s[:\n", i, slice_fn[i]);
+        // printf("case %d: :]%s[:\n", i, slice_fn[i]);
         test_str = slice_fn[i];
         root = starlark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
-        printf(":]%s[:\n", utstring_body(buf));
+        // printf(":]%s[:\n", utstring_body(buf));
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         node_dtor(root);
     }
