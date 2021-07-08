@@ -76,45 +76,7 @@ int main(int argc, char *argv[]) // , char **envp)
         exit(EXIT_FAILURE);
     }
 
-    /* Interrogate env to get lua load paths and cwd */
-     char *bazel_luadir = lbazel_get_luadir("edit.lua");
-     log_debug("bazel_luadir: %s", bazel_luadir);
-
-     if (user_luadir == NULL) {
-         /* user_luadir = config_get_luadir(); */
-         log_warn("WARNING: no user luadir specified");
-     } else {
-     }
-     //FIXME: verify user_luadir exists *after* chdir to launchdir
-
-    char *wd = getenv("BUILD_WORKING_DIRECTORY");
-    if (wd) {
-        /* log_info("BUILD_WORKING_DIRECTORY: %s", wd); */
-        chdir(wd);
-    } else {
-        log_error("BUILD_WORKING_DIRECTORY not found. This program must be run from the root directory of a Bazel repo.");
-    }
-
-    if (user_luadir) {
-        if( access( user_luadir, F_OK ) != 0 ) {
-            log_error("ERROR: user_luadir does not exist %s", user_luadir);
-            exit(EXIT_FAILURE);
-        } else {
-            log_info("user_luadir: %s", user_luadir);
-        }
-    }
-
-     /* startup lua (luaL_newstate()) */
-     lua_State *L = luaL_newstate();
-     luaL_openlibs(L);
-
-     /* set lua load paths */
-     moonlark_augment_load_path(L, bazel_luadir);
-     moonlark_augment_load_path(L, user_luadir);
-
-     moonlark_config_moonlark_table(L);
-
-     moonlark_lua_load_handlers(L, lua_file);
+    lua_State *L = moonlark_config_for_bazel(bazel_lua_cb, user_luadir, lua_file);
 
     /* now parse the file using libstarlark */
     struct parse_state_s *parse_state = starlark_parse_file(build_file);
@@ -127,6 +89,4 @@ int main(int argc, char *argv[]) // , char **envp)
 
     /* call callback on (Lua) AST */
     moonlark_lua_call_user_handler(L, callback);
-
-    /* moonlark_process_buildfile(build_file, lua_file); */
 }

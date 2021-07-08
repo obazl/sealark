@@ -1,4 +1,4 @@
-exports_files(["moonlark_setup.c"])
+exports_files(["config.c"])
 
 # Target //moonlark:repl launches a lua interpreter with integrated moonlark support.  The load path
 cc_binary(
@@ -37,8 +37,8 @@ cc_binary(
     srcs  = [
         "edit.c",
         "edit.h",
-        "moonlark_setup.c",
-        "moonlark_setup.h",
+        "config.c",
+        "config.h",
         # "//src/lib/starlark:debug.c",
         # "//src/lib/starlark:debug.h",
     ],
@@ -70,24 +70,69 @@ cc_binary(
     ],
     deps = [
         "//src/lbazel",
-        "//src/lib/moonlark:moonlark",
+        "//src/lib/moonlark",
+
         "//vendored/logc",
         "//vendored/uthash",
-        # libmoonlark pulls in liblualark
-        # "//vendored/lua-5.4.3/src:lua"
+
+        # libmoonlark pulls in lua rt, but not headers
+        "//vendored/lua-5.4.3/src:lua"
     ],
 )
+
+# cc_library(
+#     name  = "config",
+#     visibility = ["//visibility:public"],
+#     linkstatic = 1,
+#     srcs  = [
+#         "config.c",
+#     ],
+#     hdrs = [
+#         "config.h",
+#     ],
+#     defines = ["DEBUG", "DEBUG_TRACE"],
+#     copts = [
+#         "-std=c11",
+#         "-pedantic-errors",
+
+#         "-I$(GENDIR)/moonlark",
+#         "-I$(GENDIR)/external/moonlark/moonlark",
+
+#         "-I", "$(GENDIR)/src/lib/starlark",
+#         "-I", "$(GENDIR)external/moonlark/src/lib/starlark",
+
+#         "-I", "$(GENDIR)/src/lib/moonlark",
+#         "-I", "$(GENDIR)/external/moonlark/src/lib/moonlark", # libmoonlark.h
+
+#         "-I", "vendored/logc",
+#         "-I", "external/moonlark/vendored/logc",
+
+#         "-I", "vendored/lua-5.4.3/src",
+#         "-I", "external/moonlark/vendored/lua-5.4.3/src",
+
+#         "-I", "vendored/uthash",
+#         "-I", "external/moonlark/vendored/uthash",
+#     ],
+#     deps = [
+#         "//src/lbazel",
+#         "//src/lib/moonlark:moonlark",
+#         "//vendored/logc",
+#         "//vendored/uthash",
+#         # libmoonlark pulls in liblualark
+#         # "//vendored/lua-5.4.3/src:lua"
+#     ],
+# )
 
 genrule(
     name = "mkhdrs",
     srcs = [
         "//src/lbazel:lbazel.c",
         "edit.c",
-        "moonlark_setup.c",
+        "config.c",
     ],
     outs = [
         "edit.h",
-        "moonlark_setup.h",
+        "config.h",
     ],
     cmd = "\n".join([
         "SRC1=$(location edit.c)",
@@ -95,7 +140,7 @@ genrule(
         "$(location //vendored/makeheaders) \\",
         "    $(location //src/lbazel:lbazel.c) \\",
         "    $(location edit.c) \\",
-        "    $(location moonlark_setup.c)",
+        "    $(location config.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),
     tools = ["//vendored/makeheaders"],
