@@ -258,7 +258,7 @@ void test_load_stmts(void) {
     }
 }
 
-main(void) {
+int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_simple);
     RUN_TEST(test_def_stmts);

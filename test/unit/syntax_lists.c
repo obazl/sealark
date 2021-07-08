@@ -80,7 +80,7 @@ void test_list_expr(void) {
     }
 }
 
-main(void) {
+int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_list_expr);
     RUN_TEST(test_list_comp);

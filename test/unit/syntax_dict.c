@@ -60,7 +60,7 @@ void test_dict_expr(void) {
     }
 }
 
- main(void) {
+int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_dict_comp);
     /* RUN_TEST(test_dict_expr); */
