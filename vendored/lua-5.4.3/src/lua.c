@@ -641,16 +641,6 @@ static int pmain (lua_State *L) {
 
 
 int main (int argc, char **argv) {
-
-#ifdef MOONLARK
-  /* moonlark:repl expected to be launched using $ bazel run */
-  /* which means cwd = runfiles dir; we reset to launch dir */
-  char *wd = getenv("BUILD_WORKING_DIRECTORY");
-  if (wd) {
-      chdir(wd);
-  }
-#endif
-
   int status, result;
   lua_State *L = luaL_newstate();  /* create state */
   if (L == NULL) {
