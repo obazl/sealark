@@ -2,11 +2,11 @@
 
 print("hello from @moonlark//moonlark/lua/edit.lua")
 
-print(bazel)
-
-for k,v in pairs(moonlark) do
-   print(k,v)
+function emit_starlark(ast, outfile)
+   local serialize = require "serialize"
+   serialize.emit_starlark(ast, outfile)
 end
+
 
 function moonlark_handler(buildfile_ast)
    print("@moonlark//moonlark/lua/edit.lua: moonlark_handler")
@@ -19,5 +19,13 @@ function moonlark_handler(buildfile_ast)
    for k,v in pairs(moonlark) do
       print(k,v)
    end
-   print("returning")
+
+   emit_starlark(buildfile_ast, "tmp/test.BUILD")
+
+   -- serpent = require "serpent"
+   -- print(serpent.dump(buildfile_ast))
+
+   local pprint = require('pprint')
+   pprint(buildfile_ast)
+
 end
