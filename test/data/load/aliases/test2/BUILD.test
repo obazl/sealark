@@ -1,0 +1,16 @@
+# add comments
+
+load("@foo1//bar1:baz1.bzl", v1="var1") # comment 1
+
+load( # comment 2
+    "@foo2//bar2:baz2.bzl", # comment 3
+    v2="var2" # comment 4
+)
+#comment 5
+
+load( # comment 6
+    "@foo3//bar3:baz3.bzl", # comment 7
+    v3 # comment 8
+    = # comment 9
+    "var3" # comment 10
+) # comment 11

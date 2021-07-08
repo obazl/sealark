@@ -9,55 +9,74 @@ test_suite(
 
 cc_test(
     name = "moonlark",
+    linkstatic = 1,
     srcs = [
         "test_moonlark.c",
         "test_moonlark.h",
         "moonlark_roundtrip.c",
         "moonlark_roundtrip.h",
-        "//moonlark:moonlark_setup.c",
-        "//moonlark:moonlark_setup.h",
-        "@uthash//:include",
+        "//moonlark:config.c",
+        "//moonlark:config.h",
     ],
     data = [ # NB: globbing does not seem to work
         "//test/lua:serialize.lua",
 
-        "//test/data:android.BUILD",
-        "//test/data:cpp.BUILD",
-        "//test/data:filegroup.BUILD",
-        "//test/data:gen.BUILD",
-        "//test/data:load_1.BUILD",
-        "//test/data:load_2.BUILD",
-        "//test/data:load_3.BUILD",
-        "//test/data:load_aliases_1.BUILD",
-        "//test/data:load_aliases_2.BUILD",
-        "//test/data:py.BUILD",
-        "//test/data:py_native.BUILD",
-        "//test/data:shell.BUILD",
-        "//test/data:windows_dll.BUILD",
+        "//test/data/android:BUILD.test",
+        "//test/data/cpp:BUILD.test",
+        "//test/data/filegroup:BUILD.bazel",
+        "//test/data/gen:BUILD.bazel",
+        "//test/data/load/aliases/test1:BUILD.test",
+        "//test/data/load/aliases/test2:BUILD.test",
+        "//test/data/load/comments:BUILD.test",
+        "//test/data/load/test1:BUILD.test",
+        "//test/data/load/test2:BUILD.test",
+        "//test/data/load/test3:BUILD.test",
+        "//test/data/python:BUILD.bazel",
+        "//test/data/python/native:BUILD.test",
+        "//test/data/shell:BUILD.bazel",
+        "//test/data/windows/dll:BUILD.test",
     ],
     copts = [
         "-std=c11",
         "-pedantic-errors",
 
-        "-I$(GENDIR)/moonlark",
-        "-I$(GENDIR)/src/lib/starlark",
-        "-I$(GENDIR)/src/lib/moonlark", # libmoonlark.h
         "-I$(GENDIR)/test/sys",
+        "-I$(GENDIR)/external/moonlark/test/sys",
+
+        "-I$(GENDIR)/src/lbazel",
+
+        "-I$(GENDIR)/moonlark",
+        "-I$(GENDIR)/external/moonlark/moonlark",
+
+        "-I$(GENDIR)/moonlark",
+
+        "-I", "$(GENDIR)/src/lib/starlark",
+        "-I", "$(GENDIR)external/moonlark/src/lib/starlark",
+
+        "-I", "$(GENDIR)/src/lib/moonlark",
+        "-I", "$(GENDIR)/external/moonlark/src/lib/moonlark", # libmoonlark.h
 
         "-Ivendored/logc",
-        "-Ivendored/lua-5.4.3/src",
+        "-Iexternal/moonlark/vendored/logc",
+
+        "-I", "vendored/lua-5.4.3/src",
+        "-I", "external/moonlark/vendored/lua-5.4.3/src",
+
         "-Ivendored/unity",
-        "-Iexternal/uthash/include",
-    ],
-    linkopts = [
-        "-L/Users/gar/bazel/obazl/moonlark/bazel-bin/vendored/lua-5.4.3/src", # /liblua.a
-        "-llua"
+        "-Iexternal/moonlark/vendored/unity",
+
+        "-I", "vendored/uthash",
+        "-I", "external/moonlark/vendored/uthash",
     ],
     deps = [
+        # "//moonlark:config",
+        # "//src/lbazel",
         "//src/lib/moonlark",
         "//vendored/logc",
         "//vendored/unity",
-        "//vendored/lua-5.4.3/src:lua"
+        "//vendored/uthash",
+        # pulled in by moonlark
+        # "//vendored/lua-5.4.3/src:lua",
     ],
 )
 
@@ -68,22 +87,22 @@ cc_test(
         "test_starlark.h",
         "starlark_roundtrip.c",
         "starlark_roundtrip.h",
-        "@uthash//:include",
     ],
     data = [ # NB: globbing does not seem to work
-        "//test/data:android.BUILD",
-        "//test/data:cpp.BUILD",
-        "//test/data:filegroup.BUILD",
-        "//test/data:gen.BUILD",
-        "//test/data:load_1.BUILD",
-        "//test/data:load_2.BUILD",
-        "//test/data:load_3.BUILD",
-        "//test/data:load_aliases_1.BUILD",
-        "//test/data:load_aliases_2.BUILD",
-        "//test/data:py.BUILD",
-        "//test/data:py_native.BUILD",
-        "//test/data:shell.BUILD",
-        "//test/data:windows_dll.BUILD",
+        "//test/data/android:BUILD.bazel",
+        "//test/data/cpp:BUILD.bazel",
+        "//test/data/filegroup:BUILD.bazel",
+        "//test/data/gen:BUILD.bazel",
+        "//test/data/load/aliases/test1:BUILD.bazel",
+        "//test/data/load/aliases/test2:BUILD.bazel",
+        "//test/data/load/comments:BUILD.bazel",
+        "//test/data/load/test1:BUILD.bazel",
+        "//test/data/load/test2:BUILD.bazel",
+        "//test/data/load/test3:BUILD.bazel",
+        "//test/data/python:BUILD.bazel",
+        "//test/data/python/native:BUILD.bazel",
+        "//test/data/shell:BUILD.bazel",
+        "//test/data/windows/dll:BUILD.bazel",
     ],
     copts = [
         "-std=c11",
@@ -93,12 +112,15 @@ cc_test(
         "-I$(GENDIR)/test/sys",
         "-Ivendored/logc",
         "-Ivendored/unity",
-        "-Iexternal/uthash/include",
+
+        "-I", "vendored/uthash",
+        "-I", "external/moonlark/vendored/uthash",
     ],
     deps = [
         "//src/lib/starlark",
         "//vendored/logc",
-        "//vendored/unity"
+        "//vendored/unity",
+        "//vendored/uthash",
     ],
 )
 
@@ -106,12 +128,14 @@ cc_test(
 genrule(
     name = "mkhdrs",
     srcs = [
-        "//moonlark:moonlark_setup.c",
+        "//moonlark:config.c",
         "//src/lib/starlark:debug.c",
+        "//src/lbazel:lbazel.c",
         "moonlark_roundtrip.c",
         "starlark_roundtrip.c",
         "test_starlark.c",
         "test_moonlark.c"
+
         # "lex_keywords.c",
         # "lex_numbers.c",
         # "lex_punctuation.c",
@@ -146,7 +170,8 @@ genrule(
         "SRC1=$(location starlark_roundtrip.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "$(location //vendored/makeheaders) \\",
-        "    $(location //moonlark:moonlark_setup.c) \\",
+        "    $(location //moonlark:config.c) \\",
+        "    $(location //src/lbazel:lbazel.c) \\",
         "    $(location //src/lib/starlark:debug.c) \\",
         "    $(location moonlark_roundtrip.c) \\",
         "    $(location starlark_roundtrip.c) \\",
