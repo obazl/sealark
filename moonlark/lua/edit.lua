@@ -1,6 +1,6 @@
 -- edit.lua
 
-print("hello from .moonlark.d/edit.lua")
+print("hello from @moonlark//moonlark/lua/edit.lua")
 
 print(bazel)
 
@@ -9,7 +9,7 @@ for k,v in pairs(moonlark) do
 end
 
 function moonlark_handler(buildfile_ast)
-   print(".moonlark.d/edit.lua: moonlark_handler")
+   print("@moonlark//moonlark/lua/edit.lua: moonlark_handler")
    print("ast for " .. buildfile_ast.build_file .. ":")
    for k,v in pairs(buildfile_ast) do
       print(k,v)
