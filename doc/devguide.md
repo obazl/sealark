@@ -142,3 +142,10 @@ The `bazel` table contains fields:
 
 #### Without preconfigured Bazel support:
 
+## CAVEATS
+
+* Bazel behaves erratically when used as a launcher. The RUNFILES env.
+  vars may or may not be defined, depending on whether run cmd was
+  'run' or 'test', and whether 'run' is used to launch a cc_binary or
+  a cc_test target. Also, the runtime environments for the 'test' and 'run'
+  commands are different.
