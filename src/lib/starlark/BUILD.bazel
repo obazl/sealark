@@ -5,8 +5,8 @@ exports_files(glob(["*.c"]))
 ##########
 cc_library(
     name  = "starlark",
-    # alwayslink = True,
-    # linkstatic = 1,
+    alwayslink = True,
+    linkstatic = 1,
     srcs  = [
         # "constants.c",
         # "constants.h",
@@ -51,6 +51,7 @@ cc_library(
 ##########
 cc_library(
     name  = "syntaxis",
+    linkstatic = 1,
     visibility = ["//visibility:public"],
     srcs  = [
         "syntaxis.c",
@@ -81,7 +82,6 @@ cc_library(
         "//bzl/host:debug": ["DEBUG_TRACE"],
         "//conditions:default":   []
     }),
-    linkstatic = 1,
     deps = [
         "//vendored/logc",
         "//vendored/uthash"
@@ -113,6 +113,8 @@ genrule(
 ###########
 cc_library(
     name  = "lexis",
+    # alwayslink = True,
+    linkstatic = 1,
     visibility = ["//visibility:public"],
     srcs  = [
         "lexis.c",
@@ -140,7 +142,6 @@ cc_library(
         "//bzl/host:debug": ["DEBUG_TRACE"],
         "//conditions:default":   []
     }),
-    linkstatic = 1,
     deps = [
         "//vendored/logc",
         "//vendored/uthash",

@@ -5,8 +5,8 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 ##########
 cc_library(
     name  = "moonlark",
-    # alwayslink = True,
-    # linkstatic = 1,
+    alwayslink = True,
+    linkstatic = 1,
     srcs  = [
         "libmoonlark.c",
         "libmoonlark.h",

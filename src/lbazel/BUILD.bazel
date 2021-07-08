@@ -6,10 +6,9 @@ exports_files(["lbazel.c"])
 cc_library(
     name  = "lbazel",
     # alwayslink = True,
-    # linkstatic = 1,
+    linkstatic = 1,
     srcs  = [
         "lbazel.c",
-        "lbazel.h",
     ],
     data = [
         "//moonlark/lua:edit.lua"
