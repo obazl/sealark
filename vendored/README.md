@@ -6,6 +6,7 @@
 * lua: version 5.4.3 https://www.lua.org/
 * lustache: https://github.com/Olivine-Labs/lustache
 * makeheaders: https://www.hwaci.com/sw/mkhdr/
+* pprint.lua: https://github.com/jagt/pprint.lua
 * re2c: version 2.1.1.  https://github.com/skvadrik/re2c
 * serpent: https://github.com/pkulchenko/serpent
 * unity: https://github.com/ThrowTheSwitch/Unity
