@@ -33,11 +33,11 @@ lua_State *moonlark_config_for_bazel(
                               char *lua_file
                               )
 {
-    log_debug("moonlark_config_for_bazel");
+    /* log_debug("moonlark_config_for_bazel"); */
 
     /* Interrogate env to get lua load paths and cwd */
     char *bazel_luadir = lbazel_get_luadir(bazel_lua_cb);
-    log_debug("bazel_luadir: %s", bazel_luadir);
+    /* log_debug("bazel_luadir: %s", bazel_luadir); */
 
     char *user_luadir = ".moonlark.d";
     if (_user_luadir == NULL) {
@@ -59,8 +59,8 @@ lua_State *moonlark_config_for_bazel(
     if (user_luadir) {
         if( access( user_luadir, F_OK ) != 0 ) {
             log_warn("WARNING: user_luadir does not exist: %s", user_luadir);
-        } else {
-            log_info("user_luadir: %s", user_luadir);
+        /* } else { */
+        /*     log_info("user_luadir: %s", user_luadir); */
         }
     }
 

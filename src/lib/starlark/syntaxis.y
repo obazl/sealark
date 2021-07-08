@@ -236,14 +236,14 @@
 }
 
 %parse_accept {
-    log_trace("\n\n\t\t%%%%%%%%%%%%%%%% PARSE: SUCCESS %%%%%%%%%%%%%%%%\n");
+    /* log_trace("\n\n\t\t%%%%%%%%%%%%%%%% PARSE: SUCCESS %%%%%%%%%%%%%%%%\n"); */
 }
 
 %start_symbol buildfile
 /* File = {Statement | newline} eof . */
 buildfile ::= stmt_list(SS) .
 {
-    log_trace(">>buildfile ::= stmt_list .");
+    /* log_trace(">>buildfile ::= stmt_list ."); */
     parse_state->root = SS;
 }
 
@@ -301,10 +301,10 @@ buildfile ::= stmt_list(SS) .
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 /* str_assign is for load stmts */
 str_assign(ALIAS) ::= ID(Id) EQ(Eq) STRING(S). {
-    log_trace(">>str_assign ::= ID EQ STRING");
-    log_trace("  rhs ID(Id)");
-    log_trace("  rhs EQ(Eq)");
-    log_trace("  rhs STRING(S)");
+    /* log_trace(">>str_assign ::= ID EQ STRING"); */
+    /* log_trace("  rhs ID(Id)"); */
+    /* log_trace("  rhs EQ(Eq)"); */
+    /* log_trace("  rhs STRING(S)"); */
     ALIAS = calloc(sizeof(struct node_s), 1);
     ALIAS->type = TK_ALIAS;
     ALIAS->line  = Id->line;
@@ -333,26 +333,26 @@ str_assign(ALIAS) ::= ID(Id) EQ(Eq) STRING(S). {
 
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 load_list(LOAD_LIST) ::= str_assign(A) . {
-    log_trace(">>load_list ::= load_list str_assign");
+    /* log_trace(">>load_list ::= load_list str_assign"); */
     utarray_new(LOAD_LIST, &node_icd);
     utarray_push_back(LOAD_LIST, A);
 }
 
 load_list(LOAD_LIST) ::= STRING(S) . {
-    log_trace(">>load_list ::= STRING");
+    /* log_trace(">>load_list ::= STRING"); */
     utarray_new(LOAD_LIST, &node_icd);
     utarray_push_back(LOAD_LIST, S);
 }
 
 load_list(LOAD_LIST) ::= load_list(LL) COMMA(Comma) STRING(S) . {
-    log_trace(">>load_list ::= load_list COMMA STRING");
+    /* log_trace(">>load_list ::= load_list COMMA STRING"); */
     utarray_push_back(LL, Comma);
     utarray_push_back(LL, S);
     LOAD_LIST = LL;
 }
 
 load_list(LOAD_LIST) ::= load_list(LL) COMMA(Comma) str_assign(A) . {
-    log_trace(">>load_list ::= load_list COMMA str_assign");
+    // log_trace(">>load_list ::= load_list COMMA str_assign");
     utarray_push_back(LL, Comma);
     utarray_push_back(LL, A);
     LOAD_LIST = LL;
@@ -360,7 +360,7 @@ load_list(LOAD_LIST) ::= load_list(LL) COMMA(Comma) str_assign(A) . {
 
 /* optional trailing comma */
 load_list(LOAD_LIST) ::= load_list(LL) COMMA(Comma) . {
-    log_trace(">>load_list ::= load_list COMMA");
+    // log_trace(">>load_list ::= load_list COMMA");
     utarray_push_back(LL, Comma);
     LOAD_LIST = LL;
 }
@@ -380,7 +380,7 @@ load_list(LOAD_LIST) ::= load_list(LL) COMMA(Comma) . {
 /* Parameters = Parameter {',' Parameter}. */
 /* NB: trailing comma allowed in 'def' params but not in lambda */
 param_list(Params) ::= param(Param) . {
-    log_trace(">>param_list(Params) ::= param(Param)");
+    // log_trace(">>param_list(Params) ::= param(Param)");
     Params = calloc(sizeof(struct node_s), 1);
     Params->type = TK_Param_List;
     Params->line  = Param->line;
@@ -390,7 +390,7 @@ param_list(Params) ::= param(Param) . {
 }
 
 param_list(Params) ::= param_list(Params_rhs) COMMA(Comma) param(Param) . {
-    log_trace(">>param_list(Params) ::= param_list COMMA param");
+    // log_trace(">>param_list(Params) ::= param_list COMMA param");
     utarray_push_back(Params_rhs->subnodes, Comma);
     utarray_push_back(Params_rhs->subnodes, Param);
     Params = Params_rhs;
@@ -399,16 +399,16 @@ param_list(Params) ::= param_list(Params_rhs) COMMA(Comma) param(Param) . {
 /* Parameter = identifier | identifier '=' Test | '*' identifier | '**' identifier . */
 
 param(Param) ::= ID(Id) . {
-    log_trace(">>param(PARAM) ::= ID(Id)");
+    // log_trace(">>param(PARAM) ::= ID(Id)");
     Param = Id;
 }
 
 param(Param) ::= param_named(P) . {
-    log_trace(">>param(Param) ::= param_named(P)");
+    // log_trace(">>param(Param) ::= param_named(P)");
     Param = P;
 }
 param_named(Param) ::= ID(Id) EQ(Eq) expr(X). {
-    log_trace(">>param(Param) ::= ID(Id) EQ(Eq) expr(X)");
+    // log_trace(">>param(Param) ::= ID(Id) EQ(Eq) expr(X)");
     Param = calloc(sizeof(struct node_s), 1);
     Param->type = TK_Param_Named;
     Param->line = Id->line;
@@ -420,11 +420,11 @@ param_named(Param) ::= ID(Id) EQ(Eq) expr(X). {
 }
 
 param(Param) ::= param_star(P) . {
-    log_trace(">>param(Param) ::= param_star(P)");
+    // log_trace(">>param(Param) ::= param_star(P)");
     Param = P;
 }
 param_star(Param) ::= STAR(Star) ID(Id) . {
-    log_trace(">>param(Param) ::= STAR ID(Id)");
+    // log_trace(">>param(Param) ::= STAR ID(Id)");
     Param = calloc(sizeof(struct node_s), 1);
     Param->type = TK_Param_Star;
     Param->line = Star->line;
@@ -435,11 +435,11 @@ param_star(Param) ::= STAR(Star) ID(Id) . {
 }
 
 param(Param) ::= param_star2(P) . {
-    log_trace(">>param(Param) ::= param_star2(P)");
+    // log_trace(">>param(Param) ::= param_star2(P)");
     Param = P;
 }
 param_star2(Param) ::= STAR2(Star2) ID(Id) . {
-    log_trace(">>param(Param) ::= STAR2 ID(Id)");
+    // log_trace(">>param(Param) ::= STAR2 ID(Id)");
     Param = calloc(sizeof(struct node_s), 1);
     Param->type = TK_Param_Star2;
     Param->line = Star2->line;
@@ -476,7 +476,7 @@ param_star2(Param) ::= STAR2(Star2) ID(Id) . {
 /* precedence: must be lower than binary_expr */
 expr_list(Xs) ::= expr(X) . [PLUS]
 {
-    log_trace(">>expr_list(XList) ::= expr(X");
+    // log_trace(">>expr_list(XList) ::= expr(X");
     Xs = calloc(sizeof(struct node_s), 1);
     Xs->type  = TK_Expr_List;
     Xs->line  = X->line;
@@ -508,7 +508,7 @@ expr_list(Xs) ::= expr(X) . [PLUS]
 
 expr_list(Xs) ::= expr_list(Xs_rhs) COMMA(Comma) expr(X) . [PLUS]
 {
-    log_trace(">>expr_list(Xs) ::= expr_list(Xs_rhs) COMMA(Comma) expr(X)");
+    // log_trace(">>expr_list(Xs) ::= expr_list(Xs_rhs) COMMA(Comma) expr(X)");
     /* XList = calloc(sizeof(struct node_s), 1); */
     /* XList->type = TK_Expr_List; */
     /* XList->line  = XList_rhs->line; */
@@ -522,14 +522,14 @@ expr_list(Xs) ::= expr_list(Xs_rhs) COMMA(Comma) expr(X) . [PLUS]
 
 stmt_list(Stmts) ::= statement(Stmt) . [FOR]
 {
-    log_trace(">>stmt_list ::= statement");
+    // log_trace(">>stmt_list ::= statement");
     Stmts = calloc(sizeof(struct node_s), 1);
     Stmts->type = TK_Stmt_List;
     Stmts->line = Stmt->line;
     Stmts->col  = Stmt->col;
     utarray_new(Stmts->subnodes, &node_icd);
     if (Stmt->type == TK_Def_Compound) {
-        log_debug("HIT DEF COMPOUND");
+        /* log_debug("HIT DEF COMPOUND"); */
         utarray_concat(Stmts->subnodes, Stmt->subnodes);
     } else {
         utarray_push_back(Stmts->subnodes, Stmt);
@@ -538,7 +538,7 @@ stmt_list(Stmts) ::= statement(Stmt) . [FOR]
 
 stmt_list(Stmts) ::= stmt_list(Stmts_rhs) statement(Stmt) . [PLUS]
 {
-    log_trace(">>stmt_list ::= stmt_list statement");
+    // log_trace(">>stmt_list ::= stmt_list statement");
     if (Stmt->type == TK_Def_Compound) {
         log_debug("HIT DEF COMPOUND");
         utarray_concat(Stmts_rhs->subnodes, Stmt->subnodes);
@@ -572,7 +572,7 @@ stmt_list(Stmts) ::= stmt_list(Stmts_rhs) statement(Stmt) . [PLUS]
 /* here: Statement => stmtm_list, SimpleStmt => small_stmt_list */
 statement(Stmt) ::= COMMENT(C) . [FOR]
 {
-    log_trace(">>statement ::= COMMENT");
+    // log_trace(">>statement ::= COMMENT");
     Stmt = calloc(sizeof(struct node_s), 1);
     Stmt->type = TK_Stmt;
     Stmt->line  = C->line;
@@ -590,20 +590,20 @@ statement(Stmt) ::= COMMENT(C) . [FOR]
 /* 'def' defines a function */
 statement(Stmt) ::= def_stmt(DefStmt) . [TILDE]
 {
-    log_trace(">>statement ::= def_stmt");
+    // log_trace(">>statement ::= def_stmt");
     Stmt = DefStmt;
 }
 
 statement(Stmt) ::= if_stmt(IfStmt) . [TILDE]
 {
-    log_trace(">>statement ::= if_stmt");
+    // log_trace(">>statement ::= if_stmt");
     Stmt = IfStmt;
 }
 
 statement(Stmt) ::= for_stmt(ForStmt) . [TILDE]
 {
-    log_trace("\n");
-    log_trace(">>statement ::= for_stmt");
+    // log_trace("\n");
+    // log_trace(">>statement ::= for_stmt");
     Stmt = ForStmt;
 }
 
@@ -611,7 +611,7 @@ statement(Stmt) ::= small_stmt_list(SmallStmts) . [AMP]
 {
     /* FIXME: validate required trailing newline */
     /* if present it will be embedded in the final token */
-    log_trace(">>statement ::= small_stmt_list");
+    // log_trace(">>statement ::= small_stmt_list");
     struct node_s *n = utarray_back(SmallStmts->subnodes);
     /* log_debug("LAST SMALL STMT nl? %d: %d %s: %s", */
     /*           n->trailing_newline, */
@@ -631,8 +631,8 @@ statement(Stmt) ::= small_stmt_list(SmallStmts) SEMI(Semi) . [AMP]
     /* FIXME: validate required trailing newline */
     /* if present it will be embedded in the final token (SEMI in this
        case) */
-    log_trace(">>statement ::= small_stmt_list");
-    log_trace("SEMI trailing newline? %d", Semi->trailing_newline);
+    // log_trace(">>statement ::= small_stmt_list");
+    // log_trace("SEMI trailing newline? %d", Semi->trailing_newline);
     if ( ! Semi->trailing_newline ) {
         log_error("Missing newline after SimpleStmt");
         exit(EXIT_FAILURE);
@@ -647,7 +647,7 @@ statement(Stmt) ::= small_stmt_list(SmallStmts) SEMI(Semi) . [AMP]
 /* must be left-associative */
 indent_block(Block) ::= small_stmt_list(SmallStmts) . [RBRACK]
 {
-    log_trace(">>indent_block(Block) ::= simple_stmt(SmallStmts)");
+    // log_trace(">>indent_block(Block) ::= simple_stmt(SmallStmts)");
     Block = calloc(sizeof(struct node_s), 1);
     Block->type = TK_Indent_Block;
     Block->line  = SmallStmts->line;
@@ -658,7 +658,7 @@ indent_block(Block) ::= small_stmt_list(SmallStmts) . [RBRACK]
 
 indent_block(Block) ::= stmt_list(Stmts) . [DEF]
 {
-    log_trace(">>indent_block(Block) ::= stmt_list(Stmts)");
+    // log_trace(">>indent_block(Block) ::= stmt_list(Stmts)");
     Block = calloc(sizeof(struct node_s), 1);
     Block->type = TK_Indent_Block;
     Block->line  = Stmts->line;
@@ -671,7 +671,7 @@ indent_block(Block) ::= stmt_list(Stmts) . [DEF]
 /* IfStmt = 'if' Test ':' Suite {'elif' Test ':' Suite} ['else' ':' Suite] . */
 if_stmt(IfStmt) ::= IF(If) expr(X) COLON(Colon) indent_block(IBlock) .
 {
-    log_trace(">>if_stmt ::= IF expr COLON indent_block ");
+    // log_trace(">>if_stmt ::= IF expr COLON indent_block ");
     IfStmt = calloc(sizeof(struct node_s), 1);
     IfStmt->type  = TK_If_Stmt;
     IfStmt->line  = If->line;
@@ -687,7 +687,7 @@ if_stmt(IfStmt) ::= IF(If) expr(X) COLON(Colon) indent_block(IBlock) .
 /* ForStmt = 'for' LoopVariables 'in' Expression ':' Suite . */
 for_stmt(ForStmt) ::= FOR(For) loop_vars(LoopVars) IN(In) expr(X) COLON(Colon) indent_block(IBlock) . [FOR]
 {
-    log_trace(">>for_stmt ::= FOR loop_vars IN expr COLON stmt_list");
+    // log_trace(">>for_stmt ::= FOR loop_vars IN expr COLON stmt_list");
     ForStmt = calloc(sizeof(struct node_s), 1);
     ForStmt->type  = TK_For_Stmt;
     ForStmt->line  = For->line;
@@ -703,7 +703,7 @@ for_stmt(ForStmt) ::= FOR(For) loop_vars(LoopVars) IN(In) expr(X) COLON(Colon) i
 
 /* LoopVariables = PrimaryExpr {',' PrimaryExpr} . */
 loop_vars(LoopVars) ::= primary_expr(PrimX) . {
-    log_trace(">>loop_vars(LoopVars) ::= primary_expr(Primx)");
+    // log_trace(">>loop_vars(LoopVars) ::= primary_expr(Primx)");
     LoopVars = calloc(sizeof(struct node_s), 1);
     LoopVars->type = TK_Loop_Vars;
     LoopVars->line = PrimX->line;
@@ -713,7 +713,7 @@ loop_vars(LoopVars) ::= primary_expr(PrimX) . {
 }
 
 loop_vars(LoopVars) ::= loop_vars(LoopVars_rhs) COMMA(Comma) primary_expr(X) . {
-    log_trace(">>loop_vars ::= loop_vars COMMA primary_expr");
+    // log_trace(">>loop_vars ::= loop_vars COMMA primary_expr");
     LoopVars = calloc(sizeof(struct node_s), 1);
     LoopVars->type = TK_Loop_Vars;
     LoopVars->line  = LoopVars_rhs->line;
@@ -727,7 +727,7 @@ loop_vars(LoopVars) ::= loop_vars(LoopVars_rhs) COMMA(Comma) primary_expr(X) . {
 /* DefStmt = 'def' identifier '(' [Parameters [',']] ')' ':' Suite . */
 def_stmt(Stmt) ::= DEF(Def) ID(Id) LPAREN(Lparen) param_list(Params) RPAREN(Rparen) COLON(Colon) indent_block(IBlock). [LAMBDA]
 {
-    log_trace(">>def_stmt ::= DEF ID LPAREN params RPAREN COLON indent_block");
+    // log_trace(">>def_stmt ::= DEF ID LPAREN params RPAREN COLON indent_block");
     Stmt = calloc(sizeof(struct node_s), 1);
     Stmt->type = TK_Def_Compound;
     Stmt->line = Def->line;
@@ -742,7 +742,7 @@ def_stmt(Stmt) ::= DEF(Def) ID(Id) LPAREN(Lparen) param_list(Params) RPAREN(Rpar
 
     /* blocks must not be freed until the entire tree is processed */
     UT_array *blocks = split_iblock(IBlock, Def->col);
-    log_debug("split ct: %d", utarray_len(blocks));
+    /* log_debug("split ct: %d", utarray_len(blocks)); */
 
     struct node_s *defblock = utarray_front(blocks);
 
@@ -758,7 +758,7 @@ def_stmt(Stmt) ::= DEF(Def) ID(Id) LPAREN(Lparen) param_list(Params) RPAREN(Rpar
     int len = utarray_len(blocks);
     struct node_s *node=NULL;
     for (int i = 1; i < len; i++) {
-        log_debug("trailing %d", i);
+        /* log_debug("trailing %d", i); */
         node = utarray_eltptr(blocks, i);
         /* log_debug("block t: %s[%d] indent %d", */
         /*           token_name[node->type][0], node->type, node->col); */
@@ -769,7 +769,7 @@ def_stmt(Stmt) ::= DEF(Def) ID(Id) LPAREN(Lparen) param_list(Params) RPAREN(Rpar
 
 def_stmt(Stmt) ::= DEF(Def) ID(Id) LPAREN(Lparen) RPAREN(Rparen) COLON(Colon) indent_block(IBlock). [FOR]
 {
-    log_trace(">>def_stmt ::= DEF ID LPAREN RPAREN COLON stmt_list");
+    // log_trace(">>def_stmt ::= DEF ID LPAREN RPAREN COLON stmt_list");
     Stmt = calloc(sizeof(struct node_s), 1);
     Stmt->type = TK_Def_Stmt;
     Stmt->line = Def->line;
@@ -787,7 +787,7 @@ def_stmt(Stmt) ::= DEF(Def) ID(Id) LPAREN(Lparen) RPAREN(Rparen) COLON(Colon) in
 /* optional trailing comma in parm list */
 def_stmt(Stmt) ::= DEF(Def) ID(Id) LPAREN(Lparen) param_list(Params) COMMA(Comma) RPAREN(Rparen) COLON(Colon) indent_block(IBlock). [LAMBDA]
 {
-    log_trace(">>def_stmt ::= DEF ID LPAREN params RPAREN COLON stmt_list");
+    // log_trace(">>def_stmt ::= DEF ID LPAREN params RPAREN COLON stmt_list");
     Stmt = calloc(sizeof(struct node_s), 1);
     Stmt->type = TK_Def_Stmt;
     Stmt->line = Def->line;
@@ -806,7 +806,7 @@ def_stmt(Stmt) ::= DEF(Def) ID(Id) LPAREN(Lparen) param_list(Params) COMMA(Comma
 
 /* LoadStmt = 'load' '(' string {',' [identifier '='] string} [','] ')' . */
 load_stmt(Stmt) ::= LOAD(Load) LPAREN(LParen) STRING(S) COMMA(Comma) load_list(LL) RPAREN(RParen) . {
-    log_trace(">>load_stmt ::= LOAD LPAREN STRING COMMA load_list RPAREN");
+    // log_trace(">>load_stmt ::= LOAD LPAREN STRING COMMA load_list RPAREN");
     Stmt = calloc(sizeof(struct node_s), 1);
     Stmt->type = TK_Load_Stmt;
     Stmt->line  = Load->line;
@@ -832,7 +832,7 @@ load_stmt(Stmt) ::= LOAD(Load) LPAREN(LParen) STRING(S) COMMA(Comma) load_list(L
 /* FIXME: must end in newline except at EOF */
 small_stmt_list(SmallList) ::= small_stmt(SmallStmt) . [FOR]
 {
-    log_trace(">>small_stmt_list ::= small_stmt");
+    // log_trace(">>small_stmt_list ::= small_stmt");
     SmallList = calloc(sizeof(struct node_s), 1);
     SmallList->type = TK_SmallStmt_List;
     SmallList->line  = SmallStmt->line;
@@ -844,14 +844,14 @@ small_stmt_list(SmallList) ::= small_stmt(SmallStmt) . [FOR]
 
 small_stmt_list(SmallStmts) ::= small_stmt_list(SmallStmts_rhs) small_stmt(SmallStmt) . [FOR]
 {
-    log_trace(">>small_stmt_list ::= small_stmt_list small_stmt");
+    // log_trace(">>small_stmt_list ::= small_stmt_list small_stmt");
     utarray_push_back(SmallStmts_rhs->subnodes, SmallStmt);
     SmallStmts = SmallStmts_rhs;
 }
 
 small_stmt_list(SmallStmts) ::= small_stmt_list(SmallStmts_rhs) SEMI(Semi) small_stmt(SmallStmt) . [FOR]
 {
-    log_trace(">>small_stmt_list ::= small_stmt_list small_stmt");
+    // log_trace(">>small_stmt_list ::= small_stmt_list small_stmt");
     utarray_push_back(SmallStmts_rhs->subnodes, Semi);
     utarray_push_back(SmallStmts_rhs->subnodes, SmallStmt);
     SmallStmts = SmallStmts_rhs;
@@ -859,19 +859,19 @@ small_stmt_list(SmallStmts) ::= small_stmt_list(SmallStmts_rhs) SEMI(Semi) small
 
 small_stmt(Stmt) ::= return_stmt(Return) .
 {
-    log_trace(">>small_stmt(Stmt) ::= return_stmt");
+    // log_trace(">>small_stmt(Stmt) ::= return_stmt");
     Stmt = Return;
 }
 
 return_stmt(Stmt) ::= RETURN(Return) . [PLUS]
 {
-    log_trace(">>return_stmt(Stmt) ::= RETURN");
+    // log_trace(">>return_stmt(Stmt) ::= RETURN");
     Stmt = Return;
 }
 
 return_stmt(Stmt) ::= RETURN(Return) expr_list(Xs) . [STAR]
 {
-    log_trace(">>return_stmt(Stmt) ::= RETURN expr_list");
+    // log_trace(">>return_stmt(Stmt) ::= RETURN expr_list");
     Stmt = calloc(sizeof(struct node_s), 1);
     Stmt->type = TK_Return_Expr;
     Stmt->line  = Return->line;
@@ -884,25 +884,25 @@ return_stmt(Stmt) ::= RETURN(Return) expr_list(Xs) . [STAR]
 
 small_stmt(Stmt) ::= BREAK(Break) . [PLUS]
 {
-    log_trace(">>small_stmt(Stmt) ::= BREAK");
+    // log_trace(">>small_stmt(Stmt) ::= BREAK");
     Stmt = Break;
 }
 
 small_stmt(Stmt) ::= CONTINUE(Continue) . [FOR]
 {
-    log_trace(">>small_stmt(Stmt) ::= CONTINUE");
+    // log_trace(">>small_stmt(Stmt) ::= CONTINUE");
     Stmt = Continue;
 }
 
 small_stmt(Stmt) ::= PASS(Pass) . [FOR]
 {
-    log_trace(">>small_stmt(Stmt) ::= PASS");
+    // log_trace(">>small_stmt(Stmt) ::= PASS");
     Stmt = Pass;
 }
 
 small_stmt(Stmt) ::= assign_stmt(AssignStmt) .
 {
-    log_trace(">>small_stmt(Stmt) ::= assign_stmt(AssignStmt)");
+    // log_trace(">>small_stmt(Stmt) ::= assign_stmt(AssignStmt)");
     Stmt = AssignStmt;
 }
 
@@ -910,13 +910,13 @@ small_stmt(Stmt) ::= assign_stmt(AssignStmt) .
 /* here, Expression => expr_list */
 small_stmt(Stmt) ::= expr_list(Xs) .
 {
-    log_trace(">>small_stmt(Stmt) ::= expr_list");
+    // log_trace(">>small_stmt(Stmt) ::= expr_list");
     Stmt = Xs;
 }
 
 small_stmt(Stmt) ::= load_stmt(LoadStmt) .
 {
-    log_trace(">>small_stmt(Stmt) ::= load_stmt(LoadStmt)");
+    // log_trace(">>small_stmt(Stmt) ::= load_stmt(LoadStmt)");
     Stmt = LoadStmt;
 }
 
@@ -924,7 +924,7 @@ small_stmt(Stmt) ::= load_stmt(LoadStmt) .
 
 assign_stmt(AssignStmt) ::= expr_list(Xs1) assign_op(AssignOp) expr_list(Xs2) . [LAMBDA]
 {
-    log_trace(">>assign_stmt ::= expr_list assign_op expr_list");
+    // log_trace(">>assign_stmt ::= expr_list assign_op expr_list");
     AssignStmt = calloc(sizeof(struct node_s), 1);
     AssignStmt->type = TK_Assign_Stmt;
     AssignStmt->line  = Xs1->line;
@@ -957,7 +957,7 @@ assign_op ::= RRANGLE_EQ .
 /* Expression = Test {',' Test} . */
 expr(X) ::= if_expr(X_rhs) . [LAMBDA]
 {
-    log_trace(">>expr(Expr) ::= if_expr(IfExpr");
+    // log_trace(">>expr(Expr) ::= if_expr(IfExpr");
     X = calloc(sizeof(struct node_s), 1);
     X->type  = TK_Expr;
     X->line  = X_rhs->line;
@@ -969,7 +969,7 @@ expr(X) ::= if_expr(X_rhs) . [LAMBDA]
 
 expr(X) ::= primary_expr(X_rhs) . [LAMBDA]
 {
-    log_trace(">>expr(X) ::= primary_expr(X_rhs)");
+    /* log_trace(">>expr(X) ::= primary_expr(X_rhs)"); */
     /* X = calloc(sizeof(struct node_s), 1); */
     /* X->type  = TK_Expr; */
     /* X->line  = X_rhs->line; */
@@ -982,7 +982,7 @@ expr(X) ::= primary_expr(X_rhs) . [LAMBDA]
 
 expr(X) ::= binary_expr(X_rhs) . [FOR]
 {
-    log_trace(">>expr(X) ::= binary_expr(X_rhs)");
+    // log_trace(">>expr(X) ::= binary_expr(X_rhs)");
     X = calloc(sizeof(struct node_s), 1);
     X->type  = TK_Expr;
     X->line  = X_rhs->line;
@@ -994,7 +994,7 @@ expr(X) ::= binary_expr(X_rhs) . [FOR]
 
 expr(X) ::= unary_expr(X_rhs) . [LAMBDA]
 {
-    log_trace(">>expr(X) ::= unary_expr(X_rhs)");
+    // log_trace(">>expr(X) ::= unary_expr(X_rhs)");
     X = calloc(sizeof(struct node_s), 1);
     X->type  = TK_Expr;
     X->line  = X_rhs->line;
@@ -1005,7 +1005,7 @@ expr(X) ::= unary_expr(X_rhs) . [LAMBDA]
 
 expr(X) ::= lambda_expr(X_rhs) .
 {
-    log_trace(">>expr(X) ::= lambda_expr(X_rhs)");
+    // log_trace(">>expr(X) ::= lambda_expr(X_rhs)");
     X = calloc(sizeof(struct node_s), 1);
     X->type  = TK_Expr;
     X->line  = X_rhs->line;
@@ -1028,7 +1028,7 @@ expr(X) ::= lambda_expr(X_rhs) .
 
 if_expr(IfX) ::= expr(X1) IF(If) expr(X2) ELSE(Else) expr(X3) . [LAMBDA]
 {
-    log_trace(">>if_expr(IfX) ::= expr IF expr ELSE expr");
+    // log_trace(">>if_expr(IfX) ::= expr IF expr ELSE expr");
     IfX = calloc(sizeof(struct node_s), 1);
     IfX->type = TK_If_Expr;
     IfX->line  = X1->line;
@@ -1056,7 +1056,7 @@ if_expr(IfX) ::= expr(X1) IF(If) expr(X2) ELSE(Else) expr(X3) . [LAMBDA]
 /* %%%% Primx (Operand) */
 primary_expr(X) ::= primx(X_rhs) .
 {
-    log_trace(">>primary_expr(X) ::= primx(X_rhs)");
+    // log_trace(">>primary_expr(X) ::= primx(X_rhs)");
     X = X_rhs;
 }
 /* Terminology: 'operand' => 'primx' (PRimaryEXPRession) */
@@ -1067,19 +1067,19 @@ primary_expr(X) ::= primx(X_rhs) .
 /*         | '(' [Expression [',']] ')' */
 /*         . */
 primx(PrimX) ::= ID(Id)   . {
-    log_trace(">>primx ::= ID(Id) :]%s[:", Id->s);
+    // log_trace(">>primx ::= ID(Id) :]%s[:", Id->s);
     PrimX = Id;
 }
 primx(PrimX) ::= INT(Int) . {
-    log_trace(">>primx(X) ::= INT(Int) .");
+    // log_trace(">>primx(X) ::= INT(Int) .");
     PrimX = Int;
 }
 primx(PrimX) ::= FLOAT(Float) . {
-    log_trace(">>primx ::= FLOAT(Float) .");
+    // log_trace(">>primx ::= FLOAT(Float) .");
     PrimX = Float;
 }
 primx(PrimX) ::= STRING(S) . {       /* includes rawstrings */
-    log_trace(">>primx ::= STRING :]%s[:", S->s);
+    // log_trace(">>primx ::= STRING :]%s[:", S->s);
     PrimX = S;
 }
 /* primx(PrimX) ::= BSTRING(B) . [COMMA] {      /\* bytes *\/ */
@@ -1087,30 +1087,30 @@ primx(PrimX) ::= STRING(S) . {       /* includes rawstrings */
 /*     PrimX = B; */
 /* } */
 primx(PrimX) ::= list_expr(ListX) . [COMMA] {
-    log_trace(">>primx ::= list_expr(ListX) .");
+    // log_trace(">>primx ::= list_expr(ListX) .");
     PrimX = ListX;
 }
 primx(PrimX) ::= list_comp(LComp) . [COMMA] {
-    log_trace(">>primx ::= list_comp(LComp) .");
+    // log_trace(">>primx ::= list_comp(LComp) .");
     PrimX = LComp;
 }
 primx(PrimX) ::= dict_expr(DictX) . [COMMA] {
-    log_trace(">>primx ::= dict_expr(DictX) .");
+    // log_trace(">>primx ::= dict_expr(DictX) .");
     PrimX = DictX;
 }
 primx(PrimX) ::= dict_comp(DictX) . [COMMA] {
-    log_trace(">>primx ::= dict_comp(DictX) .");
+    // log_trace(">>primx ::= dict_comp(DictX) .");
     PrimX = DictX;
 }
 primx(PrimX) ::= paren_expr(ParenX) . [COMMA] {
-    log_trace(">>primx ::= paren_comp .");
+    // log_trace(">>primx ::= paren_comp .");
     PrimX = ParenX;
 }
 
 /* %%%% DotSuffix primary expr - type TK_Dot_Expr */
 primary_expr(PrimX) ::= primary_expr(PrimX_rhs) dot_suffix(DotSfx) .
 {
-    log_trace(">>primary_expr(PrimX) ::= primary_expr(PrimX_rhx) dot_suffix(DotSfx");
+    // log_trace(">>primary_expr(PrimX) ::= primary_expr(PrimX_rhx) dot_suffix(DotSfx");
     PrimX = calloc(sizeof(struct node_s), 1);
     PrimX->type = TK_Dot_Expr; // TK_Primary_Expr;
     PrimX->line  = PrimX_rhs->line;
@@ -1123,7 +1123,7 @@ primary_expr(PrimX) ::= primary_expr(PrimX_rhs) dot_suffix(DotSfx) .
 
 dot_suffix(DotSfx) ::= DOT(Dot) ID(Id) .
 {
-    log_trace(">>dot_suffix(DotSfx) ::= DOT ID(Id)");
+    // log_trace(">>dot_suffix(DotSfx) ::= DOT ID(Id)");
     DotSfx = calloc(sizeof(struct node_s), 1);
     DotSfx->type  = TK_Dot_Sfx;
     DotSfx->line  = Dot->line;
@@ -1137,7 +1137,7 @@ dot_suffix(DotSfx) ::= DOT(Dot) ID(Id) .
 /* %%%% CallSuffix primary expr - type TK_Call_Expr */
 primary_expr(PrimX) ::= primary_expr(PrimX_rhs) call_suffix(CallSfx) .
 {
-    log_trace(">>primary_expr ::= primary_expr call_suffix");
+    // log_trace(">>primary_expr ::= primary_expr call_suffix");
     PrimX = calloc(sizeof(struct node_s), 1);
     PrimX->type = TK_Call_Expr; // TK_Primary_Expr;
     PrimX->line  = PrimX_rhs->line;
@@ -1152,7 +1152,7 @@ primary_expr(PrimX) ::= primary_expr(PrimX_rhs) call_suffix(CallSfx) .
 /* NB: supports optional trailing comma */
 call_suffix(CallSfx) ::= LPAREN(LParen) RPAREN(RParen) . [FOR]
 {
-    log_trace(">>call_suffix(CallSfx) ::= LPAREN RPAREN");
+    // log_trace(">>call_suffix(CallSfx) ::= LPAREN RPAREN");
     CallSfx = calloc(sizeof(struct node_s), 1);
     CallSfx->type  = TK_Call_Sfx;
     CallSfx->line  = LParen->line;
@@ -1166,7 +1166,7 @@ call_suffix(CallSfx) ::= LPAREN(LParen) RPAREN(RParen) . [FOR]
 /* optional trailing comma */
 call_suffix(CallSfx) ::= LPAREN(LParen) arg_list(Args) COMMA(Comma) RPAREN(RParen) . [FOR]
 {
-    log_trace(">>call_suffix(CallSfx) ::= LPAREN arg_list(Args) RPAREN");
+    // log_trace(">>call_suffix(CallSfx) ::= LPAREN arg_list(Args) RPAREN");
     CallSfx = calloc(sizeof(struct node_s), 1);
     CallSfx->type = TK_Call_Sfx;
     CallSfx->line  = LParen->line;
@@ -1181,7 +1181,7 @@ call_suffix(CallSfx) ::= LPAREN(LParen) arg_list(Args) COMMA(Comma) RPAREN(RPare
 
 call_suffix(CallSfx) ::= LPAREN(LParen) arg_list(Args) RPAREN(RParen) . [FOR]
 {
-    log_trace(">>call_suffix(CallSfx) ::= LPAREN arg_list(Args) RPAREN");
+    // log_trace(">>call_suffix(CallSfx) ::= LPAREN arg_list(Args) RPAREN");
     CallSfx = calloc(sizeof(struct node_s), 1);
     CallSfx->type = TK_Call_Sfx;
     CallSfx->line  = LParen->line;
@@ -1202,7 +1202,7 @@ call_suffix(CallSfx) ::= LPAREN(LParen) arg_list(Args) RPAREN(RParen) . [FOR]
 /* } */
 
 arg_list(Args) ::= arg(Arg) . {
-    log_trace(">>arg_list(Args) ::= arg(Arg)");
+    // log_trace(">>arg_list(Args) ::= arg(Arg)");
     Args = calloc(sizeof(struct node_s), 1);
     Args->type = TK_Arg_List;
     Args->line  = Arg->line;
@@ -1219,7 +1219,7 @@ arg_list(Args) ::= arg(Arg) . {
 /* } */
 
 arg_list(Args) ::= arg_list(Args_rhs) COMMA(Comma) arg(Arg) . {
-    log_trace(">>arg_list(Args) ::= arg_list(Args_rhs COMMA arg(Arg)");
+    // log_trace(">>arg_list(Args) ::= arg_list(Args_rhs COMMA arg(Arg)");
     /* retain the comma, for comments and ws */
     utarray_push_back(Args_rhs->subnodes, Comma);
     utarray_push_back(Args_rhs->subnodes, Arg);
@@ -1229,7 +1229,7 @@ arg_list(Args) ::= arg_list(Args_rhs) COMMA(Comma) arg(Arg) . {
 /* WARNING: we do not currently validate ordering of arg types */
 /* Argument  = Test | identifier '=' Test | '*' Test | '**' Test . */
 arg(Arg) ::= expr(X) . {
-    log_trace(">>arg(Arg) ::= expr(Expr)");
+    // log_trace(">>arg(Arg) ::= expr(Expr)");
     /* log_trace("s: %s", X->s); */
     Arg = X;
 }
@@ -1238,7 +1238,7 @@ arg(Arg) ::= expr(X) . {
 /*     log_trace(">>arg(Arg) ::= arg_named(Arg_rhs)"); */
 /* } */
 arg(Arg) ::= ID(Id) EQ(Eq) expr(X) . {
-    log_trace(">>arg ::= ID EQ expr");
+    // log_trace(">>arg ::= ID EQ expr");
     Arg = calloc(sizeof(struct node_s), 1);
     Arg->type = TK_Arg_Named;
     Arg->line  = Id->line;
@@ -1251,7 +1251,7 @@ arg(Arg) ::= ID(Id) EQ(Eq) expr(X) . {
 
 /* Argument  = ... | '*' Test | ... */
 arg(Arg) ::= STAR(Star) expr(X) . {
-    log_trace(">>arg(Arg) ::= STAR expr(X)");
+    // log_trace(">>arg(Arg) ::= STAR expr(X)");
     Arg = calloc(sizeof(struct node_s), 1);
     Arg->type = TK_Arg_Star;
     Arg->line  = Star->line;
@@ -1263,7 +1263,7 @@ arg(Arg) ::= STAR(Star) expr(X) . {
 
 /* Argument  = ... | '**' Test . */
 arg(Arg) ::= STAR2(Star2) expr(X) . {
-    log_trace(">>arg(Arg) ::= STAR expr(X)");
+    // log_trace(">>arg(Arg) ::= STAR expr(X)");
     Arg = calloc(sizeof(struct node_s), 1);
     Arg->type = TK_Arg_Star2;
     Arg->line  = Star2->line;
@@ -1283,7 +1283,7 @@ arg(Arg) ::= STAR2(Star2) expr(X) . {
 
 primary_expr(PrimX) ::= primary_expr(PrimX_rhs) slice_suffix(SliceSfx) .
 {
-    log_trace(">>primary_expr(PrimX) ::= primary_expr slice_suffix");
+    // log_trace(">>primary_expr(PrimX) ::= primary_expr slice_suffix");
     PrimX = calloc(sizeof(struct node_s), 1);
     PrimX->type = TK_Slice_Expr;
     PrimX->line  = PrimX_rhs->line;
@@ -1310,7 +1310,7 @@ primary_expr(PrimX) ::= primary_expr(PrimX_rhs) slice_suffix(SliceSfx) .
 /* foo[] */
 slice_suffix(SliceSfx) ::= LBRACK(LBrack) RBRACK(RBrack) .
 {
-    log_trace(">>slice_sfx(SliceSfx) ::= LBRACK RBRACK");
+    // log_trace(">>slice_sfx(SliceSfx) ::= LBRACK RBRACK");
     SliceSfx = calloc(sizeof(struct node_s), 1);
     SliceSfx->type = TK_Slice_Sfx;
     SliceSfx->line  = LBrack->line;
@@ -1323,7 +1323,7 @@ slice_suffix(SliceSfx) ::= LBRACK(LBrack) RBRACK(RBrack) .
 /* foo[:] */
 slice_suffix(SliceSfx) ::= LBRACK(LBrack) COLON(Colon) RBRACK(RBrack) .
 {
-    log_trace(">>slice_sfx(SliceSfx) ::= LBrack COLON RBRACK");
+    // log_trace(">>slice_sfx(SliceSfx) ::= LBrack COLON RBRACK");
     SliceSfx = calloc(sizeof(struct node_s), 1);
     SliceSfx->type = TK_Slice_Sfx;
     SliceSfx->line  = LBrack->line;
@@ -1337,7 +1337,7 @@ slice_suffix(SliceSfx) ::= LBRACK(LBrack) COLON(Colon) RBRACK(RBrack) .
 /* foo[::] */
 slice_suffix(SliceSfx) ::= LBRACK(LBrack) COLON(Colon1) COLON(Colon2) RBRACK(RBrack) .
 {
-    log_trace(">>slice_sfx(SliceSfx) ::= LBrack COLON COLON RBRACK");
+    // log_trace(">>slice_sfx(SliceSfx) ::= LBrack COLON COLON RBRACK");
     SliceSfx = calloc(sizeof(struct node_s), 1);
     SliceSfx->type = TK_Slice_Sfx;
     SliceSfx->line  = LBrack->line;
@@ -1354,7 +1354,7 @@ slice_suffix(SliceSfx) ::= LBRACK(LBrack) COLON(Colon1) COLON(Colon2) RBRACK(RBr
 /* foo[a] */
 slice_suffix(SliceSfx) ::= LBRACK(LBrack) expr_list(Xs) RBRACK(RBrack) .
 {
-    log_trace(">>slice_sfx(SliceSfx) ::= LBRACK expr_list RBRACK");
+    // log_trace(">>slice_sfx(SliceSfx) ::= LBRACK expr_list RBRACK");
     SliceSfx = calloc(sizeof(struct node_s), 1);
     SliceSfx->type = TK_Slice_Sfx;
     SliceSfx->line  = LBrack->line;
@@ -1368,7 +1368,7 @@ slice_suffix(SliceSfx) ::= LBRACK(LBrack) expr_list(Xs) RBRACK(RBrack) .
 /* foo[a:] */
 slice_suffix(SliceSfx) ::= LBRACK(LBrack) expr_list(Xs) COLON(Colon) RBRACK(RBrack) .
 {
-    log_trace(">>slice_sfx(SliceSfx) ::= LBrack expr_list COLON RBRACK");
+    // log_trace(">>slice_sfx(SliceSfx) ::= LBrack expr_list COLON RBRACK");
     SliceSfx = calloc(sizeof(struct node_s), 1);
     SliceSfx->type = TK_Slice_Sfx;
     SliceSfx->line  = LBrack->line;
@@ -1383,7 +1383,7 @@ slice_suffix(SliceSfx) ::= LBRACK(LBrack) expr_list(Xs) COLON(Colon) RBRACK(RBra
 /* foo[a::] */
 slice_suffix(SliceSfx) ::= LBRACK(LBrack) expr_list(Xs) COLON(Colon1) COLON(Colon2) RBRACK(RBrack) .
 {
-    log_trace(">>slice_sfx(SliceSfx) ::= LBrack expr_list COLON COLON RBRACK");
+    // log_trace(">>slice_sfx(SliceSfx) ::= LBrack expr_list COLON COLON RBRACK");
     SliceSfx = calloc(sizeof(struct node_s), 1);
     SliceSfx->type = TK_Slice_Sfx;
     SliceSfx->line  = LBrack->line;
@@ -1399,7 +1399,7 @@ slice_suffix(SliceSfx) ::= LBRACK(LBrack) expr_list(Xs) COLON(Colon1) COLON(Colo
 /* foo[a:b] */
 slice_suffix(SliceSfx) ::= LBRACK(LBrack) expr_list(Xs) COLON(Colon) expr(X) RBRACK(RBrack) .
 {
-    log_trace(">>slice_sfx(SliceSfx) ::= LBrack expr_list COLON expr RBRACK");
+    // log_trace(">>slice_sfx(SliceSfx) ::= LBrack expr_list COLON expr RBRACK");
     SliceSfx = calloc(sizeof(struct node_s), 1);
     SliceSfx->type = TK_Slice_Sfx;
     SliceSfx->line  = LBrack->line;
@@ -1415,7 +1415,7 @@ slice_suffix(SliceSfx) ::= LBRACK(LBrack) expr_list(Xs) COLON(Colon) expr(X) RBR
 /* foo[a:b:] */
 slice_suffix(SliceSfx) ::= LBRACK(LBrack) expr_list(Xs) COLON(Colon1) expr(X) COLON(Colon2) RBRACK(RBrack) .
 {
-    log_trace(">>slice_sfx(SliceSfx) ::= LBrack expr_list COLON expr COLON RBRACK");
+    // log_trace(">>slice_sfx(SliceSfx) ::= LBrack expr_list COLON expr COLON RBRACK");
     SliceSfx = calloc(sizeof(struct node_s), 1);
     SliceSfx->type = TK_Slice_Sfx;
     SliceSfx->line  = LBrack->line;
@@ -1432,7 +1432,7 @@ slice_suffix(SliceSfx) ::= LBRACK(LBrack) expr_list(Xs) COLON(Colon1) expr(X) CO
 /* foo[a::c] */
 slice_suffix(SliceSfx) ::= LBRACK(LBrack) expr_list(Xs) COLON(Colon1) COLON(Colon2) expr(X) RBRACK(RBrack) .
 {
-    log_trace(">>slice_sfx(SliceSfx) ::= LBrack expr_list COLON COLON expr RBRACK");
+    // log_trace(">>slice_sfx(SliceSfx) ::= LBrack expr_list COLON COLON expr RBRACK");
     SliceSfx = calloc(sizeof(struct node_s), 1);
     SliceSfx->type = TK_Slice_Sfx;
     SliceSfx->line  = LBrack->line;
@@ -1449,7 +1449,7 @@ slice_suffix(SliceSfx) ::= LBRACK(LBrack) expr_list(Xs) COLON(Colon1) COLON(Colo
 /* foo[a:b:c] */
 slice_suffix(SliceSfx) ::= LBRACK(LBrack) expr_list(Xs) COLON(Colon1) expr(X1) COLON(Colon2) expr(X2) RBRACK(RBrack) .
 {
-    log_trace(">>slice_sfx(SliceSfx) ::= LBrack expr_list COLON expr COLON expr RBRACK");
+    // log_trace(">>slice_sfx(SliceSfx) ::= LBrack expr_list COLON expr COLON expr RBRACK");
     SliceSfx = calloc(sizeof(struct node_s), 1);
     SliceSfx->type = TK_Slice_Sfx;
     SliceSfx->line  = LBrack->line;
@@ -1470,7 +1470,7 @@ slice_suffix(SliceSfx) ::= LBRACK(LBrack) expr_list(Xs) COLON(Colon1) expr(X1) C
 /* foo[:b] */
 slice_suffix(SliceSfx) ::= LBRACK(LBrack) COLON(Colon) expr(X) RBRACK(RBrack) .
 {
-    log_trace(">>slice_sfx(SliceSfx) ::= LBrack COLON expr RBRACK");
+    // log_trace(">>slice_sfx(SliceSfx) ::= LBrack COLON expr RBRACK");
     SliceSfx = calloc(sizeof(struct node_s), 1);
     SliceSfx->type = TK_Slice_Sfx;
     SliceSfx->line  = LBrack->line;
@@ -1485,7 +1485,7 @@ slice_suffix(SliceSfx) ::= LBRACK(LBrack) COLON(Colon) expr(X) RBRACK(RBrack) .
 /* foo[:b:] */
 slice_suffix(SliceSfx) ::= LBRACK(LBrack) COLON(Colon1) expr(X) COLON(Colon2) RBRACK(RBrack) .
 {
-    log_trace(">>slice_sfx(SliceSfx) ::= LBrack COLON expr COLON RBRACK");
+    // log_trace(">>slice_sfx(SliceSfx) ::= LBrack COLON expr COLON RBRACK");
     SliceSfx = calloc(sizeof(struct node_s), 1);
     SliceSfx->type = TK_Slice_Sfx;
     SliceSfx->line  = LBrack->line;
@@ -1501,7 +1501,7 @@ slice_suffix(SliceSfx) ::= LBRACK(LBrack) COLON(Colon1) expr(X) COLON(Colon2) RB
 /* foo[:b:c] */
 slice_suffix(SliceSfx) ::= LBRACK(LBrack) COLON(Colon1) expr(X1) COLON(Colon2) expr(X2) RBRACK(RBrack) .
 {
-    log_trace(">>slice_sfx(SliceSfx) ::= LBrack COLON expr COLON expr RBRACK");
+    // log_trace(">>slice_sfx(SliceSfx) ::= LBrack COLON expr COLON expr RBRACK");
     SliceSfx = calloc(sizeof(struct node_s), 1);
     SliceSfx->type = TK_Slice_Sfx;
     SliceSfx->line  = LBrack->line;
@@ -1518,7 +1518,7 @@ slice_suffix(SliceSfx) ::= LBRACK(LBrack) COLON(Colon1) expr(X1) COLON(Colon2) e
 /* foo[::c] */
 slice_suffix(SliceSfx) ::= LBRACK(LBrack) COLON(Colon1) COLON(Colon2) expr(X) RBRACK(RBrack) .
 {
-    log_trace(">>slice_sfx(SliceSfx) ::= LBrack COLON COLON expr RBRACK");
+    // log_trace(">>slice_sfx(SliceSfx) ::= LBrack COLON COLON expr RBRACK");
     SliceSfx = calloc(sizeof(struct node_s), 1);
     SliceSfx->type = TK_Slice_Sfx;
     SliceSfx->line  = LBrack->line;
@@ -1539,7 +1539,7 @@ slice_suffix(SliceSfx) ::= LBRACK(LBrack) COLON(Colon1) COLON(Colon2) expr(X) RB
 /* ListComp = '[' Test {CompClause} ']'. */
 list_expr(ListX) ::= LBRACK(LBrack) RBRACK(RBrack) .
 {
-    log_trace(">>list_expr(List) ::= LBRACK RBRACK");
+    // log_trace(">>list_expr(List) ::= LBRACK RBRACK");
     ListX = calloc(sizeof(struct node_s), 1);
     ListX->type = TK_List_Expr;
     ListX->line  = LBrack->line;
@@ -1552,7 +1552,7 @@ list_expr(ListX) ::= LBRACK(LBrack) RBRACK(RBrack) .
 
 list_expr(ListX) ::= LBRACK(LBrack) expr_list(Xs) RBRACK(RBrack) .
 {
-    log_trace(">>list_expr(List) ::= LBRACK expr_list RBRACK");
+    // log_trace(">>list_expr(List) ::= LBRACK expr_list RBRACK");
     /* if (Xs->type != TK_List_Expr) { */
     /*     struct node_s *XList = calloc(sizeof(struct node_s), 1); */
     /*     XList->type = TK_List_Expr; */
@@ -1576,7 +1576,7 @@ list_expr(ListX) ::= LBRACK(LBrack) expr_list(Xs) RBRACK(RBrack) .
 /* optional trailing comma */
 list_expr(ListX) ::= LBRACK(LBrack) expr_list(Xs) COMMA(Comma) RBRACK(RBrack) .
 {
-    log_trace(">>list_expr(List) ::= LBRACK expr_list COMMA RBRACK");
+    // log_trace(">>list_expr(List) ::= LBRACK expr_list COMMA RBRACK");
     ListX = calloc(sizeof(struct node_s), 1);
     ListX->type = TK_List_Expr;
     ListX->line  = LBrack->line;
@@ -1607,7 +1607,7 @@ list_expr(ListX) ::= LBRACK(LBrack) expr_list(Xs) COMMA(Comma) RBRACK(RBrack) .
 
 list_comp(LComp) ::= LBRACK(LBrack) expr(X) comp_clause(Comp) RBRACK(RBrack) .
 {
-    log_trace(">>list_comp(LComp) ::= LBRACK expr_list comp_clause RBRACK");
+    // log_trace(">>list_comp(LComp) ::= LBRACK expr_list comp_clause RBRACK");
     LComp = calloc(sizeof(struct node_s), 1);
     LComp->type = TK_List_Comp;
     LComp->line  = LBrack->line;
@@ -1622,13 +1622,13 @@ list_comp(LComp) ::= LBRACK(LBrack) expr(X) comp_clause(Comp) RBRACK(RBrack) .
 
 comp_clause(Comp) ::= comp_for_clause(CompFor) .
 {
-    log_trace(">>comp_clause(Comp) ::= comp_for_clause");
+    // log_trace(">>comp_clause(Comp) ::= comp_for_clause");
     Comp = CompFor;
 }
 
 comp_clause(Comp) ::= comp_clause(Comp_rhs) comp_if_clause(CompIf) .
 {
-    log_trace(">>comp_clause(Comp) ::= comp_clause comp_if_clause");
+    // log_trace(">>comp_clause(Comp) ::= comp_clause comp_if_clause");
     Comp = calloc(sizeof(struct node_s), 1);
     Comp->type = TK_Comp_Clause;
     Comp->line  = Comp_rhs->line;
@@ -1640,7 +1640,7 @@ comp_clause(Comp) ::= comp_clause(Comp_rhs) comp_if_clause(CompIf) .
 
 comp_clause(Comp) ::= comp_clause(Comp_rhs) comp_for_clause(CompFor) . [IF]
 {
-    log_trace(">>comp_clause(Comp) ::= comp_clause comp_for_clause");
+    // log_trace(">>comp_clause(Comp) ::= comp_clause comp_for_clause");
     Comp = calloc(sizeof(struct node_s), 1);
     Comp->type = TK_Comp_Clause;
     Comp->line  = Comp_rhs->line;
@@ -1655,7 +1655,7 @@ comp_clause(Comp) ::= comp_clause(Comp_rhs) comp_for_clause(CompFor) . [IF]
  */
 comp_for_clause(Comp) ::= FOR(For) loop_vars(LoopVars) IN(In) expr(X) .
 {
-    log_trace(">>comp_clause(Comp) ::= For loop_vars IN expr");
+    // log_trace(">>comp_clause(Comp) ::= For loop_vars IN expr");
     Comp = calloc(sizeof(struct node_s), 1);
     Comp->type = TK_Comp_Clause;
     Comp->line  = For->line;
@@ -1678,7 +1678,7 @@ comp_for_clause(Comp) ::= FOR(For) loop_vars(LoopVars) IN(In) expr(X) .
 
 comp_if_clause(Comp) ::= IF(If) expr(X) .
 {
-    log_trace(">>comp_if_clause(Comp) ::= IF expr");
+    // log_trace(">>comp_if_clause(Comp) ::= IF expr");
     Comp = calloc(sizeof(struct node_s), 1);
     Comp->type = TK_Comp_Clause;
     Comp->line  = If->line;
@@ -1698,7 +1698,7 @@ comp_if_clause(Comp) ::= IF(If) expr(X) .
 
 entry_list(EList) ::= entry(Entry) . [FOR]
 {
-    log_trace(">>entry_list(EList) ::= entry(Entry)");
+    // log_trace(">>entry_list(EList) ::= entry(Entry)");
     EList = calloc(sizeof(struct node_s), 1);
     EList->type = TK_Dict_Entry_List;
     EList->line  = Entry->line;
@@ -1709,7 +1709,7 @@ entry_list(EList) ::= entry(Entry) . [FOR]
 
 entry_list(EList) ::= entry_list(EList_rhs) COMMA(Comma) entry(Entry) .
 {
-    log_trace(">>entry_list(EList) ::= entry_list(EList_rhs) entry(Entry)");
+    // log_trace(">>entry_list(EList) ::= entry_list(EList_rhs) entry(Entry)");
     utarray_push_back(EList_rhs->subnodes, Comma);
     utarray_push_back(EList_rhs->subnodes, Entry);
     EList = EList_rhs;
@@ -1717,7 +1717,7 @@ entry_list(EList) ::= entry_list(EList_rhs) COMMA(Comma) entry(Entry) .
 
 entry(Entry) ::= expr(X1) COLON(Colon) expr(X2) . [FOR] //highest prec
 {
-    log_trace(">>entry(Entry) ::= expr(X1) COLON expr(X2)");
+    // log_trace(">>entry(Entry) ::= expr(X1) COLON expr(X2)");
     Entry = calloc(sizeof(struct node_s), 1);
     Entry->type = TK_Dict_Entry;
     Entry->line  = X1->line;
@@ -1730,7 +1730,7 @@ entry(Entry) ::= expr(X1) COLON(Colon) expr(X2) . [FOR] //highest prec
 
 dict_expr(DictX) ::= LBRACE(LBrace) RBRACE(RBrace) .
 {
-    log_trace(">>dict_expr(DictX) ::= LBRACE RBRACE");
+    // log_trace(">>dict_expr(DictX) ::= LBRACE RBRACE");
     DictX = calloc(sizeof(struct node_s), 1);
     DictX->type = TK_Dict_Expr;
     DictX->line  = LBrace->line;
@@ -1743,7 +1743,7 @@ dict_expr(DictX) ::= LBRACE(LBrace) RBRACE(RBrace) .
 
 dict_expr(DictX) ::= LBRACE(LBrace) entry_list(EList) RBRACE(RBrace) .
 {
-    log_trace(">>dict_expr(DictX) ::= LBRACE entry_list RBRACE");
+    // log_trace(">>dict_expr(DictX) ::= LBRACE entry_list RBRACE");
     DictX = calloc(sizeof(struct node_s), 1);
     DictX->type = TK_Dict_Expr;
     DictX->line  = LBrace->line;
@@ -1767,7 +1767,7 @@ dict_expr(DictX) ::= LBRACE(LBrace) entry_list(EList) RBRACE(RBrace) .
 
 dict_comp(DictX) ::= LBRACE(LBrace) entry(Entry) comp_clause(DClause) RBRACE(RBrace) .
 {
-    log_trace(">>dict_comp(DictX) ::= LBRACE entry comp_clause RBRACE");
+    // log_trace(">>dict_comp(DictX) ::= LBRACE entry comp_clause RBRACE");
     DictX = calloc(sizeof(struct node_s), 1);
     DictX->type = TK_Dict_Comp;
     DictX->line  = LBrace->line;
@@ -1786,7 +1786,7 @@ dict_comp(DictX) ::= LBRACE(LBrace) entry(Entry) comp_clause(DClause) RBRACE(RBr
 
 paren_expr(ParenX) ::= LPAREN(LParen) RPAREN(RParen) .
 {
-    log_trace(">>paren_expr(Paren) ::= LPAREN RPAREN");
+    // log_trace(">>paren_expr(Paren) ::= LPAREN RPAREN");
     ParenX = calloc(sizeof(struct node_s), 1);
     ParenX->type  = TK_Paren_Expr;
     ParenX->line  = LParen->line;
@@ -1799,7 +1799,7 @@ paren_expr(ParenX) ::= LPAREN(LParen) RPAREN(RParen) .
 
 paren_expr(ParenX) ::= LPAREN(LParen) expr_list(Xs) RPAREN(RParen) .
 {
-    log_trace(">>paren_expr(Paren) ::= LPAREN expr_list RPAREN");
+    // log_trace(">>paren_expr(Paren) ::= LPAREN expr_list RPAREN");
     ParenX = calloc(sizeof(struct node_s), 1);
     ParenX->type  = TK_Paren_Expr;
     ParenX->line  = LParen->line;
@@ -1814,7 +1814,7 @@ paren_expr(ParenX) ::= LPAREN(LParen) expr_list(Xs) RPAREN(RParen) .
 /* optional trailing comma */
 paren_expr(ParenX) ::= LPAREN(LParen) expr_list(Xs) COMMA(Comma) RPAREN(RParen) .
 {
-    log_trace(">>paren_expr(Paren) ::= LPAREN expr_list COMMA RPAREN");
+    // log_trace(">>paren_expr(Paren) ::= LPAREN expr_list COMMA RPAREN");
     ParenX = calloc(sizeof(struct node_s), 1);
     ParenX->type = TK_Paren_Expr;
     ParenX->line  = LParen->line;
@@ -1835,7 +1835,7 @@ paren_expr(ParenX) ::= LPAREN(LParen) expr_list(Xs) COMMA(Comma) RPAREN(RParen) 
 /* (FOR is highest precedence) */
 binary_expr(BinExpr) ::= expr(BinExpr_rhs) binop(BinOp) expr(X_rhs) . [FOR]
 {
-    log_trace(">>binary_expr ::= binary_expr binop expr");
+    // log_trace(">>binary_expr ::= binary_expr binop expr");
     BinExpr = calloc(sizeof(struct node_s), 1);
     BinExpr->type = TK_Bin_Expr;
     BinExpr->s = NULL;
@@ -1861,27 +1861,27 @@ binary_expr(BinExpr) ::= expr(BinExpr_rhs) binop(BinOp) expr(X_rhs) . [FOR]
 /*       | '-' | '+' */
 /*       | '*' | '%' | '/' | '//' */
 
-binop ::= OR . { log_trace(">>binop ::= OR"); }
-binop ::= AND . { log_trace(">>binop ::= AND"); }
-binop ::= EQ2 . { log_trace(">>binop ::= EQ2"); }
-binop ::= BANG_EQ . { log_trace(">>binop ::= BANG_EQ"); }
-binop ::= LANGLE . { log_trace(">>binop ::= LANGLE"); }
-binop ::= LE . { log_trace(">>binop ::= LE"); }
-binop ::= RANGLE . { log_trace(">>binop ::= RANGLE"); }
-binop ::= GE . { log_trace(">>binop ::= GE"); }
-binop ::= IN . { log_trace(">>binop ::= IN"); }
-binop ::= NOT IN . [IN] { log_trace(">>binop ::= NOT IN"); }
-binop ::= VBAR . { log_trace(">>binop ::= VBAR"); }
-binop ::= CARET . { log_trace(">>binop ::= CARET"); }
-binop ::= AMP . { log_trace(">>binop ::= AMP"); }
-binop ::= LLANGLE . { log_trace(">>binop ::= LLANGLE"); }
-binop ::= RRANGLE . { log_trace(">>binop ::= RRANGLE"); }
-binop ::= MINUS . { log_trace(">>binop ::= MINUS"); }
-binop ::= PLUS . { log_trace(">>binop ::= PLUS"); }
-binop ::= STAR . { log_trace(">>binop ::= STAR"); }
-binop ::= PCT . { log_trace(">>binop ::= PCT"); }
-binop ::= SLASH . { log_trace(">>binop ::= SLASH"); }
-binop ::= SLASH2 . { log_trace(">>binop ::= SLASH2"); }
+binop ::= OR .
+binop ::= AND .
+binop ::= EQ2 .
+binop ::= BANG_EQ .
+binop ::= LANGLE .
+binop ::= LE .
+binop ::= RANGLE .
+binop ::= GE .
+binop ::= IN .
+binop ::= NOT IN . [IN]
+binop ::= VBAR .
+binop ::= CARET .
+binop ::= AMP .
+binop ::= LLANGLE .
+binop ::= RRANGLE .
+binop ::= MINUS .
+binop ::= PLUS .
+binop ::= STAR .
+binop ::= PCT .
+binop ::= SLASH .
+binop ::= SLASH2 .
 
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 /* UNARY EXPRESSIONS */
@@ -1892,7 +1892,7 @@ binop ::= SLASH2 . { log_trace(">>binop ::= SLASH2"); }
 /*           . */
 unary_expr(X_lhs) ::= PLUS(Op) expr(X_rhs) . [LAMBDA]
 {
-    log_trace(">>unary_expr(X_lhs) ::= PLUS expr(X_rhs)");
+    // log_trace(">>unary_expr(X_lhs) ::= PLUS expr(X_rhs)");
     X_lhs = calloc(sizeof(struct node_s), 1);
     X_lhs->type = TK_Unary_Expr;
     X_lhs->line  = X_rhs->line;
@@ -1903,7 +1903,7 @@ unary_expr(X_lhs) ::= PLUS(Op) expr(X_rhs) . [LAMBDA]
 }
 unary_expr(X_lhs) ::= MINUS(Op) expr(X_rhs) . [LAMBDA]
 {
-    log_trace(">>unary_expr(X_lhs) ::= MINUS expr(X_rhs)");
+    // log_trace(">>unary_expr(X_lhs) ::= MINUS expr(X_rhs)");
     X_lhs = calloc(sizeof(struct node_s), 1);
     X_lhs->type = TK_Unary_Expr;
     X_lhs->line  = X_rhs->line;
@@ -1914,7 +1914,7 @@ unary_expr(X_lhs) ::= MINUS(Op) expr(X_rhs) . [LAMBDA]
 }
 unary_expr(X_lhs) ::= TILDE(Op) expr(X_rhs) .  [LAMBDA]
 {
-    log_trace(">>unary_expr(X_lhs) ::= TILDE expr(X_rhs)");
+    // log_trace(">>unary_expr(X_lhs) ::= TILDE expr(X_rhs)");
     X_lhs = calloc(sizeof(struct node_s), 1);
     X_lhs->type = TK_Unary_Expr;
     X_lhs->line  = X_rhs->line;
@@ -1925,7 +1925,7 @@ unary_expr(X_lhs) ::= TILDE(Op) expr(X_rhs) .  [LAMBDA]
 }
 unary_expr(X_lhs) ::= NOT(Op) expr(X_rhs) .  [LAMBDA]
 {
-    log_trace(">>unary_expr(X_lhs) ::= NOT expr(X_rhs)");
+    // log_trace(">>unary_expr(X_lhs) ::= NOT expr(X_rhs)");
     X_lhs = calloc(sizeof(struct node_s), 1);
     X_lhs->type = TK_Unary_Expr;
     X_lhs->line  = X_rhs->line;
@@ -1941,7 +1941,7 @@ unary_expr(X_lhs) ::= NOT(Op) expr(X_rhs) .  [LAMBDA]
 
 lambda_expr(LambdaX) ::= LAMBDA(Lambda) COLON(Colon) expr(X) .
 {
-    log_trace(">>lambda_expr ::= LAMBDA COLON expr");
+    // log_trace(">>lambda_expr ::= LAMBDA COLON expr");
     LambdaX = calloc(sizeof(struct node_s), 1);
     LambdaX->type = TK_Lambda_Expr;
     LambdaX->line  = Lambda->line;
@@ -1955,7 +1955,7 @@ lambda_expr(LambdaX) ::= LAMBDA(Lambda) COLON(Colon) expr(X) .
 
 lambda_expr(LambdaX) ::= LAMBDA(Lambda) param_list(Params) COLON(Colon) expr(X) .
 {
-    log_trace(">>lambda_expr ::= LAMBDA params COLON expr");
+    // log_trace(">>lambda_expr ::= LAMBDA params COLON expr");
     LambdaX = calloc(sizeof(struct node_s), 1);
     LambdaX->type = TK_Lambda_Expr;
     LambdaX->line  = Lambda->line;

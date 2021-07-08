@@ -198,7 +198,7 @@ struct node_s {
 UT_array *split_small_stmt_list(struct node_s *iblock,
                                 struct node_s* list, int indent)
 {
-    log_debug("split_small_stmt_list, indent: %d", indent);
+    // log_debug("split_small_stmt_list, indent: %d", indent);
 
     UT_array *blocks;
     utarray_new(blocks, &node_icd);
@@ -215,25 +215,25 @@ UT_array *split_small_stmt_list(struct node_s *iblock,
     int block_indent;
     struct node_s *node=NULL;
     int len = utarray_len(list->subnodes);
-    log_debug("small stmt list len: %d", len);
+    // log_debug("small stmt list len: %d", len);
     int i;
     for (i = 0; i < len; i++) {
-        log_debug("small stmt list item %d", i);
+        // log_debug("small stmt list item %d", i);
         node = utarray_eltptr(list->subnodes, i);
-        log_debug("small stmt list node t: %s[%d] indent %d",
-                  token_name[node->type][0], node->type, node->col);
+        /* log_debug("small stmt list node t: %s[%d] indent %d", */
+        /*           token_name[node->type][0], node->type, node->col); */
 
         if (i == 0) {
             if (node->col > indent) {
-                log_debug("first: IN");
+                // log_debug("first: IN");
                 block_indent = node->col;
                 utarray_push_back(instmts, node);
             } else {
-                log_debug("EMPTY BLOCK");
+                // log_debug("EMPTY BLOCK");
             }
         } else {
             if (node->col == block_indent) {
-                log_debug("IN");
+                // log_debug("IN");
                 utarray_push_back(instmts, node);
             } else {
                 if (node->col > block_indent) {
@@ -244,7 +244,7 @@ UT_array *split_small_stmt_list(struct node_s *iblock,
                         log_error("ERROR: bad indent on line %d", node->line);
                         exit(EXIT_FAILURE);
                     } else {
-                        log_debug("OUT");
+                        // log_debug("OUT");
                         utarray_push_back(outblock->subnodes, node);
                     }
                 }
@@ -264,14 +264,14 @@ UT_array *split_small_stmt_list(struct node_s *iblock,
 
 UT_array *split_stmt_list(struct node_s* iblock, int indent)
 {
-    log_debug("split_stmt_list, indent: %d", indent);
+    // log_debug("split_stmt_list, indent: %d", indent);
     log_error("NOT YET SUPPORTED");
     exit(EXIT_FAILURE);
 }
 
 UT_array *split_iblock(struct node_s* iblock, int indent)
 {
-    log_debug("split_iblock, indent: %d", indent);
+    // log_debug("split_iblock, indent: %d", indent);
     UT_array *blocks;
     utarray_new(blocks, &node_icd);
 
@@ -285,8 +285,8 @@ UT_array *split_iblock(struct node_s* iblock, int indent)
     UT_array *test_blocks;
     for (int i = 0; i < len; i++) {
         node = utarray_eltptr(iblock->subnodes, i);
-        log_debug("iblock node t: %s[%d] indent %d",
-                  token_name[node->type][0], node->type, node->col);
+        /* log_debug("iblock node t: %s[%d] indent %d", */
+        /*           token_name[node->type][0], node->type, node->col); */
 
         if (node->type == TK_SmallStmt_List) {
             blocks = split_small_stmt_list(iblock, node, indent);
@@ -304,7 +304,7 @@ UT_array *split_iblock(struct node_s* iblock, int indent)
 
 void nodelist_copy(UT_array *_dst, UT_array *_src)
 {
-    log_debug("node_copy: %p <- %p", _dst, _src);
+    // log_debug("node_copy: %p <- %p", _dst, _src);
 }
 
 void node_copy(void *_dst, const void *_src)
@@ -373,7 +373,7 @@ void comment_copy(void *_dst, const void *_src)
 }
 
 void comment_dtor(void *_comment) {
-    log_debug("XXXXXXXXXXXXXXXX COMMENT_DTOR");
+    /* log_debug("comment_dtor"); */
     struct comment_s *comment = (struct comment_s*)_comment;
     if (comment->s) free(comment->s);
 }
@@ -399,7 +399,7 @@ void sym_copy(void *_dst, void *_src)
 }
 
 void sym_dtor(void *_sym) {
-    log_debug("XXXXXXXXXXXXXXXX SYM_DTOR");
+    /* log_debug("sym_dtor"); */
     struct symdecl_s *sym = (struct symdecl_s*)_sym;
     if (sym->sym) free(sym->sym);
 }

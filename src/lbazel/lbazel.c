@@ -16,7 +16,7 @@
 
 char *lbazel_get_luadir(char *luafile)
 {
-    log_debug("bazel_get_luadir %s", luafile);
+    /* log_debug("bazel_get_luadir %s", luafile); */
     char *bazel_luadir = NULL;
     char *s = getcwd(NULL, 0);
     /* log_info("CURRENT WORKING DIRECTORY: %s", s); */

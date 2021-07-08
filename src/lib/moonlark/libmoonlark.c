@@ -164,7 +164,7 @@ EXPORT void moonlark_node2lua(lua_State *L, struct node_s *node, int level)
 
 EXPORT void moonlark_ast2lua(lua_State *L, struct parse_state_s *parse)
 {
-    log_debug("moonlark_buildfile2lua");
+    /* log_debug("moonlark_buildfile2lua"); */
     /* log_debug("stack gettop %d", lua_gettop(L)); */
 
     /* lua_getglobal(L, "bazel"); */
@@ -231,7 +231,7 @@ EXPORT void moonlark_ast2lua(lua_State *L, struct parse_state_s *parse)
  */
 EXPORT void moonlark_lua_call_user_handler(lua_State *L, char *handler)
 {
-    log_debug("moonlark_lua_call_user_handler");
+    /* log_debug("moonlark_lua_call_user_handler"); */
 
     lua_getglobal(L, handler);   /* user-provided function */
     lua_rotate(L, -1, 2); /* swap top 2 elts to put lAST on ToS */
@@ -249,7 +249,7 @@ EXPORT void moonlark_lua_call_user_handler(lua_State *L, char *handler)
     /* const char *msg = lua_tostring(L, -1); */
     /* lua_pop(L, 1);  /\* pop returned value *\/ */
 
-    log_debug("lua user-provided callback '%s' returned", handler);
+    /* log_debug("lua user-provided callback '%s' returned", handler); */
 }
 
 void lerror (lua_State *L, const char *fmt, ...) {
@@ -282,7 +282,7 @@ EXPORT void moonlark_augment_load_path(lua_State *L, char *path)
 {
     if (path == NULL) return;
 
-    log_debug("moonlark_augment_load_path %s", path);
+    /* log_debug("moonlark_augment_load_path %s", path); */
 
     UT_string *load_path;
     utstring_new(load_path);
@@ -296,11 +296,11 @@ EXPORT void moonlark_augment_load_path(lua_State *L, char *path)
     }
     lua_getfield(L, -1, "path");
     const char *curr_path = lua_tostring(L, -1);
-    log_debug("current load path: %s", curr_path);
+    /* log_debug("current load path: %s", curr_path); */
     lua_pop(L, 1);
 
     utstring_printf(load_path, "%s/?.lua;%s", path, curr_path);
-    log_debug("new load_path: %s", utstring_body(load_path));
+    // log_debug("new load_path: %s", utstring_body(load_path));
 
 
     lua_pushstring(L, utstring_body(load_path));
@@ -315,7 +315,7 @@ EXPORT void moonlark_augment_load_path(lua_State *L, char *path)
  */
 EXPORT void moonlark_lua_load_file(lua_State *L, char *lua_file)
 {
-    log_debug("starlark_lua_load_handlers");
+    // log_debug("starlark_lua_load_handlers");
 
     /* log_debug("loading lua file: %s", default_handler_file_name); */
     /* if (luaL_dostring(L, "require'handler'")) { */
@@ -329,7 +329,7 @@ EXPORT void moonlark_lua_load_file(lua_State *L, char *lua_file)
             lerror(L, "luaL_dostring fail for: %s\n",
                    lua_tostring(L, -1));
         }
-        log_debug("loaded default lua handler");
+        // log_debug("loaded default lua handler");
     } else {
         if (luaL_loadfile(L, lua_file) || lua_pcall(L, 0, 0, 0))
             lerror(L, "cannot run configuration file: %s\n",
@@ -396,7 +396,7 @@ EXPORT void moonlark_create_token_enums(lua_State *L)
  */
 EXPORT void moonlark_config_moonlark_table(lua_State *L)
 {
-    log_debug("moonlark_config_moonlark_table");
+    // log_debug("moonlark_config_moonlark_table");
     lua_newtable(L);
     moonlark_create_token_enums(L);
     lua_setglobal(L, "moonlark");

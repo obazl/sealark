@@ -57,7 +57,7 @@ struct parse_state_s *parser_init(struct bf_lexer_s *lexer, struct node_s *root)
 
 EXPORT void parser_free(parse_state_s *parser)
 {
-    log_debug("parser_free %s", parser->lexer->fname);
+    // log_debug("parser_free %s", parser->lexer->fname);
     lexer_free(parser->lexer);
     node_dtor(parser->root);
 }
@@ -66,7 +66,7 @@ EXPORT UT_array *starlark_lex_string(const char *buffer)
 {
     log_set_quiet(false);
 
-    log_info("starlark_lex_string:\n%s", buffer);
+    /* log_info("starlark_lex_string:\n%s", buffer); */
 
     UT_array *token_list;
     utarray_new(token_list, &node_icd);
@@ -80,17 +80,17 @@ EXPORT UT_array *starlark_lex_string(const char *buffer)
 
     log_set_quiet(false);
     log_set_level(LOG_TRACE);
-    log_info("starting lex");
+    /* log_info("starting lex"); */
 
     while ( (tok = get_next_token(lexer, &btok)) != 0 ) {
-        log_debug("TOKEN: %s (%d) @ (%d:%d) %p",
-                  token_name[tok][0],
-                  tok,
-                  btok->line, btok->col,
-                  btok
-                  );
-        log_debug("\tlexer posn: (%d:%d)", lexer->pos.line, lexer->pos.col);
-        log_debug("\tstarttok: :]%s[:", btok->s);
+        /* log_debug("TOKEN: %s (%d) @ (%d:%d) %p", */
+        /*           token_name[tok][0], */
+        /*           tok, */
+        /*           btok->line, btok->col, */
+        /*           btok */
+        /*           ); */
+        /* log_debug("\tlexer posn: (%d:%d)", lexer->pos.line, lexer->pos.col); */
+        /* log_debug("\tstarttok: :]%s[:", btok->s); */
         btok->type = tok;
         /* dump_node(btok); */
         utarray_push_back(token_list, btok);
@@ -107,7 +107,7 @@ EXPORT UT_array *starlark_lex_file(char *fname)
     UT_array *token_list;
     utarray_new(token_list, &node_icd);
 
-    log_info("_lex_file: %s", fname);
+    /* log_info("_lex_file: %s", fname); */
     FILE *f;
 
     f = fopen(fname, "r");
@@ -145,20 +145,20 @@ EXPORT UT_array *starlark_lex_file(char *fname)
 
     log_set_quiet(false);
     log_set_level(LOG_TRACE);
-    log_info("starting lex");
+    /* log_info("starting lex"); */
 
     while ( (tok = get_next_token(lexer, &btok)) != 0 ) {
         btok->type = tok;
-        log_debug("LEXED TOKEN: %s (%d/%d) @ (%d:%d) %p",
-                  token_name[tok][0],
-                  tok, btok->type,
-                  btok->line, btok->col,
-                  btok
-                  );
-        log_debug("\tlexer posn: (%d:%d)", lexer->pos.line, lexer->pos.col);
-        log_debug("\tstarttok: :]%s[:", btok->s);
+        /* log_debug("LEXED TOKEN: %s (%d/%d) @ (%d:%d) %p", */
+        /*           token_name[tok][0], */
+        /*           tok, btok->type, */
+        /*           btok->line, btok->col, */
+        /*           btok */
+        /*           ); */
+        /* log_debug("\tlexer posn: (%d:%d)", lexer->pos.line, lexer->pos.col); */
+        /* log_debug("\tstarttok: :]%s[:", btok->s); */
         btok->type = tok;
-        dump_node(btok);
+        /* dump_node(btok); */
 
         utarray_push_back(token_list, btok);
 
@@ -172,7 +172,7 @@ EXPORT struct node_s *starlark_parse_string(char *buffer)
 {
     log_set_quiet(false);
 
-    log_info("starlark_parse_string: %s", buffer);
+    /* log_info("starlark_parse_string: %s", buffer); */
 
     int tok;
     struct node_s *btok = calloc(sizeof(struct node_s), 1);
@@ -190,10 +190,10 @@ EXPORT struct node_s *starlark_parse_string(char *buffer)
 
     log_set_quiet(false);
     log_set_level(LOG_TRACE);
-    log_info("starting parse");
+    /* log_info("starting parse"); */
 
     while ( (tok = get_next_token(lexer, &btok)) != 0 ) {
-        log_debug("btok: %d, tok: %d", tok, btok->type);
+        // log_debug("btok: %d, tok: %d", tok, btok->type);
         btok->type = tok;
         /* btok->line = lexer->pos.line; */
         /* btok->col  = lexer->pos.col; */
@@ -202,12 +202,12 @@ EXPORT struct node_s *starlark_parse_string(char *buffer)
         /* if (btok->s != NULL) { */
         /*     log_debug("token str: %p", btok->s); */
         /* } */
-        log_debug("TOKEN: %s (%d/%d) @ (%d:%d) %p",
-                  token_name[tok][0],
-                  tok, btok->type,
-                  btok->line, btok->col,
-                  btok
-                  );
+        /* log_debug("TOKEN: %s (%d/%d) @ (%d:%d) %p", */
+        /*           token_name[tok][0], */
+        /*           tok, btok->type, */
+        /*           btok->line, btok->col, */
+        /*           btok */
+        /*           ); */
         /* log_debug("TOKEN: %s (%d), mode: %d, (%d:%d), str: '%s'\n", */
         /*           token_name[tok][0], */
         /*           /\* yyTokenName[tok], *\/ */
@@ -218,19 +218,19 @@ EXPORT struct node_s *starlark_parse_string(char *buffer)
         /*           /\* lexer->clean_line, *\/ */
         /*           /\* lexer->indent *\/ */
         /*           ); */
-        log_debug("lexer posn (%d:%d)", lexer->pos.line, lexer->pos.col);
+        // log_debug("lexer posn (%d:%d)", lexer->pos.line, lexer->pos.col);
 
         /* log_debug("btok pos: line %d col %d", btok->pos.line, btok->pos.col); */
-        dump_node(btok);
-        log_debug(">>>>>>>>>>>>>>>>call parser for tok %d/%d", tok, btok->type);
-        log_debug("root: %p", parse_state->root);
+        /* dump_node(btok); */
+        // log_debug(">>>>>>>>>>>>>>>>call parser for tok %d/%d", tok, btok->type);
+        // log_debug("root: %p", parse_state->root);
         Parse(pParser, tok, btok, parse_state);
-        log_debug(">>>>>>>>>>>>>>>>/call parser");
+        // log_debug(">>>>>>>>>>>>>>>>/call parser");
         btok = calloc(sizeof(struct node_s), 1);
     }
-    log_debug(">>>>>>>>>>>>>>>>FINAL call parser");
+    // log_debug(">>>>>>>>>>>>>>>>FINAL call parser");
     Parse(pParser, 0, btok, parse_state);
-    log_debug(">>>>>>>>>>>>>>>>/FINAL call parser");
+    // log_debug(">>>>>>>>>>>>>>>>/FINAL call parser");
     /* ParseFree(pParser, free ); */
 
     /* fflush(stdout); */
@@ -242,7 +242,7 @@ EXPORT struct parse_state_s *starlark_parse_file(char *fname)
 {
     log_set_quiet(false);
 
-    log_info("starlark_parse_file: %s", fname);
+    /* log_info("starlark_parse_file: %s", fname); */
     FILE *f;
 
     f = fopen(fname, "r");
@@ -291,7 +291,7 @@ EXPORT struct parse_state_s *starlark_parse_file(char *fname)
 
     log_set_quiet(false);
     log_set_level(LOG_TRACE);
-    log_info("starting parse");
+    /* log_info("starting parse"); */
 
     while ( (tok = get_next_token(lexer, &btok)) != 0 ) {
         btok->type = tok;
@@ -322,21 +322,21 @@ EXPORT struct parse_state_s *starlark_parse_file(char *fname)
 
         /* log_debug("btok pos: line %d col %d", btok->pos.line, btok->pos.col); */
         /* dump_node(btok); */
-        log_debug(">>>>>>>>>>>>>>>>call parser for %s[%d/%d]@(%d:%d) %s%s%s",
-                  token_name[btok->type][0],
-                  tok, btok->type,
-                  btok->line, btok->col,
-                  btok->s == NULL? "" : " :]",
-                  btok->s == NULL? "" : btok->s,
-                  btok->s == NULL? "" : "[:");
-        /* log_debug("root: %p", parse_state->root); */
+        /* log_debug(">>>>>>>>>>>>>>>>call parser for %s[%d/%d]@(%d:%d) %s%s%s", */
+        /*           token_name[btok->type][0], */
+        /*           tok, btok->type, */
+        /*           btok->line, btok->col, */
+        /*           btok->s == NULL? "" : " :]", */
+        /*           btok->s == NULL? "" : btok->s, */
+        /*           btok->s == NULL? "" : "[:"); */
+
         Parse(pParser, tok, btok, parse_state);
-        log_debug(">>>>>>>>>>>>>>>>/call parser");
+        /* log_debug(">>>>>>>>>>>>>>>>/call parser"); */
         btok = calloc(sizeof(struct node_s), 1);
     }
-    log_debug(">>>>>>>>>>>>>>>>FINAL call parser");
+    /* log_debug(">>>>>>>>>>>>>>>>FINAL call parser"); */
     Parse(pParser, 0, btok, parse_state);
-    log_debug(">>>>>>>>>>>>>>>>/FINAL call parser");
+    /* log_debug(">>>>>>>>>>>>>>>>/FINAL call parser"); */
     ParseFree(pParser, free );
     /* dump_node(parse_state->root); */
 

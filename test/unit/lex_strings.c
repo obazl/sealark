@@ -230,7 +230,7 @@ void test_single_line_single_quote_nl_cmt1_nl_cmt2a(void) {
 void test_single_line_single_quote_nl_cmt1_nl_cmt2b(void) {
     test_str = "'hello'\n#cmt1\n    #cmt2b\n";
     result = starlark_lex_string(test_str);
-    dump_nodes(result);
+    /* dump_nodes(result); */
     starlark_nodelist2string(result, buf);
     /* printf(":]%s[:\n", utstring_body(buf)); */
     TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));

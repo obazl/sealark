@@ -41,10 +41,10 @@ int main(int argc, char *argv[]) // , char **envp)
        RUNFILES env. vars may or may not be defined, depending on
        whether run cmd was 'run' or 'test', and whether 'run' is used
        to launch a cc_binary or a cc_test target. */
-    char *rfdir = getenv("RUNFILES_DIR");
-    log_debug("RUNFILES_DIR: %s", rfdir);
-    char *rfmanifest = getenv("RUNFILES_MANIFEST_FILE");
-    log_debug("RUNFILES_MANIFEST_FILE: %s", rfmanifest);
+    /* char *rfdir = getenv("RUNFILES_DIR"); */
+    /* log_debug("RUNFILES_DIR: %s", rfdir); */
+    /* char *rfmanifest = getenv("RUNFILES_MANIFEST_FILE"); */
+    /* log_debug("RUNFILES_MANIFEST_FILE: %s", rfmanifest); */
 
     int opt;
     /* bazel_lua_cb is determined by data attrib of build rule; used
@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) // , char **envp)
         switch (opt) {
         case 'f':
             /* BUILD.bazel or BUILD file */
-            log_info("build file: %s", optarg);
+            /* log_info("build file: %s", optarg); */
             /* utstring_printf(build_file, "%s", optarg); */
             build_file = optarg;
             break;
@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) // , char **envp)
 
     /* now parse the file using libstarlark */
     struct parse_state_s *parse_state = starlark_parse_file(build_file);
-    log_debug("parsed file %s", parse_state->lexer->fname);
+    /* log_debug("parsed file %s", parse_state->lexer->fname); */
 
     /* convert build file to Lua AST table */
     moonlark_ast2lua(L, parse_state);

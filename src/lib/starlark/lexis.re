@@ -494,8 +494,8 @@ loop:
       }
 
       <*> eol {
-        log_debug("<*> eol (%d:%d)", lexer->pos.line, lexer->pos.col);
-        log_debug("<*> eol lexer->pos %p", lexer->pos);
+        // log_debug("<*> eol (%d:%d)", lexer->pos.line, lexer->pos.col);
+        // log_debug("<*> eol lexer->pos %p", lexer->pos);
         lexer->sol = lexer->cursor;
         lexer->pos.line++;
         lexer->pos.col = 0;
@@ -523,8 +523,8 @@ loop:
     <init> ";" COMMENTS { return TK_SEMI; }
     <init> ":" COMMENTS {
         int kwstack_height = utarray_len(lexer->indent_kws);
-        log_debug("COLON: indent_kws ct: %d", kwstack_height);
-        log_debug("COLON: indent_colons: %d", lexer->indent_colons);
+        // log_debug("COLON: indent_kws ct: %d", kwstack_height);
+        // log_debug("COLON: indent_colons: %d", lexer->indent_colons);
         if (kwstack_height > 0) {
             if (lexer->indent_colons == kwstack_height) {
                 return TK_COLON;
@@ -545,7 +545,7 @@ loop:
     <init> "!"  COMMENTS { return TK_BANG; }
     <init> "+=" COMMENTS { return TK_PLUS_EQ; }
     <init> "+" COMMENTS {
-        log_debug("lex PLUS (%d:%d)", (*mtok)->line, (*mtok)->col);
+        // log_debug("lex PLUS (%d:%d)", (*mtok)->line, (*mtok)->col);
         return TK_PLUS;
     }
     <init> "-=" COMMENTS { return TK_MINUS_EQ; }
@@ -571,7 +571,7 @@ loop:
     <init> "}" COMMENTS { return TK_RBRACE; }
 
     <init> "(" COMMENTS {
-        log_debug("<init> lparen");
+        /* log_debug("<init> lparen"); */
         (*mtok)->col = lexer->tok - lexer->sol;
         return TK_LPAREN;
     }
@@ -640,12 +640,12 @@ loop:
     <init> @t1 ([br]|"br"|"rb")? @t2 "'" @s1 ([^'\n] | "\\\n")* @s2 "'"
            COMMENTS
         {
-            log_debug("matched SINGLE_QUOTE TK_STRING (%d:%d)",
-                      lexer->pos.line, lexer->pos.col);
-            log_debug("s1: %s; s2: %s", s1, s2);
-            log_debug("\tlexer->tok: %p: :]%s[:", lexer->tok, lexer->tok);
-            log_debug("\tlexer->cursor (10) %p :]%.10s[:",
-                      lexer->cursor, lexer->cursor, lexer->cursor);
+            // log_debug("matched SINGLE_QUOTE TK_STRING (%d:%d)",
+                      /* lexer->pos.line, lexer->pos.col); */
+            // log_debug("s1: %s; s2: %s", s1, s2);
+            // log_debug("\tlexer->tok: %p: :]%s[:", lexer->tok, lexer->tok);
+            // log_debug("\tlexer->cursor (10) %p :]%.10s[:",
+                      /* lexer->cursor, lexer->cursor, lexer->cursor); */
             /* lexer->cursor pts to one past end (including comments) */
             (*mtok)->s = strndup(s1, (size_t)(s2 - s1));
 
@@ -692,7 +692,7 @@ loop:
             if ((*mtok)->comments) {
               if ( utarray_len((*mtok)->comments) > 0 ) {
                 struct node_s *n = utarray_back((*mtok)->comments);
-                log_debug("\tlast COMMENT posn: (%d:%d)", n->line, n->col);
+                // log_debug("\tlast COMMENT posn: (%d:%d)", n->line, n->col);
                 lexer->pos.line = n->line + 1;
               }
             }
