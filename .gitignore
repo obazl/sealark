@@ -1,4 +1,6 @@
 test.BUILD.bazel
+*.log
+tmp/
 
 # Prerequisites
 *.d
