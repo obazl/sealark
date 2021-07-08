@@ -14,7 +14,7 @@
 
 #include "lbazel.h"
 
-char *bazel_get_luadir(char *luafile)
+char *lbazel_get_luadir(char *luafile)
 {
     log_debug("bazel_get_luadir %s", luafile);
     char *bazel_luadir = NULL;

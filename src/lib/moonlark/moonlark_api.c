@@ -196,14 +196,14 @@ EXPORT void starlark_ast2lua(lua_State *L, struct parse_state_s *parse)
 }
 
 /*
-  Top of Stack: ast
+  Top of Stack: parsed lAST
  */
 EXPORT void starlark_lua_call_user_handler(lua_State *L)
 {
     log_debug("starlark_lua_call_user_handler");
 
     lua_getglobal(L, "init");   /* user-provided function */
-    lua_rotate(L, -1, 2);       /* swap top 2 elts on stack */
+    lua_rotate(L, -1, 2); /* swap top 2 elts to put lAST on ToS */
 
     if (lua_pcall(L, 1, 0, 0) != 0) {
         log_error("error running lua fn: init");

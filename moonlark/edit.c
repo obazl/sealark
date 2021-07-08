@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) // , char **envp)
     }
 
     /* Interrogate env to get lua load paths and cwd */
-     char *bazel_luadir = bazel_get_luadir("edit.lua");
+     char *bazel_luadir = lbazel_get_luadir("edit.lua");
      log_debug("bazel_luadir: %s", bazel_luadir);
 
      if (user_luadir == NULL) {
