@@ -135,7 +135,6 @@ EXPORT const char *token_name[256][2] =
      [TK_Dot_Sfx] = { "TK_Dot_Sfx", "" },
      [TK_Expr] = { "TK_Expr", "" },
      [TK_Expr_List] = { "TK_Expr_List", "" },
-     [TK_Expr] = { "TK_Expr", "" },
      [TK_For_Stmt] = { "TK_For_Stmt", "" },
      [TK_If_Expr] = { "TK_If_Expr", "" },
      [TK_If_Stmt] = { "TK_If_Stmt", "" },
@@ -266,6 +265,8 @@ UT_array *split_small_stmt_list(struct node_s *iblock,
 UT_array *split_stmt_list(struct node_s* iblock, int indent)
 {
     log_debug("split_stmt_list, indent: %d", indent);
+    log_error("NOT YET SUPPORTED");
+    exit(EXIT_FAILURE);
 }
 
 UT_array *split_iblock(struct node_s* iblock, int indent)
@@ -295,10 +296,9 @@ UT_array *split_iblock(struct node_s* iblock, int indent)
             } else {
             }
         }
-        i++;
+        /* i++; */
     }
     /* first block is iblock */
-    
     return blocks;
 }
 
