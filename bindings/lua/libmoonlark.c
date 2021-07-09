@@ -237,8 +237,8 @@ EXPORT void moonlark_lua_call_user_handler(lua_State *L, char *handler)
     lua_rotate(L, -1, 2); /* swap top 2 elts to put lAST on ToS */
 
     if (lua_pcall(L, 1, 0, 0) != 0) {
-        log_error("error running lua fn: init");
-        lerror(L, "error running function `init': %s", lua_tostring(L, -1));
+        log_error("Lua: error running handler : %s", handler);
+        lerror(L, "Lua error running handler %s: %s\n", handler, lua_tostring(L, -1));
     }
 
     /* retrieve result */
