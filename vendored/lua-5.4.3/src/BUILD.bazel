@@ -98,8 +98,7 @@ cc_library(
         "//conditions:default": {}
     }) + [
         "LUA_COMPAT_5_3",
-        ## FIXME: use libedit or editline
-        "LUA_USE_READLINE"      # FIXME: select
+        "LUA_USE_READLINE" ## FIXME: use libedit or editline
     ],
     linkopts = select({
         "//bzl/host:macos": [],
@@ -164,8 +163,8 @@ cc_library(
         "//conditions:default": {}
     }) + [
         "LUA_COMPAT_5_3",
-        ## FIXME: use libedit or editline
-        "LUA_USE_READLINE"      # FIXME: select
+        "LUA_USE_READLINE", ## FIXME: use libedit or editline
+        "MOONLARK" # enable moonlark preload (linit.h)
     ],
     linkopts = select({
         "//bzl/host:macos": [],
