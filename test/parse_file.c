@@ -18,7 +18,6 @@
 #include "utarray.h"
 #include "utstring.h"
 
-#include "starlark.h"
 #include "parse_file.h"
 
 UT_string *build_file;

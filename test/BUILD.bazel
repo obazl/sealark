@@ -134,6 +134,7 @@ genrule(
         "parse_file.c",
         "//bindings/lua:lbazel.c",
         "//bindings/lua:libmoonlark.c",
+        "//src/lib/starlark:debug.c",
         "//src/lib/starlark:mkhdrs-export",
     ],
     outs = [
@@ -147,6 +148,7 @@ genrule(
         "$(location //vendored/makeheaders) \\",
         "    $(location //bindings/lua:lbazel.c) \\",
         "    $(location //bindings/lua:libmoonlark.c) \\",
+        "    $(location //src/lib/starlark:debug.c) \\",
         "    $(location //src/lib/starlark:mkhdrs-export) \\",
         "    $(location lex_file.c) \\",
         "    $(location lua_file.c) \\",
