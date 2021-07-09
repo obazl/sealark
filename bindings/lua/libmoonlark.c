@@ -402,7 +402,7 @@ EXPORT void moonlark_config_moonlark_table(lua_State *L)
     int t = lua_getglobal(L, "moonlark");
     if (t == LUA_TNIL) {
         /* running moonlark:edit */
-        log_info("Lua table 'moonlark' not found; creating");
+        /* log_info("Lua table 'moonlark' not found; creating"); */
         lua_newtable(L);
     } else {
         /* running moonlark:repl */
