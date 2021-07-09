@@ -4,7 +4,9 @@ Starlark parser in C11 and Lua module - 'lua' is Portugese for 'moon', hence `mo
 **STATUS** Alpha-ish. The parser works, the Lua code works; i.e. it
   can parse a BUILD.bazel file and expose the AST as a Lua table. The
   moonlark repl works too. The Lua library includes code to serialize
-  the AST, but not much else (much more is planned).
+  the AST, but not much else (much more is planned). **No windows
+  support**. Sorry about that, but I don't have a Windows machine.
+  It's been tested on MacOS Big Sur and Linux (Debian Stretch).
 
 **NOTE** The main branch does the stuff described below, but
   development occurs on the dev branch, which is what you should use
