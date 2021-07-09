@@ -13,8 +13,12 @@ Starlark parser in C11 and Lua module - 'lua' is Portugese for 'moon', hence `mo
 **ROADMAP:** the immediate task is to finish the moonlark Lua library,
   which will support programmatic editing of the AST. First up: given
   a source file name and list of dependencies, update the BUILD.bazel
-  file. This is the use case that motivated development of moonlark.
-  Also on the to-do list: more detailed documentation.
+  file. Specifically supporting OCaml projects using
+  [OBazl](https://obazl.github.io/docs_obazl/); this is the use case
+  that motivated development of moonlark. Also on the to-do list: more
+  detailed documentation. A long-term goal is to support editing
+  capabilities matching or exceeding those of
+  [Buildozer](https://github.com/bazelbuild/buildtools/blob/master/buildozer/README.md).
 
 ## quickstart
 
