@@ -6,8 +6,6 @@ cc_binary(
     srcs  = [
         "edit.c",
         "edit.h",
-        # "config.c",
-        # "config.h",
     ],
     data = [
         "//moonlark/lua:edit.lua"
@@ -27,14 +25,8 @@ cc_binary(
         "-I$(GENDIR)/moonlark",
         "-I$(GENDIR)/external/moonlark/moonlark",
 
-        # "-I", "$(GENDIR)/src/lib/lbazel",
-        # "-I", "$(GENDIR)external/moonlark/src/lib/lbazel",
-
         "-I", "$(GENDIR)/src/lib/starlark",
         "-I", "$(GENDIR)external/moonlark/src/lib/starlark",
-
-        # "-I", "$(GENDIR)/src/lib/moonlark",
-        # "-I", "$(GENDIR)/external/moonlark/src/lib/moonlark", # libmoonlark.h
 
         "-I", "vendored/logc",
         "-I", "external/moonlark/vendored/logc",
@@ -47,12 +39,9 @@ cc_binary(
     ],
     deps = [
         "//bindings/lua:moonlark",
-        # "//src/lib/lbazel",
-        # "//src/lib/moonlark",
 
         "//vendored/logc",
         "//vendored/uthash",
-
         "//vendored/lua-5.4.3/src:lua"
     ],
 )
@@ -111,7 +100,6 @@ genrule(
         "    $(location //bindings/lua:libmoonlark.c) \\",
         "    $(location //src/lib/starlark:mkhdrs-export) \\",
         "    $(location edit.c)",
-        # "    $(location config.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),
     tools = ["//vendored/makeheaders"],
