@@ -21,19 +21,23 @@
 #include "log.h"
 #include "utarray.h"
 #include "utstring.h"
-/* #include "starlark.h" */
-#include "libmoonlark.h"
+
+/* #include "libmoonlark.h" */
 
 #include "lua_file.h"
-
-UT_string *build_file;
 
 UT_string *buffer;
 
 int main(int argc, char *argv[])
 {
     int opt;
-    utstring_new(build_file);
+    /* bazel_lua_cb is determined by data attrib of build rule; used
+       to find bazel_luadir */
+    char *bazel_lua_cb = "edit.lua";
+    char *user_luadir = NULL;
+    char *lua_file = NULL;
+    char *callback = "moonlark_handler"; /* callback defined in lua_file */
+    char *build_file = NULL;
 
     char *wd = getenv("BUILD_WORKING_DIRECTORY");
     if (wd) {
@@ -45,7 +49,7 @@ int main(int argc, char *argv[])
         switch (opt) {
         case 'f':
             /* BUILD.bazel or BUILD file */
-            utstring_printf(build_file, "%s", optarg);
+            build_file = optarg;
             break;
         case 'h':
             log_info("Help: ");
@@ -56,16 +60,11 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (utstring_len(build_file) == 0) {
+    if (strlen(build_file) == 0) {
         log_error("-f <buildfile> must be provided.");
         exit(EXIT_FAILURE);
     }
 
-    struct parse_state_s *parse_state = starlark_parse_file(utstring_body(build_file));
-    log_debug("parsed file %s", parse_state->lexer->fname);
-    dump_node(parse_state->root);
-
-    // FIXME: use moonlark api to config lua?
     lua_State *L;
     L = luaL_newstate();        /* set global lua state var */
     if (L == NULL) {
@@ -73,14 +72,16 @@ int main(int argc, char *argv[])
     }
     luaL_openlibs(L);
 
-    /* create new 'bazel' global table to hold ASTs */
-    lua_newtable(L);
-    lua_pushstring(L, "build");
-    lua_newtable(L);
-    lua_settable(L, -3);
-    lua_setglobal(L, "bazel");
+    lbazel_config(L, bazel_lua_cb, user_luadir, lua_file);
 
-    moonlark_augment_load_path(L);
+    /* /\* create new 'bazel' global table to hold ASTs *\/ */
+    /* lua_newtable(L); */
+    /* lua_pushstring(L, "build"); */
+    /* lua_newtable(L); */
+    /* lua_settable(L, -3); */
+    /* lua_setglobal(L, "bazel"); */
+
+    /* moonlark_augment_load_path(L); */
 
     /* lua_getglobal(L, "package"); */
     /* lua_getfield(L, -1, "path"); */
@@ -88,15 +89,24 @@ int main(int argc, char *argv[])
     /* log_debug("LUA PATH: %s", p); */
 
     /* load default and user handlers (Lua files) */
-    starlark_lua_load_handlers(L, "test/lua/lua_file.lua");
+    /* starlark_lua_load_handlers(L, "test/lua/lua_file.lua"); */
 
-    /* parse and convert build file to Lua AST table */
-    /* call handler on (Lua) AST */
+    /* now parse the file using libstarlark */
+    struct parse_state_s *parse_state = starlark_parse_file(build_file);
+    /* log_debug("parsed file %s", parse_state->lexer->fname); */
 
-    starlark_ast2lua(L, parse_state);
+    /* convert build file to Lua AST table */
+    moonlark_ast2lua(L, parse_state);
     /* L now contains global bazel.build array of ASTs */
+    /* log_debug("stack gettop %d", lua_gettop(L)); */
 
-    starlark_lua_call_user_handler(L);
+    /* call callback on (Lua) AST */
+    moonlark_lua_call_user_handler(L, callback);
+
+    /* starlark_ast2lua(L, parse_state); */
+    /* /\* L now contains global bazel.build array of ASTs *\/ */
+
+    /* starlark_lua_call_user_handler(L); */
 
     /* serialization routines expect a UT_string, not a char buffer */
     /* utstring_new(buffer); */

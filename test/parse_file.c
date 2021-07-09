@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
     }
 
     char *outfile = tmpnam(NULL);
-    /* printf("outfile name: %s\n", outfile); */
+    /* printf("serializing to: %s\n", outfile); */
     FILE *fp;
     fp = fopen(outfile, "w+");
     if (fp == NULL) {

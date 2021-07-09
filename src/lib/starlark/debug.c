@@ -37,7 +37,7 @@ EXPORT void dump_nodes(UT_array *nodes)
     struct node_s *node=NULL;
     char *q;
     while( (node=(struct node_s*)utarray_next(nodes, node))) {
-        log_debug("qtype: %#x", node->qtype);
+        /* log_debug("qtype: %#x", node->qtype); */
         /*           node->type, */
         /*           token_name[node->type][0]); */
         if (node->qtype & SQUOTE) {
@@ -76,7 +76,7 @@ EXPORT void dump_nodes(UT_array *nodes)
         case TK_COMMENT: log_debug("\tstarttok: %s", node->s); break;
         case TK_ID: log_debug("\tstarttok: :]%s[:", node->s); break;
         case TK_INT: log_debug("\tstarttok: :]%s[:", node->s); break;
-        case TK_STRING: log_debug("\tstarttok: %s", node->s); break;
+        case TK_STRING: log_debug("\tstarttok: :]%s[:", node->s); break;
         /* case TK_Call_Sfx: log_debug("\tstarttok: %s", node->s); break; */
         case TK_Dot_Sfx: log_debug("\tstarttok: %s", node->s); break;
         }
@@ -96,4 +96,5 @@ EXPORT void dump_nodes(UT_array *nodes)
             }
         }
     }
+    log_debug("/dump_nodes");
 }
