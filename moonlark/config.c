@@ -27,7 +27,7 @@
 
 UT_string *buffer;
 
-moonlark_config_for_bazel(lua_State *L,char *bazel_lua_cb,char *_user_luadir,char *lua_file)
+void moonlark_config_for_bazel(lua_State *L,char *bazel_lua_cb,char *_user_luadir,char *lua_file)
 {
     /* log_debug("moonlark_config_for_bazel"); */
 
