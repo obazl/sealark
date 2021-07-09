@@ -24,7 +24,7 @@
 
 /* **************************************************************** */
 static int config_bazel (lua_State *L) {
-    log_debug("config.bazel");
+    /* log_debug("config.bazel"); */
 
     lbazel_config(L, "repl.lua", ".moonlark.d", NULL);
 
@@ -53,8 +53,8 @@ static int parse_file (lua_State *L) {
     struct parse_state_s *parsed = starlark_parse_file((char*)fname);
     if (parsed == NULL) {
         return luaL_error(L, "%s: %s", fname, strerror(errno));
-    } else {
-        log_debug("parsed file: %s\n", fname);
+    /* } else { */
+    /*     log_debug("parsed file: %s\n", fname); */
     }
 
     /* lua_newtable(L); */
@@ -66,7 +66,7 @@ static int parse_file (lua_State *L) {
     /* prereq: starlark_lua_init has run, creating global bazel.build */
 
     moonlark_ast2lua(L, parsed);
-    log_debug("/starlark_ast2lua");
+    /* log_debug("/starlark_ast2lua"); */
     /* lua_settable(L, -3); */
 
     return 1;

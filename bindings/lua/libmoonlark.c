@@ -282,7 +282,7 @@ EXPORT void moonlark_augment_load_path(lua_State *L, char *path)
 {
     if (path == NULL) return;
 
-    log_debug("moonlark_augment_load_path %s", path);
+    /* log_debug("moonlark_augment_load_path %s", path); */
 
     UT_string *load_path;
     utstring_new(load_path);
@@ -296,11 +296,11 @@ EXPORT void moonlark_augment_load_path(lua_State *L, char *path)
     }
     lua_getfield(L, -1, "path");
     const char *curr_path = lua_tostring(L, -1);
-    log_debug("current load path: %s", curr_path);
+    /* log_debug("current load path: %s", curr_path); */
     lua_pop(L, 1);
 
     utstring_printf(load_path, "%s/?.lua;%s", path, curr_path);
-    log_debug("new load_path: %s", utstring_body(load_path));
+    /* log_debug("new load_path: %s", utstring_body(load_path)); */
 
     lua_pushstring(L, utstring_body(load_path));
     lua_setfield(L, -2, "path");
@@ -406,7 +406,7 @@ EXPORT void moonlark_config_moonlark_table(lua_State *L)
         lua_newtable(L);
     } else {
         /* running moonlark:repl */
-        log_info("Lua table 'moonlark' found");
+        /* log_info("Lua table 'moonlark' found"); */
     }
     moonlark_create_token_enums(L);
     lua_setglobal(L, "moonlark");
