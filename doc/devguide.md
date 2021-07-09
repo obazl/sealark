@@ -1,5 +1,7 @@
 # development
 
+**CAVEAT** Work-in-Progress. May not match source code.
+
 ## C
 
 ### makeheaders
@@ -168,3 +170,21 @@ The `bazel` table contains fields:
   'run' or 'test', and whether 'run' is used to launch a cc_binary or
   a cc_test target. Also, the runtime environments for the 'test' and 'run'
   commands are different.
+
+
+### misc
+
+obsolete:
+
+generate tokens.h from tokens.txt (list of TOKEN names)
+
+rg -N . src/lib/obazl_starlark/tokens.txt | sort | uniq > toks.h
+nl -w 2 -n rz -s ' ' toks.h > toksnl.h
+
+paste -d ' ' toksnl.h toks.h | cut -d ' ' -f2,3 | sed 's/^/#define /' > src/lib/obazl/bazel/tokens.h
+
+generate tokens.c, with token_name lookup table
+
+sed 's/\(.*\)/[\1] = "\1",/' toks.h > src/lib/obazl_starlark/tokens.c
+
+
