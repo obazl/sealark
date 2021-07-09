@@ -23,10 +23,7 @@ cc_fetch_repos()
 
 load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
 
-## Assumption: build tools (make, autoconf, etc.) are already installed, do not build them
-rules_foreign_cc_dependencies(register_built_tools=False)
+rules_foreign_cc_dependencies()
 
-################################################################
-## dev only
-# load("@io_bazel_stardoc//:setup.bzl", "stardoc_repositories")
-# stardoc_repositories()
+## build tools (make, autoconf, etc.) are already installed, do not build them:
+# rules_foreign_cc_dependencies(register_built_tools=False)

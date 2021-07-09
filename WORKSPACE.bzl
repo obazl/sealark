@@ -19,9 +19,9 @@ def cc_fetch_repos():
     maybe(
         http_archive,
         name = "rules_foreign_cc",
-        url = "https://github.com/bazelbuild/rules_foreign_cc/archive/0.2.0.tar.gz",
-        sha256 = "d54742ffbdc6924f222d2179f0e10e911c5c659c4ae74158e9fe827aad862ac6",
-        strip_prefix = "rules_foreign_cc-0.2.0",
+        sha256 = "e14a159c452a68a97a7c59fa458033cc91edb8224516295b047a95555140af5f",
+        strip_prefix = "rules_foreign_cc-0.4.0",
+        url = "https://github.com/bazelbuild/rules_foreign_cc/archive/0.4.0.tar.gz",
     )
 
     ######
