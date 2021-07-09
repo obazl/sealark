@@ -10,6 +10,12 @@ Starlark parser in C11 and Lua module - 'lua' is Portugese for 'moon', hence `mo
   development occurs on the dev branch, which is what you should use
   if you want to monitor progress or contribute.
 
+**ROADMAP:** the immediate task is to finish the moonlark Lua library,
+  which will support programmatic editing of the AST. First up: given
+  a source file name and list of dependencies, update the BUILD.bazel
+  file. This is the use case that motivated development of moonlark.
+  Also on the to-do list: more detailed documentation.
+
 ## quickstart
 
 **WARNING** the first time you run moonlark it may take a while to build everything (e.g. re2c).
