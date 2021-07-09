@@ -1,7 +1,8 @@
+# a sample user.config. put it in the root dir to use it (.bazelrc runs it)
 build --color=yes
 build --subcommands=pretty_print
 build --verbose_failures
-build --sandbox_debug
+# build --sandbox_debug
 
 test --test_output=all
 

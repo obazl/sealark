@@ -27,17 +27,13 @@
 
 UT_string *buffer;
 
-lua_State *moonlark_config_for_bazel(
-                              char *bazel_lua_cb,
-                              char *_user_luadir,
-                              char *lua_file
-                              )
+moonlark_config_for_bazel(lua_State *L,char *bazel_lua_cb,char *_user_luadir,char *lua_file)
 {
     /* log_debug("moonlark_config_for_bazel"); */
 
     /* Interrogate env to get lua load paths and cwd */
     char *bazel_luadir = lbazel_get_luadir(bazel_lua_cb);
-    /* log_debug("bazel_luadir: %s", bazel_luadir); */
+    log_debug("bazel_luadir: %s", bazel_luadir);
 
     char *user_luadir = ".moonlark.d";
     if (_user_luadir == NULL) {
@@ -64,10 +60,6 @@ lua_State *moonlark_config_for_bazel(
         }
     }
 
-    /* startup lua (luaL_newstate()) */
-    lua_State *L = luaL_newstate();
-    luaL_openlibs(L);
-
     /* set lua load paths */
     moonlark_augment_load_path(L, bazel_luadir);
     moonlark_augment_load_path(L, user_luadir);
@@ -76,7 +68,7 @@ lua_State *moonlark_config_for_bazel(
 
     moonlark_lua_load_file(L, lua_file);
 
-    return L;
+    /* return L; */
 }
 
 /* int moonlark_process_buildfile(char *build_file, char *lua_file, char *callback) */

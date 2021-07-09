@@ -9,11 +9,14 @@ exports_files(["lmoonlark.c"])
 #     linkshared = 1,
 cc_library(
     name  = "moonlark",
+    # linkstatic = 1,
     # alwayslink = 1,
     # linkshared = 1,
     srcs  = [
         "lmoonlark.c",
         "lmoonlark.h",
+        "//moonlark:config.c",
+        "//moonlark:config.h",
     ],
     # data = [
     # ],
@@ -53,7 +56,6 @@ cc_library(
         "//vendored/logc",
         "//vendored/uthash",
     ],
-    # linkstatic = 1,
     visibility = ["//visibility:public"]
 )
 
@@ -63,6 +65,7 @@ genrule(
     visibility = ["//visibility:public"],
     srcs = [
         "lmoonlark.c",
+        "//moonlark:config.c",
     ],
     outs = [
         "lmoonlark.h",
@@ -71,6 +74,7 @@ genrule(
         "SRC1=$(location lmoonlark.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "$(location //vendored/makeheaders) \\",
+        "    $(location //moonlark:config.c) \\",
         "    $(location lmoonlark.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),

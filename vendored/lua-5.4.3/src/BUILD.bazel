@@ -120,8 +120,10 @@ cc_library(
         "//conditions:default": [
             "//bindings/lua:lmoonlark.c",
             "//bindings/lua:lmoonlark.h",
+            "//moonlark:config.c",
+            "//moonlark:config.h",
             # moonlark C impl code:
-        "//src/lib/moonlark:mkhdrs",
+            "//src/lib/moonlark:mkhdrs",
         ]
     }) + [":srcs"],
     hdrs = [
@@ -132,9 +134,13 @@ cc_library(
         "lualib.h",
     ],
     copts = [
+
         "-I", "bindings/lua",
         "-I", "$(GENDIR)/bindings/lua",
         "-I", "$(GENDIR)/external/moonlark/bindings/lua",
+
+        "-I", "$(GENDIR)/moonlark",
+        "-I", "$(GENDIR)/external/moonlark",
 
         "-I", "$(GENDIR)/src/lib/starlark",
         "-I", "$(GENDIR)/external/moonlark/src/lib/starlark",

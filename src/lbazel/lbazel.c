@@ -19,13 +19,13 @@ char *lbazel_get_luadir(char *luafile)
     /* log_debug("bazel_get_luadir %s", luafile); */
     char *bazel_luadir = NULL;
     char *s = getcwd(NULL, 0);
-    /* log_info("CURRENT WORKING DIRECTORY: %s", s); */
+    log_info("CURRENT WORKING DIRECTORY: %s", s);
     char *mdir = dirname(s);
-    /* log_info("MANIFEST DIR: %s", mdir); */
+    log_info("MANIFEST DIR: %s", mdir);
     UT_string *manifest;
     utstring_new(manifest);
     utstring_printf(manifest, "%s%s", mdir, "/MANIFEST");
-    /* log_info("MANIFEST: %s", utstring_body(manifest)); */
+    log_info("MANIFEST: %s", utstring_body(manifest));
 
     FILE * fp;
     char * line = NULL;
@@ -40,8 +40,8 @@ char *lbazel_get_luadir(char *luafile)
 
     char *token;
     while ((read = getline(&line, &len, fp)) != -1) {
-        /* printf("Retrieved line of length %zu:\n", read); */
-        /* printf("%s", line); */
+        printf("Retrieved line of length %zu:\n", read);
+        printf("%s", line);
         bool hit = false;
         /* two tokens per line */
         while ((token = strsep(&line, " ")) != NULL) {
@@ -64,6 +64,7 @@ char *lbazel_get_luadir(char *luafile)
     }
 
     fclose(fp);
+    log_debug("bazel_luadir: %s", bazel_luadir);
     return bazel_luadir;
 }
 

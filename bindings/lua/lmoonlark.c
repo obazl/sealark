@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "lua.h"
 
@@ -25,7 +26,21 @@
 /* **************************************************************** */
 static int config_bazel (lua_State *L) {
     log_debug("config.bazel");
-    //TODO:  add bazel_luadir to load path?
+
+    moonlark_config_for_bazel(L, "edit.lua", ".moonlark.d", NULL);
+
+    /* log_debug("xxxxxxxxxxxxxxxx"); */
+    /* int t = lua_getglobal(L, "package"); */
+    /* if (t == LUA_TNIL) { */
+    /*     log_error("ERROR: Lua table 'package' not found"); */
+    /*     exit(EXIT_FAILURE); */
+    /* } */
+    /* lua_getfield(L, -1, "path"); */
+    /* const char *curr_path = lua_tostring(L, -1); */
+    /* log_debug("current load path: %s", curr_path); */
+    /* lua_pop(L, 2); */
+
+
     return 1;
 }
 
@@ -82,12 +97,6 @@ LUAMOD_API int luaopen_moonlark(lua_State *L) {
 
     /* add starlark token enums to 'moonlark' table */
     moonlark_create_token_enums(L);
-
-    /* bazel-specific */
-    /* create global bazel table with bazel.config, bazel.TOK, etc. */
-    /* starlark_lua_init(L); */
-    /* elaborates 'bazel' table created by init */
-    /* moonlark_augment_load_path(L); */
 
     return 1;
 }

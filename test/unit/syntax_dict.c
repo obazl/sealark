@@ -32,7 +32,7 @@ void tearDown(void) {
 
 void test_dict_comp(void) {
     int ct;
-    for (ct=0; dict_comp[ct] != NULL; ct++); ct--;
+    for (ct=0; dict_comp[ct] != NULL; ct++);
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, dict_comp[i]); */
         test_str = dict_comp[i];
@@ -47,7 +47,7 @@ void test_dict_comp(void) {
 
 void test_dict_expr(void) {
     int ct;
-    for (ct=0; dict_expr[ct] != NULL; ct++); ct--;
+    for (ct=0; dict_expr[ct] != NULL; ct++);
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, dict_expr[i]); */
         test_str = dict_expr[i];

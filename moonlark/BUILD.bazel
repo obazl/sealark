@@ -1,6 +1,6 @@
 exports_files(["config.c"])
 
-# Target //moonlark:repl launches a lua interpreter with integrated moonlark support.  The load path
+# Target //moonlark:repl launches a lua interpreter with integrated moonlark support.
 cc_binary(
     name = "repl",
     srcs = [

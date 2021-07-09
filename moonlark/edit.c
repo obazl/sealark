@@ -88,7 +88,9 @@ int main(int argc, char *argv[]) // , char **envp)
         exit(EXIT_FAILURE);
     }
 
-    lua_State *L = moonlark_config_for_bazel(bazel_lua_cb, user_luadir, lua_file);
+    lua_State *L = luaL_newstate();
+    luaL_openlibs(L);
+    moonlark_config_for_bazel(L, bazel_lua_cb, user_luadir, lua_file);
 
     /* now parse the file using libstarlark */
     struct parse_state_s *parse_state = starlark_parse_file(build_file);
