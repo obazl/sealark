@@ -90,7 +90,18 @@ int main(int argc, char *argv[]) // , char **envp)
 
     lua_State *L = luaL_newstate();
     luaL_openlibs(L);
-    moonlark_config_for_bazel(L, bazel_lua_cb, user_luadir, lua_file);
+
+    /* we do not need to preload lmoonlark. the lmoonlark api is not
+       needed, since we can call the libstarlark API directly */
+    /* luaL_getsubtable(L, LUA_REGISTRYINDEX, LUA_PRELOAD_TABLE); */
+    /* lua_pushcfunction(L, luaopen_moonlark); */
+    /* lua_setfield(L, -2, "moonlark"); */
+    /* lua_pop(L, 1);  // remove PRELOAD table */
+
+    /* but what about our default lua files, like serialization.lua?
+       why not preload them in the 'moonlark' table? */
+
+    lbazel_config(L, bazel_lua_cb, user_luadir, lua_file);
 
     /* now parse the file using libstarlark */
     struct parse_state_s *parse_state = starlark_parse_file(build_file);

@@ -63,7 +63,7 @@ int moonlark_roundtrip(char *build_file, char *_lua_file)
 
     /* moonlark_process_buildfile(_build_file, _lua_file); */
 
-    lua_State *L = moonlark_config_for_bazel(bazel_lua_cb, user_luadir, lua_file);
+    lua_State *L = lbazel_config(bazel_lua_cb, user_luadir, lua_file);
 
     /* /\* Interrogate env to get lua load paths and cwd *\/ */
     /* /\* char *bazel_luadir = lbazel_get_luadir(bazel_lua_cb); *\/ */

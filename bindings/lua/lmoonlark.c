@@ -27,7 +27,7 @@
 static int config_bazel (lua_State *L) {
     log_debug("config.bazel");
 
-    moonlark_config_for_bazel(L, "edit.lua", ".moonlark.d", NULL);
+    lbazel_config(L, "edit.lua", ".moonlark.d", NULL);
 
     /* log_debug("xxxxxxxxxxxxxxxx"); */
     /* int t = lua_getglobal(L, "package"); */
@@ -73,9 +73,20 @@ static int parse_file (lua_State *L) {
     return 1;
 }
 
+/* FIXME: map this to a field in moonlark table */
+/*  versions: libstarlark, libmoonlark, liblbazel, and moonlark pkg */
+/* so this should return a table */
 static int version (lua_State *L) {
-    char *v = "0.1.0"; // bazel_version();
+    char *v = "0.1.0";
+    lua_newtable(L);
     lua_pushstring(L, v);
+    lua_setfield(L, -2, "libstarlark");
+    lua_pushstring(L, v);
+    lua_setfield(L, -2, "libmoonlark");
+    lua_pushstring(L, v);
+    lua_setfield(L, -2, "liblbazel");
+    lua_pushstring(L, v);
+    lua_setfield(L, -2, "moonlark");
     return 1;
 }
 
@@ -94,6 +105,8 @@ LUAMOD_API int luaopen_moonlark(lua_State *L) {
     luaL_newlib(L, moonlark);
     lua_pushstring(L, "0.1.0");
     lua_setfield(L, -2, "version");
+
+    /* luaL_newmetatable(L, "moonlark.meta"); */
 
     /* add starlark token enums to 'moonlark' table */
     moonlark_create_token_enums(L);

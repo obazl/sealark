@@ -120,8 +120,8 @@ cc_library(
         "//conditions:default": [
             "//bindings/lua:lmoonlark.c",
             "//bindings/lua:lmoonlark.h",
-            "//moonlark:config.c",
-            "//moonlark:config.h",
+            "//src/lib/lbazel:lbazel.c",
+            "//src/lib/lbazel:lbazel.h",
             # moonlark C impl code:
             "//src/lib/moonlark:mkhdrs",
         ]
@@ -139,8 +139,8 @@ cc_library(
         "-I", "$(GENDIR)/bindings/lua",
         "-I", "$(GENDIR)/external/moonlark/bindings/lua",
 
-        "-I", "$(GENDIR)/moonlark",
-        "-I", "$(GENDIR)/external/moonlark",
+        "-I", "$(GENDIR)/src/lib/lbazel",
+        "-I", "$(GENDIR)/external/moonlark/src/lib/lbazel",
 
         "-I", "$(GENDIR)/src/lib/starlark",
         "-I", "$(GENDIR)/external/moonlark/src/lib/starlark",

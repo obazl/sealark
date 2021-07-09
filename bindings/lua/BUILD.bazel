@@ -3,10 +3,6 @@ load("@rules_cc//cc:defs.bzl", "cc_binary")
 exports_files(["lmoonlark.c"])
 
 ##########
-# cc_binary(
-#     name  = "moonlark.so",
-#     # alwayslink = 1,
-#     linkshared = 1,
 cc_library(
     name  = "moonlark",
     # linkstatic = 1,
@@ -15,8 +11,6 @@ cc_library(
     srcs  = [
         "lmoonlark.c",
         "lmoonlark.h",
-        "//moonlark:config.c",
-        "//moonlark:config.h",
     ],
     # data = [
     # ],
@@ -50,6 +44,7 @@ cc_library(
         "-I", "external/moonlark/vendored/lua-5.4.3/src",
     ],
     deps = [
+        "//src/lib/lbazel",
         "//src/lib/starlark",
         "//src/lib/moonlark",
         "//vendored/lua-5.4.3/src:lua",
@@ -65,7 +60,7 @@ genrule(
     visibility = ["//visibility:public"],
     srcs = [
         "lmoonlark.c",
-        "//moonlark:config.c",
+        "//src/lib/lbazel:lbazel.c",
     ],
     outs = [
         "lmoonlark.h",
@@ -74,7 +69,7 @@ genrule(
         "SRC1=$(location lmoonlark.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "$(location //vendored/makeheaders) \\",
-        "    $(location //moonlark:config.c) \\",
+        "    $(location //src/lib/lbazel:lbazel.c) \\",
         "    $(location lmoonlark.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),

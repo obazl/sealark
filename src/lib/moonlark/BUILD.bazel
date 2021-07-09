@@ -1,6 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
-# exports_files(["moonlark.c"])
+exports_files(["libmoonlark.c"])
 
 ##########
 cc_library(
@@ -29,7 +29,7 @@ cc_library(
         "-pedantic-errors",
         "-g", "-O0",
 
-        "-I$(GENDIR)/src/lib/lbazel",
+        # "-I$(GENDIR)/src/lib/lbazel",
 
         "-Isrc/lib/starlark",  # starlark.h
         "-I$(GENDIR)/src/lib/starlark",  # starlark.h
@@ -50,7 +50,7 @@ cc_library(
 
     ],
     deps = [
-        "//src/lib/lbazel",
+        # "//src/lib/lbazel",
         "//src/lib/starlark",
         # "//external/lua/lib:lua",
         "//vendored/lua-5.4.3/src:lua",
@@ -66,7 +66,7 @@ genrule(
     visibility = ["//visibility:public"],
     srcs = [
         "libmoonlark.c",
-        "//src/lib/lbazel:lbazel.c",
+        # "//src/lib/lbazel:lbazel.c",
         "//src/lib/starlark:debug.c",
         "//src/lib/starlark:starlark.h",
     ],
@@ -80,7 +80,7 @@ genrule(
         "SRCDIR2=`dirname $$SRC2`",
         "$(location //vendored/makeheaders) \\",
         "    $(location //src/lib/starlark:debug.c) \\",
-        "    $(location //src/lib/lbazel:lbazel.c) \\",
+        # "    $(location //src/lib/lbazel:lbazel.c) \\",
         "    $(location //src/lib/starlark:starlark.h) \\",
         "    $(location libmoonlark.c)",
         "cp $$SRCDIR1/*.h $(@D)",

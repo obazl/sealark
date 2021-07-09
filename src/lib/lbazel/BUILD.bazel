@@ -32,6 +32,9 @@ cc_library(
         "-I$(GENDIR)/src/lib/lbazel",
         "-I$(GENDIR)/external/moonlark/src/lib/lbazel",
 
+        "-I$(GENDIR)/src/lib/moonlark",
+        "-I$(GENDIR)/external/moonlark/src/lib/moonlark",
+
         "-Ivendored/uthash",
         "-Iexternal/moonlark/vendored/uthash",
 
@@ -47,6 +50,7 @@ cc_library(
     #     "-llua",
     # ],
     deps = [
+        "//src/lib/moonlark",
         "//vendored/lua-5.4.3/src:lua",
         "//vendored/logc",
         "//vendored/uthash",
@@ -60,6 +64,7 @@ genrule(
     visibility = ["//visibility:public"],
     srcs = [
         "lbazel.c",
+        "//src/lib/moonlark:libmoonlark.c",
         "//src/lib/starlark:constants.c",
         "//src/lib/starlark:nodes.c"
     ],
@@ -70,6 +75,7 @@ genrule(
         "SRC1=$(location lbazel.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "$(location //vendored/makeheaders) \\",
+        "    $(location //src/lib/moonlark:libmoonlark.c) \\",
         "    $(location //src/lib/starlark:constants.c) \\",
         "    $(location //src/lib/starlark:nodes.c) \\",
         "    $(location lbazel.c)",

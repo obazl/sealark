@@ -1,4 +1,4 @@
-exports_files(["config.c"])
+# exports_files(["config.c"])
 
 cc_binary(
     name  = "edit",
@@ -6,8 +6,8 @@ cc_binary(
     srcs  = [
         "edit.c",
         "edit.h",
-        "config.c",
-        "config.h",
+        # "config.c",
+        # "config.h",
     ],
     # data = [
     #     "//moonlark/lua:edit.lua"
@@ -23,6 +23,9 @@ cc_binary(
 
         "-I$(GENDIR)/moonlark",
         "-I$(GENDIR)/external/moonlark/moonlark",
+
+        "-I", "$(GENDIR)/src/lib/lbazel",
+        "-I", "$(GENDIR)external/moonlark/src/lib/lbazel",
 
         "-I", "$(GENDIR)/src/lib/starlark",
         "-I", "$(GENDIR)external/moonlark/src/lib/starlark",
@@ -46,7 +49,6 @@ cc_binary(
         "//vendored/logc",
         "//vendored/uthash",
 
-        # libmoonlark pulls in lua rt, but not headers
         "//vendored/lua-5.4.3/src:lua"
     ],
 )
@@ -62,7 +64,6 @@ cc_binary(
     data = [
         "//moonlark/lua:repl.lua"
     ],
-    # ... linking to augmented liblua:
     deps = [
         # lua runtime with integrated moonlark
         "//vendored/lua-5.4.3/src:lualark"
@@ -86,67 +87,24 @@ cc_binary(
     visibility = ["//visibility:public"],
 )
 
-# cc_library(
-#     name  = "config",
-#     visibility = ["//visibility:public"],
-#     linkstatic = 1,
-#     srcs  = [
-#         "config.c",
-#     ],
-#     hdrs = [
-#         "config.h",
-#     ],
-#     defines = ["DEBUG", "DEBUG_TRACE"],
-#     copts = [
-#         "-std=c11",
-#         "-pedantic-errors",
-
-#         "-I$(GENDIR)/moonlark",
-#         "-I$(GENDIR)/external/moonlark/moonlark",
-
-#         "-I", "$(GENDIR)/src/lib/starlark",
-#         "-I", "$(GENDIR)external/moonlark/src/lib/starlark",
-
-#         "-I", "$(GENDIR)/src/lib/moonlark",
-#         "-I", "$(GENDIR)/external/moonlark/src/lib/moonlark", # libmoonlark.h
-
-#         "-I", "vendored/logc",
-#         "-I", "external/moonlark/vendored/logc",
-
-#         "-I", "vendored/lua-5.4.3/src",
-#         "-I", "external/moonlark/vendored/lua-5.4.3/src",
-
-#         "-I", "vendored/uthash",
-#         "-I", "external/moonlark/vendored/uthash",
-#     ],
-#     deps = [
-#         "//src/lib/lbazel",
-#         "//src/lib/moonlark:moonlark",
-#         "//vendored/logc",
-#         "//vendored/uthash",
-#         # libmoonlark pulls in liblualark
-#         # "//vendored/lua-5.4.3/src:lua"
-#     ],
-# )
-
 genrule(
     name = "mkhdrs",
     srcs = [
         "//src/lib/lbazel:lbazel.c",
         "edit.c",
-        "config.c",
+        # "config.c",
     ],
     outs = [
         "edit.h",
-        "config.h",
+        # "config.h",
     ],
     cmd = "\n".join([
         "SRC1=$(location edit.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "$(location //vendored/makeheaders) \\",
         "    $(location //src/lib/lbazel:lbazel.c) \\",
-        "    $(location edit.c) \\",
-        "    $(location config.c)",
+        "    $(location edit.c)",
+        # "    $(location config.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),
     tools = ["//vendored/makeheaders"],

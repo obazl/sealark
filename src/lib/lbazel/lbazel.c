@@ -14,6 +14,49 @@
 
 #include "lbazel.h"
 
+void lbazel_config(lua_State *L,char *bazel_lua_cb,char *_user_luadir,char *lua_file)
+{
+    /* log_debug("lbazel_config"); */
+
+    /* Interrogate env to get lua load paths and cwd */
+    char *bazel_luadir = lbazel_get_luadir(bazel_lua_cb);
+    log_debug("bazel_luadir: %s", bazel_luadir);
+
+    char *user_luadir = ".moonlark.d";
+    if (_user_luadir == NULL) {
+        log_warn("WARNING: no user luadir specified; using default: %s",
+                 user_luadir);
+    } else {
+        user_luadir = _user_luadir;
+    }
+    //FIXME: verify user_luadir exists *after* chdir to launchdir
+
+    char *wd = getenv("BUILD_WORKING_DIRECTORY");
+    if (wd) {
+        /* log_info("BUILD_WORKING_DIRECTORY: %s", wd); */
+        chdir(wd);
+    } else {
+        log_error("BUILD_WORKING_DIRECTORY not found. This program must be run from the root directory of a Bazel repo.");
+    }
+
+    if (user_luadir) {
+        if( access( user_luadir, F_OK ) != 0 ) {
+            log_warn("WARNING: user_luadir does not exist: %s", user_luadir);
+        /* } else { */
+        /*     log_info("user_luadir: %s", user_luadir); */
+        }
+    }
+
+    /* set lua load paths */
+    moonlark_augment_load_path(L, bazel_luadir);
+    moonlark_augment_load_path(L, user_luadir);
+
+    moonlark_config_moonlark_table(L);
+
+    moonlark_lua_load_file(L, lua_file);
+
+}
+
 char *lbazel_get_luadir(char *luafile)
 {
     /* log_debug("bazel_get_luadir %s", luafile); */

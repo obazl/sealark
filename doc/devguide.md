@@ -1,5 +1,24 @@
 # development
 
+## C
+
+### makeheaders
+
+In many cases we need to run makeheaders against files in different
+packages. We expose them using `exports_files`. It is not sufficient
+to depend on the other library; the other library's exposed headers
+will be available, but the depending file, say `edit.c`, contains only
+`edit.h`, produced by makeheaders. So the other package's __source__
+files must be included as input to the makeheaders command.
+
+Note that this does not affect the Bazel dependency graph, so circular
+dependencies will not be introduced.
+
+For example, `//src/lib/lbazel/lbazel.c` depends on
+`src/lib/moonlark/libmoonlark.c`, so the latter needs to be run
+through makeheaders so that `lbazel.h` will contain the libmoonlark
+API.
+
 ## lua
 
 Neither libstarlark nor libmoonlark depend on the Bazel environment.
