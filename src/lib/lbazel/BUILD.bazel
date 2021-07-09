@@ -29,8 +29,8 @@ cc_library(
         "-pedantic-errors",
         "-g", "-O0",
 
-        "-I$(GENDIR)/src/lbazel",
-        "-I$(GENDIR)/external/moonlark/src/lbazel",
+        "-I$(GENDIR)/src/lib/lbazel",
+        "-I$(GENDIR)/external/moonlark/src/lib/lbazel",
 
         "-Ivendored/uthash",
         "-Iexternal/moonlark/vendored/uthash",

@@ -47,7 +47,7 @@ cc_test(
         "-I$(GENDIR)/test/sys",
         "-I$(GENDIR)/external/moonlark/test/sys",
 
-        "-I$(GENDIR)/src/lbazel",
+        "-I$(GENDIR)/src/lib/lbazel",
 
         "-I$(GENDIR)/moonlark",
         "-I$(GENDIR)/external/moonlark/moonlark",
@@ -74,7 +74,7 @@ cc_test(
     ],
     deps = [
         # "//moonlark:config",
-        # "//src/lbazel",
+        # "//src/lib/lbazel",
         "//src/lib/moonlark",
         "//vendored/logc",
         "//vendored/unity",
@@ -138,7 +138,7 @@ genrule(
     srcs = [
         "//moonlark:config.c",
         "//src/lib/starlark:debug.c",
-        "//src/lbazel:lbazel.c",
+        "//src/lib/lbazel:lbazel.c",
         "moonlark_roundtrip.c",
         "starlark_roundtrip.c",
         "test_starlark.c",
@@ -179,7 +179,7 @@ genrule(
         "SRCDIR1=`dirname $$SRC1`",
         "$(location //vendored/makeheaders) \\",
         "    $(location //moonlark:config.c) \\",
-        "    $(location //src/lbazel:lbazel.c) \\",
+        "    $(location //src/lib/lbazel:lbazel.c) \\",
         "    $(location //src/lib/starlark:debug.c) \\",
         "    $(location moonlark_roundtrip.c) \\",
         "    $(location starlark_roundtrip.c) \\",

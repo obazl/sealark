@@ -77,7 +77,7 @@ cc_binary(
         "-I", "external/moonlark/vendored/uthash",
     ],
     deps = [
-        "//src/lbazel",
+        "//src/lib/lbazel",
         "//src/lib/moonlark",
 
         "//vendored/logc",
@@ -122,7 +122,7 @@ cc_binary(
 #         "-I", "external/moonlark/vendored/uthash",
 #     ],
 #     deps = [
-#         "//src/lbazel",
+#         "//src/lib/lbazel",
 #         "//src/lib/moonlark:moonlark",
 #         "//vendored/logc",
 #         "//vendored/uthash",
@@ -134,7 +134,8 @@ cc_binary(
 genrule(
     name = "mkhdrs",
     srcs = [
-        "//src/lbazel:lbazel.c",
+        # "//bindings/lua:lmoonlark.c",
+        "//src/lib/lbazel:lbazel.c",
         "edit.c",
         "config.c",
     ],
@@ -146,7 +147,8 @@ genrule(
         "SRC1=$(location edit.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "$(location //vendored/makeheaders) \\",
-        "    $(location //src/lbazel:lbazel.c) \\",
+        # "    $(location //bindings/lua:lmoonlark.c) \\",
+        "    $(location //src/lib/lbazel:lbazel.c) \\",
         "    $(location edit.c) \\",
         "    $(location config.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
