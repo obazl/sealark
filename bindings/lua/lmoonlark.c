@@ -20,14 +20,13 @@
 #include "uthash.h"
 #include "utstring.h"
 
-#include "moonlark.h"           /* public api for libmoonlark */
 #include "lmoonlark.h"
 
 /* **************************************************************** */
 static int config_bazel (lua_State *L) {
     log_debug("config.bazel");
 
-    lbazel_config(L, "edit.lua", ".moonlark.d", NULL);
+    lbazel_config(L, "repl.lua", ".moonlark.d", NULL);
 
     /* log_debug("xxxxxxxxxxxxxxxx"); */
     /* int t = lua_getglobal(L, "package"); */

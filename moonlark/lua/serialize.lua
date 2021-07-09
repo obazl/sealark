@@ -1,6 +1,6 @@
 -- moonlark_serialize.lua
 
-print("hello from moonlark/lua/serialize.lua")
+-- print("hello from moonlark/lua/serialize.lua")
 
 line = 0
 col  = 0

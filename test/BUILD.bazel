@@ -58,10 +58,14 @@ cc_binary(
     }) + [
         "-pedantic-errors",
 
-        "-I", "src",
-        "-I", "$(GENDIR)/src/lib/starlark", # starlark.h
-        "-I", "$(GENDIR)/src/lib/moonlark", # libmoonlark.h
+        "-I", "$(GENDIR)/bindings/lua"
+        "-I", "$(GENDIR)/external/moonlark/bindings/lua"
+
+        "-I", "$(GENDIR)/src/lib/starlark",
+        "-I", "$(GENDIR)/external/moonlark/src/lib/starlark",
+
         "-I", "$(GENDIR)/test",
+        "-I", "$(GENDIR)/external/moonlark/test",
 
         "-I", "vendored/logc",
         "-I", "external/obazl/vendored/logc",
@@ -72,8 +76,7 @@ cc_binary(
         "-Ivendored/uthash",
     ],
     deps = [
-        # "//src/lib/starlark",
-        "//src/lib/moonlark",
+        "//bindings/lua"
         "//vendored/logc",
         "//vendored/lua-5.4.3/src:lua",
         "//vendored/uthash",
