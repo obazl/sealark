@@ -1,6 +1,7 @@
 test.BUILD.bazel
 *.log
 tmp/
+user.bazelrc
 
 # Prerequisites
 *.d
