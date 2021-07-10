@@ -49,11 +49,11 @@ int main(int argc, char *argv[]) // , char **envp)
     int opt;
     /* bazel_lua_cb is determined by data attrib of build rule; used
        to find bazel_luadir */
-    char *bazel_lua_cb = "edit.lua";
-    char *user_luadir = NULL;
-    char *lua_file = NULL;
+    char *lua_callback_file = "edit.lua";
     char *callback = "moonlark_handler"; /* callback defined in lua_file */
-    char *build_file;
+    char *user_luadir = ".moonlark.d";
+    char *lua_file = NULL;
+    char *build_file = NULL;
     /* utstring_new(build_file); */
 
     while ((opt = getopt(argc, argv, "f:l:u:hv")) != -1) {
@@ -101,7 +101,23 @@ int main(int argc, char *argv[]) // , char **envp)
     /* but what about our default lua files, like serialization.lua?
        why not preload them in the 'moonlark' table? */
 
-    lbazel_config(L, bazel_lua_cb, user_luadir, lua_file);
+    /* lbazel_config(L, bazel_lua_cb, user_luadir, lua_file); */
+    char *wd = getenv("BUILD_WORKING_DIRECTORY");
+    if (wd) {
+        /* launched by bazel run cmd */
+        char *bazel_script_dir = get_bazel_script_dir(lua_callback_file);
+        moonlark_augment_load_path(L, bazel_script_dir);
+        /* user script dir is relative to launch dir; set it after chdir */
+        chdir(wd);
+        if( access( user_luadir, F_OK ) != 0 ) {
+            log_warn("WARNING: user_luadir does not exist: %s", user_luadir);
+        }
+        moonlark_augment_load_path(L, user_luadir);
+        moonlark_config_moonlark_table(L);
+        moonlark_lua_load_file(L, lua_file);
+    } else {
+        log_error("BUILD_WORKING_DIRECTORY not found. This program is designed to be run from the root directory of a Bazel repo.");
+    }
 
     /* now parse the file using libstarlark */
     struct parse_state_s *parse_state = starlark_parse_file(build_file);

@@ -1,6 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 
-exports_files(["lbazel.c", "lmoonlark.c", "libmoonlark.c",])
+exports_files(["lmoonlark.c", "libmoonlark.c",])
 
 ##########
 cc_binary(
@@ -11,8 +11,6 @@ cc_binary(
     srcs  = [
         "lmoonlark.c",
         "lmoonlark.h",
-        "lbazel.c",
-        "lbazel.h",
     ],
     # data = [
     # ],
@@ -45,7 +43,6 @@ cc_binary(
     deps = [
         # "//src/lib/lbazel",
         "//src/lib/starlark",
-        # "//src/lib/moonlark",
         "//vendored/lua-5.4.3/src:lua",
         "//vendored/logc",
         "//vendored/uthash",
@@ -60,8 +57,6 @@ cc_library(
     srcs  = [
         "libmoonlark.c",
         "libmoonlark.h",
-        "lbazel.c",
-        "lbazel.h",
         "//src/lib/starlark:debug.c",
         "//vendored/logc:log.h",
     ],
@@ -101,7 +96,6 @@ cc_library(
     deps = [
         # "//src/lib/lbazel",
         "//src/lib/starlark",
-        # "//external/lua/lib:lua",
         "//vendored/lua-5.4.3/src:lua",
         "//vendored/logc",
         "//vendored/uthash",
@@ -116,14 +110,12 @@ genrule(
     srcs = [
         "lmoonlark.c",
         "libmoonlark.c",
-        "lbazel.c",
         "//src/lib/starlark:debug.c",
         "//src/lib/starlark:starlark.h",
     ],
     outs = [
         "lmoonlark.h",
         "libmoonlark.h",
-        "lbazel.h",
     ],
     cmd = "\n".join([
         "SRC1=$(location lmoonlark.c)",
@@ -131,7 +123,6 @@ genrule(
         "$(location //vendored/makeheaders) \\",
         "    $(location lmoonlark.c) \\",
         "    $(location libmoonlark.c) \\",
-        "    $(location lbazel.c) \\",
         "    $(location //src/lib/starlark:debug.c) \\",
         "    $(location //src/lib/starlark:starlark.h)",
         "cp $${SRCDIR1}/*.h $(@D)",
