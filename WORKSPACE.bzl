@@ -3,7 +3,6 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")  # buildifi
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")  # buildifier: disable=load
 
 all_content = """filegroup(name = "all", srcs = glob(["**"]), visibility = ["//visibility:public"])"""
-lua_src = """filegroup(name = "src", srcs = glob(["src/**"]), visibility = ["//visibility:public"])"""
 
 def cc_fetch_repos():
 
@@ -61,19 +60,6 @@ filegroup(name = "hdrs", srcs = ["ini.h"], visibility = ["//visibility:public"])
         sha256 = "080931d214943ea021fa9360a4694e824674e5c0f2e880153e8cb41982453aa6",
         build_file_content = all_content,
         workspace_file_content = "workspace( name = \"opam-re2c\" )"
-    )
-
-    maybe(
-        http_archive,
-        name = "lua",
-        build_file_content = "exports_files(glob([\"**\"]))",
-        # build_file_content = lua_src,
-        # build_file = "@//external/lua:BUILD.bazel",
-        urls = [
-            "https://www.lua.org/ftp/lua-5.4.3.tar.gz",
-        ],
-        strip_prefix = "lua-5.4.3",
-        sha256 = "f8612276169e3bfcbcfb8f226195bfc6e466fe13042f1076cbde92b7ec96bbfb"
     )
 
     maybe(
