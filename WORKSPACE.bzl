@@ -87,6 +87,21 @@ filegroup(name = "hdrs", srcs = ["ini.h"], visibility = ["//visibility:public"])
         workspace_file_content = "workspace( name = \"unity\" )"
     )
 
+    ## for s7
+    maybe(
+        http_archive,
+        name = "libffi",
+        url = "https://github.com/libffi/libffi/archive/refs/tags/v3.4.2.zip",
+        strip_prefix = "libffi-3.4.2",
+        build_file_content = all_content,
+        # sha256 = "72fba7922703ddfa7a028d513ac15a85c8d54c8d67f55fa5a4802885dc652056",
+        # build_file = "@//bzl/external:libffi.BUILD",
+        ## the zip version requires use of autogen
+        #url = "https://github.com/libffi/libffi/archive/v3.3.zip",
+        # type = "zip",
+        # sha256 = "60b64c656520f986ec7bd2a6dc61e800848c97872f8f5132c5f753d9c205c358",
+)
+
 ####################
 def fetch_stardoc():
 

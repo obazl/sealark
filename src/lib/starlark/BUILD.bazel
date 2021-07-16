@@ -8,6 +8,8 @@ cc_library(
     alwayslink = True,
     linkstatic = 1,
     srcs  = [
+        "debug.c",  # select
+        "debug.h",  # select
         # "constants.c",
         # "constants.h",
         "nodes.c",
@@ -241,7 +243,7 @@ genrule(
         "nodes.c",
         "syntaxis.h",
         "serialize.c",
-        # "debug.c",
+        "debug.c",
         # "test_lex.c",
         # "test_parse.c",
         # "//vendored/uthash",
@@ -260,7 +262,7 @@ genrule(
         "    $(location parse.c) \\",
         "    $(location serialize.c) \\",
         "    $(location syntaxis.h) \\",
-        # "    $(location debug.c) \\",
+        "    $(location debug.c) \\",
         "    > $@",
     ]),
     tools = ["//vendored/makeheaders"],

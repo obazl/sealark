@@ -40,8 +40,8 @@ char *get_bazel_script_dir(char *scriptfile)
 
     char *token;
     while ((read = getline(&line, &len, fp)) != -1) {
-        /* printf("Retrieved line of length %zu:\n", read); */
-        /* printf("%s", line); */
+        /* log_debug("Retrieved line of length %zu:", read); */
+        /* log_debug("\n%s", line); */
         bool hit = false;
         /* two tokens per line */
         while ((token = strsep(&line, " ")) != NULL) {
