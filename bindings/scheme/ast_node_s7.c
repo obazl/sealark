@@ -623,7 +623,7 @@ char *g_ast_node_display(s7_scheme *s7, void *value)
     log_debug("g_ast_node_display");
 #endif
 
-    struct node_s *cs = (struct node_s *)value;
+    struct node_s *nd = (struct node_s *)value;
 
     // check display_buf size, expand if needed
 
@@ -635,68 +635,79 @@ char *g_ast_node_display(s7_scheme *s7, void *value)
     snprintf(display_ptr, len+1, "%s", buf);
     display_ptr += len;
 
-    sprintf(buf, " type  = %d,\n", cs->type);
+    sprintf(buf, " tid  = %d,\n", nd->type);
     len = strlen(buf);
     snprintf(display_ptr, len+1, "%s", buf);
     display_ptr += len;
 
-    sprintf(buf, " line  = %d,\n", cs->line);
+    sprintf(buf, " tnm  = %s,\n", token_name[nd->type][0]);
     len = strlen(buf);
     snprintf(display_ptr, len+1, "%s", buf);
     display_ptr += len;
 
-    sprintf(buf, " col   = %d,\n", cs->col);
+    sprintf(buf, " line  = %d,\n", nd->line);
     len = strlen(buf);
     snprintf(display_ptr, len+1, "%s", buf);
     display_ptr += len;
 
-    sprintf(buf, " trailing_newline = %d,\n", cs->trailing_newline);
+    sprintf(buf, " col   = %d,\n", nd->col);
     len = strlen(buf);
     snprintf(display_ptr, len+1, "%s", buf);
     display_ptr += len;
 
-    sprintf(buf, " qtype = #x%#X,\n", cs->qtype);
+    sprintf(buf, " trailing_newline = %d,\n", nd->trailing_newline);
     len = strlen(buf);
     snprintf(display_ptr, len+1, "%s", buf);
     display_ptr += len;
 
-    sprintf(buf, " s     = %s,\n", cs->s);
-    len = strlen(buf);
-    snprintf(display_ptr, len+1, "%s", buf);
-    display_ptr += len;
-
-    sprintf(buf, " comments = ");
-    len = strlen(buf);
-    snprintf(display_ptr, len+1, "%s", buf);
-    display_ptr += len;
-    if (cs->comments == NULL) {
-        sprintf(buf, " NULL,\n");
+    if (nd->type == TK_STRING) {
+        sprintf(buf, " qtype = #x%#X,\n", nd->qtype);
         len = strlen(buf);
         snprintf(display_ptr, len+1, "%s", buf);
         display_ptr += len;
-    } else {
-        /* updates global display_buf */
-        g_ast_nodelist_display(s7, (UT_array*)cs->comments);
     }
 
-    sprintf(buf, " subnodes = ");
-    len = strlen(buf);
-    snprintf(display_ptr, len+1, "%s", buf);
-    display_ptr += len;
-    if (cs->subnodes == NULL) {
-        sprintf(buf, "NULL,\n");
+    if (nd->s) {
+        sprintf(buf, " s     = %s,\n", nd->s);
         len = strlen(buf);
         snprintf(display_ptr, len+1, "%s", buf);
         display_ptr += len;
-    } else {
-        /* updates global display_buf */
-        g_ast_nodelist_display(s7, (UT_array*)cs->subnodes);
     }
 
-    sprintf(buf, ">#node/");
-    len = strlen(buf);
-    snprintf(display_ptr, len+1, "%s", buf);
-    display_ptr += len;
+    if (nd->comments) {
+        sprintf(buf, " comments = ");
+        len = strlen(buf);
+        snprintf(display_ptr, len+1, "%s", buf);
+        display_ptr += len;
+
+        /* updates global display_buf */
+        g_ast_nodelist_display(s7, (UT_array*)nd->comments);
+
+        sprintf(buf, ",\n");
+        len = strlen(buf);
+        snprintf(display_ptr, len+1, "%s", buf);
+        display_ptr += len;
+    }
+
+    if (nd->subnodes) {
+        sprintf(buf, " subnodes =\n\t");
+        len = strlen(buf);
+        snprintf(display_ptr, len+1, "%s", buf);
+        display_ptr += len;
+
+        /* updates global display_buf */
+        g_ast_nodelist_display(s7, (UT_array*)nd->subnodes);
+
+        sprintf(buf, ",\n");
+        len = strlen(buf);
+        snprintf(display_ptr, len+1, "%s", buf);
+        display_ptr += len;
+    }
+
+    sprintf(display_ptr - 2, ">,\n");
+    /* len = strlen(buf); */
+    /* snprintf(display_ptr, len+1, "%s", buf); */
+    display_ptr++; // -= 1;
 
     return display_buf;
 }
@@ -721,7 +732,7 @@ char *g_ast_node_display_readably(s7_scheme *s7, void *value)
 
     sprintf(display_ptr++, "(");
 
-    sprintf(buf, "(type %d)\n", nd->type);
+    sprintf(buf, "(tid %d) ;; %s\n", nd->type, token_name[nd->type][0]);
     len = strlen(buf);
     snprintf(display_ptr, len+1, "%s", buf);
     display_ptr += len;
@@ -741,43 +752,55 @@ char *g_ast_node_display_readably(s7_scheme *s7, void *value)
     snprintf(display_ptr, len+1, "%s", buf);
     display_ptr += len;
 
-    sprintf(buf, " (qtype #x%02X)\n", nd->qtype);
-    len = strlen(buf);
-    snprintf(display_ptr, len+1, "%s", buf);
-    display_ptr += len;
-
-    sprintf(buf, " (s %s)\n", nd->s);
-    len = strlen(buf);
-    snprintf(display_ptr, len+1, "%s", buf);
-    display_ptr += len;
-
-    /* if (nd->comments == NULL) { */
-    /*     sprintf(display_ptr, " (comments NULL)\n"); FIX_PTR; */
-    /* } else { */
-    /*     char *tmp = g_ast_nodelist_display_readably(s7, */
-    /*                                        (UT_array*)nd->comments); */
-    /*     // resize workbuffer */
-    /*     sprintf(display_ptr, " (comments %s)\n", tmp); */
-    /*     free(tmp);              /\* since sprint copies *\/ */
-    /*     FIX_PTR; */
-    /* } */
-
-    if (nd->subnodes == NULL) {
-        sprintf(buf, " (subnodes NULL)\n");
+    if (nd->type == TK_STRING) {
+        sprintf(buf, " (qtype #x%02X)\n", nd->qtype);
         len = strlen(buf);
         snprintf(display_ptr, len+1, "%s", buf);
         display_ptr += len;
-    } else {
-        sprintf(buf, " (subnodes ");
-        len = strlen(buf);
-        snprintf(display_ptr, len+1, "%s", buf);
-        display_ptr += len;
-
-        char *tmp = g_ast_nodelist_display_readably(s7,
-                                           (UT_array*)nd->subnodes);
-        sprintf(display_ptr++, ")");
     }
-    sprintf(display_ptr - 1, ")");  /* backup to rem last newline */
+
+    if (nd->s) {
+        sprintf(buf, " (s %s)\n", nd->s);
+        len = strlen(buf);
+        snprintf(display_ptr, len+1, "%s", buf);
+        display_ptr += len;
+    }
+
+    if (nd->comments) {
+        sprintf(buf, " (comments ");
+        len = strlen(buf);
+        snprintf(display_ptr, len+1, "%s", buf);
+        display_ptr += len;
+
+        /* updates global display_buf */
+        g_ast_nodelist_display_readably(s7, (UT_array*)nd->comments);
+
+        /* sprintf(buf, ") ;; end comments\n\n"); */
+        sprintf(buf, ")\n");
+        len = strlen(buf);
+        snprintf(display_ptr, len+1, "%s", buf);
+        display_ptr += len;
+    }
+
+    if (nd->subnodes) {
+        sprintf(buf, " (subnodes\n\t");
+        len = strlen(buf);
+        snprintf(display_ptr, len+1, "%s", buf);
+        display_ptr += len;
+
+        /* updates global display_buf */
+        g_ast_nodelist_display_readably(s7, (UT_array*)nd->subnodes);
+
+        sprintf(buf, ")\n");
+        len = strlen(buf);
+        snprintf(display_ptr, len+1, "%s", buf);
+        display_ptr += len;
+    }
+
+    sprintf(display_ptr - 1, ")\n");  /* backup to rem last newline */
+    /* len = strlen(buf); */
+    /* snprintf(display_ptr, len+1, "%s", buf); */
+    display_ptr++;
 
     return display_buf; // workbuffer;
 }

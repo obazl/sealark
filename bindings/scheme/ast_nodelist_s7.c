@@ -610,11 +610,15 @@ char *g_ast_nodelist_display(s7_scheme *s7, void *value)
     while( (n=(struct node_s*)utarray_next(nl, n)) ) {
         g_ast_node_display(s7, n); /* updates global display_buf */
     }
+    /* sprintf(buf, "BAR\n"); */
+    /* len = strlen(buf); */
+    /* snprintf(display_ptr, len+1, "%s", buf); */
+    /* display_ptr += len; */
 
-    sprintf(buf, ">#nodelist/");
-    len = strlen(buf);
-    snprintf(display_ptr, len+1, "%s", buf);
-    display_ptr += len;
+    sprintf(display_ptr - 2, ">"); /* backup to rm , and newline */
+    /* len = strlen(buf); */
+    /* snprintf(display_ptr, len+1, "%s", buf); */
+    display_ptr -= 1;
 
     return display_buf;
 }
@@ -642,6 +646,8 @@ char *g_ast_nodelist_display_readably(s7_scheme *s7, void *value)
     }
 
     sprintf(display_ptr - 1, ")");  /* backup to rem last newline */
+    /* display_ptr += 2; */
+
     return display_buf;
 }
 
