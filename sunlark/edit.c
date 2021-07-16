@@ -137,6 +137,7 @@ int main(int argc, char *argv[]) // , char **envp)
     struct parse_state_s *parse_state = starlark_parse_file(build_file);
     log_debug("parsed file %s", parse_state->lexer->fname);
     /* dump_node(parse_state->root); */
+    /* starlark_node2string(parse_state->root, buffer); */
 
     log_debug("converting ast");
     s7_pointer ast = s7lark_ast2scm(s7, parse_state);

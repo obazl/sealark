@@ -1,3 +1,5 @@
+#include <ctype.h>
+
 #include "log.h"
 #include "nodes.h"
 
@@ -297,6 +299,32 @@ UT_array *split_iblock(struct node_s* iblock, int indent)
     }
     /* first block is iblock */
     return blocks;
+}
+
+/* **************************************************************** */
+EXPORT int token_kw_to_id(char *kw)
+{
+    char tag[128];
+    sprintf(tag, "TK_%s", kw);
+
+    int len = strlen(tag);
+    tag[3] = toupper(tag[3]);
+    /* to camel_case */
+    for (int j = 0; j < len; j++) {
+        if (tag[j-1] == '_')
+            tag[j] = toupper(tag[j]);
+    }
+    /* log_debug("lookup: %s", tag); */
+
+    for(int i = 1; i < 256; i++) {
+        /* log_debug("tag: %s, toknm: %s", tag, token_name[i][0]); */
+        if (token_name[i][0] == NULL) return -1;
+
+        if ( strcmp(tag, token_name[i][0]) == 0 ) {
+            /* log_debug("MATCH %d", i); */
+            return i;
+        }
+    }
 }
 
 /* **************************************************************** */

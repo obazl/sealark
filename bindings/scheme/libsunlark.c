@@ -2,6 +2,7 @@
   * convert C nodes to scheme
  */
 
+#include <ctype.h>
 #include <errno.h>
 /* #include <pthread.h> */
 #include <stdarg.h>
@@ -28,11 +29,76 @@ UT_string *user_s7_file;
 
 int x;
 
+static s7_pointer error_handler(s7_scheme *sc, s7_pointer args)
+{
+  fprintf(stdout, "error: %s\n", s7_string(s7_car(args)));
+  return(s7_f(sc));
+}
+
+void export_token_tables(s7_scheme *s7)
+{
+    log_debug("export_token_tables");
+
+    s7_pointer toks = s7_make_vector(s7, (s7_int)129);
+    int i, j, len;
+    s7_pointer result;
+    char tknm[128];
+    for (i = 0; i < 256; i++) {
+        if (token_name[i][0] != NULL) {
+            len = strlen(token_name[i][0]);
+            log_debug("tok: %s len %d", token_name[i][0], len);
+            snprintf(tknm, len+1, "%s", (token_name[i][0]));
+            log_debug("tknm: %s", tknm);
+            for (j = 0; j < len; j++) {
+                tknm[j] = tolower(tknm[j]);
+            }
+            log_debug("tknm: %d %s", i, tknm);
+
+            result = s7_vector_set(s7, toks, (s7_int)i,
+                                   s7_make_keyword(s7, tknm + 3));
+            char *msg = s7_object_to_c_string(s7, result);
+            log_debug("vecset result: %s", msg);
+            free(msg);
+        }
+    }
+    s7_define_variable(s7, "tokens", toks);
+}
+
 EXPORT s7_scheme *sunlark_init(void)
 {
     s7_scheme *s7 = s7_init();
     s7_int an_t = configure_s7_ast_node_type(s7);
     s7_int anl_t = configure_s7_ast_nodelist_type(s7);
+
+    s7_define_function(s7, "error-handler",
+                       error_handler, 1, 0, false,
+                       "our error handler");
+
+    s7_pointer old_port, result;
+    int gc_loc = -1;
+    const char *errmsg = NULL;
+
+    /* trap error messages */
+    old_port = s7_set_current_error_port(s7, s7_open_output_string(s7));
+    if (old_port != s7_nil(s7))
+        gc_loc = s7_gc_protect(s7, old_port);
+
+    export_token_tables(s7);
+
+    /* look for error messages */
+    errmsg = s7_get_output_string(s7, s7_current_error_port(s7));
+
+    /* if we got something, wrap it in "[]" */
+    if ((errmsg) && (*errmsg)) {
+        log_error("[%s\n]", errmsg);
+        s7_quit(s7);
+        exit(EXIT_FAILURE);
+    }
+    s7_close_output_port(s7, s7_current_error_port(s7));
+    s7_set_current_error_port(s7, old_port);
+    if (gc_loc != -1)
+        s7_gc_unprotect_at(s7, gc_loc);
+
     return s7;
 }
 

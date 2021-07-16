@@ -4,6 +4,8 @@
 #include <math.h>
 
 #include "log.h"
+#include "utarray.h"
+
 #include "s7.h"
 
 #include "ast_node_s7.h"
@@ -36,14 +38,13 @@ static void _register_get_and_set(s7_scheme *s7);
 #if INTERFACE
 #define SZDISPLAY_BUF (4096 * 4)
 #endif
-char *display_buf; // [SZDISPLAY_BUF];
+char *display_buf;
 char *display_ptr;
-
-#define INC_PTR (workptr = workbuf + strlen(workbuf))
 
 char *g_ast_node_display(s7_scheme *s7, void *value);
 char *g_ast_node_display_readably(s7_scheme *s7, void *value);
 static s7_pointer g_ast_node_to_string(s7_scheme *s7, s7_pointer args);
+static s7_pointer g_ast_node_to_starlark(s7_scheme *s7, s7_pointer args);
 
 /* section: c-object construction */
 static s7_pointer g_ast_node_copy(s7_scheme *s7, s7_pointer args);
@@ -315,6 +316,23 @@ static s7_pointer _ast_node_lookup_kw(s7_scheme *s7,
                                        1, kw, "one of :c, :str, :i, etc."));
 }
 
+s7_pointer ast_node_type_kw_pred(s7_scheme *s7, char *kw, s7_pointer args)
+{
+    log_debug("ast_node_type_kw_pred: %s", kw);
+    kw[strlen(kw) - 1] = '\0';
+
+    int tokid = token_kw_to_id(kw);
+    if (tokid < 0) {
+        log_error("token kw %s not found", kw);
+        //FIXME: its and error, not false
+        return s7_f(s7);
+    }
+
+    s7_pointer obj = s7_car(args);
+    struct node_s *n = s7_c_object_value(obj);
+    /* log_debug("n tid: %d, tokid %d", n->type, tokid); */
+    return s7_make_boolean(s7, n->type == tokid);
+}
 /* **************** */
 /** g_ast_node_ref_specialized
 
@@ -404,14 +422,21 @@ static s7_pointer g_ast_node_object_applicator(s7_scheme *s7, s7_pointer args)
 
     /* Currently s7 does not make a distinction between keywords and symbols; (keyword? :a) and (symbol? :a) both report true, and s7_is_ */
     if (s7_is_keyword(op)) {
-        if (op == s7_make_keyword(s7, "subnodes_ct")) {
-            log_debug("running :subnodes_ct");
-            s7_pointer obj = s7_car(args);
-            struct node_s *cs  = (struct node_s *)s7_c_object_value(obj);
-            int ct = utarray_len(cs->subnodes);
-            return s7_make_integer(s7, ct);
+        char *kw = (char*)s7_symbol_name(s7_keyword_to_symbol(s7, op));
+        log_debug("KW: %s", kw);
+        if (strrchr(kw, '?')) {
+            /* log_debug("KW PREDICATE"); */
+            return ast_node_type_kw_pred(s7, kw, args);
         } else {
-            return g_ast_node_ref_specialized(s7, args);
+            if (op == s7_make_keyword(s7, "subnodes_ct")) {
+                log_debug("running :subnodes_ct");
+                s7_pointer obj = s7_car(args);
+                struct node_s *cs  = (struct node_s *)s7_c_object_value(obj);
+                int ct = utarray_len(cs->subnodes);
+                return s7_make_integer(s7, ct);
+            } else {
+                return g_ast_node_ref_specialized(s7, args);
+            }
         }
     } else {
         if (s7_is_symbol(op)) { /* method access ((ast_node 'foo) b) etc */
@@ -833,6 +858,26 @@ static s7_pointer g_ast_node_to_string(s7_scheme *s7, s7_pointer args)
     free(descr); //BUG? FIXME free substruct strings
     return(obj);
 }
+
+#define G_AST_NODE_TO_STARLARK_HELP "(ast-node->starlark ast_node)"
+
+static s7_pointer g_ast_node_to_starlark(s7_scheme *s7, s7_pointer args)
+{
+#ifdef DEBUG_TRACE
+    log_debug("g_ast_node_to_starlark");
+#endif
+
+    s7_pointer node;
+    /* char buf[8096]; */
+    UT_string *buf;
+    utstring_new(buf);
+
+    node = s7_car(args);
+    struct node_s *ast_node = s7_c_object_value(node);
+    starlark_node2string(ast_node, buf);
+    return s7_make_string(s7, utstring_body(buf));
+}
+
 /* /section: serialization */
 
 /* **************************************************************** */
@@ -1003,7 +1048,7 @@ static s7_pointer g_ast_node_init_from_s7(s7_scheme *s7, struct node_s *cs, s7_p
 /** g_new_ast_node
  */
 /* docstring passed to the s7_define_.. used to register the fn in Scheme */
-#define g_new_ast_node_help "(make-ast-node) returns a new ast_node with randome data"
+#define G_NEW_AST_NODE_HELP "(make-ast-node) returns a new ast_node with randome data"
 
 #define MAKE_AST_NODE_FORMAL_PARAMS "(type 0) (line 0) (col 0) (trailing_newline #f) (qtype 0) (s NULL) (comments NULL) (subnodes NULL)"
 
@@ -1121,9 +1166,10 @@ static void _register_ast_node_fns(s7_scheme *s7)
     log_debug("_register_ast_node_fns");
 #endif
     /* s7_define_safe_function(s7, "ast-node", g_to_ast_node, 0, 0, true, g_ast_node_help); */
-    s7_define_safe_function_star(s7, "make-ast-node", g_new_ast_node,
+    s7_define_safe_function_star(s7, "make-ast-node",
+                                 g_new_ast_node,
                                  MAKE_AST_NODE_FORMAL_PARAMS,
-                                 g_new_ast_node_help);
+                                 G_NEW_AST_NODE_HELP);
 
     s7_define_typed_function(s7, "ast-node?", g_is_ast_node, 1, 0, false, g_is_ast_node_help, g_is_ast_node_sig);
 
@@ -1131,8 +1177,16 @@ static void _register_ast_node_fns(s7_scheme *s7)
     s7_define_typed_function(s7, "ast-node-ref", g_ast_node_ref_specialized, 2, 0, false, G_AST_NODE_REF_SPECIALIZED_HELP, G_AST_NODE_REF_SPECIALIZED_SIG);
     s7_define_typed_function(s7, "ast-node-set!", g_ast_node_set_specialized, 3, 0, false, G_AST_NODE_SET_SPECIALIZED_HELP, G_AST_NODE_SET_SPECIALIZED_SIG);
 
+    s7_define_safe_function(s7, "ast-node->starlark",
+                            g_ast_node_to_starlark,
+                            1, 0, false,
+                            G_AST_NODE_TO_STARLARK_HELP);
+
     // ast_node-let => s7_c_object_let, a let for the instance not the type
-    /* s7_define_safe_function(s7, "ast-node-let", g_ast_node_let, 1, 0, false, g_ast_node_let_help); */
+    /* s7_define_safe_function(s7, "ast-node-let", */
+    /*                         g_ast_node_let, */
+    /*                         1, 0, false, */
+    /*                         g_ast_node_let_help); */
 
     /* s7_define_safe_function(s7, "subast_node", g_subast_node, 1, 0, true, g_subast_node_help); */
     /* s7_define_safe_function(s7, "ast-node-append", g_ast_node_append, 0, 0, true, g_ast_node_append_help); */
