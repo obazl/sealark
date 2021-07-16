@@ -184,14 +184,11 @@ struct node_s {
     /* enum node_type_e type; */
     int type;
     int line, col;
-    bool trailing_newline;
+    bool trailing_newline; // FIXME: do we need to retain this?
     enum quote_type_e qtype;
-    /* char q;                     /\* single or double quote *\/ */
-    /* union { */
-        char *s;
-        UT_array *subnodes;
-    /* }; */
+    char *s;
     UT_array *comments;         /* list of struct node_s type comment */
+    UT_array *subnodes;
 };
 #endif
 
@@ -302,12 +299,68 @@ UT_array *split_iblock(struct node_s* iblock, int indent)
     return blocks;
 }
 
-void nodelist_copy(UT_array *_dst, UT_array *_src)
+/* **************************************************************** */
+//FIXME: move nodelist API to nodelist.c?
+EXPORT UT_array *nodelist_new()
 {
-    // log_debug("node_copy: %p <- %p", _dst, _src);
+    log_debug("nodelist_new");
+    UT_array *nl;
+    utarray_new(nl, &node_icd);
+    return nl;
 }
 
-void node_copy(void *_dst, const void *_src)
+EXPORT void nodelist_free(UT_array *nl)
+{
+    log_debug("nodelist_free");
+    utarray_free(nl);
+}
+
+EXPORT int nodelist_len(UT_array *nl)
+{
+    log_debug("nodelist_len: %p", nl);
+    return utarray_len(nl);
+}
+
+EXPORT int nodelist_copy(UT_array *_dst, UT_array *_src)
+{
+    log_debug("node_copy: %p <- %p", _dst, _src);
+    if (utarray_len(_dst) > 0) {
+        log_error("dest nodelist of copy is non-empty");
+        return -1;
+    }
+    utarray_concat(_dst, _src);
+    return 0;
+}
+
+EXPORT int nodelist_copy_destructively(UT_array *_dst, UT_array *_src)
+{
+    log_debug("node_copy_destructively: %p <- %p", _dst, _src);
+    utarray_clear(_dst);
+    utarray_concat(_dst, _src);
+    return 0;
+}
+
+/* **************************************************************** */
+EXPORT struct node_s *ast_node_new()
+{
+    struct node_s *n = (struct node_s *)calloc(1, sizeof(struct node_s));
+    return n;
+}
+
+EXPORT void ast_node_free(void *_elt) {
+    /* log_debug("NODE_DTOR: %s (%d)", */
+    /*           token_name[((struct node_s*)_elt)->type][0], */
+    /*           ((struct node_s*)_elt)->type); */
+    struct node_s *elt = (struct node_s*)_elt;
+    if (elt->s) {
+        /* log_debug("\tfreeing string %s", elt->s); */
+        free(elt->s);
+    }
+    if (elt->comments) utarray_free(elt->comments);
+    if (elt->subnodes) utarray_free(elt->subnodes);
+}
+
+EXPORT void ast_node_copy(void *_dst, const void *_src)
 {
     /* log_debug("node_copy"); // : %p <- %p", _dst, _src); */
     struct node_s *dst = (struct node_s*)_dst;
@@ -333,21 +386,8 @@ void node_copy(void *_dst, const void *_src)
     /*               utarray_len(dst->subnodes)); */
 }
 
-EXPORT void node_dtor(void *_elt) {
-    /* log_debug("NODE_DTOR: %s (%d)", */
-    /*           token_name[((struct node_s*)_elt)->type][0], */
-    /*           ((struct node_s*)_elt)->type); */
-    struct node_s *elt = (struct node_s*)_elt;
-    if (elt->s) {
-        /* log_debug("\tfreeing string %s", elt->s); */
-        free(elt->s);
-    }
-    if (elt->comments) utarray_free(elt->comments);
-    if (elt->subnodes) utarray_free(elt->subnodes);
-}
-
 /* nodelist: UT_array of node_s */
-UT_icd node_icd = {sizeof(struct node_s), NULL, node_copy, node_dtor};
+UT_icd node_icd = {sizeof(struct node_s), NULL, ast_node_copy, ast_node_free};
 
 #if INTERFACE
 struct comma_s {
