@@ -209,7 +209,7 @@ static void comment_push(int type, /* 1: comment, 0: null */
                     /* (*mtok)->line++; */
                     lexer->extra_lines++;
                     /* struct node_s *n = calloc(sizeof(struct node_s), 1); */
-                    /* n->type = TK_BLANK; */
+                    /* n->tid = TK_BLANK; */
                     /* n->line = line; // - newlines; */
                     /* /\* log_debug("xxxx: %d:%d", n->line, n->col); *\/ */
                     /* utarray_push_back((*mtok)->comments, n); */
@@ -231,7 +231,7 @@ static void comment_push(int type, /* 1: comment, 0: null */
                     line++;
                     lexer->extra_lines++;
                     struct node_s *n = calloc(sizeof(struct node_s), 1);
-                    n->type = TK_BLANK;
+                    n->tid = TK_BLANK;
                     n->line = line; // - newlines;
                     /* log_debug("xxxx: %d:%d", n->line, n->col); */
                     utarray_push_back((*mtok)->comments, n);
@@ -314,7 +314,7 @@ static void comment_push(int type, /* 1: comment, 0: null */
 
         /* starting at #ecmt, find first preceding newline */
         struct node_s *n = calloc(sizeof(struct node_s), 1);
-        n->type = TK_COMMENT;
+        n->tid = TK_COMMENT;
         /* n->line = newlines + line; */
         n->line = line; // - newlines;
         n->col  = scmt - sol; // lexer->pos.col;

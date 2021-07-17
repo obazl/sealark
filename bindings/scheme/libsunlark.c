@@ -122,7 +122,7 @@ EXPORT void s7lark_node2scm(s7_scheme *s7, struct node_s *node, int level)
     log_debug("s7lark_node2scm %d", level);
 
     log_debug("pushing type %d %s",
-              node->type, token_name[node->type][0]);
+              node->tid, token_name[node->tid][0]);
     log_debug("/s7lark_node2scm %d", level);
 }
 

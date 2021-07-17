@@ -156,7 +156,7 @@ static bool _ast_nodelists_are_value_equal(struct node_s *val1,
 #endif
     if (val1 == val2) return true;
 
-    if (val1->type != val2->type) return false;
+    if (val1->tid != val2->tid) return false;
     if (val1->line != val2->line) return false;
     if (val1->col  != val2->col) return false;
     if (val1->trailing_newline  != val2->trailing_newline) return false;
@@ -429,7 +429,7 @@ static s7_pointer _update_ast_nodelist(s7_scheme *s7,
         if (!s7_is_integer(val))
             return(s7_wrong_type_arg_error(s7, "ast_nodelist-set!",
                                            3, val, "an integer"));
-        ast_nodelist->type = s7_integer(val);
+        ast_nodelist->tid = s7_integer(val);
         return val;
     }
 

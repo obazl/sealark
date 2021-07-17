@@ -56,7 +56,7 @@ LOCAL void _node2string(struct node_s *node, UT_string *buffer)
         col = 0;
     }
 
-    /* if (node->type == TK_BLANK) */
+    /* if (node->tid == TK_BLANK) */
     /*     utstring_printf(buffer, "\n"); */
 
     for (i=col; i < node->col; i++) {
@@ -66,9 +66,9 @@ LOCAL void _node2string(struct node_s *node, UT_string *buffer)
 
     if (node->s) {
         /* log_debug("STRINGED TOK: %d %s: :]%s[:", */
-        /*           node->type, token_name[node->type][0], */
+        /*           node->tid, token_name[node->tid][0], */
         /*           node->s); */
-        if (node->type == TK_STRING) {
+        if (node->tid == TK_STRING) {
             //FIXME: call ast_node_printable_string?
             char * br =
                 ((node->qtype & BINARY_STR) &&
@@ -114,13 +114,13 @@ LOCAL void _node2string(struct node_s *node, UT_string *buffer)
         }
     } else {
         /* log_debug("TOK[%d] %s: :]%s[: (len: %d)", */
-        /*           node->type, */
-        /*           token_name[node->type][0], */
-        /*           token_name[node->type][1], */
-        /*           strlen(token_name[node->type][1])); */
-        if (strlen(token_name[node->type][1]) > 0) {
-            utstring_printf(buffer, "%s", token_name[node->type][1]);
-            col += strlen(token_name[node->type][1]);
+        /*           node->tid, */
+        /*           token_name[node->tid][0], */
+        /*           token_name[node->tid][1], */
+        /*           strlen(token_name[node->tid][1])); */
+        if (strlen(token_name[node->tid][1]) > 0) {
+            utstring_printf(buffer, "%s", token_name[node->tid][1]);
+            col += strlen(token_name[node->tid][1]);
         }
     }
 

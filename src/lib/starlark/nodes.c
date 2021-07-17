@@ -184,7 +184,7 @@ enum quote_type_e
 
 struct node_s {
     /* enum node_type_e type; */
-    int type;
+    int tid;
     int line, col;
     bool trailing_newline; // FIXME: do we need to retain this?
     enum quote_type_e qtype;
@@ -207,7 +207,7 @@ UT_array *split_small_stmt_list(struct node_s *iblock,
 
     struct node_s *outblock = calloc(sizeof(struct node_s), 1);
     utarray_new(outblock->subnodes, &node_icd);
-    outblock->type = list->type;
+    outblock->tid = list->tid;
     /* outblock->line = list->line; */
     /* outblock->col  = list->col; */
 
@@ -220,7 +220,7 @@ UT_array *split_small_stmt_list(struct node_s *iblock,
         // log_debug("small stmt list item %d", i);
         node = utarray_eltptr(list->subnodes, i);
         /* log_debug("small stmt list node t: %s[%d] indent %d", */
-        /*           token_name[node->type][0], node->type, node->col); */
+        /*           token_name[node->tid][0], node->tid, node->col); */
 
         if (i == 0) {
             if (node->col > indent) {
@@ -285,12 +285,12 @@ UT_array *split_iblock(struct node_s* iblock, int indent)
     for (int i = 0; i < len; i++) {
         node = utarray_eltptr(iblock->subnodes, i);
         /* log_debug("iblock node t: %s[%d] indent %d", */
-        /*           token_name[node->type][0], node->type, node->col); */
+        /*           token_name[node->tid][0], node->tid, node->col); */
 
-        if (node->type == TK_SmallStmt_List) {
+        if (node->tid == TK_SmallStmt_List) {
             blocks = split_small_stmt_list(iblock, node, indent);
         } else {
-            if (node->type == TK_Stmt_List) {
+            if (node->tid == TK_Stmt_List) {
                 blocks = split_stmt_list(node, indent);
             } else {
             }
@@ -377,8 +377,8 @@ EXPORT struct node_s *ast_node_new()
 
 EXPORT void ast_node_free(void *_elt) {
     /* log_debug("NODE_DTOR: %s (%d)", */
-    /*           token_name[((struct node_s*)_elt)->type][0], */
-    /*           ((struct node_s*)_elt)->type); */
+    /*           token_name[((struct node_s*)_elt)->tid][0], */
+    /*           ((struct node_s*)_elt)->tid); */
     struct node_s *elt = (struct node_s*)_elt;
     if (elt->s) {
         /* log_debug("\tfreeing string %s", elt->s); */
@@ -435,7 +435,7 @@ char *_print_string_node(struct node_s *node)
 EXPORT bool ast_node_is_printable(struct node_s *ast_node)
 {
     for (int i = 0; printable_tokens[i] != 0; i++) {
-        if (ast_node->type == printable_tokens[i])
+        if (ast_node->tid == printable_tokens[i])
             return true;
     }
     return false;
@@ -445,7 +445,7 @@ EXPORT char  *ast_node_printable_string(struct node_s *node)
 {
     if ( !ast_node_is_printable(node) ) return NULL;
 
-    switch(node->type) {
+    switch(node->tid) {
     case TK_STRING:
         return _print_string_node(node);
         break;
@@ -453,7 +453,7 @@ EXPORT char  *ast_node_printable_string(struct node_s *node)
         return node->s;
         break;
     default:
-        return (char*)token_name[node->type][1];
+        return (char*)token_name[node->tid][1];
     }
 }
 
@@ -462,13 +462,13 @@ EXPORT void ast_node_copy(void *_dst, const void *_src)
     /* log_debug("node_copy"); // : %p <- %p", _dst, _src); */
     struct node_s *dst = (struct node_s*)_dst;
     struct node_s *src = (struct node_s*)_src;
-    dst->type = src->type;
+    dst->tid = src->tid;
 
     /* log_debug("node posn: %d:%d", src->line, src->col); */
-    /* log_debug("\tnode type: %d", src->type); */
+    /* log_debug("\tnode type: %d", src->tid); */
     /* log_debug("\t%s[%d] %c (%d:%d) %s", */
-    /*           token_name[src->type][0], */
-    /*           src->type, */
+    /*           token_name[src->tid][0], */
+    /*           src->tid, */
     /*           (src->qtype == SQUOTE)? '\'' */
     /*           : (src->qtype == DQUOTE)? '"' */
     /*           : ' ', */

@@ -91,7 +91,7 @@ EXPORT UT_array *starlark_lex_string(const char *buffer)
         /*           ); */
         /* log_debug("\tlexer posn: (%d:%d)", lexer->pos.line, lexer->pos.col); */
         /* log_debug("\tstarttok: :]%s[:", btok->s); */
-        btok->type = tok;
+        btok->tid = tok;
         /* dump_node(btok); */
         utarray_push_back(token_list, btok);
 
@@ -148,16 +148,16 @@ EXPORT UT_array *starlark_lex_file(char *fname)
     /* log_info("starting lex"); */
 
     while ( (tok = get_next_token(lexer, &btok)) != 0 ) {
-        btok->type = tok;
+        btok->tid = tok;
         /* log_debug("LEXED TOKEN: %s (%d/%d) @ (%d:%d) %p", */
         /*           token_name[tok][0], */
-        /*           tok, btok->type, */
+        /*           tok, btok->tid, */
         /*           btok->line, btok->col, */
         /*           btok */
         /*           ); */
         /* log_debug("\tlexer posn: (%d:%d)", lexer->pos.line, lexer->pos.col); */
         /* log_debug("\tstarttok: :]%s[:", btok->s); */
-        btok->type = tok;
+        btok->tid = tok;
         /* dump_node(btok); */
 
         utarray_push_back(token_list, btok);
@@ -193,18 +193,18 @@ EXPORT struct node_s *starlark_parse_string(char *buffer)
     /* log_info("starting parse"); */
 
     while ( (tok = get_next_token(lexer, &btok)) != 0 ) {
-        // log_debug("btok: %d, tok: %d", tok, btok->type);
-        btok->type = tok;
+        // log_debug("btok: %d, tok: %d", tok, btok->tid);
+        btok->tid = tok;
         /* btok->line = lexer->pos.line; */
         /* btok->col  = lexer->pos.col; */
-        /* log_debug("token code: %d, %d", tok, btok->type); */
+        /* log_debug("token code: %d, %d", tok, btok->tid); */
         /* log_debug("token name: %s", token_name[tok]); */
         /* if (btok->s != NULL) { */
         /*     log_debug("token str: %p", btok->s); */
         /* } */
         /* log_debug("TOKEN: %s (%d/%d) @ (%d:%d) %p", */
         /*           token_name[tok][0], */
-        /*           tok, btok->type, */
+        /*           tok, btok->tid, */
         /*           btok->line, btok->col, */
         /*           btok */
         /*           ); */
@@ -222,7 +222,7 @@ EXPORT struct node_s *starlark_parse_string(char *buffer)
 
         /* log_debug("btok pos: line %d col %d", btok->pos.line, btok->pos.col); */
         /* dump_node(btok); */
-        // log_debug(">>>>>>>>>>>>>>>>call parser for tok %d/%d", tok, btok->type);
+        // log_debug(">>>>>>>>>>>>>>>>call parser for tok %d/%d", tok, btok->tid);
         // log_debug("root: %p", parse_state->root);
         Parse(pParser, tok, btok, parse_state);
         // log_debug(">>>>>>>>>>>>>>>>/call parser");
@@ -294,17 +294,17 @@ EXPORT struct parse_state_s *starlark_parse_file(char *fname)
     /* log_info("starting parse"); */
 
     while ( (tok = get_next_token(lexer, &btok)) != 0 ) {
-        btok->type = tok;
+        btok->tid = tok;
         /* btok->line = lexer->pos.line; */
         /* btok->col  = lexer->pos.col; */
-        /* log_debug("token code: %d, %d", tok, btok->type); */
+        /* log_debug("token code: %d, %d", tok, btok->tid); */
         /* log_debug("token name: %s", token_name[tok]); */
         /* if (btok->s != NULL) { */
         /*     log_debug("token str: %p", btok->s); */
         /* } */
         /* log_debug("TOKEN: %s[%d/%d] (%d:%d) %p", */
         /*           token_name[tok][0], */
-        /*           tok, btok->type, */
+        /*           tok, btok->tid, */
         /*           btok->line, btok->col, */
         /*           btok */
         /*           ); */
@@ -323,8 +323,8 @@ EXPORT struct parse_state_s *starlark_parse_file(char *fname)
         /* log_debug("btok pos: line %d col %d", btok->pos.line, btok->pos.col); */
         /* dump_node(btok); */
         /* log_debug(">>>>>>>>>>>>>>>>call parser for %s[%d/%d]@(%d:%d) %s%s%s", */
-        /*           token_name[btok->type][0], */
-        /*           tok, btok->type, */
+        /*           token_name[btok->tid][0], */
+        /*           tok, btok->tid, */
         /*           btok->line, btok->col, */
         /*           btok->s == NULL? "" : " :]", */
         /*           btok->s == NULL? "" : btok->s, */

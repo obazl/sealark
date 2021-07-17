@@ -80,29 +80,29 @@ EXPORT void moonlark_node2lua(lua_State *L, struct node_s *node, int level)
     lua_newtable(L);            /* one table per node  */
 
     /* log_debug("pushing type %d %s", */
-    /*           node->type, token_name[node->type][0]); */
+    /*           node->tid, token_name[node->tid][0]); */
     lua_pushstring(L, "type");  /* key */
-    lua_pushinteger(L, node->type);
+    lua_pushinteger(L, node->tid);
     lua_settable(L, -3);
 
     /* debugging only: */
     lua_pushstring(L, "t");  /* key */
-    if (token_name[node->type][0] != NULL) {
+    if (token_name[node->tid][0] != NULL) {
         /* log_debug("pushing typestring %s", */
-        /*           token_name[node->type][0]); */
-        lua_pushstring(L, token_name[node->type][0]);
+        /*           token_name[node->tid][0]); */
+        lua_pushstring(L, token_name[node->tid][0]);
     } else {
         lua_pushstring(L, "FOOBAR");
     }
     lua_settable(L, -3);
 
     if (node->s != NULL) {
-        /* log_debug("pushing string[%d] %s", node->type, node->s); */
+        /* log_debug("pushing string[%d] %s", node->tid, node->s); */
         lua_pushstring(L, "s");  /* key */
         lua_pushstring(L, node->s);
         lua_settable(L, -3);
     }
-    if (node->type == TK_STRING) {
+    if (node->tid == TK_STRING) {
         /* which kind of quote? */
         lua_pushstring(L, "q");
         if (node->qtype & SQUOTE)
@@ -177,14 +177,14 @@ EXPORT void moonlark_ast2lua(lua_State *L, struct parse_state_s *parse)
     lua_setfield(L, -2, "build_file");
 
     lua_pushstring(L, "type");  /* key */
-    lua_pushinteger(L, parse->root->type); // token_name[parse->root->type][0]);
+    lua_pushinteger(L, parse->root->tid); // token_name[parse->root->tid][0]);
     lua_settable(L, -3);
 
     lua_pushstring(L, "t");  /* key */
-    if (token_name[parse->root->type][0] != NULL) {
+    if (token_name[parse->root->tid][0] != NULL) {
         /* log_debug("pushing type string %s", */
-        /*           token_name[parse->root->type][0]); */
-        lua_pushstring(L, token_name[parse->root->type][0]);
+        /*           token_name[parse->root->tid][0]); */
+        lua_pushstring(L, token_name[parse->root->tid][0]);
     } else {
         /* lua_pushstring(L, "FOOBAR"); */
     }

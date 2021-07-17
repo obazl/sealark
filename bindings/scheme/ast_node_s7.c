@@ -161,7 +161,7 @@ static bool _ast_nodes_are_value_equal(struct node_s *val1,
 #endif
     if (val1 == val2) return true;
 
-    if (val1->type != val2->type) return false;
+    if (val1->tid != val2->tid) return false;
     if (val1->line != val2->line) return false;
     if (val1->col  != val2->col) return false;
     if (val1->trailing_newline  != val2->trailing_newline) return false;
@@ -295,7 +295,7 @@ static s7_pointer _ast_node_lookup_kw(s7_scheme *s7,
     }
 
     if (kw == s7_make_keyword(s7, "tid"))
-        return s7_make_integer(s7, ast_node->type);
+        return s7_make_integer(s7, ast_node->tid);
 
     if (kw == s7_make_keyword(s7, "line"))
         return s7_make_integer(s7, ast_node->line);
@@ -347,8 +347,8 @@ s7_pointer ast_node_type_kw_pred(s7_scheme *s7, char *kw, s7_pointer args)
 
     s7_pointer obj = s7_car(args);
     struct node_s *n = s7_c_object_value(obj);
-    /* log_debug("n tid: %d, tokid %d", n->type, tokid); */
-    return s7_make_boolean(s7, n->type == tokid);
+    /* log_debug("n tid: %d, tokid %d", n->tid, tokid); */
+    return s7_make_boolean(s7, n->tid == tokid);
 }
 /* **************** */
 /** g_ast_node_ref_specialized
@@ -513,7 +513,7 @@ static s7_pointer _update_ast_node(s7_scheme *s7,
         if (!s7_is_integer(val))
             return(s7_wrong_type_arg_error(s7, "ast-node-set!",
                                            3, val, "an integer"));
-        ast_node->type = s7_integer(val);
+        ast_node->tid = s7_integer(val);
         return val;
     }
 
@@ -685,12 +685,12 @@ char *g_ast_node_display(s7_scheme *s7, void *value)
     snprintf(display_ptr, len+1, "%s", buf);
     display_ptr += len;
 
-    sprintf(buf, " tid  = %d,\n", nd->type);
+    sprintf(buf, " tid  = %d,\n", nd->tid);
     len = strlen(buf);
     snprintf(display_ptr, len+1, "%s", buf);
     display_ptr += len;
 
-    sprintf(buf, " tnm  = %s,\n", token_name[nd->type][0]);
+    sprintf(buf, " tnm  = %s,\n", token_name[nd->tid][0]);
     len = strlen(buf);
     snprintf(display_ptr, len+1, "%s", buf);
     display_ptr += len;
@@ -710,7 +710,7 @@ char *g_ast_node_display(s7_scheme *s7, void *value)
     snprintf(display_ptr, len+1, "%s", buf);
     display_ptr += len;
 
-    if (nd->type == TK_STRING) {
+    if (nd->tid == TK_STRING) {
         sprintf(buf, " qtype = #x%#X,\n", nd->qtype);
         len = strlen(buf);
         snprintf(display_ptr, len+1, "%s", buf);
@@ -782,7 +782,7 @@ char *g_ast_node_display_readably(s7_scheme *s7, void *value)
 
     sprintf(display_ptr++, "(");
 
-    sprintf(buf, "(tid %d) ;; %s\n", nd->type, token_name[nd->type][0]);
+    sprintf(buf, "(tid %d) ;; %s\n", nd->tid, token_name[nd->tid][0]);
     len = strlen(buf);
     snprintf(display_ptr, len+1, "%s", buf);
     display_ptr += len;
@@ -802,7 +802,7 @@ char *g_ast_node_display_readably(s7_scheme *s7, void *value)
     snprintf(display_ptr, len+1, "%s", buf);
     display_ptr += len;
 
-    if (nd->type == TK_STRING) {
+    if (nd->tid == TK_STRING) {
         sprintf(buf, " (qtype #x%02X)\n", nd->qtype);
         len = strlen(buf);
         snprintf(display_ptr, len+1, "%s", buf);
@@ -1023,7 +1023,7 @@ static s7_pointer g_ast_node_init_from_s7(s7_scheme *s7, struct node_s *cs, s7_p
                 return(s7_wrong_type_arg_error(s7, "make-ast-node",
                                                1, arg, "an integer"));
             }
-            cs->type = s7_integer(arg);
+            cs->tid = s7_integer(arg);
             break;
         case FLD_LINE:
             if (!s7_is_integer(arg)) {
