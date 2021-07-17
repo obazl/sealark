@@ -30,7 +30,7 @@ EXPORT void starlark_node2string(struct node_s *node, UT_string *buffer)
     line = col = 0;
     _node2string(node, buffer);
     /* if (utstring_body(buffer)[utstring_len(buffer)-1] != '\n') { */
-    utstring_printf(buffer, "\n");
+    /* utstring_printf(buffer, "\n"); */
     /* } */
 }
 
@@ -69,6 +69,7 @@ LOCAL void _node2string(struct node_s *node, UT_string *buffer)
         /*           node->type, token_name[node->type][0], */
         /*           node->s); */
         if (node->type == TK_STRING) {
+            //FIXME: call ast_node_printable_string?
             char * br =
                 ((node->qtype & BINARY_STR) &&
                  (node->qtype & RAW_STR))? "br"

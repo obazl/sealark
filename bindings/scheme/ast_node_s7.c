@@ -38,7 +38,9 @@ static void _register_get_and_set(s7_scheme *s7);
 #if INTERFACE
 #define SZDISPLAY_BUF (4096 * 4)
 #endif
+//FIXME: use UT_string
 char *display_buf;
+int   display_bufsz;
 char *display_ptr;
 
 char *g_ast_node_display(s7_scheme *s7, void *value);
@@ -83,7 +85,7 @@ void debug_print_s7(s7_scheme *s7, char *label, s7_pointer obj);
 
 /* **************************************************************** */
 /* section: identity */
-#define g_is_ast_node_help "(ast_node? obj) returns #t if obj is a ast_node."
+#define g_is_ast_node_help "(ast-node? obj) returns #t if obj is an ast-node."
 #define g_is_ast_node_sig s7_make_signature(s7, 2, s7_make_symbol(s7, "boolean?"), s7_t(s7))
 static s7_pointer g_is_ast_node(s7_scheme *s7, s7_pointer args)
 {
@@ -242,7 +244,7 @@ static s7_pointer g_ast_nodes_are_equivalent(s7_scheme *s7, s7_pointer args)
     if (!s7_is_c_object(arg2))
         return(s7_f(s7));
 
-    if (s7_is_let(arg1))             /* (ast_node-let (ast_node)) */
+    if (s7_is_let(arg1))             /* (ast-node-let (ast_node)) */
         return(s7_make_boolean(s7, false));    /* checked == above */
 
     /* same type? type of arg1 known to be ast_node */
@@ -275,7 +277,7 @@ static s7_pointer g_ast_nodes_are_equivalent(s7_scheme *s7, s7_pointer args)
 /* section: getters and setters */
 /* get and set are special, since there are two ways to do each:
    * 1. generic get and set! (c-type methods)
-   * 2. specialized ast_node-get and ast_node-set! (Scheme procedures)
+   * 2. specialized ast-node-get and ast-node-set! (Scheme procedures)
  */
 
 /* **************** */
@@ -286,7 +288,13 @@ static s7_pointer _ast_node_lookup_kw(s7_scheme *s7,
 #ifdef DEBUG_TRACE
     log_debug("ast_node_lookup_kw");
 #endif
-    if (kw == s7_make_keyword(s7, "type"))
+
+    if (kw == s7_make_keyword(s7, "print")) {
+        char *s = ast_node_printable_string(ast_node);
+        return s7_make_string(s7, s);
+    }
+
+    if (kw == s7_make_keyword(s7, "tid"))
         return s7_make_integer(s7, ast_node->type);
 
     if (kw == s7_make_keyword(s7, "line"))
@@ -305,8 +313,15 @@ static s7_pointer _ast_node_lookup_kw(s7_scheme *s7,
         return s7_make_string(s7, ast_node->s);
 
     //FIXME: implement
-    /* if (kw == s7_make_keyword(s7, "subnodes")) */
-    /*     construct and return nodelist */
+    if (kw == s7_make_keyword(s7, "subnodes")) {
+        if (ast_node->subnodes) {
+            s7_pointer new_nodelist
+                = ast_nodelist_s7_new(s7, ast_node->subnodes);
+            return new_nodelist;
+        } else {
+            return s7_nil(s7);
+        }
+    }
 
     //FIXME: implement
     /* if (kw == s7_make_keyword(s7, "comments")) */
@@ -318,7 +333,9 @@ static s7_pointer _ast_node_lookup_kw(s7_scheme *s7,
 
 s7_pointer ast_node_type_kw_pred(s7_scheme *s7, char *kw, s7_pointer args)
 {
+#ifdef DEBUG_TRACE
     log_debug("ast_node_type_kw_pred: %s", kw);
+#endif
     kw[strlen(kw) - 1] = '\0';
 
     int tokid = token_kw_to_id(kw);
@@ -336,10 +353,10 @@ s7_pointer ast_node_type_kw_pred(s7_scheme *s7, char *kw, s7_pointer args)
 /* **************** */
 /** g_ast_node_ref_specialized
 
-    (ast_node-ref obj key)
+    (ast-node-ref obj key)
     takes two args, a ast_node object and a keyword to look up in the object.
  */
-#define G_AST_NODE_REF_SPECIALIZED_HELP "(ast_node-ref b i) returns the ast_node value at index i."
+#define G_AST_NODE_REF_SPECIALIZED_HELP "(ast-node-ref b i) returns the ast_node value at index i."
 #define G_AST_NODE_REF_SPECIALIZED_SIG s7_make_signature(s7, 3, s7_t(s7), s7_make_symbol(s7, "ast-node?"), s7_make_symbol(s7, "integer?"))
 
 static s7_pointer g_ast_node_ref_specialized(s7_scheme *s7, s7_pointer args)
@@ -392,10 +409,9 @@ static s7_pointer g_ast_node_ref_specialized(s7_scheme *s7, s7_pointer args)
     not to be confused with generic ref of SRFI 123, e.g. (ref vec i),
     which s7 does not support.(?)
 
-    by convention, same as ref_specialized (i.e ast_node-ref) but this
+    by convention, same as ref_specialized (i.e ast-node-ref) but this
     is not a requirement. could be used for anything, not just
-    reference. example: (o :child-count) == (ast_node-child-count o)
-    or (o :fullname) concats (o :fname) and (o :lname)
+    reference. example: (o :fullname) concats (o :fname) and (o :lname)
 
     iow, it's a generic generic function, whereas generic ref is just
     a generic ref function. "meta generic?"
@@ -407,7 +423,7 @@ static s7_pointer g_ast_node_object_applicator(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
     log_debug("g_ast_node_object_applicator");
-    debug_print_s7(s7, "APPLICATOR ARGS: ", s7_cdr(args));
+    /* debug_print_s7(s7, "APPLICATOR ARGS: ", s7_cdr(args)); */
 #endif
 
     /* no need to check arg1, it's the "self" ast_node obj */
@@ -420,13 +436,20 @@ static s7_pointer g_ast_node_object_applicator(s7_scheme *s7, s7_pointer args)
 
     s7_pointer op = s7_car(rest);
 
-    /* Currently s7 does not make a distinction between keywords and symbols; (keyword? :a) and (symbol? :a) both report true, and s7_is_ */
     if (s7_is_keyword(op)) {
         char *kw = (char*)s7_symbol_name(s7_keyword_to_symbol(s7, op));
-        log_debug("KW: %s", kw);
+        /* log_debug("KW: %s", kw); */
         if (strrchr(kw, '?')) {
             /* log_debug("KW PREDICATE"); */
-            return ast_node_type_kw_pred(s7, kw, args);
+            if (strncmp(kw, "printable?", 10) == 0) {
+                s7_pointer node = s7_car(args);
+                struct node_s *ast_node = s7_c_object_value(node);
+                if (ast_node_is_printable(ast_node))
+                    return s7_t(s7);
+                else return s7_f(s7);
+            } else {
+                return ast_node_type_kw_pred(s7, kw, args);
+            }
         } else {
             if (op == s7_make_keyword(s7, "subnodes_ct")) {
                 log_debug("running :subnodes_ct");
@@ -439,7 +462,9 @@ static s7_pointer g_ast_node_object_applicator(s7_scheme *s7, s7_pointer args)
             }
         }
     } else {
+        //FIXME: do we have any symbol ops?
         if (s7_is_symbol(op)) { /* method access ((ast_node 'foo) b) etc */
+            log_debug("symbol lookup");
             s7_pointer val;
             val = s7_symbol_local_value(s7, op, g_ast_node_methods_let);
             if (val != op)
@@ -472,7 +497,7 @@ static s7_pointer g_ast_node_object_applicator(s7_scheme *s7, s7_pointer args)
     note that outside of this set! context, (c-obj :k) will lookup the
     value bound to :k in c-obj (using g_struct_get).
  */
-#define G_AST_NODE_SET_SPECIALIZED_HELP "(ast_node-set! b i x) sets the ast_node value at index i to x."
+#define G_AST_NODE_SET_SPECIALIZED_HELP "(ast-node-set! b i x) sets the ast_node value at index i to x."
 
 #define G_AST_NODE_SET_SPECIALIZED_SIG s7_make_signature(s7, 4, s7_make_symbol(s7, "float?"), s7_make_symbol(s7, "ast-node?"), s7_make_symbol(s7, "integer?"), s7_make_symbol(s7, "float?"))
 
@@ -645,7 +670,7 @@ static void _register_get_and_set(s7_scheme *s7)
 char *g_ast_node_display(s7_scheme *s7, void *value)
 {
 #ifdef DEBUG_TRACE
-    log_debug("g_ast_node_display");
+    /* log_debug("g_ast_node_display"); */
 #endif
 
     struct node_s *nd = (struct node_s *)value;
@@ -833,10 +858,17 @@ char *g_ast_node_display_readably(s7_scheme *s7, void *value)
 static s7_pointer g_ast_node_to_string(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
-    log_debug("g_ast_node_to_string");
+    /* log_debug("g_ast_node_to_string"); */
     /* debug_print_s7(s7, "to_string cdr: ", s7_cdr(args)); */
 #endif
     display_buf = calloc(1, SZDISPLAY_BUF);
+    if (display_buf == NULL) {
+        log_error("ERROR on calloc");
+        //FIXME cleanup
+        exit(EXIT_FAILURE);
+    } else {
+        display_bufsz = SZDISPLAY_BUF;
+    }
     display_ptr = display_buf;
 
     s7_pointer obj, choice;
@@ -855,7 +887,8 @@ static s7_pointer g_ast_node_to_string(s7_scheme *s7, s7_pointer args)
     /* log_debug("TO_STRING LEN: %d", strlen(descr)); */
     obj = s7_make_string(s7, descr);
 
-    free(descr); //BUG? FIXME free substruct strings
+    free(descr); // frees display_buf?
+    display_bufsz = 0;
     return(obj);
 }
 
@@ -868,7 +901,6 @@ static s7_pointer g_ast_node_to_starlark(s7_scheme *s7, s7_pointer args)
 #endif
 
     s7_pointer node;
-    /* char buf[8096]; */
     UT_string *buf;
     utstring_new(buf);
 
@@ -1075,6 +1107,20 @@ static s7_pointer g_new_ast_node(s7_scheme *s7, s7_pointer args)
 
     return(new_ast_node_s7);
 }
+
+EXPORT s7_pointer ast_node_s7_new(s7_scheme *s7, struct node_s *node)
+{
+#ifdef DEBUG_TRACE
+    log_debug("g_new_ast_node");
+#endif
+
+    s7_pointer new_ast_node_s7 = s7_make_c_object(s7, ast_node_t,
+                                                  (void *)node);
+
+    _register_c_object_methods(s7, new_ast_node_s7);
+
+    return new_ast_node_s7;
+}
 /* /section: c-object construction */
 
 /* **************************************************************** */
@@ -1102,20 +1148,20 @@ static s7_pointer g_destroy_ast_node(s7_scheme *s7, s7_pointer obj)
 
 #define OBJECT_METHODS \
     "'float-vector? (lambda (p) (display \"foo \") #t) " \
-    "'signature (lambda (p) (list '#t 'ast_node? 'integer?)) " \
-    "'type ast_node? " \
+    "'signature (lambda (p) (list '#t 'ast-node? 'integer?)) " \
+    "'type ast-node? " \
     "'foo (lambda (self) \"hello from foo method!\") " \
     "'memq (lambda (self arg) \"hello from perverse memq method!\") " \
     "'arity (lambda (p) (cons 1 1)) " \
     "'aritable? (lambda (p args) (= args 1)) " \
     "'vector-dimensions (lambda (p) (list (length p))) " \
     "'empty (lambda (p) (zero? (length p))) " \
-    "'ref ast_node-ref " \
-    "'vector-ref ast_node-ref " \
-    "'vector-set! ast_node-set! "
-    /* "'reverse! ast_node-reverse! " \ */
+    "'ref ast-node-ref " \
+    "'vector-ref ast-node-ref " \
+    "'vector-set! ast-node-set! "
+    /* "'reverse! ast-node-reverse! " \ */
     /* "'subsequence subast_node " \ */
-    /* "'append ast_node-append " */
+    /* "'append ast-node-append " */
 
 /* object methods: registered on each object, not type */
 static void _register_c_object_methods(s7_scheme *s7, s7_pointer ast_node)
@@ -1129,6 +1175,7 @@ static void _register_c_object_methods(s7_scheme *s7, s7_pointer ast_node)
         s7_gc_protect(s7, g_ast_node_methods_let);
         initialized = true;
     }
+
     s7_c_object_set_let(s7, ast_node, g_ast_node_methods_let);
     s7_openlet(s7, ast_node);
 }
@@ -1239,11 +1286,11 @@ static s7_pointer g_ast_node_gc_mark(s7_scheme *s7, s7_pointer p)
 /* section: debugging */
 void debug_print_s7(s7_scheme *s7, char *label, s7_pointer obj)
 {
-    log_debug("debug_print_s7: ");
+    /* log_debug("debug_print_s7: "); */
     /* s7_pointer p = s7_current_output_port(s7); */
     /* s7_display(s7, s7_make_string(s7, label), p); */
-    log_debug("label: %s", label);
-    log_debug("%s", s7_object_to_c_string(s7, obj));
+    log_debug("%s", label);
+    log_debug("\t%s", s7_object_to_c_string(s7, obj));
     /* s7_display(s7, obj, p); */
     /* s7_newline(s7, p); */
 }

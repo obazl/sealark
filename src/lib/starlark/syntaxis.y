@@ -617,9 +617,11 @@ statement(Stmt) ::= small_stmt_list(SmallStmts) . [AMP]
     /*           n->trailing_newline, */
     /*           n->type, token_name[n->type][0], n->s); */
     if ( ! n->trailing_newline ) {
+        // Starlark grammar: "# NOTE: '\n' optional at EOF
+        // FIXME: detect if we are at EOF
         log_error("Missing newline after SimpleStmt %s", n->s);
         // FIXME: print entire expr
-        exit(EXIT_FAILURE);
+        /* exit(EXIT_FAILURE); */
     }
     /* utarray_push_back(SmallStmts->subnodes, Newline); */
     Stmt = SmallStmts;
@@ -634,8 +636,10 @@ statement(Stmt) ::= small_stmt_list(SmallStmts) SEMI(Semi) . [AMP]
     // log_trace(">>statement ::= small_stmt_list");
     // log_trace("SEMI trailing newline? %d", Semi->trailing_newline);
     if ( ! Semi->trailing_newline ) {
+        // Starlark grammar: "# NOTE: '\n' optional at EOF
+        // FIXME: detect if we are at EOF
         log_error("Missing newline after SimpleStmt");
-        exit(EXIT_FAILURE);
+        /* exit(EXIT_FAILURE); */
     }
     /* log_trace("DUMPING SEMI ================"); */
     /* dump_node(Semi); */

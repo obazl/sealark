@@ -388,6 +388,75 @@ EXPORT void ast_node_free(void *_elt) {
     if (elt->subnodes) utarray_free(elt->subnodes);
 }
 
+/* FIXME: rename? to_string? */
+/**
+   assumption: already verified node is printable
+*/
+UT_string *workbuf;
+
+char *_print_string_node(struct node_s *node)
+{
+    utstring_renew(workbuf);
+
+    char * br =
+        ((node->qtype & BINARY_STR) &&
+         (node->qtype & RAW_STR))? "br"
+        : (node->qtype & BINARY_STR)? "b"
+        : (node->qtype & RAW_STR)? "r"
+        : "";
+    char *q;
+    if (node->qtype & SQUOTE) {
+        if (node->qtype & TRIPLE) {
+            q = "'''";
+        } else {
+            q = "'";
+        }
+    } else {
+        if (node->qtype & DQUOTE) {
+            if (node->qtype & TRIPLE) {
+                q = "\"\"\"";
+            } else {
+                q = "\"";
+            }
+        } else {
+            q = "";
+        }
+    }
+    utstring_printf(workbuf,
+                    "%s%s%s%s",
+                    br,
+                    q,
+                    node->s,
+                    q);
+
+    return utstring_body(workbuf);
+}
+
+EXPORT bool ast_node_is_printable(struct node_s *ast_node)
+{
+    for (int i = 0; printable_tokens[i] != 0; i++) {
+        if (ast_node->type == printable_tokens[i])
+            return true;
+    }
+    return false;
+}
+
+EXPORT char  *ast_node_printable_string(struct node_s *node)
+{
+    if ( !ast_node_is_printable(node) ) return NULL;
+
+    switch(node->type) {
+    case TK_STRING:
+        return _print_string_node(node);
+        break;
+    case TK_ID:
+        return node->s;
+        break;
+    default:
+        return (char*)token_name[node->type][1];
+    }
+}
+
 EXPORT void ast_node_copy(void *_dst, const void *_src)
 {
     /* log_debug("node_copy"); // : %p <- %p", _dst, _src); */

@@ -67,13 +67,6 @@ void export_token_tables(s7_scheme *s7)
 EXPORT s7_scheme *sunlark_init(void)
 {
     s7_scheme *s7 = s7_init();
-    s7_int an_t = configure_s7_ast_node_type(s7);
-    s7_int anl_t = configure_s7_ast_nodelist_type(s7);
-
-    s7_define_function(s7, "error-handler",
-                       error_handler, 1, 0, false,
-                       "our error handler");
-
     s7_pointer old_port, result;
     int gc_loc = -1;
     const char *errmsg = NULL;
@@ -82,6 +75,13 @@ EXPORT s7_scheme *sunlark_init(void)
     old_port = s7_set_current_error_port(s7, s7_open_output_string(s7));
     if (old_port != s7_nil(s7))
         gc_loc = s7_gc_protect(s7, old_port);
+
+    s7_int an_t = configure_s7_ast_node_type(s7);
+    s7_int anl_t = configure_s7_ast_nodelist_type(s7);
+
+    s7_define_function(s7, "error-handler",
+                       error_handler, 1, 0, false,
+                       "our error handler");
 
     export_token_tables(s7);
 

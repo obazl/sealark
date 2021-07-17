@@ -142,13 +142,12 @@ int main(int argc, char *argv[]) // , char **envp)
     log_debug("converting ast");
     s7_pointer ast = s7lark_ast2scm(s7, parse_state);
 
-    s7_pointer args =  s7_list(s7,
-                               1, //num_values,
-                               ast);
+    s7_pointer args =  s7_list(s7, 1, ast);
 
     log_debug("calling ast_handler");
     s7_pointer result = s7_call(s7,
                                 s7_name_to_value(s7, "ast-handler"),
                                 args);
+    log_debug("result: %s", s7_object_to_c_string(s7, result));
     s7_quit(s7);
 }

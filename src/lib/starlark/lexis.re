@@ -361,6 +361,7 @@ int get_next_token(struct bf_lexer_s *lexer, struct node_s **mtok)
     /* log_debug("get_next_token"); */
     /* log_debug("lexer->limit: %p", lexer->limit); */
     /*!re2c
+      /* re2c:eof = 0; */
       re2c:api:style = free-form;
       re2c:define:YYCTYPE = char;
       re2c:define:YYCURSOR = lexer->cursor;
@@ -372,7 +373,7 @@ int get_next_token(struct bf_lexer_s *lexer, struct node_s **mtok)
 
       re2c:flags:tags = 1;
       re2c:tags:expression = "lexer->@@";
-     re2c:define:YYMTAGP = "comment_push(1, &@@, lexer, mtok);";
+      re2c:define:YYMTAGP = "comment_push(1, &@@, lexer, mtok);";
       re2c:define:YYMTAGN = "comment_push(0, &@@, lexer, mtok);";
 
       /* re2c:define:YYFILL   = "fill(lexer) == 0;"; */
@@ -806,12 +807,14 @@ loop:
         return TK_ID;
         }
 
+    /* <*> $ { log_debug("EOF"); return } */
+
     <init> end       {
         /* printf("<init> ending\n"); */
         return 0;
         }
 
-    <*> *         {
+    <*> * { /* default rule, matches anything */
             fprintf(stderr, "ERROR lexing: %s\n", lexer->tok);
             exit(-1);
         }

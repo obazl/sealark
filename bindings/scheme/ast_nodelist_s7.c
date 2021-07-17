@@ -64,6 +64,9 @@ static void _register_c_object_methods(s7_scheme *s7, s7_pointer ast_nodelist);
 /* section: c-type configuration */
 static void   _register_ast_nodelist_fns(s7_scheme *s7);
 
+ /* s7_pointer g_ast_nodelist_length(s7_scheme *sc, s7_pointer args); */
+
+
 /* this is the public API that clients call: */
 int configure_s7_ast_nodelist_type(s7_scheme *s7); /* public */
 
@@ -77,7 +80,7 @@ void debug_print_s7(s7_scheme *s7, char *label, s7_pointer obj);
 
 /* **************************************************************** */
 /* section: identity */
-#define g_is_ast_nodelist_help "(ast_nodelist? obj) returns #t if obj is a ast_nodelist."
+#define g_is_ast_nodelist_help "(ast-nodelist? obj) returns #t if obj is a ast_nodelist."
 #define g_is_ast_nodelist_sig s7_make_signature(s7, 2, s7_make_symbol(s7, "boolean?"), s7_t(s7))
 static s7_pointer g_is_ast_nodelist(s7_scheme *s7, s7_pointer args)
 {
@@ -295,11 +298,11 @@ static s7_pointer _ast_nodelist_lookup(s7_scheme *s7,
 /* **************** */
 /** g_ast_nodelist_ref_specialized
 
-    (ast_nodelist-ref obj key)
-    takes two args, a ast_nodelist object and a keyword to look up in the object.
+    (ast_nodelist-ref obj index)
+    takes two args, a ast_nodelist object and a int index
  */
-#define G_AST_NODELIST_REF_SPECIALIZED_HELP "(ast_nodelist-ref b i) returns the ast_nodelist value at index i."
-#define G_AST_NODELIST_REF_SPECIALIZED_SIG s7_make_signature(s7, 3, s7_t(s7), s7_make_symbol(s7, "ast_nodelist?"), s7_make_symbol(s7, "integer?"))
+#define G_AST_NODELIST_REF_SPECIALIZED_HELP "(ast-nodelist-ref b i) returns the ast_nodelist value at index i."
+#define G_AST_NODELIST_REF_SPECIALIZED_SIG s7_make_signature(s7, 3, s7_t(s7), s7_make_symbol(s7, "ast-nodelist?"), s7_make_symbol(s7, "integer?"))
 
 static s7_pointer g_ast_nodelist_ref_specialized(s7_scheme *s7, s7_pointer args)
 {
@@ -319,17 +322,22 @@ static s7_pointer g_ast_nodelist_ref_specialized(s7_scheme *s7, s7_pointer args)
     if (typ != ast_nodelist_t)
         return(s7_wrong_type_arg_error(s7, "ast-nodelist-ref", 1, obj, "an ast-nodelist"));
 
-    nl  = (UT_array *)s7_c_object_value(obj);
-
     if (s7_is_null(s7, s7_cdr(args)))
         return(s7_wrong_type_arg_error(s7, "ast-nodelist-ref", 1, obj, "missing index arg"));
 
-    s7_pointer arg = s7_cadr(args);
-    if (s7_is_integer(arg))
-        return _ast_nodelist_lookup(s7, nl, arg);
-    else {
+    nl  = (UT_array *)s7_c_object_value(obj);
+
+    s7_pointer idx = s7_cadr(args);
+    if (s7_is_integer(idx)) {
+        struct node_s *node = utarray_eltptr(nl, s7_integer(idx));
+        if (node == NULL) {
+            log_error("ERROR utarray_eltptr fail, idx %d", s7_integer(idx));
+            exit(EXIT_FAILURE);
+        }
+        return ast_node_s7_new(s7, node);
+    } else {
         return(s7_wrong_type_arg_error(s7, "ast-nodelist-ref",
-                                       2, arg, "an integer"));
+                                       2, idx, "an integer"));
     }
 }
 
@@ -367,7 +375,6 @@ static s7_pointer g_ast_nodelist_object_applicator(s7_scheme *s7, s7_pointer arg
 #endif
 
     /* no need to check arg1, it's the "self" ast_nodelist obj */
-    /* s7_pointer g  = (struct node_s *)s7_c_object_value(obj); */
 
     s7_pointer rest = s7_cdr(args);
     if (s7_is_null(s7, rest))
@@ -376,34 +383,19 @@ static s7_pointer g_ast_nodelist_object_applicator(s7_scheme *s7, s7_pointer arg
 
     s7_pointer op = s7_car(rest);
 
-    /* Currently s7 does not make a distinction between keywords and symbols; (keyword? :a) and (symbol? :a) both report true, and s7_is_ */
-    if (s7_is_keyword(op)) {
-        if (op == s7_make_keyword(s7, "subnodes_ct")) {
-            log_debug("running :subnodes_ct");
-            s7_pointer obj = s7_car(args);
-            struct node_s *cs  = (struct node_s *)s7_c_object_value(obj);
-            int ct = utarray_len(cs->subnodes);
-            return s7_make_integer(s7, ct);
-        } else {
-            return g_ast_nodelist_ref_specialized(s7, args);
+    /* nodelist lookup only supports int index */
+    if (s7_is_integer(op)) {
+        s7_pointer nl_s7 = s7_car(args);
+        UT_array *nl = s7_c_object_value(nl_s7);
+        struct node_s *node = utarray_eltptr(nl, s7_integer(op));
+        if (node == NULL) {
+            log_error("ERROR utarray_eltptr fail, idx %d", s7_integer(op));
+            exit(EXIT_FAILURE);
         }
+        return ast_node_s7_new(s7, node);
     } else {
-        if (s7_is_symbol(op)) { /* method access ((ast_nodelist 'foo) b) etc */
-            s7_pointer val;
-            val = s7_symbol_local_value(s7, op, g_ast_nodelist_methods_let);
-            if (val != op)
-                return(val);
-            else {
-                /* found self-referring method? method not found? methods table corrupt */
-                /* return(s7_wrong_type_arg_error(s7, "ast_nodelist-ref", */
-                /*                                2, arg, "a kw or sym")); */
-                log_error("ERROR: corrupt object-methods-let?");
-                return NULL;
-            }
-	} else {
-            return(s7_wrong_type_arg_error(s7, "ast_nodelist-ref",
-                                           2, op, "a keyword or symbol"));
-        }
+        return(s7_wrong_type_arg_error(s7, "ast_nodelist-ref",
+                                       2, op, "an integer"));
     }
 }
 
@@ -423,7 +415,7 @@ static s7_pointer g_ast_nodelist_object_applicator(s7_scheme *s7, s7_pointer arg
  */
 #define G_AST_NODELIST_SET_SPECIALIZED_HELP "(ast_nodelist-set! b i x) sets the ast_nodelist value at index i to x."
 
-#define G_AST_NODELIST_SET_SPECIALIZED_SIG s7_make_signature(s7, 4, s7_make_symbol(s7, "float?"), s7_make_symbol(s7, "ast_nodelist?"), s7_make_symbol(s7, "integer?"), s7_make_symbol(s7, "float?"))
+#define G_AST_NODELIST_SET_SPECIALIZED_SIG s7_make_signature(s7, 4, s7_make_symbol(s7, "float?"), s7_make_symbol(s7, "ast-nodelist?"), s7_make_symbol(s7, "integer?"), s7_make_symbol(s7, "float?"))
 
 static s7_pointer _update_ast_nodelist(s7_scheme *s7,
                                   struct node_s *ast_nodelist,
@@ -588,12 +580,25 @@ static void _register_get_and_set(s7_scheme *s7)
 
 /* /section: getters and setters */
 
+
+/* **************************************************************** */
+/* section: properties */
+/* implements (length ...) */
+EXPORT s7_pointer g_ast_nodelist_length(s7_scheme *sc, s7_pointer args)
+{
+  UT_array *nl = (UT_array*)s7_c_object_value(s7_car(args));
+  return(s7_make_integer(sc, utarray_len(nl)));
+}
+
+/* /section: properties */
+
+
 /* **************************************************************** */
 /* section: display */
 char *g_ast_nodelist_display(s7_scheme *s7, void *value)
 {
 #ifdef DEBUG_TRACE
-    log_debug("g_ast_nodelist_display");
+    /* log_debug("g_ast_nodelist_display"); */
 #endif
 
     UT_array *nl = (UT_array*)value;
@@ -610,6 +615,7 @@ char *g_ast_nodelist_display(s7_scheme *s7, void *value)
     while( (n=(struct node_s*)utarray_next(nl, n)) ) {
         g_ast_node_display(s7, n); /* updates global display_buf */
     }
+
     /* sprintf(buf, "BAR\n"); */
     /* len = strlen(buf); */
     /* snprintf(display_ptr, len+1, "%s", buf); */
@@ -661,16 +667,30 @@ static s7_pointer g_ast_nodelist_to_string(s7_scheme *s7, s7_pointer args)
     log_debug("g_ast_nodelist_to_string");
     /* debug_print_s7(s7, "to_string cdr: ", s7_cdr(args)); */
 #endif
+    if (display_bufsz == 0) {
+        display_buf = calloc(1, SZDISPLAY_BUF);
+        if (display_buf == NULL) {
+            log_error("ERROR on calloc");
+            //FIXME cleanup
+            exit(EXIT_FAILURE);
+        } else {
+            display_bufsz = SZDISPLAY_BUF;
+        }
+    }
+    display_ptr = display_buf;
 
     s7_pointer obj, choice;
     char *descr;
     obj = s7_car(args);
+
     if (s7_is_pair(s7_cdr(args)))
         choice = s7_cadr(args);
     else choice = s7_t(s7);
+
     if (choice == s7_make_keyword(s7, "readable"))
         descr = g_ast_nodelist_display_readably(s7, s7_c_object_value(obj));
     else descr = g_ast_nodelist_display(s7, s7_c_object_value(obj));
+
     /* printf("g_ast_nodelist_display => %s", descr); */
     obj = s7_make_string(s7, descr);
 
@@ -788,6 +808,26 @@ static s7_pointer g_new_ast_nodelist(s7_scheme *s7, s7_pointer args)
 
     return(new_ast_nodelist_s7);
 }
+
+/**
+   internal version, used by ast_node_s7
+*/
+EXPORT s7_pointer ast_nodelist_s7_new(s7_scheme *s7, UT_array *ast_nodelist)
+{
+#ifdef DEBUG_TRACE
+    log_debug("ast_nodelist_s7_new");
+#endif
+
+    /* log_debug("nodelist length: %d", utarray_len(ast_nodelist)); */
+
+    s7_pointer new_nodelist = s7_make_c_object(s7, ast_nodelist_t,
+                                               (void *)ast_nodelist);
+
+    _register_c_object_methods(s7, new_nodelist);
+
+    return new_nodelist;
+}
+
 /* /section: c-object construction */
 
 /* **************************************************************** */
@@ -815,20 +855,20 @@ static s7_pointer g_destroy_ast_nodelist(s7_scheme *s7, s7_pointer obj)
 
 #define OBJECT_METHODS \
     "'float-vector? (lambda (p) (display \"foo \") #t) " \
-    "'signature (lambda (p) (list '#t 'ast_nodelist? 'integer?)) " \
-    "'type ast_nodelist? " \
+    "'signature (lambda (p) (list '#t 'ast-nodelist? 'integer?)) " \
+    "'type ast-nodelist? " \
     "'foo (lambda (self) \"hello from foo method!\") " \
     "'memq (lambda (self arg) \"hello from perverse memq method!\") " \
     "'arity (lambda (p) (cons 1 1)) " \
     "'aritable? (lambda (p args) (= args 1)) " \
     "'vector-dimensions (lambda (p) (list (length p))) " \
     "'empty (lambda (p) (zero? (length p))) " \
-    "'ref ast_nodelist-ref " \
-    "'vector-ref ast_nodelist-ref " \
-    "'vector-set! ast_nodelist-set! "
-    /* "'reverse! ast_nodelist-reverse! " \ */
-    /* "'subsequence subast_nodelist " \ */
-    /* "'append ast_nodelist-append " */
+    "'ref ast-nodelist-ref " \
+    "'vector-ref ast-nodelist-ref " \
+    "'vector-set! ast-nodelist-set! "
+    /* "'reverse! ast-nodelist-reverse! " \ */
+    /* "'subsequence subast-nodelist " \ */
+    /* "'append ast-nodelist-append " */
 
 /* object methods: registered on each object, not type */
 static void _register_c_object_methods(s7_scheme *s7, s7_pointer ast_nodelist)
@@ -859,7 +899,10 @@ static void _register_c_type_methods(s7_scheme *s7, s7_int ast_nodelist_t)
     s7_c_type_set_is_equivalent(s7, ast_nodelist_t, g_ast_nodelists_are_equivalent);
 
     s7_c_type_set_copy(s7, ast_nodelist_t, g_ast_nodelist_copy);
-    /* s7_c_type_set_length(s7, ast_nodelist_t, g_ast_nodelist_length); */
+
+    /* implement (length nl), not (ast-nodelist-length nl) */
+    s7_c_type_set_length(s7, ast_nodelist_t, g_ast_nodelist_length);
+
     /* s7_c_type_set_reverse(s7, ast_nodelist_t, g_ast_nodelist_reverse); */
     /* s7_c_type_set_fill(s7, ast_nodelist_t, g_ast_nodelist_fill); */
 
