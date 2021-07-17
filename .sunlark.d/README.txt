@@ -1,5 +1,5 @@
 Sunlark will automatically add `<rootdir>/.sunlark.d/` (where
-<rootdir> is the project root directory) to the Sunlark load path.
+<rootdir> is the project root directory) to the Scheme (s7) load path.
 
 In the Sealark repo, this directory and this file are under version
 control for documentation purposes. But other contents are gitignored,
