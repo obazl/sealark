@@ -1,0 +1,5 @@
+cc_library( # comment1
+    name = "hello-lib", #comment2
+    srcs = ["hello-lib.cc"],
+    hdrs = ["hello-lib.h"],
+)
