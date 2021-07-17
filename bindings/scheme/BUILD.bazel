@@ -26,8 +26,8 @@ cc_library(
         "-I$(GENDIR)/bindings/scheme",
         "-I$(GENDIR)/external/moonlark/binding/scheme",
 
-        "-I", "$(GENDIR)/src/lib/starlark",
-        "-I", "$(GENDIR)external/moonlark/src/lib/starlark",
+        "-I", "$(GENDIR)/sealark",
+        "-I", "$(GENDIR)external/moonlark/sealark",
 
         "-I", "vendored/logc",
         "-I", "external/moonlark/vendored/logc",
@@ -41,8 +41,8 @@ cc_library(
     deps = [
         ":ast_node_s7",
         ":ast_nodelist_s7",
-        "//src/config",
-        "//src/lib/starlark",
+        "//bazel",
+        "//sealark",
         "//vendored/logc",
         "//vendored/uthash",
         "//vendored/s7"
@@ -71,8 +71,8 @@ cc_library(
         "-I$(GENDIR)/bindings/scheme",
         "-I$(GENDIR)/external/moonlark/binding/scheme",
 
-        "-I", "$(GENDIR)/src/lib/starlark",
-        "-I", "$(GENDIR)external/moonlark/src/lib/starlark",
+        "-I", "$(GENDIR)/sealark",
+        "-I", "$(GENDIR)external/moonlark/sealark",
 
         "-I", "vendored/logc",
         "-I", "external/moonlark/vendored/logc",
@@ -84,8 +84,8 @@ cc_library(
         "-I", "external/moonlark/vendored/uthash",
     ],
     deps = [
-        "//src/config",
-        "//src/lib/starlark",
+        "//bazel",
+        "//sealark",
         "//vendored/logc",
         "//vendored/uthash",
         "//vendored/s7"
@@ -114,8 +114,8 @@ cc_library(
         "-I$(GENDIR)/bindings/scheme",
         "-I$(GENDIR)/external/moonlark/binding/scheme",
 
-        "-I", "$(GENDIR)/src/lib/starlark",
-        "-I", "$(GENDIR)external/moonlark/src/lib/starlark",
+        "-I", "$(GENDIR)/sealark",
+        "-I", "$(GENDIR)external/moonlark/sealark",
 
         "-I", "vendored/logc",
         "-I", "external/moonlark/vendored/logc",
@@ -127,8 +127,8 @@ cc_library(
         "-I", "external/moonlark/vendored/uthash",
     ],
     deps = [
-        "//src/config",
-        "//src/lib/starlark",
+        "//bazel",
+        "//sealark",
         "//vendored/logc",
         "//vendored/uthash",
         "//vendored/s7"
@@ -142,8 +142,8 @@ genrule(
         "libsunlark.c",
         "ast_node_s7.c",
         "ast_nodelist_s7.c",
-        "//src/config:bazel_config.c",
-        "//src/lib/starlark:mkhdrs-export",
+        "//bazel:bazel_config.c",
+        "//sealark:mkhdrs-export",
     ],
     outs = [
         "libsunlark.h",
@@ -154,8 +154,8 @@ genrule(
         "SRC1=$(location libsunlark.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "$(location //vendored/makeheaders) \\",
-        "    $(location //src/config:bazel_config.c) \\",
-        "    $(location //src/lib/starlark:mkhdrs-export) \\",
+        "    $(location //bazel:bazel_config.c) \\",
+        "    $(location //sealark:mkhdrs-export) \\",
         "    $(location libsunlark.c) \\",
         "    $(location ast_node_s7.c) \\",
         "    $(location ast_nodelist_s7.c)",

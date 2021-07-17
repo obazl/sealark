@@ -8,10 +8,6 @@
 #include "utarray.h"
 #include "utstring.h"
 
-/* #include "lua.h" */
-/* #include "lauxlib.h" */
-/* #include "lualib.h" */
-
 #include "bazel_config.h"
 
 char *get_bazel_script_dir(char *scriptfile)
@@ -67,38 +63,3 @@ char *get_bazel_script_dir(char *scriptfile)
     /* log_debug("bazel_script_dir: %s", bazel_script_dir); */
     return bazel_script_dir;
 }
-
-/* void lbazel_config(lua_State *L,char *callback, */
-/*                    char *user_script_dir,char *load_file) */
-/* { */
-/*     /\* log_debug("lbazel_config"); *\/ */
-
-/*     /\* Interrogate env to get script load paths and cwd *\/ */
-/*     /\* char *bazel_script_dir = lbazel_get_script_dir(callback); *\/ */
-/*     /\* log_debug("bazel_script_dir: %s", bazel_script_dir); *\/ */
-
-/*     /\* char *wd = getenv("BUILD_WORKING_DIRECTORY"); *\/ */
-/*     /\* if (wd) { *\/ */
-/*     /\*     /\\* log_info("BUILD_WORKING_DIRECTORY: %s", wd); *\\/ *\/ */
-/*     /\*     chdir(wd); *\/ */
-/*     /\* } else { *\/ */
-/*     /\*     log_error("BUILD_WORKING_DIRECTORY not found. This program is designed to be run from the root directory of a Bazel repo."); *\/ */
-/*     /\* } *\/ */
-
-/*     /\* if (user_script_dir) { *\/ */
-/*     /\*     if( access( user_script_dir, F_OK ) != 0 ) { *\/ */
-/*     /\*         log_warn("WARNING: user_script_dir does not exist: %s", user_script_dir); *\/ */
-/*     /\*     /\\* } else { *\\/ *\/ */
-/*     /\*     /\\*     log_info("user_script_dir: %s", user_script_dir); *\\/ *\/ */
-/*     /\*     } *\/ */
-/*     /\* } *\/ */
-
-/*     /\* set lua load paths *\/ */
-/*     /\* moonlark_augment_load_path(L, bazel_script_dir); *\/ */
-/*     /\* moonlark_augment_load_path(L, user_script_dir); *\/ */
-
-/*     /\* moonlark_config_moonlark_table(L); *\/ */
-
-/*     /\* moonlark_lua_load_file(L, load_file); *\/ */
-/* } */
-

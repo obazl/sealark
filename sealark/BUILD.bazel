@@ -4,7 +4,7 @@ exports_files(glob(["*.c"]))
 
 ##########
 cc_library(
-    name  = "starlark",
+    name  = "sealark",
     alwayslink = True,
     linkstatic = 1,
     srcs  = [
@@ -36,8 +36,8 @@ cc_library(
         "-g", "-O0",
         "-pedantic-errors",
         "-I", ".",
-        "-I", "$(GENDIR)/src/lib/starlark",
-        "-I", "$(GENDIR)/external/moonlark/src/lib/starlark",
+        "-I", "$(GENDIR)/sealark",
+        "-I", "$(GENDIR)/external/moonlark/sealark",
 
         "-I", "vendored/uthash",
         "-I", "external/moonlark/vendored/uthash",
@@ -78,8 +78,8 @@ cc_library(
 
         "-I", ".",              # syntaxis.h
 
-        "-I", "$(GENDIR)/src/lib/starlark",
-        "-I", "$(GENDIR)/external/moonlark/src/lib/starlark",
+        "-I", "$(GENDIR)/sealark",
+        "-I", "$(GENDIR)/external/moonlark/sealark",
 
         "-I", "vendored/logc",
         "-I", "external/moonlark/vendored/logc",
@@ -146,8 +146,8 @@ cc_library(
 
         "-I", "src",
 
-        "-I", "$(GENDIR)/src/lib/starlark",
-        "-I", "$(GENDIR)/external/moonlark/src/lib/starlark",
+        "-I", "$(GENDIR)/sealark",
+        "-I", "$(GENDIR)/external/moonlark/sealark",
 
         "-I", "vendored/uthash",
         "-I", "external/moonlark/vendored/uthash",

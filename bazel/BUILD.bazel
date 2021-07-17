@@ -4,7 +4,7 @@ exports_files(["bazel_config.c"])
 
 ##########
 cc_library(
-    name  = "config",
+    name  = "bazel",
     linkstatic = 1,
     srcs  = [
         "bazel_config.c",
@@ -23,8 +23,8 @@ cc_library(
         "-g", "-O0",
         "-pedantic-errors",
 
-        "-I", "$(GENDIR)/src/config",
-        "-I", "$(GENDIR)/external/moonlark/src/config",
+        "-I", "$(GENDIR)/bazel",
+        "-I", "$(GENDIR)/external/moonlark/bazel",
 
         "-I", "vendored/uthash",
         "-I", "external/moonlark/vendored/uthash",

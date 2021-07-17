@@ -28,8 +28,8 @@ cc_binary(
         # "-I", "$(GENDIR)/src/lib/moonlark",
         # "-I", "$(GENDIR)/external/moonlark/src/lib/moonlark",
 
-        "-I", "$(GENDIR)/src/lib/starlark",
-        "-I", "$(GENDIR)/external/moonlark/src/lib/starlark",
+        "-I", "$(GENDIR)/sealark",
+        "-I", "$(GENDIR)/external/moonlark/sealark",
 
         "-I", "vendored/uthash",
         "-I", "external/moonlark/vendored/uthash",
@@ -42,7 +42,7 @@ cc_binary(
     ],
     deps = [
         # "//src/lib/lbazel",
-        "//src/lib/starlark",
+        "//sealark",
         "//vendored/lua-5.4.3/src:lua",
         "//vendored/logc",
         "//vendored/uthash",
@@ -57,7 +57,7 @@ cc_library(
     srcs  = [
         "libmoonlark.c",
         "libmoonlark.h",
-        "//src/lib/starlark:debug.c",
+        "//sealark:debug.c",
         "//vendored/logc:log.h",
     ],
     hdrs = [
@@ -79,9 +79,9 @@ cc_library(
         "-I$(GENDIR)/bindings/lua",
         "-I$(GENDIR)/external/moonlark/bindings/lua",
 
-        "-Isrc/lib/starlark",  # starlark.h
-        "-I$(GENDIR)/src/lib/starlark",  # starlark.h
-        "-I$(GENDIR)/external/moonlark/src/lib/starlark",  # starlark.h
+        "-Isealark",  # starlark.h
+        "-I$(GENDIR)/sealark",  # starlark.h
+        "-I$(GENDIR)/external/moonlark/sealark",  # starlark.h
 
         "-Ivendored/uthash",
         "-Iexternal/moonlark/vendored/uthash",
@@ -95,7 +95,7 @@ cc_library(
     ],
     deps = [
         # "//src/lib/lbazel",
-        "//src/lib/starlark",
+        "//sealark",
         "//vendored/lua-5.4.3/src:lua",
         "//vendored/logc",
         "//vendored/uthash",
@@ -110,8 +110,8 @@ genrule(
     srcs = [
         "lmoonlark.c",
         "libmoonlark.c",
-        "//src/lib/starlark:debug.c",
-        "//src/lib/starlark:starlark.h",
+        "//sealark:debug.c",
+        "//sealark:starlark.h",
     ],
     outs = [
         "lmoonlark.h",
@@ -123,8 +123,8 @@ genrule(
         "$(location //vendored/makeheaders) \\",
         "    $(location lmoonlark.c) \\",
         "    $(location libmoonlark.c) \\",
-        "    $(location //src/lib/starlark:debug.c) \\",
-        "    $(location //src/lib/starlark:starlark.h)",
+        "    $(location //sealark:debug.c) \\",
+        "    $(location //sealark:starlark.h)",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),
     tools = ["//vendored/makeheaders"]

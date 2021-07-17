@@ -22,8 +22,8 @@ cc_binary(
         "-I$(GENDIR)/bindings/scheme",
         "-I$(GENDIR)/external/moonlark/binding/scheme",
 
-        "-I", "$(GENDIR)/src/lib/starlark",
-        "-I", "$(GENDIR)external/moonlark/src/lib/starlark",
+        "-I", "$(GENDIR)/sealark",
+        "-I", "$(GENDIR)external/moonlark/sealark",
 
         "-I$(GENDIR)/sunlark",
         "-I$(GENDIR)/external/moonlark/sunlark",
@@ -39,8 +39,8 @@ cc_binary(
     ],
     deps = [
         "//bindings/scheme:sunlark",
-        "//src/config",
-        "//src/lib/starlark",
+        "//bazel",
+        "//sealark",
         "//vendored/logc",
         "//vendored/uthash",
         "//vendored/s7"
@@ -81,8 +81,8 @@ genrule(
     srcs = [
         "edit.c",
         "//bindings/scheme:libsunlark.c",
-        "//src/config:bazel_config.c",
-        "//src/lib/starlark:mkhdrs-export",
+        "//bazel:bazel_config.c",
+        "//sealark:mkhdrs-export",
     ],
     outs = [
         "edit.h",
@@ -92,8 +92,8 @@ genrule(
         "SRCDIR1=`dirname $$SRC1`",
         "$(location //vendored/makeheaders) \\",
         "    $(location //bindings/scheme:libsunlark.c) \\",
-        "    $(location //src/config:bazel_config.c) \\",
-        "    $(location //src/lib/starlark:mkhdrs-export) \\",
+        "    $(location //bazel:bazel_config.c) \\",
+        "    $(location //sealark:mkhdrs-export) \\",
         "    $(location edit.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),
