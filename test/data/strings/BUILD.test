@@ -1,25 +1,25 @@
-"hello"
-"""hello3"""
-'howdy'
-'''howdy3'''
+"hellod"
+"""hello3d"""
+'howdys'
+'''howdy3s'''
 
-b"bhello"
-b"""bhello3"""
-b'howdy'
-b'''howdy3'''
+b"bhellod"
+b"""bhello3d"""
+b'bhowdys'
+b'''bhowdy3s'''
 
-r"rhello"
-r"""rhello3"""
-r'rhowdy'
-r'''rhowdy3'''
+r"rhellod"
+r"""rhello3d"""
+r'rhowdys'
+r'''rhowdy3s'''
 
-br"brhello"
-br"""brhello3"""
-br'brhowdy'
-br'''brhowdy3'''
+br"brhellod"
+br"""brhello3d"""
+br'brhowdys'
+br'''brhowdy3s'''
 
 ## WARNING: moonlark normalizes 'rb' to 'br'
-# br"brhello"
-# br"""brhello3"""
-# br'brhowdy'
-# br'''brhowdy3'''
+# br"brhellod"
+# br"""brhello3d"""
+# br'brhowdys'
+# br'''brhowdy3s'''
