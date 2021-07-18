@@ -658,7 +658,8 @@ static s7_pointer _update_ast_node_property(s7_scheme *s7,
  */
 //FIXME: move to sealark/nodes.c? but val arg is polymorphic s7...
 static s7_pointer _update_starlark(s7_scheme *s7,
-                                   struct node_s *node,
+                                   /* struct node_s *node, */
+                                   s7_pointer node_s7,
                                    const char *key,
                                    s7_pointer val)
 {
@@ -666,39 +667,19 @@ static s7_pointer _update_starlark(s7_scheme *s7,
     log_debug("_update_starlark %s", key);
 #endif
 
+    /* struct node_s *node = s7_c_object_value(s7, node_s7); */
     struct node_s *target;
 
-    switch(node->tid) {
-    case TK_Arg_Named:
-        if ( strncmp(key, "name", 4) == 0) {
-            /* update attribute name */
-            log_debug("updating attr-name");
-            const char *tmp_name;
-            if (s7_is_string(val)) {
-                tmp_name = s7_string(val);
-            } else {
-                if (s7_is_number(val)) {
-                    tmp_name = s7_number_to_string(s7, val, 10);
-                } else {
-                    return(s7_wrong_type_arg_error(s7,
-                                                   "ast-node-set! attr name",
-                                                               2, val,
-                                                               "string or number"));
-                }
-            }
-            /* strings from s7 must not be freed? so... */
-            int len = strlen(tmp_name) + 1; /* add one for newline */
-            log_debug("TMP NAME: %d, %s", len, tmp_name);
-            char *new_name = calloc(len, sizeof(char));
-            snprintf(new_name, len, "%s", tmp_name);
-
-            target = utarray_eltptr(node->subnodes, 0);
-            free(target->s);
-            target->s = new_name;
-            return s7_make_string(s7, new_name);
+    /* switch(node->tid) { */
+    switch( sunlark_node_tid(node_s7) ) {
+    /* case TK_Call_Expr: /\* build rule *\/ */
+    /*     break; */
+    case TK_Arg_Named: /* rule attribute */
+        if ( strncmp(key, "name", 4) == 0 ) {
+            return sunlark_update_attribute_name(s7, node_s7, key, val);
         } else {
             if ( strncmp(key, "value", 5) == 0) {
-                return sunlark_update_attribute_value(s7, node, key, val);
+                return sunlark_update_attribute_value(s7, node_s7, key, val);
             } else {
                 return(s7_wrong_type_arg_error(s7,
                                                "ast-node-set! attr update",
@@ -711,7 +692,7 @@ static s7_pointer _update_starlark(s7_scheme *s7,
         return(s7_error(s7, s7_make_symbol(s7, "not_yet_supported"),
                   s7_list(s7, 2,
                           s7_make_string(s7, "node type: ~D not yet supported"),
-                          node->tid)));
+                          sunlark_node_tid(node_s7))));
     }
 }
 
@@ -758,8 +739,8 @@ static s7_pointer sunlark_node_set_specialized(s7_scheme *s7, s7_pointer args)
         return s7_unspecified(s7);
     } else {
         if (s7_is_symbol(key)) {
-            node = (struct node_s *)s7_c_object_value(obj);
-            _update_starlark(s7, node, s7_symbol_name(key), s7_caddr(args));
+            /* node = (struct node_s *)s7_c_object_value(obj); */
+            _update_starlark(s7, obj, s7_symbol_name(key), s7_caddr(args));
         } else {
             return(s7_wrong_type_arg_error(s7, "ast-node-set!",
                                            2, key, "a keyword or symbol"));
