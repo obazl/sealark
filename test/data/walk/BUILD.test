@@ -2,6 +2,7 @@ cc_library(
     name = "hello-lib",
     bstr = b"binstr",
     srcs = ["hello-lib.cc"],
-    hdrs = ["hello-lib.h"],
-    deps = [":goodbye-lib"],
+    dict_attr = {"foo": "bar"},
+    string_attr = "hello!",
+    deps = [":dep_a", ":dep_b"],
 )

@@ -282,16 +282,17 @@ static s7_pointer g_ast_nodes_are_equivalent(s7_scheme *s7, s7_pointer args)
 
 /* **************** */
 /* helper fn */
-static s7_pointer _ast_node_lookup_kw(s7_scheme *s7,
+static s7_pointer _ast_node_property_lookup(s7_scheme *s7,
                              struct node_s *ast_node, s7_pointer kw)
 {
 #ifdef DEBUG_TRACE
-    log_debug("ast_node_lookup_kw");
+    log_debug("ast_node_property_lookup");
 #endif
 
     if (kw == s7_make_keyword(s7, "print")) {
         char *s = ast_node_printable_string(ast_node);
-        return s7_make_string(s7, s);
+        s7_pointer str =  s7_make_string(s7, s);
+        return str;
     }
 
     if (kw == s7_make_keyword(s7, "tid"))
@@ -327,8 +328,8 @@ static s7_pointer _ast_node_lookup_kw(s7_scheme *s7,
     /* if (kw == s7_make_keyword(s7, "comments")) */
     /*     construct and return nodelist */
 
-    return(s7_wrong_type_arg_error(s7, "ast-node-ref",
-                                       1, kw, "one of :c, :str, :i, etc."));
+    /* return(s7_wrong_type_arg_error(s7, "ast-node-ref", */
+    /*                                    1, kw, "one of :c, :str, :i, etc.")); */
 }
 
 s7_pointer ast_node_type_kw_pred(s7_scheme *s7, char *kw, s7_pointer args)
@@ -336,12 +337,20 @@ s7_pointer ast_node_type_kw_pred(s7_scheme *s7, char *kw, s7_pointer args)
 #ifdef DEBUG_TRACE
     log_debug("ast_node_type_kw_pred: %s", kw);
 #endif
-    kw[strlen(kw) - 1] = '\0';
 
-    int tokid = token_kw_to_id(kw);
+    char buf[128];
+    strncpy(buf, kw, strlen(kw) + 1);
+
+    buf[strlen(buf) - 1] = '\0'; /* remove final ?  */
+
+    int tokid = token_kw_to_id(buf);
     if (tokid < 0) {
-        log_error("token kw %s not found", kw);
-        //FIXME: its and error, not false
+        log_error("predicate not found: :%s?", buf);
+        if (strchr(buf, '_')) {
+            int len = strlen(buf);
+            for (int i = 0; i < len; i++) if (buf[i] == '_') buf[i] = '-';
+            log_error("did you mean: :%s?", buf);
+        }
         return s7_f(s7);
     }
 
@@ -356,9 +365,24 @@ s7_pointer ast_node_type_kw_pred(s7_scheme *s7, char *kw, s7_pointer args)
     (ast-node-ref obj key)
     takes two args, a ast_node object and a keyword to look up in the object.
  */
-#define G_AST_NODE_REF_SPECIALIZED_HELP "(ast-node-ref b i) returns the ast_node value at index i."
+#define G_AST_NODE_REF_SPECIALIZED_HELP "(ast-node-ref nd k) returns the value for property k (a keyword) of ast-node nd."
 #define G_AST_NODE_REF_SPECIALIZED_SIG s7_make_signature(s7, 3, s7_t(s7), s7_make_symbol(s7, "ast-node?"), s7_make_symbol(s7, "integer?"))
 
+/** g_ast_node_ref_specialized
+
+    Looks up node properties, whose names are keywords. Each field in
+    the node_s struct has a property whose name is formed by prefixing
+    a colon: :tid, :line, :col, :trailing_newline, :qtype, :s,
+    :comments, :subnodes.
+
+    In addition the following pseudo-properties are supported:
+        :print - returns string for printable nodes, with correct quoting.
+
+        :@<attr> - only for nodes of type :call_expr. returns attribute
+        (i.e. :arg_named node) whose :id is <attr>. E.g. (rulenode :deps)
+        would return the 'deps' attribute of the rulenode.
+
+ */
 static s7_pointer g_ast_node_ref_specialized(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
@@ -387,7 +411,7 @@ static s7_pointer g_ast_node_ref_specialized(s7_scheme *s7, s7_pointer args)
     /* symbol arg = name of method, find it in object's method table */
     s7_pointer arg = s7_cadr(args);
     if (s7_is_keyword(arg))
-        return _ast_node_lookup_kw(s7, g, arg);
+        return _ast_node_property_lookup(s7, g, arg);
     else {
         return(s7_wrong_type_arg_error(s7, "ast-node-ref",
                                        2, arg, "a keyword"));
@@ -423,7 +447,7 @@ static s7_pointer g_ast_node_object_applicator(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
     log_debug("g_ast_node_object_applicator");
-    /* debug_print_s7(s7, "APPLICATOR ARGS: ", s7_cdr(args)); */
+    debug_print_s7(s7, "APPLICATOR ARGS: ", s7_cdr(args));
 #endif
 
     /* no need to check arg1, it's the "self" ast_node obj */
@@ -435,30 +459,47 @@ static s7_pointer g_ast_node_object_applicator(s7_scheme *s7, s7_pointer args)
                                        1, rest, "missing keyword arg"));
 
     s7_pointer op = s7_car(rest);
-
     if (s7_is_keyword(op)) {
-        char *kw = (char*)s7_symbol_name(s7_keyword_to_symbol(s7, op));
+        s7_pointer sym = s7_keyword_to_symbol(s7, op);
+        char *kw = (char*)s7_symbol_name(sym);
         /* log_debug("KW: %s", kw); */
-        if (strrchr(kw, '?')) {
-            /* log_debug("KW PREDICATE"); */
-            if (strncmp(kw, "printable?", 10) == 0) {
-                s7_pointer node = s7_car(args);
-                struct node_s *ast_node = s7_c_object_value(node);
-                if (ast_node_is_printable(ast_node))
-                    return s7_t(s7);
-                else return s7_f(s7);
+        if (kw[0] == '@') {
+            /* log_debug("ATTRIB %s", kw); */
+            struct node_s *rule_node = s7_c_object_value(s7_car(args));
+            if ( rule_node->tid != TK_Call_Expr ) {
+                return s7_nil(s7);
             } else {
-                return ast_node_type_kw_pred(s7, kw, args);
+                struct node_s *attr_node
+                    = ast_node_rule_attrib(rule_node,
+                                           &kw[1]); /* omit leading @ */
+                if (attr_node == NULL) {
+                    return s7_nil(s7);
+                } else {
+                    return ast_node_s7_new(s7, attr_node);
+                }
             }
         } else {
-            if (op == s7_make_keyword(s7, "subnodes_ct")) {
-                log_debug("running :subnodes_ct");
-                s7_pointer obj = s7_car(args);
-                struct node_s *cs  = (struct node_s *)s7_c_object_value(obj);
-                int ct = utarray_len(cs->subnodes);
-                return s7_make_integer(s7, ct);
+            if (strrchr(kw, '?')) {
+                /* log_debug("KW PREDICATE %s", kw); */
+                if (strncmp(kw, "printable?", 10) == 0) {
+                    s7_pointer node = s7_car(args);
+                    struct node_s *ast_node = s7_c_object_value(node);
+                    if (ast_node_is_printable(ast_node))
+                        return s7_t(s7);
+                    else return s7_f(s7);
+                } else {
+                    return ast_node_type_kw_pred(s7, kw, args);
+                }
             } else {
+                /* if (op == s7_make_keyword(s7, "FOOBAR")) { */
+                /*     log_debug("looking up :FOOBAR"); */
+                /*     s7_pointer obj = s7_car(args); */
+                /*     struct node_s *cs  = (struct node_s *)s7_c_object_value(obj); */
+                /*     int ct = utarray_len(cs->subnodes); */
+                /*     return s7_make_integer(s7, ct); */
+                /* } else { */
                 return g_ast_node_ref_specialized(s7, args);
+                /* } */
             }
         }
     } else {
@@ -501,15 +542,15 @@ static s7_pointer g_ast_node_object_applicator(s7_scheme *s7, s7_pointer args)
 
 #define G_AST_NODE_SET_SPECIALIZED_SIG s7_make_signature(s7, 4, s7_make_symbol(s7, "float?"), s7_make_symbol(s7, "ast-node?"), s7_make_symbol(s7, "integer?"), s7_make_symbol(s7, "float?"))
 
-static s7_pointer _update_ast_node(s7_scheme *s7,
+static s7_pointer _update_ast_node_property(s7_scheme *s7,
                                   struct node_s *ast_node,
                                   s7_pointer key, s7_pointer val)
 {
 #ifdef DEBUG_TRACE
-    log_debug("_update_ast_node");
+    log_debug("_update_ast_node_property");
 #endif
 
-    if (key == s7_make_keyword(s7, "type")) {
+    if (key == s7_make_keyword(s7, "tid")) {
         if (!s7_is_integer(val))
             return(s7_wrong_type_arg_error(s7, "ast-node-set!",
                                            3, val, "an integer"));
@@ -593,6 +634,76 @@ static s7_pointer _update_ast_node(s7_scheme *s7,
                           key)));
 }
 
+/**
+   update a starlark attribute, i.e. named arg, like deps
+   node arg type == :named_arg
+   key: tells us what to update, 'name or 'value
+
+   attrib structure:
+       :arg-named
+           :id
+           :eq
+           :list-expr || :string || dict-expr || ...etc
+ */
+//FIXME: move to sealark/nodes.c? but val arg is polymorphic s7...
+static s7_pointer _update_starlark(s7_scheme *s7,
+                                   struct node_s *node,
+                                   const char *key,
+                                   s7_pointer val)
+{
+#if defined(DEBUG_TRACE) || defined(DEBUG_ATTR)
+    log_debug("_update_starlark %s", key);
+#endif
+
+    struct node_s *target;
+
+    switch(node->tid) {
+    case TK_Arg_Named:
+        if ( strncmp(key, "name", 4) == 0) {
+            /* update attribute name */
+            log_debug("updating attr-name");
+            const char *tmp_name;
+            if (s7_is_string(val)) {
+                tmp_name = s7_string(val);
+            } else {
+                if (s7_is_number(val)) {
+                    tmp_name = s7_number_to_string(s7, val, 10);
+                } else {
+                    return(s7_wrong_type_arg_error(s7,
+                                                   "ast-node-set! attr name",
+                                                               2, val,
+                                                               "string or number"));
+                }
+            }
+            /* strings from s7 must not be freed? so... */
+            int len = strlen(tmp_name) + 1; /* add one for newline */
+            log_debug("TMP NAME: %d, %s", len, tmp_name);
+            char *new_name = calloc(len, sizeof(char));
+            snprintf(new_name, len, "%s", tmp_name);
+
+            target = utarray_eltptr(node->subnodes, 0);
+            free(target->s);
+            target->s = new_name;
+            return s7_make_string(s7, new_name);
+        } else {
+            if ( strncmp(key, "value", 5) == 0) {
+                return ast_attrs_update_attribute_value(s7, node, key, val);
+            } else {
+                return(s7_wrong_type_arg_error(s7,
+                                               "ast-node-set! attr update",
+                                               2, val,
+                                               "'name or 'value"));
+            }
+        }
+        break;
+    default:
+        return(s7_error(s7, s7_make_symbol(s7, "not_yet_supported"),
+                  s7_list(s7, 2,
+                          s7_make_string(s7, "node type: ~D not yet supported"),
+                          node->tid)));
+    }
+}
+
 /* g_ast_node_set_specialized
 
    implements (ast_node_set! ...)
@@ -604,9 +715,9 @@ static s7_pointer g_ast_node_set_specialized(s7_scheme *s7, s7_pointer args)
 #ifdef DEBUG_TRACE
     log_debug("g_ast_node_set_specialized");
 #endif
-    struct node_s *g;
+    struct node_s *node;
     s7_int typ;
-    s7_pointer obj, kw;
+    s7_pointer obj, key;
 
     /* set! methods/procedures need to check that they have
        been passed the correct number of arguments: 3 */
@@ -624,17 +735,25 @@ static s7_pointer g_ast_node_set_specialized(s7_scheme *s7, s7_pointer args)
         return(s7_wrong_type_arg_error(s7, "ast-node-set!", 1, obj, "a mutable ast_node"));
 
     /* validate lookup key type - in this case, a keyword */
-    kw = s7_cadr(args);
-    if (!s7_is_keyword(kw))
-        return(s7_wrong_type_arg_error(s7, "ast-node-set!",
-                                       2, kw, "a keyword"));
-
-    /* mutate to object: */
-    g = (struct node_s *)s7_c_object_value(obj);
-    _update_ast_node(s7, g, kw, s7_caddr(args));
-    //FIXME: r7rs says result of set! is unspecified. does that mean
-    //implementation-specified?
-    return s7_unspecified(s7);
+    /* keyword key indexes ast node properties, e.g. :line */
+    /* symbol key indexes starlark 'attribute', e.g. 'deps */
+    key = s7_cadr(args);
+    if (s7_is_keyword(key)) {
+        /* mutate to object: */
+        node = (struct node_s *)s7_c_object_value(obj);
+        _update_ast_node_property(s7, node, key, s7_caddr(args));
+        //FIXME: r7rs says result of set! is unspecified. does that mean
+        //implementation-specified?
+        return s7_unspecified(s7);
+    } else {
+        if (s7_is_symbol(key)) {
+            node = (struct node_s *)s7_c_object_value(obj);
+            _update_starlark(s7, node, s7_symbol_name(key), s7_caddr(args));
+        } else {
+            return(s7_wrong_type_arg_error(s7, "ast-node-set!",
+                                           2, key, "a keyword or symbol"));
+        }
+    }
 }
 
 static s7_pointer g_ast_node_set_generic(s7_scheme *s7, s7_pointer args)

@@ -46,18 +46,19 @@ void export_token_tables(s7_scheme *s7)
     for (i = 0; i < 256; i++) {
         if (token_name[i][0] != NULL) {
             len = strlen(token_name[i][0]);
-            log_debug("tok: %s len %d", token_name[i][0], len);
+            /* log_debug("tok: %s len %d", token_name[i][0], len); */
             snprintf(tknm, len+1, "%s", (token_name[i][0]));
-            log_debug("tknm: %s", tknm);
+            /* log_debug("tknm: %s", tknm); */
             for (j = 0; j < len; j++) {
                 tknm[j] = tolower(tknm[j]);
+                if (tknm[j] == '_') tknm[j] = '-';
             }
-            log_debug("tknm: %d %s", i, tknm);
+            /* log_debug("tknm: %d %s", i, tknm); */
 
             result = s7_vector_set(s7, toks, (s7_int)i,
                                    s7_make_keyword(s7, tknm + 3));
             char *msg = s7_object_to_c_string(s7, result);
-            log_debug("vecset result: %s", msg);
+            /* log_debug("vecset result: %s", msg); */
             free(msg);
         }
     }

@@ -304,23 +304,33 @@ UT_array *split_iblock(struct node_s* iblock, int indent)
 /* **************************************************************** */
 EXPORT int token_kw_to_id(char *kw)
 {
+#ifdef DEBUG_TRACE
+    log_debug("token_kw_to_id: %s", kw);
+#endif
     char tag[128];
-    sprintf(tag, "TK_%s", kw);
+    sprintf(tag, "TK-%s", kw);
 
     int len = strlen(tag);
     tag[3] = toupper(tag[3]);
     /* to camel_case */
     for (int j = 0; j < len; j++) {
-        if (tag[j-1] == '_')
+        if (tag[j-1] == '-')
             tag[j] = toupper(tag[j]);
     }
     /* log_debug("lookup: %s", tag); */
 
+    /* the C names use _ but scheme uses - so we have to convert */
+    /* fix me: make a static table so we don't have to do all this computing */
+    char workbuf[64];
+    int j;
     for(int i = 1; i < 256; i++) {
         /* log_debug("tag: %s, toknm: %s", tag, token_name[i][0]); */
         if (token_name[i][0] == NULL) return -1;
-
-        if ( strcmp(tag, token_name[i][0]) == 0 ) {
+        len = strlen(token_name[i][0]) + 1; /* add one for \0 */
+        strncpy(workbuf, token_name[i][0], len);
+        for(j=0; j < len; j++) if (workbuf[j] == '_') workbuf[j] = '-';
+        /* log_debug("CONVERTED TAGSTRING: %s", workbuf); */
+        if ( strncmp(tag, workbuf, len) == 0 ) {
             /* log_debug("MATCH %d", i); */
             return i;
         }
@@ -392,10 +402,9 @@ EXPORT void ast_node_free(void *_elt) {
 /**
    assumption: already verified node is printable
 */
-UT_string *workbuf;
-
 char *_print_string_node(struct node_s *node)
 {
+    static UT_string *workbuf;
     utstring_renew(workbuf);
 
     char * br =
@@ -455,6 +464,46 @@ EXPORT char  *ast_node_printable_string(struct node_s *node)
     default:
         return (char*)token_name[node->tid][1];
     }
+}
+
+/**
+   if current node n is call_expr, then path to attr is:
+
+       :call_expr
+         :call_sfx  (second child)
+           :arg_list (second child)
+             list of alternating :arg_named and :comma
+               :id (first child of :arg_named)
+ */
+EXPORT struct node_s *ast_node_rule_attrib(struct node_s *node, char *kw)
+{
+    /* log_debug("ast_node_rule_attrib %s", kw); */
+
+    if ( node->tid != TK_Call_Expr ) return NULL;
+    UT_array *call_expr_subnodes = node->subnodes;
+    /* :call-sfx is second child of :call-expr */
+    struct node_s *call_sfx = utarray_eltptr(call_expr_subnodes, 1);
+    /* log_debug("call_expr[1].tid %d", call_sfx->tid); // 95 = Call_Sfx */
+
+    UT_array *call_sfx_subnodes = call_sfx->subnodes;
+    struct node_s *arg_list = utarray_eltptr(call_sfx_subnodes, 1);
+    /* log_debug("call_sfx[1].tid %d", arg_list->tid); // 88 TK_Arg_List */
+
+    UT_array *arg_list_subnodes = arg_list->subnodes;
+    /* log_debug("arg_list subnode ct: %d", utarray_len(arg_list_subnodes)); */
+
+    /* now search for kw */
+    int kwlen = strlen(kw);
+    struct node_s *attr = NULL;
+    while( (attr=(struct node_s*)utarray_next(arg_list_subnodes, attr)) ) {
+        if (attr->tid == TK_Arg_Named) {
+            struct node_s *id = utarray_eltptr(attr->subnodes, 0);
+            if (strncmp(id->s, kw, kwlen) == 0) {
+                return attr;
+            }
+        }
+    }
+    return NULL;
 }
 
 EXPORT void ast_node_copy(void *_dst, const void *_src)
