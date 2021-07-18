@@ -79,9 +79,9 @@ cc_library(
         "-I$(GENDIR)/bindings/lua",
         "-I$(GENDIR)/external/moonlark/bindings/lua",
 
-        "-Isealark",  # starlark.h
-        "-I$(GENDIR)/sealark",  # starlark.h
-        "-I$(GENDIR)/external/moonlark/sealark",  # starlark.h
+        "-Isealark",  # sealark.h
+        "-I$(GENDIR)/sealark",  # sealark.h
+        "-I$(GENDIR)/external/moonlark/sealark",  # sealark.h
 
         "-Ivendored/uthash",
         "-Iexternal/moonlark/vendored/uthash",
@@ -111,7 +111,7 @@ genrule(
         "lmoonlark.c",
         "libmoonlark.c",
         "//sealark:debug.c",
-        "//sealark:starlark.h",
+        "//sealark:sealark.h",
     ],
     outs = [
         "lmoonlark.h",
@@ -124,7 +124,7 @@ genrule(
         "    $(location lmoonlark.c) \\",
         "    $(location libmoonlark.c) \\",
         "    $(location //sealark:debug.c) \\",
-        "    $(location //sealark:starlark.h)",
+        "    $(location //sealark:sealark.h)",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),
     tools = ["//vendored/makeheaders"]

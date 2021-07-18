@@ -2,8 +2,9 @@ load("@rules_cc//cc:defs.bzl", "cc_binary")
 
 exports_files(["libsunlark.c"])
 
-# DEFINES = ["DEBUG", "DEBUG_TRACE"]
-DEFINES = []
+#DEFINES = ["DEBUG", "DEBUG_TRACE"]
+DEFINES = ["DEBUG_ATTR"]
+# DEFINES = []
 
 cc_library(
     name  = "sunlark",
@@ -13,92 +14,10 @@ cc_library(
     srcs  = [
         "libsunlark.c",
         "libsunlark.h",
-    ],
-    defines = DEFINES,
-    copts = select({
-        # strdup is non-standard, not supported on linux in strict c11 mode
-        "//bzl/host:macos": ["-std=c11"],
-        "//bzl/host:linux": ["-std=gnu11"],
-        "//conditions:default": ["-std=c11"],
-    }) + [
-        "-pedantic-errors",
-
-        "-I$(GENDIR)/bindings/scheme",
-        "-I$(GENDIR)/external/moonlark/binding/scheme",
-
-        "-I", "$(GENDIR)/sealark",
-        "-I", "$(GENDIR)external/moonlark/sealark",
-
-        "-I", "vendored/logc",
-        "-I", "external/moonlark/vendored/logc",
-
-        "-I", "vendored/s7",
-        "-I", "external/moonlark/vendored/s7",
-
-        "-I", "vendored/uthash",
-        "-I", "external/moonlark/vendored/uthash",
-    ],
-    deps = [
-        ":ast_node_s7",
-        ":ast_nodelist_s7",
-        "//bazel",
-        "//sealark",
-        "//vendored/logc",
-        "//vendored/uthash",
-        "//vendored/s7"
-    ],
-)
-
-###########
-cc_library(
-    name  = "ast_node_s7",
-    visibility = ["//visibility:public"],
-    # linkshared = 1,
-    linkstatic = 1,
-    srcs  = [
+        "ast_attribs_s7.c",
+        "ast_attribs_s7.h",
         "ast_node_s7.c",
         "ast_node_s7.h",
-    ],
-    defines = DEFINES,
-    copts = select({
-        # strdup is non-standard, not supported on linux in strict c11 mode
-        "//bzl/host:macos": ["-std=c11"],
-        "//bzl/host:linux": ["-std=gnu11"],
-        "//conditions:default": ["-std=c11"],
-    }) + [
-        "-pedantic-errors",
-
-        "-I$(GENDIR)/bindings/scheme",
-        "-I$(GENDIR)/external/moonlark/binding/scheme",
-
-        "-I", "$(GENDIR)/sealark",
-        "-I", "$(GENDIR)external/moonlark/sealark",
-
-        "-I", "vendored/logc",
-        "-I", "external/moonlark/vendored/logc",
-
-        "-I", "vendored/s7",
-        "-I", "external/moonlark/vendored/s7",
-
-        "-I", "vendored/uthash",
-        "-I", "external/moonlark/vendored/uthash",
-    ],
-    deps = [
-        "//bazel",
-        "//sealark",
-        "//vendored/logc",
-        "//vendored/uthash",
-        "//vendored/s7"
-    ],
-)
-
-###########
-cc_library(
-    name  = "ast_nodelist_s7",
-    visibility = ["//visibility:public"],
-    # linkshared = 1,
-    linkstatic = 1,
-    srcs  = [
         "ast_nodelist_s7.c",
         "ast_nodelist_s7.h",
     ],
@@ -140,6 +59,7 @@ genrule(
     name = "mkhdrs",
     srcs = [
         "libsunlark.c",
+        "ast_attribs_s7.c",
         "ast_node_s7.c",
         "ast_nodelist_s7.c",
         "//bazel:bazel_config.c",
@@ -147,6 +67,7 @@ genrule(
     ],
     outs = [
         "libsunlark.h",
+        "ast_attribs_s7.h",
         "ast_node_s7.h",
         "ast_nodelist_s7.h",
     ],
@@ -157,6 +78,7 @@ genrule(
         "    $(location //bazel:bazel_config.c) \\",
         "    $(location //sealark:mkhdrs-export) \\",
         "    $(location libsunlark.c) \\",
+        "    $(location ast_attribs_s7.c) \\",
         "    $(location ast_node_s7.c) \\",
         "    $(location ast_nodelist_s7.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
