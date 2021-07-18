@@ -95,6 +95,17 @@ static s7_pointer sunlark_is_ast_node(s7_scheme *s7, s7_pointer args)
     return(s7_make_boolean(s7,
                            s7_c_object_type(s7_car(args)) == ast_node_t));
 }
+
+#define NODE_TID (NODE_S7) ((s7_c_object_value(s7, NODE_S7)->tid;))
+
+int sunlark_node_tid(s7_pointer node_s7)
+{
+#ifdef DEBUG_TRACE
+    log_debug("sunlark_node_tid");
+#endif
+    return ((struct node_s*)s7_c_object_value(node_s7))->tid;
+}
+
 /* /section: identity */
 
 /* **************************************************************** */
