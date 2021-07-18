@@ -216,7 +216,14 @@ including whitespace and comments).
 `libsealark` uses [re2c](https://re2c.org/) for lexing,
 [lemon](https://www.sqlite.org/cgi/src/doc/trunk/doc/lemon.html) for
 parsing, and [uthash](https://troydhanson.github.io/uthash/) for C
-data structures.
+data structures. Experienced C programmers will notice there are no
+header (.h) files in the source tree. That's because it uses
+[Makeheaders](https://fossil-scm.org/home/doc/trunk/src/makeheaders.html#H0009),
+which automatically generates one header for each source file,
+containing everything it needs (and nothing more). Each BUILD.bazel
+file contains a `:mkhdrs` target that runs `makeheaders`. In addition
+`sealark/BUILD.bazel` has a `:mkhdrs-export` that generates the
+`sealark.h` public API.
 
 Currently `libsealark` does not contain a public API for manipulating
 the AST. A developer could easily implement such routines, however,
