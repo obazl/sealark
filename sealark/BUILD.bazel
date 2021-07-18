@@ -21,7 +21,7 @@ cc_library(
         "//vendored/logc:log.h"
    ],
     hdrs = [
-        "starlark.h",           # api hdr
+        "sealark.h",           # api hdr
     ],
     defines = select({
         "//bzl/host:debug": ["DEBUG_TRACE"],
@@ -249,7 +249,7 @@ genrule(
         # "//vendored/uthash",
     ],
     outs = [
-        "starlark.h",
+        "sealark.h",
     ],
     cmd = "\n".join([
         "SRC1=$(location parse.c)",
