@@ -339,27 +339,27 @@ EXPORT int token_kw_to_id(char *kw)
 
 /* **************************************************************** */
 //FIXME: move nodelist API to nodelist.c?
-EXPORT UT_array *nodelist_new()
+EXPORT UT_array *sealark_nodelist_new()
 {
-    log_debug("nodelist_new");
+    log_debug("sealark_nodelist_new");
     UT_array *nl;
     utarray_new(nl, &node_icd);
     return nl;
 }
 
-EXPORT void nodelist_free(UT_array *nl)
+EXPORT void sealark_nodelist_free(UT_array *nl)
 {
-    log_debug("nodelist_free");
+    log_debug("sealark_nodelist_free");
     utarray_free(nl);
 }
 
-EXPORT int nodelist_len(UT_array *nl)
+EXPORT int sealark_nodelist_len(UT_array *nl)
 {
-    log_debug("nodelist_len: %p", nl);
+    log_debug("sealark_nodelist_len: %p", nl);
     return utarray_len(nl);
 }
 
-EXPORT int nodelist_copy(UT_array *_dst, UT_array *_src)
+EXPORT int sealark_nodelist_copy(UT_array *_dst, UT_array *_src)
 {
     log_debug("node_copy: %p <- %p", _dst, _src);
     if (utarray_len(_dst) > 0) {
@@ -370,7 +370,7 @@ EXPORT int nodelist_copy(UT_array *_dst, UT_array *_src)
     return 0;
 }
 
-EXPORT int nodelist_copy_destructively(UT_array *_dst, UT_array *_src)
+EXPORT int sealark_nodelist_copy_destructively(UT_array *_dst, UT_array *_src)
 {
     log_debug("node_copy_destructively: %p <- %p", _dst, _src);
     utarray_clear(_dst);
@@ -379,13 +379,13 @@ EXPORT int nodelist_copy_destructively(UT_array *_dst, UT_array *_src)
 }
 
 /* **************************************************************** */
-EXPORT struct node_s *ast_node_new()
+EXPORT struct node_s *sealark_node_new()
 {
     struct node_s *n = (struct node_s *)calloc(1, sizeof(struct node_s));
     return n;
 }
 
-EXPORT void ast_node_free(void *_elt) {
+EXPORT void sealark_node_free(void *_elt) {
     /* log_debug("NODE_DTOR: %s (%d)", */
     /*           token_name[((struct node_s*)_elt)->tid][0], */
     /*           ((struct node_s*)_elt)->tid); */
@@ -441,7 +441,7 @@ char *_print_string_node(struct node_s *node)
     return utstring_body(workbuf);
 }
 
-EXPORT bool ast_node_is_printable(struct node_s *ast_node)
+EXPORT bool sealark_node_is_printable(struct node_s *ast_node)
 {
     for (int i = 0; printable_tokens[i] != 0; i++) {
         if (ast_node->tid == printable_tokens[i])
@@ -450,9 +450,9 @@ EXPORT bool ast_node_is_printable(struct node_s *ast_node)
     return false;
 }
 
-EXPORT char  *ast_node_printable_string(struct node_s *node)
+EXPORT char  *sealark_node_printable_string(struct node_s *node)
 {
-    if ( !ast_node_is_printable(node) ) return NULL;
+    if ( !sealark_node_is_printable(node) ) return NULL;
 
     switch(node->tid) {
     case TK_STRING:
@@ -475,9 +475,9 @@ EXPORT char  *ast_node_printable_string(struct node_s *node)
              list of alternating :arg_named and :comma
                :id (first child of :arg_named)
  */
-EXPORT struct node_s *ast_node_rule_attrib(struct node_s *node, char *kw)
+EXPORT struct node_s *sealark_get_attribute_node(struct node_s *node, char *kw)
 {
-    /* log_debug("ast_node_rule_attrib %s", kw); */
+    /* log_debug("sealark_node_rule_attrib %s", kw); */
 
     if ( node->tid != TK_Call_Expr ) return NULL;
     UT_array *call_expr_subnodes = node->subnodes;
@@ -506,7 +506,7 @@ EXPORT struct node_s *ast_node_rule_attrib(struct node_s *node, char *kw)
     return NULL;
 }
 
-EXPORT void ast_node_copy(void *_dst, const void *_src)
+EXPORT void sealark_node_copy(void *_dst, const void *_src)
 {
     /* log_debug("node_copy"); // : %p <- %p", _dst, _src); */
     struct node_s *dst = (struct node_s*)_dst;
@@ -533,7 +533,7 @@ EXPORT void ast_node_copy(void *_dst, const void *_src)
 }
 
 /* nodelist: UT_array of node_s */
-UT_icd node_icd = {sizeof(struct node_s), NULL, ast_node_copy, ast_node_free};
+UT_icd node_icd = {sizeof(struct node_s), NULL, sealark_node_copy, sealark_node_free};
 
 #if INTERFACE
 struct comma_s {

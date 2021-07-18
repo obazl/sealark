@@ -188,7 +188,7 @@ static s7_pointer _update_list_value(s7_scheme *s7,
         }
         struct node_s *new_expr_list
             = _add_attr_list_item(s7, expr_list, edits);
-        return ast_node_s7_new(s7, new_expr_list);
+        return sunlark_node_new(s7, new_expr_list);
     }
     if (action == s7_make_keyword(s7, "replace")) {
         log_debug("ACTION REPLACE");
@@ -199,7 +199,7 @@ static s7_pointer _update_list_value(s7_scheme *s7,
         }
         struct node_s *new_expr_list
             = _add_attr_list_item(s7, expr_list, edits);
-        return ast_node_s7_new(s7, new_expr_list);
+        return sunlark_node_new(s7, new_expr_list);
     }
     if (action == s7_make_keyword(s7, "remove")) {
         log_debug("ACTION REMOVE");
@@ -213,13 +213,13 @@ static s7_pointer _update_list_value(s7_scheme *s7,
                                             action)));
 }
 
-s7_pointer ast_attrs_update_attribute_value(s7_scheme *s7,
+s7_pointer sunlark_update_attribute_value(s7_scheme *s7,
                                             struct node_s *node,
                                             const char *key,
                                             s7_pointer val)
 {
 #if defined(DEBUG_TRACE) || defined(DEBUG_ATTR)
-    log_debug("ast_attrs_update_attribute_value, tid: %d",
+    log_debug(">> sunlark_update_attribute_value, tid: %d",
               node->tid);
 #endif
 

@@ -59,7 +59,7 @@ EXPORT void parser_free(parse_state_s *parser)
 {
     // log_debug("parser_free %s", parser->lexer->fname);
     lexer_free(parser->lexer);
-    ast_node_free(parser->root);
+    sealark_node_free(parser->root);
 }
 
 EXPORT UT_array *starlark_lex_string(const char *buffer)

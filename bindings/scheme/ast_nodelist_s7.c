@@ -13,36 +13,36 @@
 /* exported s7 c-types */
 s7_int ast_nodelist_t = 0;
 
-static s7_pointer g_ast_nodelist_methods_let;
+static s7_pointer sunlark_nodelist_methods_let;
 
 /* forward decls */
 /* section: identity */
-static s7_pointer g_is_ast_nodelist(s7_scheme *s7, s7_pointer args);
+static s7_pointer sunlark_is_ast_nodelist(s7_scheme *s7, s7_pointer args);
 
 /* section: equality */
 static bool _ast_nodelists_are_value_equal(struct node_s *val1,
                                       struct node_s *val2);
-static s7_pointer g_ast_nodelists_are_equal(s7_scheme *s7, s7_pointer args);
-static s7_pointer g_ast_nodelists_are_equivalent(s7_scheme *s7, s7_pointer args);
+static s7_pointer sunlark_nodelists_are_equal(s7_scheme *s7, s7_pointer args);
+static s7_pointer sunlark_nodelists_are_equivalent(s7_scheme *s7, s7_pointer args);
 
 /* section: getters and setters */
-static s7_pointer g_ast_nodelist_ref_specialized(s7_scheme *s7, s7_pointer args);
-static s7_pointer g_ast_nodelist_set_specialized(s7_scheme *s7, s7_pointer args);
+static s7_pointer sunlark_nodelist_ref_specialized(s7_scheme *s7, s7_pointer args);
+static s7_pointer sunlark_nodelist_set_specialized(s7_scheme *s7, s7_pointer args);
 
-static s7_pointer g_ast_nodelist_object_applicator(s7_scheme *s7, s7_pointer args);
+static s7_pointer sunlark_nodelist_object_applicator(s7_scheme *s7, s7_pointer args);
 
 static void _register_get_and_set(s7_scheme *s7);
 
 /* section: display */
-/* char *g_ast_nodelist_display(s7_scheme *s7, void *value); */
-/* char *g_ast_nodelist_display_readably(s7_scheme *s7, void *value); */
+/* char *sunlark_nodelist_display(s7_scheme *s7, void *value); */
+/* char *sunlark_nodelist_display_readably(s7_scheme *s7, void *value); */
 
 /* section: serialization */
 #define INC_PTR (workptr = workbuf + strlen(workbuf))
-static s7_pointer g_ast_nodelist_to_string(s7_scheme *s7, s7_pointer args);
+static s7_pointer sunlark_nodelist_to_string(s7_scheme *s7, s7_pointer args);
 
 /* section: c-object construction */
-static s7_pointer g_ast_nodelist_copy(s7_scheme *s7, s7_pointer args);
+static s7_pointer sunlark_nodelist_copy(s7_scheme *s7, s7_pointer args);
 static s7_pointer g_new_ast_nodelist(s7_scheme *s7, s7_pointer args);
 enum formals_e {
     FLD_C = 0, FLD_BYTE,
@@ -64,14 +64,14 @@ static void _register_c_object_methods(s7_scheme *s7, s7_pointer ast_nodelist);
 /* section: c-type configuration */
 static void   _register_ast_nodelist_fns(s7_scheme *s7);
 
- /* s7_pointer g_ast_nodelist_length(s7_scheme *sc, s7_pointer args); */
+ /* s7_pointer sunlark_nodelist_length(s7_scheme *sc, s7_pointer args); */
 
 
 /* this is the public API that clients call: */
 int configure_s7_ast_nodelist_type(s7_scheme *s7); /* public */
 
 /* section: gc */
-static s7_pointer g_ast_nodelist_gc_mark(s7_scheme *s7, s7_pointer p);
+static s7_pointer sunlark_nodelist_gc_mark(s7_scheme *s7, s7_pointer p);
 
 /* section: debugging */
 void debug_print_s7(s7_scheme *s7, char *label, s7_pointer obj);
@@ -80,12 +80,12 @@ void debug_print_s7(s7_scheme *s7, char *label, s7_pointer obj);
 
 /* **************************************************************** */
 /* section: identity */
-#define g_is_ast_nodelist_help "(ast-nodelist? obj) returns #t if obj is a ast_nodelist."
-#define g_is_ast_nodelist_sig s7_make_signature(s7, 2, s7_make_symbol(s7, "boolean?"), s7_t(s7))
-static s7_pointer g_is_ast_nodelist(s7_scheme *s7, s7_pointer args)
+#define SUNLARK_IS_AST_NODELIST_HELP "(ast-nodelist? obj) returns #t if obj is a ast_nodelist."
+#define SUNLARK_IS_AST_NODELIST_SIG s7_make_signature(s7, 2, s7_make_symbol(s7, "boolean?"), s7_t(s7))
+static s7_pointer sunlark_is_ast_nodelist(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
-    log_debug("g_is_ast_nodelist");
+    log_debug("sunlark_is_ast_nodelist");
 #endif
     return(s7_make_boolean(s7,
                            s7_c_object_type(s7_car(args)) == ast_nodelist_t));
@@ -201,15 +201,15 @@ static bool _ast_nodelists_are_value_equal(struct node_s *val1,
     pairs, vectors, bytevectors, records, strings: same mem address
  */
 
-/** g_ast_nodelists_are_equal
+/** sunlark_nodelists_are_equal
 
     callback for Scheme 'eqv?' ?
     wrapper on _ast_nodelists_are_c_eql
  */
-static s7_pointer g_ast_nodelists_are_equal(s7_scheme *s7, s7_pointer args)
+static s7_pointer sunlark_nodelists_are_equal(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
-    log_debug("g_ast_nodelists_are_equal");
+    log_debug("sunlark_nodelists_are_equal");
 #endif
     return(s7_make_boolean(s7,
           /* _ast_nodelists_are_c_eql((void *)s7_c_object_value(s7_car(args)), */
@@ -220,16 +220,16 @@ static s7_pointer g_ast_nodelists_are_equal(s7_scheme *s7, s7_pointer args)
            );
 }
 
-/** g_ast_nodelists_are_equivalent
+/** sunlark_nodelists_are_equivalent
 
     implementation for Scheme 'equal?' 'eq?' ?
     true if same values
  */
-#define G_AST_NODELISTS_ARE_EQUIVALENT_HELP "(equivalent? ast_nodelist1 ast_nodelist2)"
-static s7_pointer g_ast_nodelists_are_equivalent(s7_scheme *s7, s7_pointer args)
+#define SUNLARK_NODELISTS_ARE_EQUIVALENT_HELP "(equivalent? ast_nodelist1 ast_nodelist2)"
+static s7_pointer sunlark_nodelists_are_equivalent(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
-    log_debug("g_ast_nodelists_are_equivalent");
+    log_debug("sunlark_nodelists_are_equivalent");
 #endif
 
     s7_pointer arg1, arg2;
@@ -285,7 +285,7 @@ static s7_pointer _ast_nodelist_lookup(s7_scheme *s7,
     log_debug("ast_nodelist_lookup");
 #endif
 
-    if ( s7_integer(idx) < nodelist_len(ast_nodelist)) {
+    if ( s7_integer(idx) < sealark_nodelist_len(ast_nodelist)) {
         //FIXME implement
     } else {
         return(s7_out_of_range_error(s7,
@@ -296,19 +296,19 @@ static s7_pointer _ast_nodelist_lookup(s7_scheme *s7,
 }
 
 /* **************** */
-/** g_ast_nodelist_ref_specialized
+/** sunlark_nodelist_ref_specialized
 
     (ast_nodelist-ref obj index)
     takes two args, a ast_nodelist object and a int index
  */
-#define G_AST_NODELIST_REF_SPECIALIZED_HELP "(ast-nodelist-ref b i) returns the ast_nodelist value at index i."
-#define G_AST_NODELIST_REF_SPECIALIZED_SIG s7_make_signature(s7, 3, s7_t(s7), s7_make_symbol(s7, "ast-nodelist?"), s7_make_symbol(s7, "integer?"))
+#define SUNLARK_NODELIST_REF_SPECIALIZED_HELP "(ast-nodelist-ref b i) returns the ast_nodelist value at index i."
+#define SUNLARK_NODELIST_REF_SPECIALIZED_SIG s7_make_signature(s7, 3, s7_t(s7), s7_make_symbol(s7, "ast-nodelist?"), s7_make_symbol(s7, "integer?"))
 
-static s7_pointer g_ast_nodelist_ref_specialized(s7_scheme *s7, s7_pointer args)
+static s7_pointer sunlark_nodelist_ref_specialized(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
-    log_debug("g_ast_nodelist_ref_specialized");
-    /* debug_print_s7(s7, "g_ast_nodelist_ref_specialized args: ", args); */
+    log_debug("sunlark_nodelist_ref_specialized");
+    /* debug_print_s7(s7, "sunlark_nodelist_ref_specialized args: ", args); */
 #endif
 
     UT_array *nl;
@@ -334,14 +334,14 @@ static s7_pointer g_ast_nodelist_ref_specialized(s7_scheme *s7, s7_pointer args)
             log_error("ERROR utarray_eltptr fail, idx %d", s7_integer(idx));
             exit(EXIT_FAILURE);
         }
-        return ast_node_s7_new(s7, node);
+        return sunlark_node_new(s7, node);
     } else {
         return(s7_wrong_type_arg_error(s7, "ast-nodelist-ref",
                                        2, idx, "an integer"));
     }
 }
 
-/** g_ast_nodelist_object_applicator
+/** sunlark_nodelist_object_applicator
 
     (more accurate: object_applicator, not essentially tied to ref)
 
@@ -367,10 +367,10 @@ static s7_pointer g_ast_nodelist_ref_specialized(s7_scheme *s7, s7_pointer args)
     in practice, its a dispatcher. sorta. its job is to inspect the args and
     decide what to do with them.
  */
-static s7_pointer g_ast_nodelist_object_applicator(s7_scheme *s7, s7_pointer args)
+static s7_pointer sunlark_nodelist_object_applicator(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
-    log_debug("g_ast_nodelist_object_applicator");
+    log_debug("sunlark_nodelist_object_applicator");
     debug_print_s7(s7, "APPLICATOR ARGS: ", s7_cdr(args));
 #endif
 
@@ -392,15 +392,15 @@ static s7_pointer g_ast_nodelist_object_applicator(s7_scheme *s7, s7_pointer arg
             log_error("ERROR utarray_eltptr fail, idx %d", s7_integer(op));
             exit(EXIT_FAILURE);
         }
-        return ast_node_s7_new(s7, node);
+        return sunlark_node_new(s7, node);
     } else {
-        return(s7_wrong_type_arg_error(s7, "ast_nodelist-ref",
+        return(s7_wrong_type_arg_error(s7, "ast-nodelist-ref",
                                        2, op, "an integer"));
     }
 }
 
 /* **************** */
-/** g_ast_nodelist_set_specialized
+/** sunlark_nodelist_set_specialized
 
     registered twice: as a c-type generalize set! (s7_c_type_set_set()) and
     as procedure "ast_nodelist-set!" (s7_define_typed_function())
@@ -413,9 +413,9 @@ static s7_pointer g_ast_nodelist_object_applicator(s7_scheme *s7, s7_pointer arg
     note that outside of this set! context, (c-obj :k) will lookup the
     value bound to :k in c-obj (using g_struct_get).
  */
-#define G_AST_NODELIST_SET_SPECIALIZED_HELP "(ast_nodelist-set! b i x) sets the ast_nodelist value at index i to x."
+#define SUNLARK_NODELIST_SET_SPECIALIZED_HELP "(ast-nodelist-set! b i x) sets the ast_nodelist value at index i to x."
 
-#define G_AST_NODELIST_SET_SPECIALIZED_SIG s7_make_signature(s7, 4, s7_make_symbol(s7, "float?"), s7_make_symbol(s7, "ast-nodelist?"), s7_make_symbol(s7, "integer?"), s7_make_symbol(s7, "float?"))
+#define SUNLARK_NODELIST_SET_SPECIALIZED_SIG s7_make_signature(s7, 4, s7_make_symbol(s7, "float?"), s7_make_symbol(s7, "ast-nodelist?"), s7_make_symbol(s7, "integer?"), s7_make_symbol(s7, "float?"))
 
 static s7_pointer _update_ast_nodelist(s7_scheme *s7,
                                   struct node_s *ast_nodelist,
@@ -427,7 +427,7 @@ static s7_pointer _update_ast_nodelist(s7_scheme *s7,
 
     if (key == s7_make_keyword(s7, "type")) {
         if (!s7_is_integer(val))
-            return(s7_wrong_type_arg_error(s7, "ast_nodelist-set!",
+            return(s7_wrong_type_arg_error(s7, "ast-nodelist-set!",
                                            3, val, "an integer"));
         ast_nodelist->tid = s7_integer(val);
         return val;
@@ -435,7 +435,7 @@ static s7_pointer _update_ast_nodelist(s7_scheme *s7,
 
     if (key == s7_make_keyword(s7, "line")) {
         if (!s7_is_integer(val))
-            return(s7_wrong_type_arg_error(s7, "ast_nodelist-set!",
+            return(s7_wrong_type_arg_error(s7, "ast-nodelist-set!",
                                            3, val, "an integer"));
         ast_nodelist->line = s7_integer(val);
         return val;
@@ -443,7 +443,7 @@ static s7_pointer _update_ast_nodelist(s7_scheme *s7,
 
     if (key == s7_make_keyword(s7, "col")) {
         if (!s7_is_integer(val))
-            return(s7_wrong_type_arg_error(s7, "ast_nodelist-set!",
+            return(s7_wrong_type_arg_error(s7, "ast-nodelist-set!",
                                            3, val, "an integer"));
         ast_nodelist->col = s7_integer(val);
         return val;
@@ -451,7 +451,7 @@ static s7_pointer _update_ast_nodelist(s7_scheme *s7,
 
     if (key == s7_make_keyword(s7, "trailing_newline")) {
         if (!s7_is_boolean(val))
-            return(s7_wrong_type_arg_error(s7, "ast_nodelist-set!",
+            return(s7_wrong_type_arg_error(s7, "ast-nodelist-set!",
                                            3, val, "a boolean"));
         ast_nodelist->trailing_newline = s7_boolean(s7, val);
         return val;
@@ -459,7 +459,7 @@ static s7_pointer _update_ast_nodelist(s7_scheme *s7,
 
     if (key == s7_make_keyword(s7, "qtype")) {
         if (!s7_is_integer(val))
-            return(s7_wrong_type_arg_error(s7, "ast_nodelist-set!",
+            return(s7_wrong_type_arg_error(s7, "ast-nodelist-set!",
                                            3, val, "an integer"));
         ast_nodelist->qtype = s7_integer(val);
         return val;
@@ -467,7 +467,7 @@ static s7_pointer _update_ast_nodelist(s7_scheme *s7,
 
     if (key == s7_make_keyword(s7, "s")) {
         if (!s7_is_string(val))
-            return(s7_wrong_type_arg_error(s7, "ast_nodelist-set!",
+            return(s7_wrong_type_arg_error(s7, "ast-nodelist-set!",
                                            3, val, "a string"));
         free(ast_nodelist->s);
         /* s7_string() doc says "do not free the string", so we need
@@ -484,7 +484,7 @@ static s7_pointer _update_ast_nodelist(s7_scheme *s7,
 
     /* if (key == s7_make_keyword(s7, "comments")) { */
     /*     if (s7_c_object_type(val) != ast_nodelist_t) { */
-    /*         return(s7_wrong_type_arg_error(s7, "ast_nodelist-set!", */
+    /*         return(s7_wrong_type_arg_error(s7, "ast-nodelist-set!", */
     /*                                        3, val, "a ast_nodelist")); */
     /*     } else { */
     /*         log_debug("2 xxxxxxxxxxxxxxxx"); */
@@ -495,7 +495,7 @@ static s7_pointer _update_ast_nodelist(s7_scheme *s7,
 
     /* if (key == s7_make_keyword(s7, "subnodes")) { */
     /*     if (s7_c_object_type(val) != ast_nodelist_t) { */
-    /*         return(s7_wrong_type_arg_error(s7, "ast_nodelist-set!", */
+    /*         return(s7_wrong_type_arg_error(s7, "ast-nodelist-set!", */
     /*                                        3, val, "a ast_nodelist")); */
     /*     } else { */
     /*         log_debug("2 xxxxxxxxxxxxxxxx"); */
@@ -509,16 +509,16 @@ static s7_pointer _update_ast_nodelist(s7_scheme *s7,
                           key)));
 }
 
-/* g_ast_nodelist_set_specialized
+/* sunlark_nodelist_set_specialized
 
    implements (ast_nodelist_set! ...)
 
    what about (set! (node :subnodes) nodelist)? we need ctype for nodelist
  */
-static s7_pointer g_ast_nodelist_set_specialized(s7_scheme *s7, s7_pointer args)
+static s7_pointer sunlark_nodelist_set_specialized(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
-    log_debug("g_ast_nodelist_set_specialized");
+    log_debug("sunlark_nodelist_set_specialized");
 #endif
     struct node_s *g;
     s7_int typ;
@@ -528,21 +528,21 @@ static s7_pointer g_ast_nodelist_set_specialized(s7_scheme *s7, s7_pointer args)
        been passed the correct number of arguments: 3 */
 
     if (s7_list_length(s7, args) != 3)
-        return(s7_wrong_number_of_args_error(s7, "ast_nodelist-set! takes 3 arguments: ~~S", args));
+        return(s7_wrong_number_of_args_error(s7, "ast-nodelist-set! takes 3 arguments: ~~S", args));
 
     obj = s7_car(args);
     /* qua procedure, check type of first arg */
     typ = s7_c_object_type(obj);
     if (typ != ast_nodelist_t)
-        return(s7_wrong_type_arg_error(s7, "ast_nodelist-set!", 1, obj, "a ast_nodelist"));
+        return(s7_wrong_type_arg_error(s7, "ast-nodelist-set!", 1, obj, "a ast_nodelist"));
 
     if (s7_is_immutable(obj))
-        return(s7_wrong_type_arg_error(s7, "ast_nodelist-set!", 1, obj, "a mutable ast_nodelist"));
+        return(s7_wrong_type_arg_error(s7, "ast-nodelist-set!", 1, obj, "a mutable ast_nodelist"));
 
     /* validate lookup key type - in this case, a keyword */
     kw = s7_cadr(args);
     if (!s7_is_keyword(kw))
-        return(s7_wrong_type_arg_error(s7, "ast_nodelist-set!",
+        return(s7_wrong_type_arg_error(s7, "ast-nodelist-set!",
                                        2, kw, "a keyword"));
 
     /* mutate to object: */
@@ -553,29 +553,29 @@ static s7_pointer g_ast_nodelist_set_specialized(s7_scheme *s7, s7_pointer args)
     return s7_unspecified(s7);
 }
 
-static s7_pointer g_ast_nodelist_set_generic(s7_scheme *s7, s7_pointer args)
+static s7_pointer sunlark_nodelist_set_generic(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
-    log_debug("g_ast_nodelist_set_generic");
+    log_debug("sunlark_nodelist_set_generic");
     /* debug_print_s7(s7, "set_generic spec: ", args); */
 #endif
-    return g_ast_nodelist_set_specialized(s7, args);
+    return sunlark_nodelist_set_specialized(s7, args);
 }
 
 static void _register_get_and_set(s7_scheme *s7)
 {
     /* generic (SRFI 17) */
-    s7_c_type_set_getter(s7, ast_nodelist_t, s7_name_to_value(s7, "ast_nodelist-ref"));
-    s7_c_type_set_setter(s7, ast_nodelist_t, s7_name_to_value(s7, "ast_nodelist-set!"));
+    s7_c_type_set_getter(s7, ast_nodelist_t, s7_name_to_value(s7, "ast-nodelist-ref"));
+    s7_c_type_set_setter(s7, ast_nodelist_t, s7_name_to_value(s7, "ast-nodelist-set!"));
     // only for var setters, not fn setters?
     /* s7_set_setter(s7, */
     /*               s7_name_to_value(s7, "ast_nodelist-ref"), */
     /*               /\* s7_make_symbol(s7, "ast_nodelist-ref"), *\/ */
-    /*               s7_name_to_value(s7, "ast_nodelist-set!")); */
+    /*               s7_name_to_value(s7, "ast-nodelist-set!")); */
 
     /* set_ref should be called set_applicator or some such */
-    s7_c_type_set_ref(s7, ast_nodelist_t, g_ast_nodelist_object_applicator);
-    s7_c_type_set_set(s7, ast_nodelist_t, g_ast_nodelist_set_generic);
+    s7_c_type_set_ref(s7, ast_nodelist_t, sunlark_nodelist_object_applicator);
+    s7_c_type_set_set(s7, ast_nodelist_t, sunlark_nodelist_set_generic);
 }
 
 /* /section: getters and setters */
@@ -584,7 +584,7 @@ static void _register_get_and_set(s7_scheme *s7)
 /* **************************************************************** */
 /* section: properties */
 /* implements (length ...) */
-EXPORT s7_pointer g_ast_nodelist_length(s7_scheme *sc, s7_pointer args)
+EXPORT s7_pointer sunlark_nodelist_length(s7_scheme *sc, s7_pointer args)
 {
   UT_array *nl = (UT_array*)s7_c_object_value(s7_car(args));
   return(s7_make_integer(sc, utarray_len(nl)));
@@ -595,10 +595,10 @@ EXPORT s7_pointer g_ast_nodelist_length(s7_scheme *sc, s7_pointer args)
 
 /* **************************************************************** */
 /* section: display */
-char *g_ast_nodelist_display(s7_scheme *s7, void *value)
+char *sunlark_nodelist_display(s7_scheme *s7, void *value)
 {
 #ifdef DEBUG_TRACE
-    /* log_debug("g_ast_nodelist_display"); */
+    /* log_debug("sunlark_nodelist_display"); */
 #endif
 
     UT_array *nl = (UT_array*)value;
@@ -613,7 +613,7 @@ char *g_ast_nodelist_display(s7_scheme *s7, void *value)
 
     struct node_s *n=NULL;
     while( (n=(struct node_s*)utarray_next(nl, n)) ) {
-        g_ast_node_display(s7, n); /* updates global display_buf */
+        sunlark_node_display(s7, n); /* updates global display_buf */
     }
 
     /* sprintf(buf, "BAR\n"); */
@@ -629,15 +629,15 @@ char *g_ast_nodelist_display(s7_scheme *s7, void *value)
     return display_buf;
 }
 
-/** g_ast_nodelist_display_readably
+/** sunlark_nodelist_display_readably
 
     produces a "roundtrippable" string, one that when read by the reader
     results in an object equal to the original.
  */
-char *g_ast_nodelist_display_readably(s7_scheme *s7, void *value)
+char *sunlark_nodelist_display_readably(s7_scheme *s7, void *value)
 {
 #ifdef DEBUG_TRACE
-    log_debug("g_ast_nodelist_display_readably");
+    log_debug("sunlark_nodelist_display_readably");
 #endif
 
     UT_array *nl = (UT_array *)value;
@@ -648,7 +648,7 @@ char *g_ast_nodelist_display_readably(s7_scheme *s7, void *value)
 
     struct node_s *n=NULL;
     while( (n=(struct node_s*)utarray_next(nl, n)) ) {
-        g_ast_node_display_readably(s7, n); /* updates global display_buf */
+        sunlark_node_display_readably(s7, n); /* updates global display_buf */
     }
 
     sprintf(display_ptr - 1, ")");  /* backup to rem last newline */
@@ -661,10 +661,10 @@ char *g_ast_nodelist_display_readably(s7_scheme *s7, void *value)
 
 /* **************************************************************** */
 /* section: serialization */
-static s7_pointer g_ast_nodelist_to_string(s7_scheme *s7, s7_pointer args)
+static s7_pointer sunlark_nodelist_to_string(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
-    log_debug("g_ast_nodelist_to_string");
+    log_debug("sunlark_nodelist_to_string");
     /* debug_print_s7(s7, "to_string cdr: ", s7_cdr(args)); */
 #endif
     if (display_bufsz == 0) {
@@ -688,10 +688,10 @@ static s7_pointer g_ast_nodelist_to_string(s7_scheme *s7, s7_pointer args)
     else choice = s7_t(s7);
 
     if (choice == s7_make_keyword(s7, "readable"))
-        descr = g_ast_nodelist_display_readably(s7, s7_c_object_value(obj));
-    else descr = g_ast_nodelist_display(s7, s7_c_object_value(obj));
+        descr = sunlark_nodelist_display_readably(s7, s7_c_object_value(obj));
+    else descr = sunlark_nodelist_display(s7, s7_c_object_value(obj));
 
-    /* printf("g_ast_nodelist_display => %s", descr); */
+    /* printf("sunlark_nodelist_display => %s", descr); */
     obj = s7_make_string(s7, descr);
 
     free(descr); //BUG? FIXME free substruct strings
@@ -702,7 +702,7 @@ static s7_pointer g_ast_nodelist_to_string(s7_scheme *s7, s7_pointer args)
 /* **************************************************************** */
 /* section: c-object construction */
 
-/** g_ast_nodelist_copy
+/** sunlark_nodelist_copy
 
     registered as c-type method using s7_c_type_set_copy
 
@@ -738,10 +738,10 @@ static s7_pointer g_ast_nodelist_to_string(s7_scheme *s7, s7_pointer args)
     else ;;  arg1 not ast_nodelist, so arg2 must be
 
  */
-static s7_pointer g_ast_nodelist_copy(s7_scheme *s7, s7_pointer args)
+static s7_pointer sunlark_nodelist_copy(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
-    log_debug("g_ast_nodelist_copy");
+    log_debug("sunlark_nodelist_copy");
     debug_print_s7(s7, "COPY ARGS: ", args);
     /* debug_print_s7(s7, "COPY ARGS len: ", s7_list_length(s7, args)); */
 #endif
@@ -762,7 +762,7 @@ static s7_pointer g_ast_nodelist_copy(s7_scheme *s7, s7_pointer args)
             if (s7_c_object_type(arg2) == ast_nodelist_t) {
                 log_debug("copy ast_nodelist to ast_nodelist, destructively");
                 nl2 = (UT_array*)s7_c_object_value(arg2);
-                nodelist_copy_destructively(nl2, nl1);
+                sealark_nodelist_copy_destructively(nl2, nl1);
                 return arg2;
             } else {
                 return(s7_wrong_type_arg_error(s7, "ast_nodelist-copy!",
@@ -771,8 +771,8 @@ static s7_pointer g_ast_nodelist_copy(s7_scheme *s7, s7_pointer args)
         } else {
             log_debug("copy one");
             /* only one arg, copy it to new ast_nodelist */
-            nodelist_new(nl2);
-            int rc = nodelist_copy(nl2, nl1); // in lib/starlark/nodes.c
+            sealark_nodelist_new(nl2);
+            int rc = sealark_nodelist_copy(nl2, nl1); // in lib/starlark/nodes.c
             if (rc != 0) {
                 // this should never happen...
                 log_debug("FIXME: throw s7 error...");
@@ -799,7 +799,7 @@ static s7_pointer g_new_ast_nodelist(s7_scheme *s7, s7_pointer args)
     log_debug("g_new_ast_nodelist");
 #endif
 
-    UT_array *new_ast_nodelist = nodelist_new();
+    UT_array *new_ast_nodelist = sealark_nodelist_new();
 
     s7_pointer new_ast_nodelist_s7 = s7_make_c_object(s7, ast_nodelist_t,
                                                       (void *)new_ast_nodelist);
@@ -838,7 +838,7 @@ static s7_pointer g_destroy_ast_nodelist(s7_scheme *s7, s7_pointer obj)
     log_debug("g_destroy_ast_nodelist");
 #endif
     UT_array *nl = (UT_array*)s7_c_object_value(obj);
-    nodelist_free(nl);
+    sealark_nodelist_free(nl);
     return NULL;
 }
 /* /section: c-object destruction */
@@ -878,11 +878,11 @@ static void _register_c_object_methods(s7_scheme *s7, s7_pointer ast_nodelist)
 #endif
     static bool initialized = false;
     if (!initialized) {
-        g_ast_nodelist_methods_let = s7_eval_c_string(s7, METHODS_PREFIX OBJECT_METHODS METHODS_POSTFIX);
-        s7_gc_protect(s7, g_ast_nodelist_methods_let);
+        sunlark_nodelist_methods_let = s7_eval_c_string(s7, METHODS_PREFIX OBJECT_METHODS METHODS_POSTFIX);
+        s7_gc_protect(s7, sunlark_nodelist_methods_let);
         initialized = true;
     }
-    s7_c_object_set_let(s7, ast_nodelist, g_ast_nodelist_methods_let);
+    s7_c_object_set_let(s7, ast_nodelist, sunlark_nodelist_methods_let);
     s7_openlet(s7, ast_nodelist);
 }
 
@@ -892,21 +892,21 @@ static void _register_c_type_methods(s7_scheme *s7, s7_int ast_nodelist_t)
     log_debug("_register_c_type_methods");
 #endif
     s7_c_type_set_gc_free(s7, ast_nodelist_t, g_destroy_ast_nodelist);
-    s7_c_type_set_gc_mark(s7, ast_nodelist_t, g_ast_nodelist_gc_mark);
+    s7_c_type_set_gc_mark(s7, ast_nodelist_t, sunlark_nodelist_gc_mark);
 
     /* s7_c_type_set_equal(s7, ast_nodelist_t, _ast_nodelists_are_c_eql); */
-    s7_c_type_set_is_equal(s7, ast_nodelist_t, g_ast_nodelists_are_equal);
-    s7_c_type_set_is_equivalent(s7, ast_nodelist_t, g_ast_nodelists_are_equivalent);
+    s7_c_type_set_is_equal(s7, ast_nodelist_t, sunlark_nodelists_are_equal);
+    s7_c_type_set_is_equivalent(s7, ast_nodelist_t, sunlark_nodelists_are_equivalent);
 
-    s7_c_type_set_copy(s7, ast_nodelist_t, g_ast_nodelist_copy);
+    s7_c_type_set_copy(s7, ast_nodelist_t, sunlark_nodelist_copy);
 
     /* implement (length nl), not (ast-nodelist-length nl) */
-    s7_c_type_set_length(s7, ast_nodelist_t, g_ast_nodelist_length);
+    s7_c_type_set_length(s7, ast_nodelist_t, sunlark_nodelist_length);
 
-    /* s7_c_type_set_reverse(s7, ast_nodelist_t, g_ast_nodelist_reverse); */
-    /* s7_c_type_set_fill(s7, ast_nodelist_t, g_ast_nodelist_fill); */
+    /* s7_c_type_set_reverse(s7, ast_nodelist_t, sunlark_nodelist_reverse); */
+    /* s7_c_type_set_fill(s7, ast_nodelist_t, sunlark_nodelist_fill); */
 
-    s7_c_type_set_to_string(s7, ast_nodelist_t, g_ast_nodelist_to_string);
+    s7_c_type_set_to_string(s7, ast_nodelist_t, sunlark_nodelist_to_string);
 
 }
 
@@ -925,18 +925,21 @@ static void _register_ast_nodelist_fns(s7_scheme *s7)
                             g_new_ast_nodelist,
                             0, 0, true, G_NEW_AST_NODELIST_HELP);
 
-    s7_define_typed_function(s7, "ast-nodelist?", g_is_ast_nodelist, 1, 0, false, g_is_ast_nodelist_help, g_is_ast_nodelist_sig);
+    s7_define_typed_function(s7, "ast-nodelist?", sunlark_is_ast_nodelist,
+                             1, 0, false,
+                             SUNLARK_IS_AST_NODELIST_HELP,
+                             SUNLARK_IS_AST_NODELIST_SIG);
 
     /* specialized get/set! */
-    s7_define_typed_function(s7, "ast-nodelist-ref", g_ast_nodelist_ref_specialized, 2, 0, false, G_AST_NODELIST_REF_SPECIALIZED_HELP, G_AST_NODELIST_REF_SPECIALIZED_SIG);
-    s7_define_typed_function(s7, "ast-nodelist-set!", g_ast_nodelist_set_specialized, 3, 0, false, G_AST_NODELIST_SET_SPECIALIZED_HELP, G_AST_NODELIST_SET_SPECIALIZED_SIG);
+    s7_define_typed_function(s7, "ast-nodelist-ref", sunlark_nodelist_ref_specialized, 2, 0, false, SUNLARK_NODELIST_REF_SPECIALIZED_HELP, SUNLARK_NODELIST_REF_SPECIALIZED_SIG);
+    s7_define_typed_function(s7, "ast-nodelist-set!", sunlark_nodelist_set_specialized, 3, 0, false, SUNLARK_NODELIST_SET_SPECIALIZED_HELP, SUNLARK_NODELIST_SET_SPECIALIZED_SIG);
 
     // ast_nodelist-let => s7_c_object_let, a let for the instance not the type
-    /* s7_define_safe_function(s7, "ast_nodelist-let", g_ast_nodelist_let, 1, 0, false, g_ast_nodelist_let_help); */
+    /* s7_define_safe_function(s7, "ast_nodelist-let", sunlark_nodelist_let, 1, 0, false, sunlark_nodelist_let_help); */
 
     /* s7_define_safe_function(s7, "subast_nodelist", g_subast_nodelist, 1, 0, true, g_subast_nodelist_help); */
-    /* s7_define_safe_function(s7, "ast_nodelist-append", g_ast_nodelist_append, 0, 0, true, g_ast_nodelist_append_help); */
-    /* s7_define_safe_function(s7, "ast_nodelist-reverse!", g_ast_nodelist_reverse_in_place, 1, 0, false, g_ast_nodelist_reverse_in_place_help); */
+    /* s7_define_safe_function(s7, "ast_nodelist-append", sunlark_nodelist_append, 0, 0, true, sunlark_nodelist_append_help); */
+    /* s7_define_safe_function(s7, "ast_nodelist-reverse!", sunlark_nodelist_reverse_in_place, 1, 0, false, sunlark_nodelist_reverse_in_place_help); */
 }
 
 /* **************** */
@@ -962,16 +965,16 @@ EXPORT int configure_s7_ast_nodelist_type(s7_scheme *s7)
 
 /* **************************************************************** */
 /* section: gc */
-static s7_pointer g_ast_nodelist_gc_mark(s7_scheme *s7, s7_pointer p)
+static s7_pointer sunlark_nodelist_gc_mark(s7_scheme *s7, s7_pointer p)
 {
-    /* nothing to mark because we protect g_ast_nodelist_methods_let, and all ast_nodelist objects get the same let */
+    /* nothing to mark because we protect sunlark_nodelist_methods_let, and all ast_nodelist objects get the same let */
     return(p);
 }
 
-/* static s7_pointer g_ast_nodelist_gc_free(s7_scheme *s7, s7_pointer obj) */
+/* static s7_pointer sunlark_nodelist_gc_free(s7_scheme *s7, s7_pointer obj) */
 /* { */
 /* #ifdef DEBUG_TRACE */
-/*     log_debug("g_ast_nodelist_gc_free"); */
+/*     log_debug("sunlark_nodelist_gc_free"); */
 /* #endif */
 /*     struct node_s *cs = (UT_array*)s7_c_object_value(obj); */
 /*     ast_nodelist_free(cs); */
