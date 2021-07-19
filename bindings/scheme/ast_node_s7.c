@@ -293,56 +293,6 @@ static s7_pointer sunlark_nodes_are_equivalent(s7_scheme *s7, s7_pointer args)
 
 /* **************** */
 /* helper fn */
-static s7_pointer _ast_node_property_lookup(s7_scheme *s7,
-                             struct node_s *ast_node, s7_pointer kw)
-{
-#ifdef DEBUG_TRACE
-    log_debug("ast_node_property_lookup");
-#endif
-
-    if (kw == s7_make_keyword(s7, "print")) {
-        char *s = sealark_node_printable_string(ast_node);
-        s7_pointer str =  s7_make_string(s7, s);
-        return str;
-    }
-
-    if (kw == s7_make_keyword(s7, "tid"))
-        return s7_make_integer(s7, ast_node->tid);
-
-    if (kw == s7_make_keyword(s7, "line"))
-        return s7_make_integer(s7, ast_node->line);
-
-    if (kw == s7_make_keyword(s7, "col"))
-        return s7_make_integer(s7, ast_node->col);
-
-    if (kw == s7_make_keyword(s7, "trailing_newine"))
-        return s7_make_boolean(s7, ast_node->trailing_newline);
-
-    if (kw == s7_make_keyword(s7, "qtype"))
-        return s7_make_integer(s7, ast_node->qtype);
-
-    if (kw == s7_make_keyword(s7, "s"))
-        return s7_make_string(s7, ast_node->s);
-
-    //FIXME: implement
-    if (kw == s7_make_keyword(s7, "subnodes")) {
-        if (ast_node->subnodes) {
-            s7_pointer new_nodelist
-                = ast_nodelist_s7_new(s7, ast_node->subnodes);
-            return new_nodelist;
-        } else {
-            return s7_nil(s7);
-        }
-    }
-
-    //FIXME: implement
-    /* if (kw == s7_make_keyword(s7, "comments")) */
-    /*     construct and return nodelist */
-
-    /* return(s7_wrong_type_arg_error(s7, "ast-node-ref", */
-    /*                                    1, kw, "one of :c, :str, :i, etc.")); */
-}
-
 s7_pointer ast_node_type_kw_pred(s7_scheme *s7, char *kw, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
@@ -396,36 +346,49 @@ s7_pointer ast_node_type_kw_pred(s7_scheme *s7, char *kw, s7_pointer args)
  */
 static s7_pointer sunlark_node_ref_specialized(s7_scheme *s7, s7_pointer args)
 {
-#ifdef DEBUG_TRACE
+#if defined (DEBUG_TRACE) || defined(DEBUG_ATTR)
     log_debug("sunlark_node_ref_specialized");
-    /* debug_print_s7(s7, "sunlark_node_ref_specialized args: ", args); */
+    debug_print_s7(s7, "sunlark_node_ref_specialized args: ", s7_cdr(args));
 #endif
 
-    struct node_s *g;
+    struct node_s *self;
     /* size_t index; */
     s7_int typ;
-    s7_pointer obj;
-    if (s7_list_length(s7, args) != 2)
-        return(s7_wrong_number_of_args_error(s7, "ast-node-ref takes 2 arguments: ~~S", args));
+    s7_pointer self_s7;
 
-    obj = s7_car(args);
-    typ = s7_c_object_type(obj);
+    if (s7_list_length(s7, s7_cdr(args)) < 1)
+        return(s7_wrong_number_of_args_error(s7, "ast-node-ref takes 1 or  more arguments: ~S", s7_cdr(args)));
+
+    self_s7 = s7_car(args);
+    typ = s7_c_object_type(self_s7);
     if (typ != ast_node_t)
-        return(s7_wrong_type_arg_error(s7, "ast-node-ref", 1, obj, "a ast_node"));
-    g  = (struct node_s *)s7_c_object_value(obj);
+        return(s7_wrong_type_arg_error(s7, "ast-node-ref", 1, self_s7, "a ast_node"));
+    self  = (struct node_s *)s7_c_object_value(self_s7);
 
-    if (s7_is_null(s7, s7_cdr(args))) /* this is for an (obj) test */
-        return(s7_wrong_type_arg_error(s7, "ast-node-ref", 1, obj, "missing keyword arg"));
+    if (s7_is_null(s7, s7_cdr(args))) /* this is for an (self_s7) test */
+        return(s7_wrong_type_arg_error(s7, "ast-node-ref", 1, self_s7, "missing keyword arg"));
         /* return(s7_make_integer(s7, 32)); */
 
     /* kw arg = name of field, find it field in the object */
     /* symbol arg = name of method, find it in object's method table */
-    s7_pointer arg = s7_cadr(args);
-    if (s7_is_keyword(arg))
-        return _ast_node_property_lookup(s7, g, arg);
+    s7_pointer prop = s7_cadr(args);
+    if (s7_is_keyword(prop))
+        switch(self->tid) {
+        case TK_Build_File:
+            return sunlark_build_file_property_lookup(s7, self, prop);
+            break;
+        case TK_Call_Expr: //FIXME: add TK_Target to token list
+            return sunlark_target_property_lookup(s7, self, prop, s7_cddr(args));
+            break;
+        /* case TK_Attr_List: //FIXME: add to token list */
+        /*     return _attr_list_property_lookup(s7, self, prop); */
+        /*     break; */
+        default:
+            return sunlark_common_property_lookup(s7, self, prop);
+        }
     else {
         return(s7_wrong_type_arg_error(s7, "ast-node-ref",
-                                       2, arg, "a keyword"));
+                                       2, prop, "a keyword"));
     }
 }
 
@@ -475,7 +438,7 @@ static s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
         char *kw = (char*)s7_symbol_name(sym);
         /* log_debug("KW: %s", kw); */
         if (kw[0] == '@') {
-            /* log_debug("ATTRIB %s", kw); */
+            log_debug("ATTRIB %s", kw);
             struct node_s *rule_node = s7_c_object_value(s7_car(args));
             if ( rule_node->tid != TK_Call_Expr ) {
                 return s7_nil(s7);
@@ -484,7 +447,7 @@ static s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
                     = sealark_get_attribute_node(rule_node,
                                                  &kw[1]); /* omit leading @ */
                 if (attr_node == NULL) {
-                    return s7_nil(s7);
+                    return s7_f(s7);
                 } else {
                     return sunlark_node_new(s7, attr_node);
                 }
@@ -502,15 +465,7 @@ static s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
                     return ast_node_type_kw_pred(s7, kw, args);
                 }
             } else {
-                /* if (op == s7_make_keyword(s7, "FOOBAR")) { */
-                /*     log_debug("looking up :FOOBAR"); */
-                /*     s7_pointer obj = s7_car(args); */
-                /*     struct node_s *cs  = (struct node_s *)s7_c_object_value(obj); */
-                /*     int ct = utarray_len(cs->subnodes); */
-                /*     return s7_make_integer(s7, ct); */
-                /* } else { */
                 return sunlark_node_ref_specialized(s7, args);
-                /* } */
             }
         }
     } else {
@@ -558,7 +513,8 @@ static s7_pointer _update_ast_node_property(s7_scheme *s7,
                                   s7_pointer key, s7_pointer val)
 {
 #ifdef DEBUG_TRACE
-    log_debug("_update_ast_node_property");
+    log_debug("_update_ast_node_property tid: %d",
+              ast_node->tid);
 #endif
 
     if (key == s7_make_keyword(s7, "tid")) {
@@ -656,7 +612,6 @@ static s7_pointer _update_ast_node_property(s7_scheme *s7,
            :eq
            :list-expr || :string || dict-expr || ...etc
  */
-//FIXME: move to sealark/nodes.c? but val arg is polymorphic s7...
 static s7_pointer _update_starlark(s7_scheme *s7,
                                    /* struct node_s *node, */
                                    s7_pointer node_s7,
@@ -709,38 +664,53 @@ static s7_pointer sunlark_node_set_specialized(s7_scheme *s7, s7_pointer args)
 #endif
     struct node_s *node;
     s7_int typ;
-    s7_pointer obj, key;
+    s7_pointer self, key;
+
+    log_debug("set_specialized args (excluding self): %s",
+              s7_object_to_c_string(s7, s7_cdr(args)));
+
+    /* last arg is new value to set? */
 
     /* set! methods/procedures need to check that they have
        been passed the correct number of arguments: 3 */
 
-    if (s7_list_length(s7, args) != 3)
-        return(s7_wrong_number_of_args_error(s7, "ast-node-set! takes 3 arguments: ~~S", args));
+    /* if (s7_list_length(s7, args) != 3) */
+    /*     return(s7_wrong_number_of_args_error(s7, "ast-node-set! takes 3 arguments: ~~S", args)); */
 
-    obj = s7_car(args);
+    self = s7_car(args);
     /* qua procedure, check type of first arg */
-    typ = s7_c_object_type(obj);
+    typ = s7_c_object_type(self);
     if (typ != ast_node_t)
-        return(s7_wrong_type_arg_error(s7, "ast-node-set!", 1, obj, "a ast_node"));
+        return(s7_wrong_type_arg_error(s7, "ast-node-set!", 1, self, "a ast_node"));
 
-    if (s7_is_immutable(obj))
-        return(s7_wrong_type_arg_error(s7, "ast-node-set!", 1, obj, "a mutable ast_node"));
+    if (s7_is_immutable(self))
+        return(s7_wrong_type_arg_error(s7, "ast-node-set!", 1, self, "a mutable ast_node"));
 
     /* validate lookup key type - in this case, a keyword */
     /* keyword key indexes ast node properties, e.g. :line */
     /* symbol key indexes starlark 'attribute', e.g. 'deps */
+
+    /* struct node_s *set_target = sunlark_resolve_path(s7, self, s7_cdr(args)); */
+    // now update set_target
     key = s7_cadr(args);
     if (s7_is_keyword(key)) {
-        /* mutate to object: */
-        node = (struct node_s *)s7_c_object_value(obj);
-        _update_ast_node_property(s7, node, key, s7_caddr(args));
-        //FIXME: r7rs says result of set! is unspecified. does that mean
-        //implementation-specified?
-        return s7_unspecified(s7);
+
+        if (s7_is_null(s7, s7_cddr(args))) {
+            /* mutate to object: */
+            node = (struct node_s *)s7_c_object_value(self);
+            // different update logic for different node types?
+            _update_ast_node_property(s7, node, key, s7_caddr(args));
+            //FIXME: r7rs says result of set! is unspecified. does that mean
+            //implementation-specified?
+            return s7_unspecified(s7);
+        } else {
+            // continue on path to get final updatable value
+        }
     } else {
+        //FIXME: obsolete?
         if (s7_is_symbol(key)) {
-            /* node = (struct node_s *)s7_c_object_value(obj); */
-            _update_starlark(s7, obj, s7_symbol_name(key), s7_caddr(args));
+            /* node = (struct node_s *)s7_c_object_value(self); */
+            _update_starlark(s7, self, s7_symbol_name(key), s7_caddr(args));
         } else {
             return(s7_wrong_type_arg_error(s7, "ast-node-set!",
                                            2, key, "a keyword or symbol"));
@@ -1222,7 +1192,7 @@ static s7_pointer sunlark_make_ast_node(s7_scheme *s7, s7_pointer args)
 EXPORT s7_pointer sunlark_node_new(s7_scheme *s7, struct node_s *node)
 {
 #ifdef DEBUG_TRACE
-    log_debug("sunlark_node_new")
+    log_debug("sunlark_node_new");
 #endif
 
     s7_pointer new_ast_node_s7 = s7_make_c_object(s7, ast_node_t,
@@ -1335,8 +1305,16 @@ static void _register_ast_node_fns(s7_scheme *s7)
                              SUNLARK_IS_AST_NODE_SIG);
 
     /* specialized get/set! */
-    s7_define_typed_function(s7, "ast-node-ref", sunlark_node_ref_specialized, 2, 0, false, SUNLARK_NODE_REF_SPECIALIZED_HELP, SUNLARK_NODE_REF_SPECIALIZED_SIG);
-    s7_define_typed_function(s7, "ast-node-set!", sunlark_node_set_specialized, 3, 0, false, SUNLARK_NODE_SET_SPECIALIZED_HELP, SUNLARK_NODE_SET_SPECIALIZED_SIG);
+    s7_define_typed_function(s7, "ast-node-ref",
+                             sunlark_node_ref_specialized,
+                             2, 1, true,
+                             SUNLARK_NODE_REF_SPECIALIZED_HELP,
+                             SUNLARK_NODE_REF_SPECIALIZED_SIG);
+
+    s7_define_typed_function(s7, "ast-node-set!",
+                             sunlark_node_set_specialized,
+                             3, 0, true,
+                             SUNLARK_NODE_SET_SPECIALIZED_HELP, SUNLARK_NODE_SET_SPECIALIZED_SIG);
 
     s7_define_safe_function(s7, "ast-node->starlark",
                             sunlark_node_to_starlark,

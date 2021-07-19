@@ -2,43 +2,48 @@
 
 /* WARNING WARNING: these #defines must be kept in sync with syntaxis.h */
 #if EXPORT_INTERFACE
-#define TK_Unary_Expr                     128
-#define TK_Stmt_List                      127
-#define TK_Stmt                           126
-#define TK_SmallStmt_List                 125
-#define TK_Slice_Sfx                      124
-#define TK_Slice_Expr                     123
-#define TK_Return_Expr                    122
-#define TK_Paren_Expr                     121
-#define TK_Primary_Expr                   120
-#define TK_Param_Star2                    119
-#define TK_Param_Star                     118
-#define TK_Param_Named                    117
-#define TK_Param_List                     116
-#define TK_Loop_Vars                      115
-#define TK_Load_Stmt                      114
-#define TK_List_Expr                      113
-#define TK_List_Comp                      112
-#define TK_Lambda_Expr                    111
-#define TK_Indent_Block                   110
-#define TK_If_Stmt                        109
-#define TK_If_Expr                        108
-#define TK_For_Stmt                       107
-#define TK_Expr_List                      106
-#define TK_Expr                           105
-#define TK_Dot_Sfx                        104
-#define TK_Dot_Expr                       103
-#define TK_Dict_Expr                      102
-#define TK_Dict_Entry_List                101
-#define TK_Dict_Entry                     100
-#define TK_Dict_Comp                      99
-#define TK_Def_Stmt                       98
-#define TK_Def_Compound                   97
-#define TK_Comp_Clause                    96
-#define TK_Call_Sfx                       95
-#define TK_Call_Expr                      94
-#define TK_Bin_Expr                       93
-#define TK_Assign_Stmt                    92
+#define TK_Unary_Expr                     133
+#define TK_Stmt_List                      132
+#define TK_Stmt                           131
+#define TK_SmallStmt_List                 130
+#define TK_Slice_Sfx                      129
+#define TK_Slice_Expr                     128
+#define TK_Return_Expr                    127
+#define TK_Paren_Expr                     126
+#define TK_Primary_Expr                   125
+#define TK_Param_Star2                    124
+#define TK_Param_Star                     123
+#define TK_Param_Named                    122
+#define TK_Param_List                     121
+#define TK_Loop_Vars                      120
+#define TK_Load_Stmt                      119
+#define TK_List_Expr                      118
+#define TK_List_Comp                      117
+#define TK_Lambda_Expr                    116
+#define TK_Indent_Block                   115
+#define TK_If_Stmt                        114
+#define TK_If_Expr                        113
+#define TK_For_Stmt                       112
+#define TK_Expr_List                      111
+#define TK_Expr                           110
+#define TK_Dot_Sfx                        109
+#define TK_Dot_Expr                       108
+#define TK_Dict_Expr                      107
+#define TK_Dict_Entry_List                106
+#define TK_Dict_Entry                     105
+#define TK_Dict_Comp                      104
+#define TK_Def_Stmt                       103
+#define TK_Def_Compound                   102
+#define TK_Comp_Clause                    101
+#define TK_Call_Sfx                       100
+#define TK_Call_Expr                      99
+#define TK_Build_Target                   98
+#define TK_Build_File                     97
+#define TK_Bin_Expr                       96
+#define TK_Assign_Stmt                    95
+#define TK_Attr_Value                     94
+#define TK_Attr_Name                      93
+#define TK_Attr                           92
 #define TK_Arg_Star2                      91
 #define TK_Arg_Star                       90
 #define TK_Arg_Named                      89
@@ -240,7 +245,12 @@ const char *token_name[256][2] =
      [TK_Arg_Star] = { "TK_Arg_Star", "" },
      [TK_Arg_Star2] = { "TK_Arg_Star2", "" },
      [TK_Assign_Stmt] = { "TK_Assign_Stmt", "" },
+     [TK_Attr] = { "TK_Attr", "" },
+     [TK_Attr_Name] = { "TK_Attr_Name", "" },
+     [TK_Attr_Value] = { "TK_Attr_Value", "" },
      [TK_Bin_Expr] = { "TK_Bin_Expr", "" },
+     [TK_Build_File] = { "TK_Build_File", "" },
+     [TK_Build_Target] = { "TK_Build_Target", "" },
      [TK_Call_Expr] = { "TK_Call_Expr", "" },
      [TK_Call_Sfx] = { "TK_Call_Sfx", "" },
      [TK_Comp_Clause] = { "TK_Comp_Clause", "" },

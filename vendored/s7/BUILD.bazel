@@ -11,6 +11,7 @@ cc_library(
         "//bzl/host:linux": ["-std=gnu11", "-W,extra"],
         "//conditions:default": ["-std=c11"],
     }) + [
+        "-Wno-unused-parameter",
         # "-pedantic-errors",
         "-Ivendored/linenoise",
         "-Ivendored/s7"

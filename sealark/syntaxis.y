@@ -23,8 +23,10 @@
 /* %extra_argument { struct node_s **root} */
 %extra_argument { struct parse_state_s *parse_state}
 
-/* WARNING WARNING: if you change these tokens, you must update the
-#defines in const.c! */
+/* WARNING WARNING: if you change these tokens, you must
+   * update the #defines in const.c (copy from mkhdrs output)
+   * set the correct token_ct in libsunlark.c/export_token_tables
+ */
 %token_prefix TK_ /* TK_ prefix will be added by lemon */
 %token AMP .
 %token AMP_EQ .
@@ -40,7 +42,6 @@
 %token CARET_EQ .
 %token CLASS .
 %token COLON .
-/* %token ICOLON . */
 %token COMMA .
 %token COMMENT .
 %token CONTINUE .
@@ -50,7 +51,6 @@
 %token SLASH2_EQ .
 %token SLASH_EQ .
 %token DOT .
-/* %token DQ . */
 %token ELIF .
 %token ELSE .
 %token EQ .
@@ -103,20 +103,10 @@
 %token RRANGLE_EQ .
 %token SEMI .
 %token SLASH .
-/* %token SQ . */
 %token STAR .
 %token STAR_EQ .
 %token STAR2 .
 %token STRING .
-/* %token BSTRING . */
-/* %token BRSTRING . */
-/* %token RSTRING . */
-/* %token RBSTRING . */
-/* %token MLSTRING . */
-/* %token MLBSTRING . */
-/* %token MLBRSTRING . */
-/* %token MLRSTRING . */
-/* %token MLRBSTRING . */
 %token TILDE .
 %token TRY .
 %token VBAR .
@@ -131,8 +121,13 @@
 %token Arg_Named .
 %token Arg_Star .
 %token Arg_Star2 .
+%token Attr .
+%token Attr_Name .
+%token Attr_Value .             /* hides type? */
 %token Assign_Stmt .
 %token Bin_Expr .
+%token Build_File .
+%token Build_Target .
 %token Call_Expr .
 %token Call_Sfx .
 %token Comp_Clause .
@@ -168,7 +163,6 @@
 %token Stmt .
 %token Stmt_List .
 %token Unary_Expr .
-/* %token SYM . */
 
 /* Python op precedence: */
 /* https://docs.python.org/3/reference/expressions.html#operator-precedence */
@@ -244,7 +238,11 @@
 buildfile ::= stmt_list(SS) .
 {
     /* log_trace(">>buildfile ::= stmt_list ."); */
-    parse_state->root = SS;
+    struct node_s *root = calloc(sizeof(struct node_s), 1);
+    root->tid = TK_Build_File;
+    utarray_new(root->subnodes, &node_icd);
+    utarray_push_back(root->subnodes, SS);
+    parse_state->root = root;
 }
 
 %ifdef TEST

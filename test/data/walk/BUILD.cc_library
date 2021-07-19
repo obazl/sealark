@@ -4,5 +4,9 @@ cc_library(
     srcs = ["hello-lib.cc"],
     dict_attr = {"foo": "bar"},
     string_attr = "hello!",
-    deps = [":dep_a", ":dep_b"],
+    deps = [
+    ":dep_a", ":dep_b",
+    ":dep_c", ":dep_d",
+    ":dep_e",
+    ],
 )

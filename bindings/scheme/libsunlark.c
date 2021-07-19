@@ -37,13 +37,16 @@ static s7_pointer error_handler(s7_scheme *sc, s7_pointer args)
 
 void export_token_tables(s7_scheme *s7)
 {
-    log_debug("export_token_tables");
+    /* log_debug("export_token_tables"); */
 
-    s7_pointer toks = s7_make_vector(s7, (s7_int)129);
+    /* WARNING: token_ct must match the #define ct in syntaxis.h */
+    int token_ct = 134;
+    s7_pointer toks = s7_make_vector(s7, (s7_int)token_ct);
+    s7_pointer tids = s7_make_hash_table(s7, (s7_int)token_ct);
     int i, j, len;
     s7_pointer result;
-    char tknm[128];
-    for (i = 0; i < 256; i++) {
+    char tknm[token_ct];
+    for (i = 1; i < token_ct; i++) {
         if (token_name[i][0] != NULL) {
             len = strlen(token_name[i][0]);
             /* log_debug("tok: %s len %d", token_name[i][0], len); */
@@ -55,14 +58,23 @@ void export_token_tables(s7_scheme *s7)
             }
             /* log_debug("tknm: %d %s", i, tknm); */
 
+            result = s7_hash_table_set(s7, tids,
+                                       s7_make_keyword(s7, tknm + 3),
+                                       s7_make_integer(s7, i));
+
             result = s7_vector_set(s7, toks, (s7_int)i,
                                    s7_make_keyword(s7, tknm + 3));
-            char *msg = s7_object_to_c_string(s7, result);
+
+            /* char *msg = s7_object_to_c_string(s7, result); */
             /* log_debug("vecset result: %s", msg); */
-            free(msg);
+            /* free(msg); */
+        } else {
+            log_debug("token name %d:  NULL", i);
+            break;
         }
     }
     s7_define_variable(s7, "tokens", toks);
+    s7_define_variable(s7, "sunlark-tids", tids);
 }
 
 EXPORT s7_scheme *sunlark_init(void)

@@ -24,7 +24,8 @@ EXPORT const int printable_tokens[] =
      0
     };
 
-EXPORT const char *token_name[256][2] =
+const int token_ct = 134;
+EXPORT const char *token_name[134][2] =
     {
      [TK_ALIAS] = { "TK_ALIAS", "" },
      [TK_AMP] = { "TK_AMP", "&" },
@@ -41,14 +42,12 @@ EXPORT const char *token_name[256][2] =
      [TK_CARET_EQ] = { "TK_CARET_EQ", "^=" },
      [TK_CLASS] = { "TK_CLASS", "class" },
      [TK_COLON] = { "TK_COLON", ":" },
-     /* [TK_ICOLON] = { "TK_ICOLON", ":" }, */
      [TK_COMMA] = { "TK_COMMA", "," },
      [TK_COMMENT] = { "TK_COMMENT", "" },
      [TK_CONTINUE] = { "TK_CONTINUE", "continue" },
      [TK_DEF] = { "TK_DEF", "def" },
      [TK_DEL] = { "TK_DEL", "del" },
      [TK_DOT] = { "TK_DOT", "." },
-     /* [TK_DQ] = { "TK_DQ", "\"" }, */
      [TK_ELIF] = { "TK_ELIF", "elif" },
      [TK_ELSE] = { "TK_ELSE", "else" },
      [TK_EQ] = { "TK_EQ", "=" },
@@ -103,7 +102,6 @@ EXPORT const char *token_name[256][2] =
      [TK_SLASH_EQ] = { "TK_SLASH_EQ", "/=" },
      [TK_SLASH2] = { "TK_SLASH2", "//" },
      [TK_SLASH2_EQ] = { "TK_SLASH2_EQ", "//=" },
-     /* [TK_SQ] = { "TK_SQ", "'" }, */
      [TK_STAR] = { "TK_STAR", "*" },
      [TK_STAR_EQ] = { "TK_STAR_EQ", "*=" },
      [TK_STAR2] = { "TK_STAR2", "**" },
@@ -123,7 +121,12 @@ EXPORT const char *token_name[256][2] =
      [TK_Arg_Star] = { "TK_Arg_Star", "" },
      [TK_Arg_Star2] = { "TK_Arg_Star2", "" },
      [TK_Assign_Stmt] = { "TK_Assign_Stmt", "" },
+     [TK_Attr] = { "TK_Attr", "" },
+     [TK_Attr_Name] = { "TK_Attr_Name", "" },
+     [TK_Attr_Value] = { "TK_Attr_Value", "" },
      [TK_Bin_Expr] = { "TK_Bin_Expr", "" },
+     [TK_Build_File] = { "TK_Build_File", "" },
+     [TK_Build_Target] = { "TK_Build_Target", "" },
      [TK_Call_Expr] = { "TK_Call_Expr", "" },
      [TK_Call_Sfx] = { "TK_Call_Sfx", "" },
      [TK_Comp_Clause] = { "TK_Comp_Clause", "" },
@@ -158,9 +161,9 @@ EXPORT const char *token_name[256][2] =
      [TK_SmallStmt_List] = { "TK_SmallStmt_List", "" },
      [TK_Stmt] = { "TK_Stmt", "" },
      [TK_Stmt_List] = { "TK_Stmt_List", "" },
-     [TK_Unary_Expr] = { "TK_Unary_Expr", "" },
+     [TK_Unary_Expr] = { "TK_Unary_Expr", "" }
 
-     NULL
+     /* NULL */
     };
 
 /* struct obazl_buildfile_s { */
@@ -477,7 +480,9 @@ EXPORT char  *sealark_node_printable_string(struct node_s *node)
  */
 EXPORT struct node_s *sealark_get_attribute_node(struct node_s *node, char *kw)
 {
-    /* log_debug("sealark_node_rule_attrib %s", kw); */
+#ifdef DEBUG_TRACE
+    log_debug("sealark_node_rule_attrib: %s", kw);
+#endif
 
     if ( node->tid != TK_Call_Expr ) return NULL;
     UT_array *call_expr_subnodes = node->subnodes;
