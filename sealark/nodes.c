@@ -24,8 +24,12 @@ EXPORT const int printable_tokens[] =
      0
     };
 
-const int token_ct = 134;
-EXPORT const char *token_name[134][2] =
+#if EXPORT_INTERFACE
+#define TIDNAME(X) (token_name[ X->tid ][0])
+#endif
+
+const int token_ct = 137;
+EXPORT const char *token_name[137][2] =
     {
      [TK_ALIAS] = { "TK_ALIAS", "" },
      [TK_AMP] = { "TK_AMP", "&" },
@@ -126,7 +130,6 @@ EXPORT const char *token_name[134][2] =
      [TK_Attr_Value] = { "TK_Attr_Value", "" },
      [TK_Bin_Expr] = { "TK_Bin_Expr", "" },
      [TK_Build_File] = { "TK_Build_File", "" },
-     [TK_Build_Target] = { "TK_Build_Target", "" },
      [TK_Call_Expr] = { "TK_Call_Expr", "" },
      [TK_Call_Sfx] = { "TK_Call_Sfx", "" },
      [TK_Comp_Clause] = { "TK_Comp_Clause", "" },
@@ -149,6 +152,7 @@ EXPORT const char *token_name[134][2] =
      [TK_List_Expr] = { "TK_List_Expr", "" },
      [TK_Load_Stmt] = { "TK_Load_Stmt", "" },
      [TK_Loop_Vars] = { "TK_Loop_Vars", "" },
+     [TK_Node_List] = { "TK_Node_List", "" },
      [TK_Param_List] = { "TK_Param_List", "" },
      [TK_Param_Named] = { "TK_Param_Named", "" },
      [TK_Param_Star] = { "TK_Param_Star", "" },
@@ -158,10 +162,13 @@ EXPORT const char *token_name[134][2] =
      [TK_Return_Expr] = { "TK_Return_Expr", "" },
      [TK_Slice_Sfx] = { "TK_Slice_Sfx", "" },
      [TK_Slice_Expr] = { "TK_Slice_Expr", "" },
-     [TK_SmallStmt_List] = { "TK_SmallStmt_List", "" },
+     [TK_Small_Stmt_List] = { "TK_Small_Stmt_List", "" },
      [TK_Stmt] = { "TK_Stmt", "" },
      [TK_Stmt_List] = { "TK_Stmt_List", "" },
-     [TK_Unary_Expr] = { "TK_Unary_Expr", "" }
+     [TK_Target] = { "TK_Target", "" },
+     [TK_Target_List] = { "TK_Target_List", "" },
+     [TK_Unary_Expr] = { "TK_Unary_Expr", "" },
+     [TK_Unspecified] = { "TK_Unspecified", "" }
 
      /* NULL */
     };
@@ -290,7 +297,7 @@ UT_array *split_iblock(struct node_s* iblock, int indent)
         /* log_debug("iblock node t: %s[%d] indent %d", */
         /*           token_name[node->tid][0], node->tid, node->col); */
 
-        if (node->tid == TK_SmallStmt_List) {
+        if (node->tid == TK_Small_Stmt_List) {
             blocks = split_small_stmt_list(iblock, node, indent);
         } else {
             if (node->tid == TK_Stmt_List) {
@@ -305,10 +312,50 @@ UT_array *split_iblock(struct node_s* iblock, int indent)
 }
 
 /* **************************************************************** */
-EXPORT int token_kw_to_id(char *kw)
+EXPORT char *sealark_tid_to_string(int tid)
 {
 #ifdef DEBUG_TRACE
-    log_debug("token_kw_to_id: %s", kw);
+    log_debug("token_id_to_kw %d", tid);
+#endif
+
+    char *tag = calloc(64, sizeof(char));
+    int len = strlen(token_name[tid][0]);
+    strncpy(tag, (char*)token_name[tid][0], len);
+    tag[len+1] = '\0';
+    log_debug("tag %s", tag);
+
+
+    /* to camel_case */
+    for (int j = 0; j < len; j++) {
+        if (tag[j] == '_') tag[j] = '-';
+        tag[j] = tolower(tag[j]);
+    }
+    log_debug("tag %s %d", tag, strlen(tag));
+
+    return tag + 3; // remove tk- prefix
+
+    /* /\* the C names use _ but scheme uses - so we have to convert *\/ */
+    /* /\* fix me: make a static table so we don't have to do all this computing *\/ */
+    /* char workbuf[64]; */
+    /* int j; */
+    /* for(int i = 1; i < 256; i++) { */
+    /*     /\* log_debug("tag: %s, toknm: %s", tag, token_name[i][0]); *\/ */
+    /*     if (token_name[i][0] == NULL) return -1; */
+    /*     len = strlen(token_name[i][0]) + 1; /\* add one for \0 *\/ */
+    /*     strncpy(workbuf, token_name[i][0], len); */
+    /*     for(j=0; j < len; j++) if (workbuf[j] == '_') workbuf[j] = '-'; */
+    /*     /\* log_debug("CONVERTED TAGSTRING: %s", workbuf); *\/ */
+    /*     if ( strncmp(tag, workbuf, len) == 0 ) { */
+    /*         /\* log_debug("MATCH %d", i); *\/ */
+    /*         return i; */
+    /*     } */
+    /* } */
+}
+
+EXPORT int sealark_kw_to_tid(char *kw)
+{
+#ifdef DEBUG_TRACE
+    log_debug("sealark_kw_to_tid: %s", kw);
 #endif
     char tag[128];
     sprintf(tag, "TK-%s", kw);
@@ -320,13 +367,13 @@ EXPORT int token_kw_to_id(char *kw)
         if (tag[j-1] == '-')
             tag[j] = toupper(tag[j]);
     }
-    /* log_debug("lookup: %s", tag); */
+    log_debug("sealark_kw_to_tid: %s", tag);
 
     /* the C names use _ but scheme uses - so we have to convert */
     /* fix me: make a static table so we don't have to do all this computing */
     char workbuf[64];
     int j;
-    for(int i = 1; i < 256; i++) {
+    for(int i = 1; i < token_ct; i++) {
         /* log_debug("tag: %s, toknm: %s", tag, token_name[i][0]); */
         if (token_name[i][0] == NULL) return -1;
         len = strlen(token_name[i][0]) + 1; /* add one for \0 */
@@ -338,6 +385,7 @@ EXPORT int token_kw_to_id(char *kw)
             return i;
         }
     }
+    return -1;
 }
 
 /* **************************************************************** */
@@ -358,7 +406,7 @@ EXPORT void sealark_nodelist_free(UT_array *nl)
 
 EXPORT int sealark_nodelist_len(UT_array *nl)
 {
-    log_debug("sealark_nodelist_len: %p", nl);
+    log_debug("sealark_nodelist_len");
     return utarray_len(nl);
 }
 
@@ -538,7 +586,7 @@ EXPORT void sealark_node_copy(void *_dst, const void *_src)
 }
 
 /* nodelist: UT_array of node_s */
-UT_icd node_icd = {sizeof(struct node_s), NULL, sealark_node_copy, sealark_node_free};
+EXPORT UT_icd node_icd = {sizeof(struct node_s), NULL, sealark_node_copy, sealark_node_free};
 
 #if INTERFACE
 struct comma_s {

@@ -24,7 +24,7 @@
            (tokens (node :tid))
            (node :tid)
            (if (node :printable?) "____    " "")
-           (if (node :printable?) (node :pprint) "")))
+           (if (node :printable?) "(node :pprint)" "")))
   (newline)
   )
 
@@ -66,8 +66,8 @@
   )
 
 (define (test-attr-updates node)
-  ;; (display "................................")
-  ;; (newline)
+  (display "................................")
+  (newline)
 
   (if (node :call-expr?) ;;FIXME: :target?
       (begin
@@ -92,9 +92,14 @@
         ;; (pprint-node (node :attrs))
         ;; (newline)
 
-        ;; (display (node :attrs :deps :name))
+        ;; (display (format #f "(node :attrs :deps): ~A"
+        ;;                  (node :attrs :deps)))
+
+        (display (node :attrs :deps))
+
         ;; (ast-node-set! node :attrs :deps :name "newdeps")
-        (set! (node :attrs :deps :name) "newdeps")
+        ;; (set! (node :attrs :deps :name) "newdeps")
+        ;; (set! (node :attrs :deps) "newdeps")
         (newline)
 
         (display ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> x") (newline)
@@ -135,7 +140,9 @@
 
 ;;         ;;         ;; (set! (deps :attrs) (:remove :trailing-comma))
 
+;;  replace attr-name:
 ;;                 ;; (set! (deps 'name) "newdeps")
+
 ;;                 (set! (node :attrs :deps :name) "newdeps")
 
 ;;         ;;         ;; value add. what if value already present?
@@ -146,7 +153,6 @@
 ;;         ;;         ;;       '(:add //foo //foo:bar @c//d:e))
 
 ;;         ;;         ;; (set! (deps 'value) '(:add //foo //foo:bar @c//d:e))
-
 
 ;;                 ;; (set! (node :attrs :deps 'value) '(:add "dep_X")) ;; append
 
@@ -180,7 +186,7 @@
 
   (test-attr-updates node)
 
-  (pprint-node node)
+  ;;(pprint-node node)
 
   ;; (display (format #f "(node :stmt-list?): ~A" (node :stmt-list?))) (newline)
   ;; (display (format #f "(NODE :stmt-list?): ~A" (node :stmt-list?))) (newline)
@@ -201,7 +207,7 @@
 (define indent 0)
 
 (define (walk-all node handlers)
-  ;; (display "walk-all")
+  (display "walk-all")
   ;; (newline)
 
   (default-handler node indent) ;; just prints

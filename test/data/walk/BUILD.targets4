@@ -1,0 +1,17 @@
+cc_library( name = "a-lib" )
+cc_binary( name = "a-bin" )
+cc_library( name = "b-lib" )
+cc_library( name = "c-lib" )
+cc_test(
+    name = "hello-success_test",
+    srcs = ["hello-world.cc"],
+    deps = [":hello-lib"],
+)
+
+cc_test(
+    name = "hello-fail_test",
+    srcs = ["hello-fail.cc"],
+    deps = [":hello-lib"],
+)
+
+cc_binary( name = "b-bin" )

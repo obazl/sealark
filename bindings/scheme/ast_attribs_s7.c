@@ -17,20 +17,33 @@
 #define ESUNLARK_ARG_TYPE_ERR -2
 #define ESUNLARK_LOCN_ARG_ERR -3
 
+struct node_s *sunlark_get_attrs_list(s7_scheme *s7,
+                                             struct node_s *target_node)
+{
+#if defined(DEBUG_TRACE) || defined(DEBUG_ATTR)
+    log_debug("sunlark_get_attrs_list, tid: %d %s",
+              target_node->tid, token_name[target_node->tid][0]);
+#endif
+    /* :call-expr[1] => :call-sfx[1] => :arg-list */
+    struct node_s *call_sfx = utarray_eltptr(target_node->subnodes, 1);
+    struct node_s *arg_list = utarray_eltptr(call_sfx->subnodes, 1);
+    return arg_list;
+}
+
+//FIXME: rename sunlark_get_attr_list_item?
 s7_pointer sunlark_attr_list_kw_lookup(s7_scheme *s7,
                                     struct node_s *attrs,
-                                    s7_pointer args)
+                                    s7_pointer kw)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_PROPERTIES)
     log_debug("sunlark_attr_list_kw_lookup: %d %s",
               attrs->tid,       /* :arg_list == 88 */
-              s7_object_to_c_string(s7, args));
+              s7_object_to_c_string(s7, kw));
 #endif
-    s7_pointer key = s7_car(args);
-    if (s7_is_keyword(key)) {
-        s7_pointer sym = s7_keyword_to_symbol(s7, key);
+    /* s7_pointer key = s7_car(kw); */
+    if (s7_is_keyword(kw)) {
+        s7_pointer sym = s7_keyword_to_symbol(s7, kw);
         const char *attr_name = s7_symbol_name(sym);
-        /* attr_name++;            /\* move past initial ':' *\/ */
 
         /* struct node_s *expr_list = utarray_eltptr(attrs->subnodes, 0); */
         /* log_debug("expr_list tid: %d", attrs->tid); */
@@ -40,51 +53,40 @@ s7_pointer sunlark_attr_list_kw_lookup(s7_scheme *s7,
         int len = strlen(attr_name);
         log_debug("looking up attr '%s'", attr_name);
 
+        /* first handle real props, e.g. :tid */
+        s7_pointer result = sunlark_common_property_lookup(s7,
+                                                           attrs,
+                                                           kw);
+        if (result == NULL) {
+            return(s7_wrong_type_arg_error(s7,
+                                           "attr prop lookup",
+                                           2, kw,
+                                           "'name or 'value"));
+        } else {
+            return result;
+        }
+
+        /* then search subnodes */
         while((node=(struct node_s*)utarray_next(attrs->subnodes, node))) {
             if (node->tid == TK_Arg_Named) {
                 struct node_s *attrname_node = utarray_eltptr(node->subnodes, 0);
                     log_debug("attr name: %s", attrname_node->s);
                 if ( strncmp(attr_name, attrname_node->s, len) == 0 ) {
-                    log_debug("HIT LOOKUP %s", attr_name);
+                    log_debug("FOUND %s", attr_name);
                     break;
                 }
             }
         }
         if (node) {
-            log_debug("1 xxxxxxxxxxxxxxxx %s",
-                      s7_object_to_c_string(s7, s7_cdr(args)));
-            if (s7_is_null(s7, s7_cdr(args))) {
-                return sunlark_node_new(s7, node);
-            } else {
-                /* attrib understands :name, :value */
-                s7_pointer nm_val = s7_cadr(args);
-                if (nm_val == s7_make_keyword(s7, "name")) {
-                    return sunlark_node_new(s7, utarray_eltptr(node->subnodes, 0));
-                } else {
-                    if (nm_val == s7_make_keyword(s7, "value")) {
-                        return sunlark_node_new(s7, utarray_eltptr(node->subnodes, 2));
-                    } else {
-                        //error
-                    }
-                }
-           }
+            return sunlark_node_new(s7, node);
+        } else {
+            /* not found */
+            return s7_nil(s7);
         }
     } else {
         return(s7_wrong_type_arg_error(s7, "attrs lookup key",
-                                       2, key, "a keyword"));
+                                       2, kw, "a keyword"));
     }
-}
-
-struct node_s *sunlark_get_attrs_list(s7_scheme *s7,
-                                             struct node_s *target_node)
-{
-#if defined(DEBUG_TRACE) || defined(DEBUG_ATTR)
-    log_debug("_add_attr_list_item, tid: %d", target_node->tid);
-#endif
-    /* :call-expr[1] => :call-sfx[1] => :arg-list */
-    struct node_s *call_sfx = utarray_eltptr(target_node->subnodes, 1);
-    struct node_s *arg_list = utarray_eltptr(call_sfx->subnodes, 1);
-    return arg_list;
 }
 
 struct node_s *_add_attr_list_item(s7_scheme *s7,
@@ -548,7 +550,7 @@ s7_pointer sunlark_update_attribute_name(s7_scheme *s7,
 {
 #if defined(DEBUG_TRACE) || defined(DEBUG_ATTR)
     log_debug(">> sunlark_update_attribute_name, tid: %d",
-              sunlark_node_tid(node_s7));
+              sunlark_node_tid(s7, node_s7));
 #endif
 
     log_debug("updating attr-name");
@@ -586,7 +588,7 @@ s7_pointer sunlark_update_attribute_value(s7_scheme *s7,
 {
 #if defined(DEBUG_TRACE) || defined(DEBUG_ATTR)
     log_debug(">> sunlark_update_attribute_value, tid: %d",
-              sunlark_node_tid(node_s7));
+              sunlark_node_tid(s7, node_s7));
 #endif
 
     struct node_s *node = s7_c_object_value(node_s7);

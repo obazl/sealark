@@ -20,12 +20,24 @@
 
 }
 
+/* https://docs.bazel.build/versions/main/build-ref.html#BUILD_files:
+"BUILD files cannot contain function definitions, for statements or if
+statements (but list comprehensions and if expressions are allowed).
+Functions can be declared in .bzl files instead. Additionally, *args
+and **kwargs arguments are not allowed in BUILD files; instead list
+all the arguments explicitly."
+
+i.e. only SimpleStmt allowed in BUILD files.
+
+*/
+
 /* %extra_argument { struct node_s **root} */
 %extra_argument { struct parse_state_s *parse_state}
 
 /* WARNING WARNING: if you change these tokens, you must
    * update the #defines in const.c (copy from mkhdrs output)
    * set the correct token_ct in libsunlark.c/export_token_tables
+   * update token_name table in nodes.c
  */
 %token_prefix TK_ /* TK_ prefix will be added by lemon */
 %token AMP .
@@ -127,7 +139,6 @@
 %token Assign_Stmt .
 %token Bin_Expr .
 %token Build_File .
-%token Build_Target .
 %token Call_Expr .
 %token Call_Sfx .
 %token Comp_Clause .
@@ -150,6 +161,9 @@
 %token List_Expr .
 %token Load_Stmt .
 %token Loop_Vars .
+/* list nodes are node_s, list content is subnodes prop UT_array */
+/* a fake type for UT_array subnode values  */
+%token Node_List .
 %token Param_List .
 %token Param_Named .
 %token Param_Star .
@@ -159,10 +173,14 @@
 %token Return_Expr .
 %token Slice_Expr .
 %token Slice_Sfx .
-%token SmallStmt_List .
+%token Small_Stmt_List .
 %token Stmt .
 %token Stmt_List .
+%token Target .
+%token Target_List .
 %token Unary_Expr .
+%token Unspecified .
+
 
 /* Python op precedence: */
 /* https://docs.python.org/3/reference/expressions.html#operator-precedence */
@@ -836,7 +854,7 @@ small_stmt_list(SmallList) ::= small_stmt(SmallStmt) . [FOR]
 {
     // log_trace(">>small_stmt_list ::= small_stmt");
     SmallList = calloc(sizeof(struct node_s), 1);
-    SmallList->tid = TK_SmallStmt_List;
+    SmallList->tid = TK_Small_Stmt_List;
     SmallList->line  = SmallStmt->line;
     SmallList->col   = SmallStmt->col;
     SmallList->trailing_newline = SmallStmt->trailing_newline;

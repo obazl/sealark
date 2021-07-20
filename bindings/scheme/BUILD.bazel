@@ -6,7 +6,7 @@ exports_files(["libsunlark.c"])
 DEFINES = ["DEBUG", "DEBUG_TRACE"]
 #DEFINES = ["DEBUG_ATTR"]
 #DEFINES = ["DEBUG"]
-DEFINES = []
+#DEFINES = []
 
 cc_library(
     name  = "sunlark",
@@ -24,7 +24,9 @@ cc_library(
         "ast_nodelist_s7.h",
         "sunlark_properties.c",
         "sunlark_properties.h",
-   ],
+        "sunlark_query.c",
+        "sunlark_query.h",
+  ],
     defines = DEFINES,
     copts = select({
         # strdup is non-standard, not supported on linux in strict c11 mode
@@ -67,6 +69,7 @@ genrule(
         "ast_node_s7.c",
         "ast_nodelist_s7.c",
         "sunlark_properties.c",
+        "sunlark_query.c",
         "//bazel:bazel_config.c",
         "//sealark:mkhdrs-export",
     ],
@@ -76,6 +79,7 @@ genrule(
         "ast_node_s7.h",
         "ast_nodelist_s7.h",
         "sunlark_properties.h",
+        "sunlark_query.h",
     ],
     cmd = "\n".join([
         "SRC1=$(location libsunlark.c)",
@@ -87,7 +91,8 @@ genrule(
         "    $(location ast_attribs_s7.c) \\",
         "    $(location ast_node_s7.c) \\",
         "    $(location ast_nodelist_s7.c) \\",
-        "    $(location sunlark_properties.c)",
+        "    $(location sunlark_properties.c) \\",
+        "    $(location sunlark_query.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),
     tools = ["//vendored/makeheaders"],

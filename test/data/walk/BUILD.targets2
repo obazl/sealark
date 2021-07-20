@@ -1,0 +1,4 @@
+cc_library(
+    name = "hello-lib",
+    srcs = ["hello.c"]
+)

@@ -148,6 +148,7 @@ int main(int argc, char *argv[]) // , char **envp)
     s7_pointer result = s7_call(s7,
                                 s7_name_to_value(s7, "ast-handler"),
                                 args);
-    log_debug("result: %s", s7_object_to_c_string(s7, result));
+    /* result of call is last form evaluated */
+    /* log_debug("result: %s", s7_object_to_c_string(s7, result)); */
     s7_quit(s7);
 }

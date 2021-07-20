@@ -29,6 +29,25 @@ UT_string *user_s7_file;
 
 int x;
 
+/* commonly used keywords */
+s7_pointer kw_targets;
+s7_pointer kw_target;
+s7_pointer kw_attrs;
+s7_pointer kw_attr;
+
+s7_pointer kw_tid;
+s7_pointer kw_line;
+s7_pointer kw_col;
+s7_pointer kw_subnodes;
+s7_pointer kw_comments;
+
+s7_pointer kw_node_p;
+s7_pointer kw_nodelist_p;
+
+s7_pointer kw_add;
+s7_pointer kw_replace;
+s7_pointer kw_remove;
+
 static s7_pointer error_handler(s7_scheme *sc, s7_pointer args)
 {
   fprintf(stdout, "error: %s\n", s7_string(s7_car(args)));
@@ -40,7 +59,7 @@ void export_token_tables(s7_scheme *s7)
     /* log_debug("export_token_tables"); */
 
     /* WARNING: token_ct must match the #define ct in syntaxis.h */
-    int token_ct = 134;
+    int token_ct = 137;
     s7_pointer toks = s7_make_vector(s7, (s7_int)token_ct);
     s7_pointer tids = s7_make_hash_table(s7, (s7_int)token_ct);
     int i, j, len;
@@ -97,6 +116,26 @@ EXPORT s7_scheme *sunlark_init(void)
                        "our error handler");
 
     export_token_tables(s7);
+
+    /* create commonly used keywords */
+    kw_targets = s7_make_keyword(s7, "targets");
+    kw_target = s7_make_keyword(s7, "target");
+    kw_attrs = s7_make_keyword(s7, "attrs");
+    kw_attr = s7_make_keyword(s7, "attr");
+
+    kw_tid = s7_make_keyword(s7, "tid");
+    kw_line = s7_make_keyword(s7, "line");
+    kw_col = s7_make_keyword(s7, "col");
+    kw_subnodes = s7_make_keyword(s7, "subnodes");
+    kw_comments = s7_make_keyword(s7, "comments");
+
+
+    kw_node_p = s7_make_keyword(s7, "node?");
+    kw_nodelist_p = s7_make_keyword(s7, "nodelist?");
+
+    kw_add = s7_make_keyword(s7, "add");
+    kw_replace = s7_make_keyword(s7, "replace");
+    kw_remove = s7_make_keyword(s7, "remove");
 
     /* look for error messages */
     errmsg = s7_get_output_string(s7, s7_current_error_port(s7));
