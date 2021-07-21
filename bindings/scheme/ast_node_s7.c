@@ -45,7 +45,7 @@ char *display_ptr;
 char *sunlark_node_display(s7_scheme *s7, void *value);
 char *sunlark_node_display_readably(s7_scheme *s7, void *value);
 static s7_pointer sunlark_node_to_string(s7_scheme *s7, s7_pointer args);
-static s7_pointer sunlark_node_to_starlark(s7_scheme *s7, s7_pointer args);
+static s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args);
 
 /* section: c-object construction */
 static s7_pointer sunlark_node_copy(s7_scheme *s7, s7_pointer args);
@@ -678,7 +678,7 @@ s7_pointer sunlark_resolve_path(s7_scheme *s7,
                 if (prev_path_arg == kw_target) {
                     /* symbols match starlark Id productions */
                     /* e.g. rule and attr names */
-                    self = sunlark_get_target_by_rule_name(s7,
+                    self = sunlark_get_targets_by_rule_name(s7,
                                                            path_arg,
                                                            self);
                     self_tid = sunlark_node_tid(s7, self);
@@ -1203,22 +1203,76 @@ static s7_pointer sunlark_node_to_string(s7_scheme *s7, s7_pointer args)
     return(obj);
 }
 
-#define SUNLARK_NODE_TO_STARLARK_HELP "(ast-node->starlark ast_node)"
+#define SUNLARK_TO_STARLARK_HELP "(ast-node->starlark ast_node)"
 
-static s7_pointer sunlark_node_to_starlark(s7_scheme *s7, s7_pointer args)
+static s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
-    log_debug("sunlark_node_to_starlark");
+    log_debug("sunlark_to_starlark");
 #endif
 
-    s7_pointer node;
+    s7_pointer arg = s7_car(args);
+    s7_pointer format;
+
+    if (s7_list_length(s7, args) == 2) {
+        format = s7_cadr(args);
+        if (format != kw_squeeze)
+            if (format != kw_crush)
+                return s7_error(s7, s7_make_symbol(s7,
+                                                   "invalid_argument"),
+                                s7_list(s7, 2, s7_make_string(s7,
+"optional arg to sunlark->starlark must be :squeeze or :crush; got ~A"),
+                                        format));
+    }
+
     UT_string *buf;
     utstring_new(buf);
 
-    node = s7_car(args);
-    struct node_s *ast_node = s7_c_object_value(node);
-    starlark_node2string(ast_node, buf);
-    return s7_make_string(s7, utstring_body(buf));
+    if (sunlark_is_ast_node(s7, arg)) {
+        log_debug("single node %d %s",
+                  sunlark_node_tid(s7, arg),
+                  token_name[sunlark_node_tid(s7, arg)][0]);
+        if (sunlark_node_tid(s7, arg) == TK_Node_List) {
+            UT_array *nodelist = s7_c_object_value(arg);
+            log_debug("node ct %d", utarray_len(nodelist));
+
+            struct node_s *n1=NULL;
+            while(n1=(struct node_s*)utarray_next(nodelist, n1)) {
+                starlark_node2string(n1, buf);
+            }
+
+        } else {
+            log_warn("Unexpected arg type: %d, %s",
+                  sunlark_node_tid(s7, arg),
+                  token_name[sunlark_node_tid(s7, arg)][0]);
+        }
+    } else {
+        if (sunlark_is_ast_nodelist(s7, args)) {
+            log_debug("nodelist");
+        } else {
+            log_error("unexpected args, neither node nor nodelist");
+        }
+    }
+
+    char *output;
+    if (format == kw_squeeze) {
+        output = sealark_squeeze_string(buf);
+    } else {
+        if (format == kw_crush) {
+        output = sealark_crush_string(buf);
+        } else {
+            output = utstring_body(buf);
+        }
+    }
+
+    s7_pointer out = s7_make_string(s7, output);
+    free(output);
+    return out;
+
+    /* s7_pointer out = s7_make_string(s7, utstring_body(output)); */
+    /* utstring_free(buf); */
+    /* utstring_free(output); */
+    /* return out; */
 }
 
 /* /section: serialization */
@@ -1550,10 +1604,10 @@ static void _register_ast_node_fns(s7_scheme *s7)
                              SUNLARK_NODE_SET_SPECIALIZED_HELP,
                              SUNLARK_NODE_SET_SPECIALIZED_SIG);
 
-    s7_define_safe_function(s7, "ast-node->starlark",
-                            sunlark_node_to_starlark,
-                            1, 0, false,
-                            SUNLARK_NODE_TO_STARLARK_HELP);
+    s7_define_safe_function(s7, "sunlark->starlark",
+                            sunlark_to_starlark,
+                            1, 1, false,
+                            SUNLARK_TO_STARLARK_HELP);
 
     // ast_node-let => s7_c_object_let, a let for the instance not the type
     /* s7_define_safe_function(s7, "ast-node-let", */

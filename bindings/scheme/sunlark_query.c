@@ -99,7 +99,7 @@ s7_pointer sunlark_fetch_targets(s7_scheme *s7,
     /* struct node_s *expr_list = utarray_eltptr(small_list->subnodes, 0); */
     /* log_debug("expr_list child ct: %d", utarray_len(expr_list->subnodes)); */
 
-    /* log_debug("found %d nodes", utarray_len(target_list)); */
+    log_debug("found %d targets", utarray_len(target_list));
 
     return sunlark_nodelist_new(s7, target_list);
 }
@@ -291,12 +291,12 @@ s7_pointer sunlark_handle_string_query_arg(s7_scheme *s7,
 }
 
 /* **************************************************************** */
-LOCAL s7_pointer _get_target_by_rule_sym(s7_scheme *s7,
+LOCAL s7_pointer _get_targets_by_rule_sym(s7_scheme *s7,
                                           s7_pointer sym,
                                           s7_pointer self)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
-    log_debug("_get_target_by_rule_sym");
+    log_debug("_get_targets_by_rule_sym");
 #endif
 
     UT_array *target_list;
@@ -332,6 +332,8 @@ LOCAL s7_pointer _get_target_by_rule_sym(s7_scheme *s7,
             ;
         }
     }
+    log_debug("found %d targets for rule %s",
+              utarray_len(target_list), str);
     return sunlark_nodelist_new(s7, target_list);
 }
 
@@ -397,12 +399,12 @@ LOCAL s7_pointer _get_attr_by_name_unique(s7_scheme *s7,
 }
 
 /* **************************************************************** */
-s7_pointer sunlark_get_target_by_rule_name(s7_scheme *s7,
+s7_pointer sunlark_get_targets_by_rule_name(s7_scheme *s7,
                                            s7_pointer rulename,
                                            s7_pointer target_list)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
-    log_debug("sunlark_get_target_by_rule_name: %s",
+    log_debug("sunlark_get_targets_by_rule_name: %s",
               s7_object_to_c_string(s7, rulename));
 #endif
 
@@ -411,13 +413,13 @@ s7_pointer sunlark_get_target_by_rule_name(s7_scheme *s7,
     /*           token_name[sunlark_node_tid(s7, target_list)][0]); */
 
     if (c_is_sunlark_nodelist(s7, target_list)) {
-        s7_pointer n = _get_target_by_rule_sym(s7, rulename, target_list);
+        s7_pointer n = _get_targets_by_rule_sym(s7, rulename, target_list);
         return n;
     } else {
         if (c_is_sunlark_node(s7, target_list)) {
-            /* log_debug("node xxxxxxxxxxxxxxxx %d %s", */
-            /*           sunlark_node_tid(s7, target_list), */
-            /*           token_name[sunlark_node_tid(s7, target_list)][0]); */
+            log_warn("single target node %d %s",
+                      sunlark_node_tid(s7, target_list),
+                      token_name[sunlark_node_tid(s7, target_list)][0]);
             /* s7_pointer n = _handle_node_string_query(s7, str, target_list); */
         } else {
             //FIXME: handle

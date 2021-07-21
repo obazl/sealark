@@ -635,7 +635,9 @@ statement(Stmt) ::= small_stmt_list(SmallStmts) . [AMP]
     if ( ! n->trailing_newline ) {
         // Starlark grammar: "# NOTE: '\n' optional at EOF
         // FIXME: detect if we are at EOF
-        log_error("Missing newline after SimpleStmt %s", n->s);
+        log_warn("Missing newline after SimpleStmt tid: %d %s, s: %s",
+                 n->tid, TIDNAME(n),
+                 n->s);
         // FIXME: print entire expr
         /* exit(EXIT_FAILURE); */
     }

@@ -24,9 +24,80 @@
 
 //FIXME: rename 2string => 2starlark
 
+/* sealark_crush_string
+
+   removes blank lines
+
+   returns new UT_string, which user must free
+ */
+EXPORT char *sealark_crush_string(UT_string *src)
+{
+    log_debug("sealark_crush_string");
+
+    char *srcptr = utstring_body(src);
+    char *dstptr = calloc(utstring_len(src), sizeof(char));
+
+    size_t wc_count;
+
+    if(dstptr) {
+        char *p2 = dstptr;
+        while(*srcptr != '\0') {
+            if(*srcptr == '\n') {
+                /* retain a single blank line */
+                *p2++ = *srcptr++;
+                while(*srcptr == '\n') {
+                    srcptr++;
+                }
+            } else {
+                *p2++ = *srcptr++;
+            }
+        }
+        *p2 = '\0';
+    }
+
+    return dstptr;
+}
+
+/** sealark_squeeze_string
+
+    collapses consecutive blank lines  to one
+
+    returns new UT_string, which user must free
+ */
+EXPORT char *sealark_squeeze_string(UT_string *src)
+{
+    log_debug("sealark_squeeze_string");
+
+    char *srcptr = utstring_body(src);
+    char *dstptr = calloc(utstring_len(src), sizeof(char));
+
+    size_t wc_count;
+
+    if(dstptr) {
+        char *p2 = dstptr;
+        while(*srcptr != '\0') {
+            if(*srcptr == '\n') {
+                /* retain a single blank line */
+                *p2++ = *srcptr++;
+                if(*srcptr == '\n') {
+                    *p2++ = *srcptr++;
+                    while(*srcptr == '\n') {
+                        srcptr++;
+                    }
+                }
+            } else {
+                *p2++ = *srcptr++;
+            }
+        }
+        *p2 = '\0';
+    }
+
+    return dstptr;
+}
+
 EXPORT void starlark_node2string(struct node_s *node, UT_string *buffer)
 {
-    /* log_debug("starlark_node2string"); */
+    log_debug("starlark_node2string");
     line = col = 0;
     _node2string(node, buffer);
     if (utstring_body(buffer)[utstring_len(buffer)-1] != '\n') {

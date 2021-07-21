@@ -47,6 +47,9 @@ s7_pointer kw_add;
 s7_pointer kw_replace;
 s7_pointer kw_remove;
 
+s7_pointer kw_crush;
+s7_pointer kw_squeeze;
+
 static s7_pointer error_handler(s7_scheme *sc, s7_pointer args)
 {
   fprintf(stdout, "error: %s\n", s7_string(s7_car(args)));
@@ -135,6 +138,9 @@ EXPORT s7_scheme *sunlark_init(void)
     kw_add = s7_make_keyword(s7, "add");
     kw_replace = s7_make_keyword(s7, "replace");
     kw_remove = s7_make_keyword(s7, "remove");
+    /* formatting */
+    kw_crush = s7_make_keyword(s7, "crush");
+    kw_squeeze = s7_make_keyword(s7, "squeeze");
 
     /* look for error messages */
     errmsg = s7_get_output_string(s7, s7_current_error_port(s7));
