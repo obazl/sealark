@@ -29,9 +29,9 @@ EXPORT void starlark_node2string(struct node_s *node, UT_string *buffer)
     log_debug("starlark_node2string");
     line = col = 0;
     _node2string(node, buffer);
-    /* if (utstring_body(buffer)[utstring_len(buffer)-1] != '\n') { */
-    /* utstring_printf(buffer, "\n"); */
-    /* } */
+    if (utstring_body(buffer)[utstring_len(buffer)-1] != '\n') {
+        utstring_printf(buffer, "\n");
+    }
 }
 
 EXPORT void starlark_nodelist2string(UT_array *nodes, UT_string *buffer)

@@ -8,6 +8,9 @@ cc_binary(
         "edit.h",
     ],
     data = [
+        "//test/data/cpp:BUILD.test",
+        "//test/data/walk:BUILD.bazel",
+        "//test/data/walk:BUILD.targets3",
         "//sunlark/scm:edit.scm"
     ],
     defines = ["DEBUG", "DEBUG_TRACE"],
@@ -56,10 +59,15 @@ cc_binary(
         "//bzl/host:macos": ["-std=c11"],
         "//bzl/host:linux": ["-std=gnu11"],
         "//conditions:default": ["-std=c11"],
-        }) + [
+    }) + [
         "-pedantic-errors",
+        "-I$(GENDIR)/bindings/scheme",
         "-Ivendored/linenoise",
-        "-Ivendored/s7"
+        "-Ivendored/s7",
+        "-Ivendored/uthash"
+    ],
+    data = [
+        "//sunlark/scm:edit.scm"
     ],
     linkopts = select({
         "//bzl/host:macos": [],
@@ -69,8 +77,10 @@ cc_binary(
         "-lm",
     ],
     deps = [
+        "//bindings/scheme:sunlark",
         "//vendored/linenoise",
-        "//vendored/s7"
+        "//vendored/s7",
+        "//vendored/uthash"
     ],
     visibility = ["//visibility:public"]
 )
@@ -82,7 +92,8 @@ genrule(
         "edit.c",
         "//bindings/scheme:libsunlark.c",
         "//bazel:bazel_config.c",
-        "//sealark:mkhdrs-export",
+        # "//sealark:mkhdrs-export",
+        "//bindings/scheme:mkhdrs-export",
     ],
     outs = [
         "edit.h",
@@ -92,8 +103,9 @@ genrule(
         "SRCDIR1=`dirname $$SRC1`",
         "$(location //vendored/makeheaders) \\",
         "    $(location //bindings/scheme:libsunlark.c) \\",
+        "    $(location //bindings/scheme:mkhdrs-export) \\",
         "    $(location //bazel:bazel_config.c) \\",
-        "    $(location //sealark:mkhdrs-export) \\",
+        # "    $(location //sealark:mkhdrs-export) \\",
         "    $(location edit.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),

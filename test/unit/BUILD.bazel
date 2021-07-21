@@ -33,8 +33,8 @@ cc_test(
         "-I$(GENDIR)/test/unit",
         "-I$(GENDIR)/external/moonlark/test/unit",
 
-        "-I$(GENDIR)/src/lib/starlark",
-        "-I$(GENDIR)/external/moonlark/src/lib/starlark",
+        "-I$(GENDIR)/sealark",
+        "-I$(GENDIR)/external/moonlark/sealark",
 
         "-Ivendored/logc",
         "-Iexternal/moonlark/vendored/logc",
@@ -45,7 +45,7 @@ cc_test(
     ],
     linkstatic = 1,
     deps = [
-        "//src/lib/starlark",
+        "//sealark",
         "//vendored/logc",
         "//vendored/unity",
         "//vendored/uthash",
@@ -57,7 +57,7 @@ cc_test(
     srcs = [
         "lex_numbers.c",
         "lex_numbers.h",
-        # "//src/lib/starlark:debug.c",
+        # "//sealark:debug.c",
     ],
     copts = select({
         # strdup is non-standard, not supported on linux in strict c11 mode
@@ -70,8 +70,8 @@ cc_test(
         "-I$(GENDIR)/test/unit",
         "-I$(GENDIR)/external/moonlark/test/unit",
 
-        "-I$(GENDIR)/src/lib/starlark",
-        "-I$(GENDIR)/external/moonlark/src/lib/starlark",
+        "-I$(GENDIR)/sealark",
+        "-I$(GENDIR)/external/moonlark/sealark",
 
         "-Ivendored/logc",
         "-Iexternal/moonlark/vendored/logc",
@@ -82,7 +82,7 @@ cc_test(
     ],
     linkstatic = 1,
     deps = [
-        "//src/lib/starlark",
+        "//sealark",
         "//vendored/logc",
         "//vendored/unity",
         "//vendored/uthash",
@@ -106,8 +106,8 @@ cc_test(
         "-I$(GENDIR)/test/unit",
         "-I$(GENDIR)/external/moonlark/test/unit",
 
-        "-I$(GENDIR)/src/lib/starlark",
-        "-I$(GENDIR)/external/moonlark/src/lib/starlark",
+        "-I$(GENDIR)/sealark",
+        "-I$(GENDIR)/external/moonlark/sealark",
 
         "-Ivendored/logc",
         "-Ivendored/unity",
@@ -118,7 +118,7 @@ cc_test(
     ],
     linkstatic = 1,
     deps = [
-        "//src/lib/starlark",
+        "//sealark",
         "//vendored/logc",
         "//vendored/unity",
         "//vendored/uthash",
@@ -130,7 +130,7 @@ cc_test(
     srcs = [
         "lex_strings.c",
         "lex_strings.h",
-        # "//src/lib/starlark:debug.c",
+        # "//sealark:debug.c",
     ],
     copts = select({
         # strdup is non-standard, not supported on linux in strict c11 mode
@@ -143,8 +143,8 @@ cc_test(
         "-I$(GENDIR)/test/unit",
         "-I$(GENDIR)/external/moonlark/test/unit",
 
-        "-I$(GENDIR)/src/lib/starlark",
-        "-I$(GENDIR)/external/moonlark/src/lib/starlark",
+        "-I$(GENDIR)/sealark",
+        "-I$(GENDIR)/external/moonlark/sealark",
 
         "-Ivendored/logc",
         "-Ivendored/unity",
@@ -155,7 +155,7 @@ cc_test(
     ],
     linkstatic = 1,
     deps = [
-        "//src/lib/starlark",
+        "//sealark",
         "//vendored/logc",
         "//vendored/unity",
         "//vendored/uthash",
@@ -180,8 +180,8 @@ cc_test(
         "-I$(GENDIR)/test/unit",
         "-I$(GENDIR)/external/moonlark/test/unit",
 
-        "-I$(GENDIR)/src/lib/starlark",
-        "-I$(GENDIR)/external/moonlark/src/lib/starlark",
+        "-I$(GENDIR)/sealark",
+        "-I$(GENDIR)/external/moonlark/sealark",
 
         "-Ivendored/logc",
         "-Ivendored/unity",
@@ -192,7 +192,7 @@ cc_test(
     ],
     linkstatic = 1,
     deps = [
-        "//src/lib/starlark",
+        "//sealark",
         "//vendored/logc",
         "//vendored/unity",
         "//vendored/uthash",
@@ -216,8 +216,8 @@ cc_test(
         "-I$(GENDIR)/test/unit",
         "-I$(GENDIR)/external/moonlark/test/unit",
 
-        "-I$(GENDIR)/src/lib/starlark",
-        "-I$(GENDIR)/external/moonlark/src/lib/starlark",
+        "-I$(GENDIR)/sealark",
+        "-I$(GENDIR)/external/moonlark/sealark",
 
         "-Ivendored/logc",
         "-Ivendored/unity",
@@ -228,7 +228,7 @@ cc_test(
     ],
     linkstatic = 1,
     deps = [
-        "//src/lib/starlark",
+        "//sealark",
         "//vendored/logc",
         "//vendored/unity",
         "//vendored/uthash",
@@ -252,8 +252,8 @@ cc_test(
         "-I$(GENDIR)/test/unit",
         "-I$(GENDIR)/external/moonlark/test/unit",
 
-        "-I$(GENDIR)/src/lib/starlark",
-        "-I$(GENDIR)/external/moonlark/src/lib/starlark",
+        "-I$(GENDIR)/sealark",
+        "-I$(GENDIR)/external/moonlark/sealark",
 
         "-Ivendored/logc",
         "-Ivendored/unity",
@@ -265,7 +265,7 @@ cc_test(
     ],
     linkstatic = 1,
     deps = [
-        "//src/lib/starlark",
+        "//sealark",
         "//vendored/logc",
         "//vendored/unity",
         "//vendored/uthash",
@@ -289,8 +289,8 @@ cc_test(
         "-I$(GENDIR)/test/unit",
         "-I$(GENDIR)/external/moonlark/test/unit",
 
-        "-I$(GENDIR)/src/lib/starlark",
-        "-I$(GENDIR)/external/moonlark/src/lib/starlark",
+        "-I$(GENDIR)/sealark",
+        "-I$(GENDIR)/external/moonlark/sealark",
 
         "-Ivendored/logc",
         "-Ivendored/unity",
@@ -301,7 +301,7 @@ cc_test(
     ],
     linkstatic = 1,
     deps = [
-        "//src/lib/starlark",
+        "//sealark",
         "//vendored/logc",
         "//vendored/unity",
         "//vendored/uthash",
@@ -325,8 +325,8 @@ cc_test(
         "-I$(GENDIR)/test/unit",
         "-I$(GENDIR)/external/moonlark/test/unit",
 
-        "-I$(GENDIR)/src/lib/starlark",
-        "-I$(GENDIR)/external/moonlark/src/lib/starlark",
+        "-I$(GENDIR)/sealark",
+        "-I$(GENDIR)/external/moonlark/sealark",
 
         "-Ivendored/logc",
         "-Ivendored/unity",
@@ -337,7 +337,7 @@ cc_test(
     ],
     linkstatic = 1,
     deps = [
-        "//src/lib/starlark",
+        "//sealark",
         "//vendored/logc",
         "//vendored/unity",
         "//vendored/uthash",
@@ -361,8 +361,8 @@ cc_test(
         "-I$(GENDIR)/test/unit",
         "-I$(GENDIR)/external/moonlark/test/unit",
 
-        "-I$(GENDIR)/src/lib/starlark",
-        "-I$(GENDIR)/external/moonlark/src/lib/starlark",
+        "-I$(GENDIR)/sealark",
+        "-I$(GENDIR)/external/moonlark/sealark",
 
         "-Ivendored/logc",
         "-Ivendored/unity",
@@ -373,7 +373,7 @@ cc_test(
     ],
     linkstatic = 1,
     deps = [
-        "//src/lib/starlark",
+        "//sealark",
         "//vendored/logc",
         "//vendored/unity",
         "//vendored/uthash",
@@ -384,7 +384,7 @@ cc_test(
 genrule(
     name = "mkhdrs",
     srcs = [
-        "//src/lib/starlark:debug.c",
+        "//sealark:debug.c",
         # "roundtrip_starlark.c",
         # "roundtrip_moonlark.c",
         # "roundtrip_helper.c",
@@ -421,7 +421,7 @@ genrule(
         "SRC1=$(location lex_strings.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "$(location //vendored/makeheaders) \\",
-        "    $(location //src/lib/starlark:debug.c) \\",
+        "    $(location //sealark:debug.c) \\",
         "    $(location lex_keywords.c) \\",
         "    $(location lex_numbers.c) \\",
         "    $(location lex_punctuation.c) \\",

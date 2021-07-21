@@ -144,7 +144,7 @@ void test_simple(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, simple[i]); */
         test_str = simple[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
@@ -159,7 +159,7 @@ void test_def_stmts(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, def_stmts[i]); */
         test_str = def_stmts[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
@@ -174,7 +174,7 @@ void test_if_stmts(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, if_stmts[i]); */
         test_str = if_stmts[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
@@ -189,7 +189,7 @@ void test_for_stmts(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, for_stmts[i]); */
         test_str = for_stmts[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
@@ -204,7 +204,7 @@ void test_assignments(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, assignments[i]); */
         test_str = assignments[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
@@ -219,7 +219,7 @@ void test_multi_assignments(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, multi_assignments[i]); */
         test_str = multi_assignments[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
@@ -234,7 +234,7 @@ void test_augmented_assignments(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, augmented_assignments[i]); */
         test_str = augmented_assignments[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
@@ -249,7 +249,7 @@ void test_load_stmts(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, load_stmts[i]); */
         test_str = load_stmts[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */

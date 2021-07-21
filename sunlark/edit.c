@@ -20,11 +20,15 @@
 
 #include "s7.h"
 
+/* #include "sunlark.h" */
 #include "edit.h"
 
 UT_string *build_file;
 
 UT_string *buffer;
+
+// just for testing:
+/* struct parse_state_s *sealark_parse_file(char *fname); */
 
 int main(int argc, char *argv[]) // , char **envp)
 {
@@ -95,7 +99,7 @@ int main(int argc, char *argv[]) // , char **envp)
         /* launched by bazel run cmd */
 
         char *bazel_script_dir = get_bazel_script_dir(callback_script_file);
-        s7lark_augment_load_path(s7, bazel_script_dir);
+        sunlark_augment_load_path(s7, bazel_script_dir);
 
         /* user script dir is relative to launch dir; set it after chdir */
         chdir(wd);
@@ -103,14 +107,14 @@ int main(int argc, char *argv[]) // , char **envp)
         if( access( user_script_dir, F_OK ) != 0 ) {
             log_warn("WARNING: user_luadir does not exist: %s", user_script_dir);
         }
-        s7lark_augment_load_path(s7, user_script_dir);
+        sunlark_augment_load_path(s7, user_script_dir);
 
         s7_pointer lp = s7_load_path(s7);
         log_debug("load path: %s", s7_object_to_c_string(s7, lp));
 
-        /* s7lark_config_moonlark_table(L); */
+        /* sunlark_config_moonlark_table(L); */
 
-        /* s7lark_load_script_file(L, load_script); */
+        /* sunlark_load_script_file(L, load_script); */
         s7_pointer lf;
         if (load_script) {
             log_debug("loading user script: %s", load_script);
@@ -133,14 +137,22 @@ int main(int argc, char *argv[]) // , char **envp)
         log_error("BUILD_WORKING_DIRECTORY not found. This program is designed to be run from the root directory of a Bazel repo.");
     }
 
-    /* now parse the file using libstarlark */
-    struct parse_state_s *parse_state = starlark_parse_file(build_file);
-    log_debug("parsed file %s", parse_state->lexer->fname);
-    /* dump_node(parse_state->root); */
-    /* starlark_node2string(parse_state->root, buffer); */
+    log_debug("ml CWD: %s", getcwd(NULL, 0));
+    int r = access(build_file, F_OK);
+    log_debug("access %s ? %d", build_file, r);
 
-    log_debug("converting ast");
-    s7_pointer ast = s7lark_ast2scm(s7, parse_state);
+    /* now parse the file using libstarlark */
+    /* log_debug("lark_parse_build_file: %s", build_file); */
+
+    /* struct parse_state_s *parse_state = sealark_parse_file(build_file); */
+    /* log_debug("parsed file %s", parse_state->lexer->fname); */
+
+    /* /\* log_debug("converting ast"); *\/ */
+    /* s7_pointer ast = sunlark_ast2scm(s7, parse_state); */
+
+    s7_pointer ast = sunlark_parse_build_file(s7,
+                                              s7_list(s7, 1,
+                                                      s7_make_string(s7, build_file)));
 
     s7_pointer args =  s7_list(s7, 1, ast);
 

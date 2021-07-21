@@ -168,11 +168,11 @@ EXPORT UT_array *starlark_lex_file(char *fname)
 }
 
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-EXPORT struct node_s *starlark_parse_string(char *buffer)
+EXPORT struct node_s *sealark_parse_string(char *buffer)
 {
     log_set_quiet(false);
 
-    /* log_info("starlark_parse_string: %s", buffer); */
+    /* log_info("sealark_parse_string: %s", buffer); */
 
     int tok;
     struct node_s *btok = calloc(sizeof(struct node_s), 1);
@@ -238,12 +238,17 @@ EXPORT struct node_s *starlark_parse_string(char *buffer)
     return parse_state->root;
 }
 
-EXPORT struct parse_state_s *starlark_parse_file(char *fname)
+EXPORT struct parse_state_s *sealark_parse_file(const char *fname)
 {
     log_set_quiet(false);
 
-    /* log_info("starlark_parse_file: %s", fname); */
+    log_info("sealark_parse_file: %s", fname);
     FILE *f;
+
+    log_debug("CWD: %s", getcwd(NULL, 0));
+
+    int r = access(fname, F_OK);
+    log_debug("access %s ? %d", fname, r);
 
     f = fopen(fname, "r");
     if (f == NULL) {

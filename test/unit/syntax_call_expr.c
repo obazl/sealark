@@ -1,7 +1,7 @@
 #include "log.h"
 #include "utarray.h"
 #include "unity.h"
-#include "starlark.h"
+#include "sealark.h"
 
 #include "syntax_call_expr.h"
 
@@ -68,27 +68,27 @@ void test_call_a(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, call_a[i]); */
         test_str = call_a[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
-        node_dtor(root);
+        sealark_node_free(root);
     }
 }
 
 void test_call_rules(void) {
     int ct;
-    for (ct=0; call_rules[ct] != NULL; ct++); ct--;
+    for (ct=0; call_rules[ct] != NULL; ct++);
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, call_rules[i]); */
         test_str = call_rules[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
-        node_dtor(root);
+        sealark_node_free(root);
     }
 }
 

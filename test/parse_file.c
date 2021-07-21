@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    struct parse_state_s *parse_state = starlark_parse_file(utstring_body(build_file));
+    struct parse_state_s *parse_state = sealark_parse_file(utstring_body(build_file));
     log_debug("parsed file %s", parse_state->lexer->fname);
     dump_node(parse_state->root);
 

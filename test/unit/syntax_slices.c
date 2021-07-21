@@ -269,7 +269,7 @@ void test_slice_a(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, slice_a[i]); */
         test_str = slice_a[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
@@ -284,7 +284,7 @@ void test_slice_embed_a(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, slice_embed_a[i]); */
         test_str = slice_embed_a[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
@@ -299,7 +299,7 @@ void test_slice_a_cmt(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, slice_a_cmt[i]); */
         test_str = slice_a_cmt[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
@@ -314,7 +314,7 @@ void test_slice_int(void) {
     for (int i=0; i < ct; i++) {
         // printf("case %d: :]%s[:\n", i, slice_int[i]);
         test_str = slice_int[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         // printf(":]%s[:\n", utstring_body(buf));
@@ -329,7 +329,7 @@ void test_slice_float(void) {
     for (int i=0; i < ct; i++) {
         // printf("case %d: :]%s[:\n", i, slice_float[i]);
         test_str = slice_float[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         // printf(":]%s[:\n", utstring_body(buf));
@@ -344,7 +344,7 @@ void test_slice_a_float(void) {
     for (int i=0; i < ct; i++) {
         // printf("case %d: :]%s[:\n", i, slice_a_float[i]);
         test_str = slice_a_float[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         // printf(":]%s[:\n", utstring_body(buf));
@@ -359,7 +359,7 @@ void test_slice_a_int(void) {
     for (int i=0; i < ct; i++) {
         // printf("case %d: :]%s[:\n", i, slice_a_int[i]);
         test_str = slice_a_int[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         // printf(":]%s[:\n", utstring_body(buf));
@@ -374,7 +374,7 @@ void test_slice_fn(void) {
     for (int i=0; i < ct; i++) {
         // printf("case %d: :]%s[:\n", i, slice_fn[i]);
         test_str = slice_fn[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         // printf(":]%s[:\n", utstring_body(buf));

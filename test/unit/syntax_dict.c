@@ -36,7 +36,7 @@ void test_dict_comp(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, dict_comp[i]); */
         test_str = dict_comp[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
@@ -51,7 +51,7 @@ void test_dict_expr(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, dict_expr[i]); */
         test_str = dict_expr[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */

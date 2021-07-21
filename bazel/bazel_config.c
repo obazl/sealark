@@ -10,7 +10,7 @@
 
 #include "bazel_config.h"
 
-char *get_bazel_script_dir(char *scriptfile)
+EXPORT char *get_bazel_script_dir(char *scriptfile)
 {
     /* log_debug("bazel_get_script_dir %s", scriptfile); */
     char *bazel_script_dir = NULL;

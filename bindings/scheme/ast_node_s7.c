@@ -4,7 +4,6 @@
 #include <math.h>
 
 #include "log.h"
-#include "utarray.h"
 
 #include "s7.h"
 
@@ -1505,6 +1504,8 @@ static void _register_c_type_methods(s7_scheme *s7, s7_int ast_node_t)
     s7_c_type_set_is_equivalent(s7, ast_node_t, sunlark_nodes_are_equivalent);
 
     s7_c_type_set_copy(s7, ast_node_t, sunlark_node_copy);
+
+    /* nodes are not sequences - nodelists are */
     /* s7_c_type_set_length(s7, ast_node_t, sunlark_node_length); */
     /* s7_c_type_set_reverse(s7, ast_node_t, sunlark_node_reverse); */
     /* s7_c_type_set_fill(s7, ast_node_t, sunlark_node_fill); */
@@ -1545,7 +1546,8 @@ static void _register_ast_node_fns(s7_scheme *s7)
     s7_define_typed_function(s7, "ast-node-set!",
                              sunlark_node_set_specialized,
                              3, 0, true,
-                             SUNLARK_NODE_SET_SPECIALIZED_HELP, SUNLARK_NODE_SET_SPECIALIZED_SIG);
+                             SUNLARK_NODE_SET_SPECIALIZED_HELP,
+                             SUNLARK_NODE_SET_SPECIALIZED_SIG);
 
     s7_define_safe_function(s7, "ast-node->starlark",
                             sunlark_node_to_starlark,
@@ -1558,9 +1560,26 @@ static void _register_ast_node_fns(s7_scheme *s7)
     /*                         1, 0, false, */
     /*                         sunlark_node_let_help); */
 
-    /* s7_define_safe_function(s7, "subast_node", g_subast_node, 1, 0, true, g_subast_node_help); */
-    /* s7_define_safe_function(s7, "ast-node-append", sunlark_node_append, 0, 0, true, sunlark_node_append_help); */
-    /* s7_define_safe_function(s7, "ast-node-reverse!", sunlark_node_reverse_in_place, 1, 0, false, sunlark_node_reverse_in_place_help); */
+    /* parsing */
+    s7_define_safe_function(s7,
+                            "parse-build-file",
+                            sunlark_parse_build_file,
+                            1, 0, false,
+                            SUNLARK_PARSE_BUILD_FILE_HELP);
+
+    s7_define_safe_function(s7,
+                            "parse-bzl-file",
+                            sunlark_parse_bzl_file,
+                            1, 0, false,
+                            SUNLARK_PARSE_BZL_FILE_HELP);
+
+    s7_define_safe_function(s7,
+                            "parse-string",
+                            sunlark_parse_string,
+                            1, 0, false,
+                            SUNLARK_PARSE_STRING_HELP);
+
+
 }
 
 /* **************** */

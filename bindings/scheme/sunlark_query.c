@@ -4,7 +4,7 @@
 #include <math.h>
 
 #include "log.h"
-#include "utarray.h"
+/* #include "utarray.h" */
 
 #include "s7.h"
 

@@ -59,7 +59,7 @@ void test_if_expr(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, if_expr[i]); */
         test_str = if_expr[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
@@ -74,7 +74,7 @@ void test_lambda(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, lambda[i]); */
         test_str = lambda[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
@@ -89,7 +89,7 @@ void test_paren_expr(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, paren_expr[i]); */
         test_str = paren_expr[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
@@ -104,7 +104,7 @@ void test_dot_expr(void) {
     for (int i=0; i < ct; i++) {
         /* printf("case %d: :]%s[:\n", i, dot_expr[i]); */
         test_str = dot_expr[i];
-        root = starlark_parse_string(test_str);
+        root = sealark_parse_string(test_str);
         utstring_renew(buf);
         starlark_node2string(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */

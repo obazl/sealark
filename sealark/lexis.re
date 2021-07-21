@@ -45,7 +45,7 @@ struct position_s {
 
 struct bf_lexer_s
 {
-    char *fname;
+    const char *fname;
     /* from gazelle */
     struct position_s pos;  // current input position
     int extra_lines;
@@ -82,7 +82,7 @@ int return_token(int tok)
     return tok;
 }
 
-void lexer_init(char *fname,
+void lexer_init(const char *fname,
                 struct bf_lexer_s *lexer,
                 const char *sob /* start of buffer */ )
 {

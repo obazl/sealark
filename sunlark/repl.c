@@ -1,8 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
 #include "linenoise.h"
 #include "s7.h"
+
+#include "utarray.h"
+#include "sunlark.h"
 
 void completion(const char *buf, linenoiseCompletions *lc) {
     if (buf[0] == 'h') {
@@ -44,6 +49,14 @@ int main(int argc, char **argv) {
         }
     }
 
+    char *callback_script_file = "edit.scm";
+
+    char *wd = getenv("BUILD_WORKING_DIRECTORY");
+    if (wd) {
+        char *bazel_script_dir = get_bazel_script_dir(callback_script_file);
+        chdir(wd);
+    }
+
     /* Set the completion callback. This will be called every time the
      * user uses the <tab> key. */
     linenoiseSetCompletionCallback(completion);
@@ -60,7 +73,8 @@ int main(int argc, char **argv) {
      * The typed string is returned as a malloc() allocated string by
      * linenoise, so the user needs to free() it. */
 
-    s7 = s7_init();                 /* initialize the interpreter */
+    //s7 = s7_init();                 /* initialize the interpreter */
+    s7 = sunlark_init();
 
     while((line = linenoise("s7> ")) != NULL) {
 

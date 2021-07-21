@@ -3,8 +3,6 @@
 #include <string.h>
 #include <math.h>
 
-#include "utarray.h"
-
 #include "log.h"
 #include "s7.h"
 
