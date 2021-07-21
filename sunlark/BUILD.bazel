@@ -8,9 +8,9 @@ cc_binary(
         "edit.h",
     ],
     data = [
-        "//test/data/cpp:BUILD.test",
-        "//test/data/walk:BUILD.bazel",
-        "//test/data/walk:BUILD.targets3",
+        # "//test/data/cc:BUILD.test",
+        # "//test/data/walk:BUILD.bazel",
+        # "//test/data/walk:BUILD.targets3",
         "//sunlark/scm:edit.scm"
     ],
     defines = ["DEBUG", "DEBUG_TRACE"],
