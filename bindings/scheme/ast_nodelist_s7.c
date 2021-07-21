@@ -878,7 +878,7 @@ EXPORT s7_pointer sunlark_nodelist_new(s7_scheme *s7, UT_array *ast_nodelist)
     _register_nodelist_object_methods(s7, new_nodelist);
 
     int tid = sunlark_node_tid(s7, new_nodelist);
-    log_debug("new nodelist tid: %d", tid);
+    /* log_debug("new nodelist tid: %d", tid); */
     return new_nodelist;
 }
 

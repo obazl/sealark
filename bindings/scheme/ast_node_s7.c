@@ -461,16 +461,16 @@ static s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
     s7_pointer self_s7 = s7_car(args);
     s7_pointer params = s7_cdr(args);
 
-    log_debug("get_target, params: %s", s7_object_to_c_string(s7, params));
-    log_debug("nl tid: %d", sunlark_node_tid(s7, self_s7));
+    /* log_debug("get_target, params: %s", s7_object_to_c_string(s7, params)); */
+    /* log_debug("nl tid: %d", sunlark_node_tid(s7, self_s7)); */
 
     /* may return c-objects (node, nodelist) or primitives (s7_integer) */
     s7_pointer get_target = sunlark_resolve_path(s7,
                                                  self_s7,
                                                  params);
-    if (s7_is_c_object(get_target)) {
-        log_debug("got target tid: %d", sunlark_node_tid(s7, get_target));
-    }
+    /* if (s7_is_c_object(get_target)) { */
+    /*     log_debug("got target tid: %d", sunlark_node_tid(s7, get_target)); */
+    /* } */
     return get_target;
 
     /* s7_pointer op = s7_car(rest); */
@@ -537,20 +537,20 @@ s7_pointer sunlark_resolve_path(s7_scheme *s7,
     const char *prop;
     int loop_idx = 0;
     while ( !s7_is_null(s7, path_args) ) {
-        log_debug("LOOP (resolve) %d: %s", loop_idx++,
-                  s7_object_to_c_string(s7, path_args));
+        /* log_debug("LOOP (resolve) %d: %s", loop_idx++, */
+        /*           s7_object_to_c_string(s7, path_args)); */
         path_arg = s7_car(path_args);
-        log_debug("path_arg: %s", s7_object_to_c_string(s7, path_arg));
+        /* log_debug("path_arg: %s", s7_object_to_c_string(s7, path_arg)); */
 
-        log_debug("self_tid: %d %s",
-                      self_tid,
-                      token_name[self_tid][0]);
+        /* log_debug("self_tid: %d %s", */
+        /*               self_tid, */
+        /*               token_name[self_tid][0]); */
 
         if (s7_is_keyword(path_arg) || s7_is_integer(path_arg)) {
             if (s7_is_keyword(path_arg)) {
                 s7_pointer sym = s7_keyword_to_symbol(s7, path_arg);
                 prop = s7_symbol_name(sym);
-                log_debug("prop: %s", prop);
+                /* log_debug("prop: %s", prop); */
             }
 
             /* scalar-valued props (e.g. :tid) must come last */
@@ -629,15 +629,15 @@ s7_pointer sunlark_resolve_path(s7_scheme *s7,
                 break;
             default:
                 /* usually :subnodes */
-                log_warn("catch-all");
+                /* log_warn("catch-all"); */
                 if (s7_is_integer(path_arg)) {
                     struct node_s *n = s7_c_object_value(self);
                     if (n->subnodes) {
                         self = sunlark_nodelist_lookup(s7, n->subnodes,
                                                        path_arg);
                         self_tid = sunlark_node_tid(s7, self);
-                        log_debug("0 xxxxxxxxxxxxxxxx %d %s",
-                                  self_tid, token_name[self_tid][0]);
+                        /* log_debug("0 xxxxxxxxxxxxxxxx %d %s", */
+                        /*           self_tid, token_name[self_tid][0]); */
                     } else {
                         // error? unspecified?
                         return s7_unspecified(s7);
@@ -656,17 +656,17 @@ s7_pointer sunlark_resolve_path(s7_scheme *s7,
             }
         } else {
             if (s7_is_symbol(path_arg)) {
-                log_debug("SYMBOL path step: %s",
-                          s7_object_to_c_string(s7, path_arg));
-                log_debug("prev path step: %s",
-                          s7_object_to_c_string(s7, prev_path_arg));
+                /* log_debug("SYMBOL path step: %s", */
+                /*           s7_object_to_c_string(s7, path_arg)); */
+                /* log_debug("prev path step: %s", */
+                /*           s7_object_to_c_string(s7, prev_path_arg)); */
 
                 /* ok: symbol after :target, :attrs */
                 /* not ok: symbol after :load */
                 if (prev_path_arg == s7_make_keyword(s7, "load")) {
-                    log_error("ERROR: path step %s may not be followed by symbol; found: '%s",
-                              s7_object_to_c_string(s7, prev_path_arg),
-                              s7_object_to_c_string(s7, path_arg));
+                    /* log_error("ERROR: path step %s may not be followed by symbol; found: '%s", */
+                    /*           s7_object_to_c_string(s7, prev_path_arg), */
+                    /*           s7_object_to_c_string(s7, path_arg)); */
 
                     return s7_error(s7, s7_make_symbol(s7,
                                                        "invalid_argument"),
@@ -694,8 +694,8 @@ s7_pointer sunlark_resolve_path(s7_scheme *s7,
 
             } else {
                 if (s7_is_string(path_arg)) {
-                    log_debug("STRING path step: %s",
-                              s7_object_to_c_string(s7, path_arg));
+                    /* log_debug("STRING path step: %s", */
+                    /*           s7_object_to_c_string(s7, path_arg)); */
                     /* :loads "foo" - get load("foo"...) node */
                     /* :targets "bar" - selects target :bar */
                     /* :attrs "baz" - selects "baz" attr */
@@ -706,7 +706,7 @@ s7_pointer sunlark_resolve_path(s7_scheme *s7,
                     self_tid = sunlark_node_tid(s7, self);
                 } else {
                     if (s7_is_procedure(path_arg)) {
-                        log_debug("running path function...");
+                        /* log_debug("running path function..."); */
                         s7_pointer args = s7_cons(s7,
                                                   self,
                                                   //s7_make_integer(s7, 2),
@@ -904,8 +904,8 @@ static s7_pointer sunlark_node_set_specialized(s7_scheme *s7, s7_pointer args)
     s7_int typ;
     s7_pointer self, key;
 
-    log_debug("set_specialized args (excluding self): %s",
-              s7_object_to_c_string(s7, s7_cdr(args)));
+    /* log_debug("set_specialized args (excluding self): %s", */
+    /*           s7_object_to_c_string(s7, s7_cdr(args))); */
 
     /* last arg is new value to set? */
 
@@ -930,8 +930,8 @@ static s7_pointer sunlark_node_set_specialized(s7_scheme *s7, s7_pointer args)
 
     s7_pointer set_target = sunlark_resolve_path(s7, self, params);
 
-    log_debug("set_target: %s", s7_object_to_c_string(s7, set_target));
-    log_debug("update_val: %s", s7_object_to_c_string(s7, update_val));
+    /* log_debug("set_target: %s", s7_object_to_c_string(s7, set_target)); */
+    /* log_debug("update_val: %s", s7_object_to_c_string(s7, update_val)); */
 
     // now update set_target
 
@@ -1275,16 +1275,16 @@ static s7_pointer sunlark_node_copy(s7_scheme *s7, s7_pointer args)
 
     arg1 = s7_car(args);
     if (s7_c_object_type(arg1) == ast_node_t) {
-        log_debug("copy ast_node");
+        /* log_debug("copy ast_node"); */
         n1 = (struct node_s*)s7_c_object_value(arg1);
         if (s7_is_pair(s7_cdr(args))) {
-            log_debug("copy a b");
+            /* log_debug("copy a b"); */
             arg2 = s7_cadr(args);
             if (s7_is_immutable(arg2))
                 return(s7_wrong_type_arg_error(s7, "ast-node-copy!",
                                                0, arg2, "a mutable ast_node"));
             if (s7_c_object_type(arg2) == ast_node_t) {
-                log_debug("copy ast_node to ast_node");
+                /* log_debug("copy ast_node to ast_node"); */
                 n2 = (struct node_s*)s7_c_object_value(arg2);
                 sealark_node_copy(n1, n2);
                 return arg2;
@@ -1293,7 +1293,7 @@ static s7_pointer sunlark_node_copy(s7_scheme *s7, s7_pointer args)
                                                0, arg2, "a mutable ast_node"));
             }
         } else {
-            log_debug("copy one");
+            /* log_debug("copy one"); */
             /* only one arg, copy it to new ast_node */
             /* struct node_s *n2 = (struct node_s *) */
             /*     calloc(1, sizeof(struct node_s)); */
@@ -1304,8 +1304,9 @@ static s7_pointer sunlark_node_copy(s7_scheme *s7, s7_pointer args)
                                     (void *)n2);
         }
     } else {
+        ;
         //FIXME: implement
-        log_debug("copy non-node");
+        /* log_debug("copy non-node"); */
         /* arg1 type != ast_node_t */
     }
 }

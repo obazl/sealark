@@ -3,10 +3,10 @@ load("@rules_cc//cc:defs.bzl", "cc_binary")
 exports_files(["libsunlark.c"])
 
 #DEFINES = ["DEBUG", "DEBUG_PROPERTIES"]
-DEFINES = ["DEBUG", "DEBUG_TRACE"]
+#DEFINES = ["DEBUG", "DEBUG_TRACE"]
 #DEFINES = ["DEBUG_ATTR"]
 #DEFINES = ["DEBUG"]
-#DEFINES = []
+DEFINES = []
 
 cc_library(
     name  = "sunlark",

@@ -96,9 +96,9 @@ s7_pointer sunlark_target_property_lookup(s7_scheme *s7,
     /* } */
 
     if (prop_kw == s7_make_keyword(s7, "attrs")) {
-        log_debug("matched :attrs");
+        /* log_debug("matched :attrs"); */
         struct node_s *attrs = sunlark_get_attrs_list(s7, self);
-        log_debug("got attrs: %d %s", attrs->tid, token_name[attrs->tid][0]);
+        /* log_debug("got attrs: %d %s", attrs->tid, token_name[attrs->tid][0]); */
         return sunlark_node_new(s7, attrs);
 
         /* } else { */
