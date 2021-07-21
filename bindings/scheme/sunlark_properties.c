@@ -46,7 +46,7 @@ s7_pointer sunlark_build_file_property_lookup(s7_scheme *s7,
         s7_pointer sym = s7_keyword_to_symbol(s7, kw);
         char *key = (char*)s7_symbol_name(sym);
         if (strrchr(key, '?') - key == strlen(key)-1 ) {
-            return sunlark_predication(s7, key, bf_node);
+            return sunlark_is_kw(s7, key, bf_node);
         }
 
         /* common */
@@ -99,12 +99,18 @@ s7_pointer sunlark_target_property_lookup(s7_scheme *s7,
         /* log_debug("matched :attrs"); */
         struct node_s *attrs = sunlark_get_attrs_list(s7, self);
         /* log_debug("got attrs: %d %s", attrs->tid, token_name[attrs->tid][0]); */
-        return sunlark_node_new(s7, attrs);
+        return sunlark_node_new(s7, self);
 
         /* } else { */
         /*     /\* the only propert :attr-list understands is :<attrname> *\/ */
         /*     return sunlark_attr_list_kw_lookup(s7, attrs, args); */
         /* } */
+    }
+
+    if (prop_kw == s7_make_keyword(s7, "rule")) {
+        /* struct node_s *node = s7_c_object_value(self); */
+        char *rulename = sealark_get_target_rule(self); // node);
+        return s7_make_string(s7, rulename);
     }
 
     /* common */
@@ -264,12 +270,12 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
     s7_pointer sym = s7_keyword_to_symbol(s7, kw);
     char *key = (char*)s7_symbol_name(sym);
     if (strrchr(key, '?') - key == strlen(key)-1 ) {
-        s7_pointer is_p = sunlark_predication(s7, key, ast_node);
-        if (is_p == s7_f(s7)) {
-            return is_p;
-        } else {
-            return s7_unspecified(s7);
-        }
+        return sunlark_is_kw(s7, key, ast_node);
+        /* if (is_p == s7_f(s7)) { */
+        /*     return is_p; */
+        /* } else { */
+        /*     return s7_unspecified(s7); */
+        /* } */
     }
 
     return s7_unspecified(s7);

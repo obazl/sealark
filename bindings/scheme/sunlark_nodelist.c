@@ -6,7 +6,7 @@
 #include "log.h"
 #include "s7.h"
 
-#include "ast_nodelist_s7.h"
+#include "sunlark_nodelist.h"
 
 /* exported s7 c-types */
 s7_int ast_nodelist_t = 0;
@@ -14,8 +14,6 @@ s7_int ast_nodelist_t = 0;
 static s7_pointer sunlark_nodelist_methods_let;
 
 /* forward decls */
-/* section: identity */
-s7_pointer sunlark_is_ast_nodelist(s7_scheme *s7, s7_pointer args);
 
 /* section: equality */
 static bool _ast_nodelists_are_value_equal(struct node_s *val1,
@@ -75,41 +73,6 @@ static s7_pointer sunlark_nodelist_gc_mark(s7_scheme *s7, s7_pointer p);
 void debug_print_s7(s7_scheme *s7, char *label, s7_pointer obj);
 
 /* **************************************************************** */
-
-/* **************************************************************** */
-/* section: identity */
-#define SUNLARK_IS_AST_NODELIST_HELP "(ast-nodelist? obj) returns #t if obj is a ast_nodelist."
-#define SUNLARK_IS_AST_NODELIST_SIG s7_make_signature(s7, 2, s7_make_symbol(s7, "boolean?"), s7_t(s7))
-
-/* called by Scheme 'nodelist?'; internally, use c_is_sunlark_nodelist */
-s7_pointer sunlark_is_ast_nodelist(s7_scheme *s7, s7_pointer node_s7)
-{
-/* #ifdef DEBUG_TRACE */
-/*     log_debug("sunlark_is_ast_nodelist"); */
-/* #endif */
-    return s7_make_boolean(s7, c_is_sunlark_nodelist(s7, node_s7));
-}
-
-/* for internal C use; Scheme 'nodelist?' calls sunlark_is_ast_nodelist */
-bool c_is_sunlark_nodelist(s7_scheme *s7, s7_pointer node_s7)
-{
-/* #ifdef DEBUG_TRACE */
-/*     log_debug("c_is_sunlark_nodelist"); */
-/* #endif */
-
-    if (s7_is_c_object(node_s7)) {
-        bool eq = s7_c_object_type(node_s7) == ast_nodelist_t;
-        return eq;
-    } else {
-        if (s7_is_list(s7, node_s7)) {
-            return s7_c_object_type(s7_car(node_s7)) == ast_nodelist_t;
-        } else {
-            return false;
-        }
-    }
-}
-
-/* /section: identity */
 
 /* **************************************************************** */
 /* section: equality
@@ -329,7 +292,7 @@ s7_pointer sunlark_nodelist_lookup(s7_scheme *s7,
     takes two args, a ast_nodelist object and a int index
  */
 #define SUNLARK_NODELIST_REF_SPECIALIZED_HELP "(ast-nodelist-ref b i) returns the ast_nodelist value at index i."
-#define SUNLARK_NODELIST_REF_SPECIALIZED_SIG s7_make_signature(s7, 3, s7_t(s7), s7_make_symbol(s7, "ast-nodelist?"), s7_make_symbol(s7, "integer?"))
+#define SUNLARK_NODELIST_REF_SPECIALIZED_SIG s7_make_signature(s7, 3, s7_t(s7), s7_make_symbol(s7, "nodelist?"), s7_make_symbol(s7, "integer?"))
 
 static s7_pointer sunlark_nodelist_ref_specialized(s7_scheme *s7, s7_pointer args)
 {
@@ -467,7 +430,7 @@ static s7_pointer sunlark_nodelist_object_applicator(s7_scheme *s7, s7_pointer a
  */
 #define SUNLARK_NODELIST_SET_SPECIALIZED_HELP "(ast-nodelist-set! b i x) sets the ast_nodelist value at index i to x."
 
-#define SUNLARK_NODELIST_SET_SPECIALIZED_SIG s7_make_signature(s7, 4, s7_make_symbol(s7, "float?"), s7_make_symbol(s7, "ast-nodelist?"), s7_make_symbol(s7, "integer?"), s7_make_symbol(s7, "float?"))
+#define SUNLARK_NODELIST_SET_SPECIALIZED_SIG s7_make_signature(s7, 4, s7_make_symbol(s7, "float?"), s7_make_symbol(s7, "nodelist?"), s7_make_symbol(s7, "integer?"), s7_make_symbol(s7, "float?"))
 
 static s7_pointer _update_ast_nodelist(s7_scheme *s7,
                                   struct node_s *ast_nodelist,
@@ -910,8 +873,8 @@ static s7_pointer g_destroy_ast_nodelist(s7_scheme *s7, s7_pointer obj)
 
 #define OBJECT_METHODS \
     "'float-vector? (lambda (p) (display \"foo \") #t) " \
-    "'signature (lambda (p) (list '#t 'ast-nodelist? 'integer?)) " \
-    "'type ast-nodelist? " \
+    "'signature (lambda (p) (list '#t 'nodelist? 'integer?)) " \
+    "'type nodelist? " \
     "'foo (lambda (self) \"hello from foo method!\") " \
     "'memq (lambda (self arg) \"hello from perverse memq method!\") " \
     "'arity (lambda (p) (cons 1 1)) " \
@@ -980,10 +943,10 @@ static void _register_ast_nodelist_fns(s7_scheme *s7)
                             g_new_ast_nodelist,
                             0, 0, true, G_NEW_AST_NODELIST_HELP);
 
-    s7_define_typed_function(s7, "ast-nodelist?", sunlark_is_ast_nodelist,
+    s7_define_typed_function(s7, "nodelist?", sunlark_is_nodelist,
                              1, 0, false,
-                             SUNLARK_IS_AST_NODELIST_HELP,
-                             SUNLARK_IS_AST_NODELIST_SIG);
+                             SUNLARK_IS_NODELIST_HELP,
+                             SUNLARK_IS_NODELIST_SIG);
 
     /* specialized get/set! */
     s7_define_typed_function(s7, "ast-nodelist-ref",

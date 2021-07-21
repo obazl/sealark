@@ -8,7 +8,7 @@
 
 #include "s7.h"
 
-#include "ast_attribs_s7.h"
+#include "sunlark_attributes.h"
 
 /* docs at bottom */
 

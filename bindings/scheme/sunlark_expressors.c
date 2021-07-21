@@ -8,8 +8,7 @@
 
 #include "s7.h"
 
-#include "sunlark_query.h"
-
+#include "sunlark_expressors.h"
 
 /*
   only called with :build-file node
@@ -104,72 +103,6 @@ s7_pointer sunlark_fetch_targets(s7_scheme *s7,
     return sunlark_nodelist_new(s7, target_list);
 }
 
-LOCAL struct node_s *_get_target_by_attribute(s7_scheme *s7,
-                                              struct node_s *call_expr,
-                                              const char *attr_name,
-                                              const char *attr_val)
-{
-#if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
-    log_debug("_get_target_attribute %s = %s", attr_name, attr_val);
-#endif
-
-    /* :call-expr[1] > :call-sfx[1] > :arg-list[0] */
-    /* then search arg-list children for arg-named/name=str */
-    /* :arg-named[0] = :id */
-
-    /* log_debug("call_expr %d %s", call_expr->tid, */
-    /*           token_name[call_expr->tid][0]); */
-
-    struct node_s *call_sfx = utarray_eltptr(call_expr->subnodes, 1);
-    /* log_debug("call_sfx %d %s", call_sfx->tid, */
-    /*           token_name[call_sfx->tid][0]); */
-
-    struct node_s *arg_list = utarray_eltptr(call_sfx->subnodes, 1);
-
-    struct node_s *id, *val;
-    int name_len = strlen(attr_name);
-    int attr_val_len = strlen(attr_val);
-
-    //FIXME: call _get_attr_by_name_unique
-
-#if defined(DEBUG_QUERY)
-    log_debug("SEARCHING arg_list %d %s, child ct: %d",
-              arg_list->tid,
-              token_name[arg_list->tid][0],
-              utarray_len(arg_list->subnodes));
-#endif
-    struct node_s *arg_node = NULL;
-    int i = 0;
-    while((arg_node=(struct node_s*)utarray_next(arg_list->subnodes,
-                                                  arg_node))) {
-#if defined(DEBUG_QUERY)
-        log_debug(" LOOP arg_list[%d] tid: %d %s", i++, arg_node->tid,
-                  token_name[arg_node->tid][0]);
-#endif
-        if (arg_node->tid == TK_Arg_Named) { // skip TK_COMMA nodes
-            id = utarray_eltptr(arg_node->subnodes, 0);
-            /* log_debug("testing id[%d]: %d %s", i, id->tid, id->s); */
-
-            if ((strncmp(id->s, attr_name, name_len) == 0)
-                && strlen(id->s) == name_len ){
-
-                /* name matches, now test value */
-                val = utarray_eltptr(arg_node->subnodes, 2);
-                /* log_debug("\tattr: %s = %s", id->s, val->s); */
-
-                if ( (strncmp(val->s, attr_val, attr_val_len) == 0)
-                     && strlen(val->s) == attr_val_len ) {
-                    /* log_debug("3 xxxxxxxxxxxxxxxx MATCH %d %s == %s", */
-                    /*           attr_val_len, val->s, attr_val); */
-                    return arg_node;
-                }
-            }
-        }
-    }
-    /* log_debug("NOT FOUND"); */
-    return NULL;
-}
-
 /* **************************************************************** */
 LOCAL s7_pointer _handle_nodelist_string_query(s7_scheme *s7,
                                                 const char *str,
@@ -197,7 +130,7 @@ LOCAL s7_pointer _handle_nodelist_string_query(s7_scheme *s7,
         /* log_debug("child[%d] %d %s", i++, tmp->tid, token_name[tmp->tid][0]); */
         switch(tmp->tid) {
         case TK_Call_Expr:      /* target */
-            attr = _get_target_by_attribute(s7, tmp, "name", str);
+            attr = sealark_get_target_by_attribute(tmp, "name", str);
             if (attr) {
                 /* log_debug("GOT ATTR node %d", attr->tid); */
                 /* return sunlark_node_new(s7, attr); */
@@ -245,7 +178,7 @@ LOCAL s7_pointer _handle_nodelist_symbol_query(s7_scheme *s7,
         /* log_debug("child[%d] %d %s", i++, tmp->tid, token_name[tmp->tid][0]); */
         switch(tmp->tid) {
         case TK_Call_Expr:      /* target */
-            attr = _get_target_by_attribute(s7, tmp, "name", str);
+            attr = sealark_get_target_by_attribute(tmp, "name", str);
             if (attr) {
                 /* log_debug("GOT ATTR node %d", attr->tid); */
                 /* return sunlark_node_new(s7, attr); */
@@ -345,6 +278,8 @@ LOCAL s7_pointer _get_attr_by_name_unique(s7_scheme *s7,
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
     log_debug("_get_attr_by_name_unique");
 #endif
+
+    // FIXME: call sealark_get_call_attr_by_name
 
     char *attr_name = s7_object_to_c_string(s7, attr_sym);
     /* log_debug("attr_name: %s", attr_name); */
@@ -449,8 +384,8 @@ s7_pointer sunlark_get_attr_by_name(s7_scheme *s7,
         /* s7_pointer n = _get_attr_by_name(s7, attrname, attr_list); */
         /* return n; */
     } else {
-
-        if (c_is_sunlark_node(s7, attr_list)) {
+        /* if (c_is_sunlark_node(s7, attr_list)) { */
+        if (sunlark_is_node(s7, attr_list)) {
             // node is a list node but not a list, from one target
             // attrs are unique
             s7_pointer n = _get_attr_by_name_unique(s7, attrname, attr_list);

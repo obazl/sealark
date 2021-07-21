@@ -9,7 +9,7 @@
 
 #include "s7.h"
 
-#include "sunlark_parse.h"
+#include "sunlark_parsers.h"
 
 #if INTERFACE
 #define SUNLARK_PARSE_BUILD_FILE_HELP "(parse-build-file fname) parses BUILD file fname."
