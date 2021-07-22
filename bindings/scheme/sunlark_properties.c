@@ -10,68 +10,20 @@
 
 #include "sunlark_properties.h"
 
-s7_pointer sunlark_build_file_property_lookup(s7_scheme *s7,
-                                              struct node_s *bf_node,
-                                              s7_pointer kw)
-{
-#if defined (DEBUG_TRACE) || defined(DEBUG_PROPERTIES)
-    log_debug("sunlark_build_file_property_lookup: %s",
-              s7_object_to_c_string(s7, kw));
-#endif
+/* common properties/ops/predicates:
 
-    if (s7_is_keyword(kw)) {
+   c struct fields:  :tid, :line, :col,
+                     :subnodes, :comments,
+                     :s, :qtype, :trailing_newline
 
-        if (kw == s7_make_keyword(s7, "targets")) {
-            return sunlark_fetch_targets(s7, bf_node);
-        }
+   pseudo props: :tid->kw, :tik->string,
+                 :printable?
+                 :count (only in path expr)
 
-        if (kw == s7_make_keyword(s7, "target")) {
-            /* NB: same as :targets */
-            return sunlark_fetch_targets(s7, bf_node);
-        }
+   ops:  :print, :pprint
 
-        if (kw == s7_make_keyword(s7, "load")) {
-            // :build-file > :stmt-list :smallstmt-list > load-expr,...
-            return sunlark_fetch_load_stmts(s7, bf_node);
-        }
+ */
 
-        if (kw == s7_make_keyword(s7, "package")) {
-            /* struct node_s *attrs = sunlark_get_attrs_list(s7, bf_node); */
-            /* s7_pointer attrs_s7 = sunlark_node_new(s7, attrs); */
-            /* return attrs_s7; */
-            return NULL;
-        }
-
-        /* predicates */
-        s7_pointer sym = s7_keyword_to_symbol(s7, kw);
-        char *key = (char*)s7_symbol_name(sym);
-        if (strrchr(key, '?') - key == strlen(key)-1 ) {
-            return sunlark_is_kw(s7, key, bf_node);
-        }
-
-        /* common */
-        s7_pointer result = sunlark_common_property_lookup(s7, bf_node, kw);
-        if (result == NULL) {
-            /* return s7_unspecified(s7); */
-            return(s7_error(s7, s7_make_symbol(s7,
-                                               "invalid_argument"),
-                            s7_list(s7, 2, s7_make_string(s7,
-                                                          "ast-node-ref arg must be one of :package, :loads, :targets; got ~A"),
-                                    kw)));
-        } else {
-            /* matched common property */
-            return result;
-        }
-    } else {
-        if (s7_is_integer(kw)) {
-            /* FIXME: check against length */
-            struct node_s *n = utarray_eltptr(bf_node->subnodes, s7_integer(kw));
-            log_debug("build file lookup tid: %d %s",
-                      n->tid, token_name[n->tid][0]);
-            return sunlark_node_new(s7, n);
-        }
-    }
-}
 
 /* target == Call_Expr */
 s7_pointer sunlark_target_property_lookup(s7_scheme *s7,
@@ -84,7 +36,7 @@ s7_pointer sunlark_target_property_lookup(s7_scheme *s7,
               s7_object_to_c_string(s7, prop_kw));
 #endif
 
-    /* if (prop_kw == s7_make_keyword(s7, "rule")) { /\* e.g. cc_library *\/ */
+    /* if (prop_kw == KW(rule)) { /\* e.g. cc_library *\/ */
     /*     struct node_s *id = utarray_eltptr(self->subnodes, 0); */
     /*     if (id->tid != TK_ID) { */
     /*         log_error("ERROR: expected tid %d for target, got: %d", */
@@ -95,10 +47,10 @@ s7_pointer sunlark_target_property_lookup(s7_scheme *s7,
     /*     return str; */
     /* } */
 
-    if (prop_kw == s7_make_keyword(s7, "attrs")) {
+    if (prop_kw == KW(attrs)) {
         /* log_debug("matched :attrs"); */
         struct node_s *attrs = sunlark_get_attrs_list(s7, self);
-        /* log_debug("got attrs: %d %s", attrs->tid, token_name[attrs->tid][0]); */
+        log_debug("got attrs: %d %s", attrs->tid, token_name[attrs->tid][0]);
         return sunlark_node_new(s7, self);
 
         /* } else { */
@@ -107,10 +59,10 @@ s7_pointer sunlark_target_property_lookup(s7_scheme *s7,
         /* } */
     }
 
-    if (prop_kw == s7_make_keyword(s7, "rule")) {
+    if (prop_kw == KW(rule)) {
         /* struct node_s *node = s7_c_object_value(self); */
-        char *rulename = sealark_get_target_rule(self); // node);
-        return s7_make_string(s7, rulename);
+        struct node_s *rulename = sealark_rulename_for_target(self);
+        return sunlark_node_new(s7, rulename); /* tid :id */
     }
 
     /* common */
@@ -178,19 +130,19 @@ s7_pointer sunlark_nodelist_property_lookup(s7_scheme *s7,
               s7_object_to_c_string(s7, key));
 #endif
 
-    if (key == s7_make_keyword(s7, "tid")) {
+    if (key == KW(tid)) {
         return s7_make_integer(s7, TK_Node_List);
     }
-    if (key == s7_make_keyword(s7, "tid->kw")) {
-        return s7_make_keyword(s7, "node_list");
+    if (key == KW(tid->kw)) {
+        return KW(node_list);
     }
-    if (key == s7_make_keyword(s7, "tid->string")) {
+    if (key == KW(tid->string)) {
         return s7_make_string(s7, "node_list");
     }
-    if (key == s7_make_keyword(s7, "node?")) {
+    if (key == KW(node?)) {
         return s7_f(s7);
     }
-    if (key == s7_make_keyword(s7, "nodelist?")) {
+    if (key == KW(nodelist?)) {
         return s7_t(s7);
     }
     return s7_unspecified(s7);
@@ -209,48 +161,54 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
 #endif
 
     /* pseudo-attributes */
-    if (kw == s7_make_keyword(s7, "pprint")) {
+    if (kw == KW(pprint)) {
+        char *s = sealark_node_printable_string(ast_node);
+        s7_pointer str =  s7_make_string(s7, s);
+        return str;
+    }
+
+    if (kw == KW(print)) {
         char *s = sealark_node_printable_string(ast_node);
         s7_pointer str =  s7_make_string(s7, s);
         return str;
     }
 
     /* "real" attributes, corresponding to fields in the struct */
-    if (kw == kw_tid) { //s7_make_keyword(s7, "tid")) {
+    if (kw == kw_tid) { //KW(tid)) {
         log_debug("tid: %d", ast_node->tid);
         return s7_make_integer(s7, ast_node->tid);
     }
 
-    if (kw == s7_make_keyword(s7, "tid->kw")) {
-        log_debug("tid: %d", ast_node->tid);
+    if (kw == KW(tid->kw)) {
+        /* log_debug("tid: %d", ast_node->tid); */
         char *s = sealark_tid_to_string(ast_node->tid);
         return s7_make_keyword(s7, s);
     }
 
-    if (kw == s7_make_keyword(s7, "tid->string")) {
+    if (kw == KW(tid->string)) {
         log_debug("tid: %d", ast_node->tid);
         char *s = sealark_tid_to_string(ast_node->tid);
         return s7_make_string(s7, s);
     }
 
-    /* if (kw == s7_make_keyword(s7, "line")) */
+    /* if (kw == KW(line)) */
     if (kw == kw_line)
         return s7_make_integer(s7, ast_node->line);
 
-    if (kw == s7_make_keyword(s7, "col"))
+    if (kw == KW(col))
         return s7_make_integer(s7, ast_node->col);
 
-    if (kw == s7_make_keyword(s7, "trailing_newine"))
+    if (kw == KW(trailing_newine))
         return s7_make_boolean(s7, ast_node->trailing_newline);
 
-    if (kw == s7_make_keyword(s7, "qtype"))
+    if (kw == KW(qtype))
         return s7_make_integer(s7, ast_node->qtype);
 
-    if (kw == s7_make_keyword(s7, "s")) {
+    if (kw == KW(s)) {
         return s7_make_string(s7, ast_node->s);
     }
 
-    if (kw == s7_make_keyword(s7, "subnodes")) {
+    if (kw == KW(subnodes)) {
         if (ast_node->subnodes) {
             s7_pointer new_nodelist
                 = sunlark_nodelist_new(s7, ast_node->subnodes);
@@ -262,7 +220,7 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
 
     /* pseudo-props */
     //FIXME: nodelist?
-    if (kw == s7_make_keyword(s7, "node?")) {
+    if (kw == KW(node?)) {
         return s7_t(s7);
     }
 

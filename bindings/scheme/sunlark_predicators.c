@@ -28,25 +28,42 @@ s7_pointer sunlark_is_node(s7_scheme *s7, s7_pointer args)
 #ifdef DEBUG_TRACE
     log_debug("sunlark_is_node");
 #endif
+    log_debug("obj t %d, node t %d",
+              s7_c_object_type(args), ast_node_t);
+
+    log_debug("car obj t %d, node t %d",
+              s7_c_object_type(args), ast_node_t);
+
     return s7_make_boolean(s7, c_is_sunlark_node(s7, args));
 }
 
 /* for internal C use (returns bool); Scheme 'node?' calls sunlark_is_node */
 bool c_is_sunlark_node(s7_scheme *s7, s7_pointer node_s7)
 {
-/* #ifdef DEBUG_TRACE */
-/*     log_debug("c_is_sunlark_node"); */
-/* #endif */
+#if defined(DEBUG_SEALARK_PREDICATES)
+    log_debug("c_is_sunlark_node X");
+#endif
 
     if (s7_is_c_object(node_s7)) {
         bool eq = s7_c_object_type(node_s7) == ast_node_t;
+        log_debug("5 is node? %d", eq);
         return eq;
     } else {
-        if (s7_is_list(s7, node_s7)) {
-            return s7_c_object_type(s7_car(node_s7)) == ast_node_t;
-        } else {
-            return false;
-        }
+        return s7_f(s7);
+
+        /* if (s7_is_list(s7, node_s7)) { */
+        /*     return s7_c_object_type(s7_car(node_s7)) == ast_node_t; */
+        /* } else { */
+        /*     return false; */
+        /* } */
+        /* log_debug("0  not a cobj"); */
+
+        /* return false; */
+        /* if (s7_is_list(s7, node_s7)) { */
+        /*     return s7_c_object_type(s7_car(node_s7)) == ast_node_t; */
+        /* } else { */
+        /*     return false; */
+        /* } */
     }
 }
 
@@ -59,23 +76,28 @@ bool c_is_sunlark_node(s7_scheme *s7, s7_pointer node_s7)
 /* called by Scheme 'nodelist?'; internally, use c_is_sunlark_nodelist */
 s7_pointer sunlark_is_nodelist(s7_scheme *s7, s7_pointer node_s7)
 {
-/* #ifdef DEBUG_TRACE */
-/*     log_debug("sunlark_is_nodelist"); */
-/* #endif */
+#ifdef DEBUG_TRACE
+    log_debug("sunlark_is_nodelist");
+#endif
     return s7_make_boolean(s7, c_is_sunlark_nodelist(s7, node_s7));
 }
 
 /* for internal C use (bool); Scheme 'nodelist?' calls sunlark_is_nodelist */
 bool c_is_sunlark_nodelist(s7_scheme *s7, s7_pointer node_s7)
 {
-/* #ifdef DEBUG_TRACE */
-/*     log_debug("c_is_sunlark_nodelist"); */
-/* #endif */
+#ifdef DEBUG_TRACE
+    log_debug("c_is_sunlark_nodelist");
+#endif
 
     if (s7_is_c_object(node_s7)) {
+        log_debug("nl0 cobj xxxxxxxxxxxxxxxx");
         bool eq = s7_c_object_type(node_s7) == ast_nodelist_t;
+        log_debug("nl 10 obj t %d, nodlist t %d",
+                  s7_c_object_type(node_s7), ast_nodelist_t);
         return eq;
     } else {
+        log_debug("nl 20 xxxxxxxxxxxxxxxx");
+
         if (s7_is_list(s7, node_s7)) {
             return s7_c_object_type(s7_car(node_s7)) == ast_nodelist_t;
         } else {
@@ -102,6 +124,11 @@ s7_pointer sunlark_is_kw(s7_scheme *s7, char *kw, struct node_s *self)
                                s7_list(s7, 1, n));
     }
 
+    if ( (strncmp("printable?", kw, 10) == 0) && (strlen(kw) == 10) ) {
+        bool is_printable = sunlark_node_new(s7, self);
+        return s7_make_boolean(s7, is_printable);
+    }
+
     if ( (strncmp("target?", kw, 7) == 0) && (strlen(kw) == 7) ) {
         /* until we get TK_Target implemented */
         bool is_target =  sealark_is_target(self);
@@ -109,6 +136,7 @@ s7_pointer sunlark_is_kw(s7_scheme *s7, char *kw, struct node_s *self)
     }
 
     int tokid = sealark_kw_to_tid(buf);
+    /* log_debug("kw to tid: %d", tokid); */
     if (tokid < 0) {
         return s7_f(s7);
     }

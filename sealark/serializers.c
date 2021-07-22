@@ -95,9 +95,9 @@ EXPORT char *sealark_squeeze_string(UT_string *src)
     return dstptr;
 }
 
-EXPORT void starlark_node2string(struct node_s *node, UT_string *buffer)
+EXPORT void sealark_node_to_starlark(struct node_s *node, UT_string *buffer)
 {
-    log_debug("starlark_node2string");
+    log_debug("sealark_node_to_starlark");
     line = col = 0;
     _node2string(node, buffer);
     if (utstring_body(buffer)[utstring_len(buffer)-1] != '\n') {

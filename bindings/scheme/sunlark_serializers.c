@@ -4,6 +4,7 @@
 #include <math.h>
 
 #include "log.h"
+#include "utarray.h"
 #include "utstring.h"
 
 #include "s7.h"
@@ -211,67 +212,57 @@ char *sunlark_node_display_readably(s7_scheme *s7, void *value)
 #define SUNLARK_TO_STARLARK_HELP "(ast-node->starlark ast_node)"
 #endif
 
+/* args is always an s7 list.
+
+   arg1: object to print
+   arg2: optional style kw, :squeeze, :crush
+
+ */
 s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
     log_debug("sunlark_to_starlark");
 #endif
 
-    s7_pointer arg = s7_car(args);
-    s7_pointer format;
-
-    if (s7_list_length(s7, args) == 2) {
-        format = s7_cadr(args);
-        if (format != kw_squeeze)
-            if (format != kw_crush)
-                return s7_error(s7, s7_make_symbol(s7,
-                                                   "invalid_argument"),
-                                s7_list(s7, 2, s7_make_string(s7,
-"optional arg to sunlark->starlark must be :squeeze or :crush; got ~A"),
-                                        format));
-    }
-
     UT_string *buf;
     utstring_new(buf);
 
-    if (sunlark_is_node(s7, arg)) {
-        log_debug("single node %d %s",
-                  sunlark_node_tid(s7, arg),
-                  token_name[sunlark_node_tid(s7, arg)][0]);
-        if (sunlark_node_tid(s7, arg) == TK_Node_List) {
-            UT_array *nodelist = s7_c_object_value(arg);
-            log_debug("node ct %d", utarray_len(nodelist));
+    s7_pointer form = s7_car(args); // what to print
+    s7_pointer style = s7_cadr(args);
+            /* if (s7_list_length(s7, args) == 2) { */
+            /*     style = s7_cadr(args); */
+            /*     if (style != kw_crush) { */
+            /*         if (style != kw_squeeze) { */
+            /*             log_error("SQUEEZE/CRUSH missing"); */
+            /*         } */
+            /*     } */
+            /* } */
 
-            struct node_s *n1=NULL;
-            while(n1=(struct node_s*)utarray_next(nodelist, n1)) {
-                starlark_node2string(n1, buf);
-            }
-
-        } else {
-            /* a single target node */
-            if (sunlark_node_tid(s7, arg) == TK_Call_Expr) {
-                struct node_s *n1 = s7_c_object_value(arg);
-                starlark_node2string(n1, buf);
-            } else {
-                log_warn("Unexpected arg type: %d, %s",
-                         sunlark_node_tid(s7, arg),
-                         token_name[sunlark_node_tid(s7, arg)][0]);
-            }
-        }
+    if ( s7_is_c_object(form) ) {
+        log_debug("printing c-object");
+        struct node_s *n1 = s7_c_object_value(form);
+        sealark_node_to_starlark(n1, buf);
     } else {
-        if (sunlark_is_nodelist(s7, args)) {
-            log_debug("nodelist");
+        if ( s7_is_list(s7, form) ) {
+            log_debug("printing s7 list");
+            s7_pointer _list = form;
+            while (! s7_is_null(s7, _list)) {
+                struct node_s *t = s7_c_object_value(s7_car(_list));
+                log_debug("\titem tid: %d %s", t->tid, TIDNAME(t));
+                sealark_node_to_starlark(t, buf);
+                _list = s7_cdr(_list);
+            }
         } else {
-            log_error("unexpected args, neither node nor nodelist");
+            log_error("Unexpected form for printing, should be c-object or list.");
         }
     }
 
     char *output;
-    if (format == kw_squeeze) {
+    if (style == kw_squeeze) {
         output = sealark_squeeze_string(buf);
     } else {
-        if (format == kw_crush) {
-        output = sealark_crush_string(buf);
+        if (style == kw_crush) {
+            output = sealark_crush_string(buf);
         } else {
             output = utstring_body(buf);
         }
@@ -280,6 +271,85 @@ s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
     s7_pointer out = s7_make_string(s7, output);
     free(output);
     return out;
+
+
+/*     s7_pointer arg = s7_car(args); */
+/*     s7_pointer format; */
+
+/*     if (s7_list_length(s7, args) == 2) { */
+/*         format = s7_cadr(args); */
+/*         if (format != kw_squeeze) */
+/*             if (format != kw_crush) */
+/*                 return s7_error(s7, s7_make_symbol(s7, */
+/*                                                    "invalid_argument"), */
+/*                                 s7_list(s7, 2, s7_make_string(s7, */
+/* "optional arg to sunlark->starlark must be :squeeze or :crush; got ~A"), */
+/*                                         format)); */
+/*     } */
+
+    /* UT_string *buf; */
+    /* utstring_new(buf); */
+
+    /* if (c_is_sunlark_node(s7, arg)) { */
+    /*     log_debug("single node %d %s", */
+    /*               sunlark_node_tid(s7, arg), */
+    /*               token_name[sunlark_node_tid(s7, arg)][0]); */
+
+    /*     /\*this should not happen for sunlark nodes: *\/ */
+    /*     if (sunlark_node_tid(s7, arg) == TK_Node_List) { */
+    /*         UT_array *nodelist = s7_c_object_value(arg); */
+    /*         log_debug("node ct %d", utarray_len(nodelist)); */
+
+    /*         struct node_s *n1=NULL; */
+    /*         while(n1=(struct node_s*)utarray_next(nodelist, n1)) { */
+    /*             sealark_node_to_starlark(n1, buf); */
+    /*         } */
+
+    /*     } else { */
+    /*         /\* a single target node *\/ */
+    /*         if (sunlark_node_tid(s7, arg) == TK_Call_Expr) { */
+    /*             struct node_s *n1 = s7_c_object_value(arg); */
+    /*             sealark_node_to_starlark(n1, buf); */
+    /*         } else { */
+    /*             if (sunlark_node_tid(s7, arg) == TK_Build_File) { */
+    /*                 struct node_s *n1 = s7_c_object_value(arg); */
+    /*                 sealark_node_to_starlark(n1, buf); */
+    /*             } else { */
+    /*                 log_warn("Unexpected arg type: %d, %s", */
+    /*                      sunlark_node_tid(s7, arg), */
+    /*                      token_name[sunlark_node_tid(s7, arg)][0]); */
+    /*             } */
+    /*         } */
+    /*     } */
+    /* } else { */
+    /*     if (sunlark_is_nodelist(s7, args)) { */
+    /*         log_debug("nodelist"); */
+    /*         UT_array *nodelist = s7_c_object_value(arg); */
+    /*         log_debug("node ct %d", utarray_len(nodelist)); */
+
+    /*         struct node_s *n1=NULL; */
+    /*         while(n1=(struct node_s*)utarray_next(nodelist, n1)) { */
+    /*             sealark_node_to_starlark(n1, buf); */
+    /*         } */
+
+    /*     } else { */
+    /*         log_error("unexpected args, neither node nor nodelist"); */
+    /*     } */
+    /* } */
+    /* char *output; */
+    /* if (format == kw_squeeze) { */
+    /*     output = sealark_squeeze_string(buf); */
+    /* } else { */
+    /*     if (format == kw_crush) { */
+    /*     output = sealark_crush_string(buf); */
+    /*     } else { */
+    /*         output = utstring_body(buf); */
+    /*     } */
+    /* } */
+
+    /* s7_pointer out = s7_make_string(s7, output); */
+    /* free(output); */
+    /* return out; */
 
     /* s7_pointer out = s7_make_string(s7, utstring_body(output)); */
     /* utstring_free(buf); */
@@ -323,4 +393,44 @@ s7_pointer sunlark_node_to_string(s7_scheme *s7, s7_pointer args)
     display_bufsz = 0;
     return(obj);
 }
+
+/* **************************************************************** */
+s7_pointer sunlark_nodelist_to_string(s7_scheme *s7, s7_pointer args)
+{
+#ifdef DEBUG_TRACE
+    log_debug("sunlark_nodelist_to_string");
+    /* debug_print_s7(s7, "to_string cdr: ", s7_cdr(args)); */
+#endif
+    if (display_bufsz == 0) {
+        display_buf = calloc(1, SZDISPLAY_BUF);
+        if (display_buf == NULL) {
+            log_error("ERROR on calloc");
+            //FIXME cleanup
+            exit(EXIT_FAILURE);
+        } else {
+            display_bufsz = SZDISPLAY_BUF;
+        }
+    }
+
+    display_ptr = display_buf;
+
+    s7_pointer obj, choice;
+    char *descr;
+    obj = s7_car(args);
+
+    if (s7_is_pair(s7_cdr(args)))
+        choice = s7_cadr(args);
+    else choice = s7_t(s7);
+
+    if (choice == s7_make_keyword(s7, "readable"))
+        descr = sunlark_nodelist_display_readably(s7, s7_c_object_value(obj));
+    else descr = sunlark_nodelist_display(s7, s7_c_object_value(obj));
+
+    /* printf("sunlark_nodelist_display => %s", descr); */
+    obj = s7_make_string(s7, descr);
+
+    /* free(descr); //BUG? FIXME free substruct strings */
+    return(obj);
+}
+/* /section: serialization */
 

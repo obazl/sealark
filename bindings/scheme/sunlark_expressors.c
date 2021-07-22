@@ -50,57 +50,51 @@ s7_pointer sunlark_fetch_load_stmts(s7_scheme *s7,
 }
 
 /* ******************************** */
-s7_pointer sunlark_fetch_targets(s7_scheme *s7,
-                                 struct node_s *buildfile_node)
+s7_pointer sunlark_targets_for_buildfile(s7_scheme *s7,
+                                         struct node_s *buildfile_node)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
-    log_debug("sunlark_fetch_targets");
+    log_debug("sunlark_targets_for_buildfile");
 #endif
+/* s7_pointer sunlark_fetch_targets(s7_scheme *s7, */
+/*                                  struct node_s *buildfile_node) */
+/* { */
+/* #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY) */
+/*     log_debug("sunlark_fetch_targets"); */
+/* #endif */
 
     if (buildfile_node->tid != TK_Build_File) {
         /* log_warn("property :targets only valid for :build-file nodes"); */
         return s7_unspecified(s7);
     }
 
-    // :build-file > :stmt-list :smallstmt-list > expr-list > call-expr
-
-    struct node_s *stmt_list = utarray_eltptr(buildfile_node->subnodes, 0);
-    struct node_s *small_list = utarray_eltptr(stmt_list->subnodes, 0);
-    /* log_debug("small_list child ct: %d", */
-    /*           utarray_len(small_list->subnodes)); */
-
-    // each call_expr is wrapped in expr_list
-
-    /* target_exprs will be freed when gc calls g_destroy_ast_nodelist? */
-    UT_array *target_list;
-    utarray_new(target_list, &node_icd);
-
-    struct node_s *exprs=NULL;
-    struct node_s *target;
-    /* log_debug("SEARCHING %s (%d), child ct: %d for %s (%d)", */
-    /*           TIDNAME(small_list), */
-    /*           small_list->tid, */
-    /*           utarray_len(small_list->subnodes), */
-    /*           token_name[TK_Expr_List][0], */
-    /*           TK_Expr_List); */
-    int i = 0;
-    while((exprs
-           =(struct node_s*)utarray_next(small_list->subnodes, exprs))) {
-        /* log_debug("  LOOP (fetch) %d: %s (%d)", */
-        /*           i++, TIDNAME(exprs), exprs->tid); */
-        if (exprs->tid == TK_Expr_List) {
-            target = utarray_eltptr(exprs->subnodes, 0);
-            utarray_push_back(target_list, target);
-        } else {
-            /* ignore non-targets */
-        }
-    }
-    /* struct node_s *expr_list = utarray_eltptr(small_list->subnodes, 0); */
-    /* log_debug("expr_list child ct: %d", utarray_len(expr_list->subnodes)); */
+    UT_array *target_list = sealark_targets_for_buildfile(buildfile_node);
 
     log_debug("found %d targets", utarray_len(target_list));
 
-    return sunlark_nodelist_new(s7, target_list);
+    return nodelist_to_s7_list(s7, target_list);
+}
+
+s7_pointer nodelist_to_s7_list(s7_scheme *s7, UT_array *target_list)
+{
+    s7_pointer node_list = s7_make_list(s7,
+                                        utarray_len(target_list),
+                                        s7_nil(s7));
+
+    s7_pointer item;
+
+    struct node_s *nd=NULL;
+    int i = 0;
+    while( (nd=(struct node_s*)utarray_next(target_list, nd)) ) {
+        log_debug("wrapping TID: %d", nd->tid);
+        item = sunlark_node_new(s7, nd);
+        s7_list_set(s7, node_list, i, item);
+        /* node_list = s7_cons(s7, item, node_list); */
+        i++;
+    }
+    log_debug("new list len: %d", s7_list_length(s7, node_list));
+
+    return node_list;
 }
 
 /* **************************************************************** */
@@ -282,10 +276,11 @@ LOCAL s7_pointer _get_attr_by_name_unique(s7_scheme *s7,
     // FIXME: call sealark_get_call_attr_by_name
 
     char *attr_name = s7_object_to_c_string(s7, attr_sym);
-    /* log_debug("attr_name: %s", attr_name); */
+    log_debug("attr_name: %s", attr_name);
 
     struct node_s *arg_list = s7_c_object_value(self);
-    /* log_debug("nodelist len: %d", utarray_len(arg_list->subnodes)); */
+    log_debug("nodelist len: %d", utarray_len(arg_list->subnodes));
+
     struct node_s *tmp=NULL;
     struct node_s *node, *attr;
     /* int slen = strlen(str); */
@@ -295,17 +290,17 @@ LOCAL s7_pointer _get_attr_by_name_unique(s7_scheme *s7,
     int name_len = strlen(attr_name);
     /* int attr_val_len = strlen(attr_val); */
 
-    /* log_debug("SEARCHING arg_list %d %s, child ct: %d", */
-    /*           arg_list->tid, */
-    /*           token_name[arg_list->tid][0], */
-    /*           utarray_len(arg_list->subnodes)); */
+    log_debug("SEARCHING arg_list %d %s, child ct: %d",
+              arg_list->tid,
+              token_name[arg_list->tid][0],
+              utarray_len(arg_list->subnodes));
 
     struct node_s *arg_node = NULL;
     int i = 0;
     while((arg_node=(struct node_s*)utarray_next(arg_list->subnodes,
                                                   arg_node))) {
-        /* log_debug(" LOOP arg_list[%d] tid: %d %s", i++, arg_node->tid, */
-        /*           token_name[arg_node->tid][0]); */
+        log_debug(" LOOP arg_list[%d] tid: %d %s", i++, arg_node->tid,
+                  token_name[arg_node->tid][0]);
 
         if (arg_node->tid == TK_Arg_Named) { // skip TK_COMMA nodes
             id = utarray_eltptr(arg_node->subnodes, 0);

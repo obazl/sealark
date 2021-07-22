@@ -17,7 +17,7 @@
 #define ESUNLARK_LOCN_ARG_ERR -3
 
 struct node_s *sunlark_get_attrs_list(s7_scheme *s7,
-                                             struct node_s *target_node)
+                                      struct node_s *target_node)
 {
 #if defined(DEBUG_TRACE) || defined(DEBUG_ATTR)
     log_debug("sunlark_get_attrs_list, tid: %d %s",

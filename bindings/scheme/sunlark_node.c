@@ -26,7 +26,7 @@ static s7_pointer sunlark_nodes_are_equivalent(s7_scheme *s7, s7_pointer args);
 static s7_pointer sunlark_node_ref_specialized(s7_scheme *s7, s7_pointer args);
 static s7_pointer sunlark_node_set_specialized(s7_scheme *s7, s7_pointer args);
 
-static s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args);
+s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args);
 
 static void _register_get_and_set(s7_scheme *s7);
 
@@ -70,8 +70,10 @@ void debug_print_s7(s7_scheme *s7, char *label, s7_pointer obj);
 /* arg may be a node or a nodelist */
 int sunlark_node_tid(s7_scheme *s7, s7_pointer node_s7)
 {
-#ifdef DEBUG_TRACE
-    log_debug("sunlark_node_tid");
+    if (s7_is_c_object(node_s7))
+#ifdef DEBUG_TID
+    log_debug("sunlark_node_tid %d",
+              ((struct node_s*)s7_c_object_value(node_s7))->tid);
               /* s7_object_to_c_string(s7, node_s7)); */
 #endif
 
@@ -361,18 +363,18 @@ static s7_pointer sunlark_node_ref_specialized(s7_scheme *s7, s7_pointer args)
     in practice, its a dispatcher. sorta. its job is to inspect the args and
     decide what to do with them.
  */
-static s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
+
+/* arg1 is the "self" node, arg 2 is first path op */
+s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
-    log_debug("sunlark_node_object_applicator");
-    log_debug("NODE APPLICATOR SELF: %d",
-              sunlark_node_tid(s7, s7_car(args)));
-              /* token_name[sunlark_node_tid(s7, s7_car(args))][0]); */
-    /* debug_print_s7(s7, "APPLICATOR ARGS: ", s7_cdr(args)); */
+    log_debug(">>>> sunlark_node_object_applicator, path: %s",
+              s7_object_to_c_string(s7, s7_cdr(args)));
+    log_debug("\tSELF tid: %d %s",
+              sunlark_node_tid(s7, s7_car(args)),
+              token_name[sunlark_node_tid(s7, s7_car(args))][0]);
+    /* debug_print_s7(s7, "\tAPPLICATOR ARGS: ", s7_cdr(args)); */
 #endif
-
-    /* no need to check arg1, it's the "self" ast_node obj */
-    /* s7_pointer g  = (struct node_s *)s7_c_object_value(obj); */
 
     s7_pointer rest = s7_cdr(args);
     if (s7_is_null(s7, rest))
@@ -381,18 +383,27 @@ static s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
 
     s7_pointer self_s7 = s7_car(args);
     s7_pointer params = s7_cdr(args);
+    s7_pointer resolved_path;
 
-    /* log_debug("get_target, params: %s", s7_object_to_c_string(s7, params)); */
-    /* log_debug("nl tid: %d", sunlark_node_tid(s7, self_s7)); */
+    /* may return c-object node, s7 lists or primitives (s7_integer) */
+    /* resolved_path = sunlark_resolve_path(s7, */
+    /*                                              self_s7, */
+    /*                                              params); */
 
-    /* may return c-objects (node, nodelist) or primitives (s7_integer) */
-    s7_pointer get_target = sunlark_resolve_path(s7,
-                                                 self_s7,
-                                                 params);
-    /* if (s7_is_c_object(get_target)) { */
-    /*     log_debug("got target tid: %d", sunlark_node_tid(s7, get_target)); */
+    resolved_path = sunlark_dispatch(s7, self_s7, params);
+
+    /* if (s7_is_c_object(resolved_path)) { */
+    /*     log_debug("resolved path to tid: %d", */
+    /*               sunlark_node_tid(s7, resolved_path)); */
     /* } */
-    return get_target;
+
+#ifdef DEBUG_TRACE
+    log_debug("<<<< sunlark_node_object_applicator, return type: %s",
+              s7_is_c_object(resolved_path) ? "c-object"
+              : s7_is_list(s7, resolved_path) ? "s7 list"
+              : "other");
+#endif
+    return resolved_path;
 
     /* s7_pointer op = s7_car(rest); */
     /* if (s7_is_keyword(op)) { */
@@ -1015,7 +1026,7 @@ static void _register_ast_node_fns(s7_scheme *s7)
                             sunlark_to_starlark,
                             1, 1, false,
                             SUNLARK_TO_STARLARK_HELP);
-
+    
     // ast_node-let => s7_c_object_let, a let for the instance not the type
     /* s7_define_safe_function(s7, "ast-node-let", */
     /*                         sunlark_node_let, */

@@ -107,6 +107,10 @@ EXPORT s7_pointer sunlark_ast2scm(s7_scheme *s7, struct parse_state_s *parse)
     s7_pointer new_ast_node_s7 = s7_make_c_object(s7,
                                                   ast_node_t,
                                                   (void *)parse->root);
+    log_debug("new ast root tid: %d, is node? %d",
+              sunlark_node_tid(s7, new_ast_node_s7),
+              c_is_sunlark_node(s7, new_ast_node_s7));
+
     return new_ast_node_s7;
 }
 

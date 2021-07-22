@@ -9,7 +9,6 @@
 
 #include "sunlark_paths.h"
 
-
 s7_pointer sunlark_resolve_path(s7_scheme *s7,
                                 s7_pointer self_s7,
                                 s7_pointer path_args)
@@ -37,9 +36,9 @@ s7_pointer sunlark_resolve_path(s7_scheme *s7,
         path_arg = s7_car(path_args);
         /* log_debug("path_arg: %s", s7_object_to_c_string(s7, path_arg)); */
 
-        log_debug("self_tid: %d %s",
-                      self_tid,
-                      token_name[self_tid][0]);
+        log_debug("\tdata tid: %d %s",
+                  self_tid,
+                  token_name[self_tid][0]);
 
         if (s7_is_keyword(path_arg) || s7_is_integer(path_arg)) {
             if (s7_is_keyword(path_arg)) {
@@ -52,20 +51,31 @@ s7_pointer sunlark_resolve_path(s7_scheme *s7,
             switch( self_tid ) {
 
             case TK_Build_File: /* build_target */
+                log_debug("dispatching on TK_Build_File %d", loop_idx);
+                // valid keys: :target[s], :load,
+                // returns: nodelist (UT_hash)
                 /* e.g.(set! (bfnode :targets ::tgt :deps :name) "foo") */
                 /* :targets, :loads, :package */
-                tmp = sunlark_build_file_property_lookup(s7,
-                                                         s7_c_object_value(self),
-                                                         path_arg);
+
+                tmp = sunlark_dispatch_on_buildfile(s7,
+                                                 s7_c_object_value(self),
+                                                 path_args);
                 if (s7_is_c_object(tmp)) {
                     self = tmp;
                     self_tid = sunlark_node_tid(s7, tmp);
+                    log_debug("is node?: %d",
+                              c_is_sunlark_node(s7,tmp));
+                    log_debug("is nodelist?: %d",
+                              c_is_sunlark_nodelist(s7,tmp));
+                    log_debug("lookup data len: %d", utarray_len(
+                            (UT_array*)s7_c_object_value(self)));
                 } else {
                     return tmp;
                 }
                 break;
 
             case TK_Node_List:
+                log_debug("dispatching on TK_Node_list %d", loop_idx);
                 /* key indices: :attrs */
                 /* e.g. (ast :target 'cc_test :attrs) */
                 /* e.g. (ast :targets :attrs) */
@@ -89,19 +99,19 @@ s7_pointer sunlark_resolve_path(s7_scheme *s7,
             /*     break; */
             /* case Package - same as :call-expr */
             case TK_Call_Expr: /* build_target */
+                log_debug("dispatching on TK_Call_Expr %d", loop_idx);
                 /* e.g. (set! (target :attrs :deps :name) "foo") */
                 /* :rule, :attrs */
-                tmp = sunlark_target_property_lookup(s7,
-                                                     s7_c_object_value(self),
-                                                     path_arg);
-                if (s7_is_c_object(tmp)) {
-                    self = tmp;
-                    self_tid = sunlark_node_tid(s7, tmp);
-                } else {
-                    return tmp;
-                }
+
+                /* return _path_op_target(s7, self, s7_cdr(path_args)); */
+                return sunlark_dispatch_on_target(s7, self, path_args);
+
+                /* return sunlark_path_for_target(s7, */
+                /*                               s7_c_object_value(self), */
+                /*                               path_args); */
                 break;
             case TK_Arg_List: /* rename :attr-list? */
+                log_debug("dispatching on TK_Arg_List %d", loop_idx);
                 /* e.g. (set! (args :deps :name) "foo") */
                 /* :<attrname>, :n (nth arg) */
                 tmp = sunlark_attr_list_kw_lookup(s7,
@@ -115,6 +125,7 @@ s7_pointer sunlark_resolve_path(s7_scheme *s7,
                 }
                 break;
             case TK_Arg_Named: /* rule attribute */
+                log_debug("dispatching on TK_Arg_Named %d", loop_idx);
                 /* e.g. (set! (attr :name) "foo") */
                 /* :name, :value */
                 tmp = sunlark_attribute_property_lookup(s7,
@@ -128,19 +139,33 @@ s7_pointer sunlark_resolve_path(s7_scheme *s7,
                 }
                 break;
             default:
+                log_debug("dispatching on default %d", loop_idx);
                 /* usually :subnodes */
-                log_warn("catch-all");
                 if (s7_is_integer(path_arg)) {
-                    struct node_s *n = s7_c_object_value(self);
-                    if (n->subnodes) {
-                        self = sunlark_nodelist_lookup(s7, n->subnodes,
-                                                       path_arg);
-                        self_tid = sunlark_node_tid(s7, self);
-                        /* log_debug("0 xxxxxxxxxxxxxxxx %d %s", */
-                        /*           self_tid, token_name[self_tid][0]); */
+                    log_debug("dispatching on default (int) %d", loop_idx);
+
+                    if (c_is_sunlark_node(s7, self)) {
+                        struct node_s *n = s7_c_object_value(self);
+                        if (n->subnodes) {
+                            self = sunlark_nodelist_lookup(s7, n->subnodes,
+                                                           path_arg);
+                            self_tid = sunlark_node_tid(s7, self);
+                        } else {
+                            log_debug("0 no subnodes for int indexing");
+                            // error? unspecified?
+                            return s7_unspecified(s7);
+                        }
                     } else {
-                        // error? unspecified?
-                        return s7_unspecified(s7);
+                        if (c_is_sunlark_nodelist(s7, self)) {
+                            UT_array *nl = s7_c_object_value(self);
+                            self = sunlark_nodelist_lookup(s7, nl,
+                                                           path_arg);
+                            self_tid = sunlark_node_tid(s7, self);
+                        } else {
+                            log_debug("1 no subnodes for int indexing");
+                            // error? unspecified?
+                            return s7_unspecified(s7);
+                        }
                     }
                 } else {
                     tmp = sunlark_common_property_lookup(s7,
@@ -156,6 +181,7 @@ s7_pointer sunlark_resolve_path(s7_scheme *s7,
             }
         } else {
             if (s7_is_symbol(path_arg)) {
+                log_debug("dispatching on symbol %d", loop_idx);
                 /* log_debug("SYMBOL path step: %s", */
                 /*           s7_object_to_c_string(s7, path_arg)); */
                 /* log_debug("prev path step: %s", */
@@ -194,6 +220,7 @@ s7_pointer sunlark_resolve_path(s7_scheme *s7,
 
             } else {
                 if (s7_is_string(path_arg)) {
+                    log_debug("dispatching on string %d", loop_idx);
                     /* log_debug("STRING path step: %s", */
                     /*           s7_object_to_c_string(s7, path_arg)); */
                     /* :loads "foo" - get load("foo"...) node */
@@ -206,12 +233,22 @@ s7_pointer sunlark_resolve_path(s7_scheme *s7,
                     self_tid = sunlark_node_tid(s7, self);
                 } else {
                     if (s7_is_procedure(path_arg)) {
-                        /* log_debug("running path function..."); */
+                        log_debug("dispatching on procedure %d", loop_idx);
+
+                        if (sunlark_is_nodelist(s7, self))
+                            log_debug("PASSING NODELIST");
+                        else
+                            if (sunlark_is_node(s7, self))
+                                log_debug("PASSING NODE");
+
+                        log_debug("  ARG: %d %s",
+                                  sunlark_node_tid(s7, self),
+                                  token_name[sunlark_node_tid(s7, self)][0]);
                         s7_pointer args = s7_cons(s7,
                                                   self,
-                                                  //s7_make_integer(s7, 2),
                                                   s7_nil(s7));
-                        s7_call(s7, path_arg, args);
+                        /* here path_arg is the function */
+                        return s7_call(s7, path_arg, args);
                     } else {
                         return(s7_wrong_type_arg_error(s7, "AST-node-ref",
                                                        2,

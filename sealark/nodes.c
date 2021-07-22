@@ -322,7 +322,7 @@ EXPORT char *sealark_tid_to_string(int tid)
     int len = strlen(token_name[tid][0]);
     strncpy(tag, (char*)token_name[tid][0], len);
     tag[len+1] = '\0';
-    log_debug("tag %s", tag);
+    /* log_debug("tag %s", tag); */
 
 
     /* to camel_case */
@@ -330,7 +330,7 @@ EXPORT char *sealark_tid_to_string(int tid)
         if (tag[j] == '_') tag[j] = '-';
         tag[j] = tolower(tag[j]);
     }
-    log_debug("tag %s %d", tag, strlen(tag));
+    /* log_debug("tag %s %d", tag, strlen(tag)); */
 
     return tag + 3; // remove tk- prefix
 
@@ -492,18 +492,9 @@ char *_print_string_node(struct node_s *node)
     return utstring_body(workbuf);
 }
 
-EXPORT bool sealark_node_is_printable(struct node_s *ast_node)
-{
-    for (int i = 0; printable_tokens[i] != 0; i++) {
-        if (ast_node->tid == printable_tokens[i])
-            return true;
-    }
-    return false;
-}
-
 EXPORT char  *sealark_node_printable_string(struct node_s *node)
 {
-    if ( !sealark_node_is_printable(node) ) return NULL;
+    if ( !sealark_is_printable(node) ) return NULL;
 
     switch(node->tid) {
     case TK_STRING:

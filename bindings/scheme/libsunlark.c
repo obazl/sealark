@@ -29,6 +29,11 @@ UT_string *user_s7_file;
 int x;
 
 /* commonly used keywords */
+
+#if INTERFACE
+#define KW(arg) s7_make_keyword(s7, #arg)
+#endif
+
 s7_pointer kw_targets;
 s7_pointer kw_target;
 s7_pointer kw_attrs;
