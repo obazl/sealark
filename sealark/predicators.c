@@ -75,7 +75,7 @@ EXPORT bool sealark_target_has_attribute(struct node_s *call_expr,
         log_debug(" LOOP arg_list[%d] tid: %d %s", i++, arg_node->tid,
                   token_name[arg_node->tid][0]);
 #endif
-        if (arg_node->tid == TK_Arg_Named) { // skip TK_COMMA nodes
+        if (arg_node->tid == TK_Binding) { // skip TK_COMMA nodes
             /* first subnode is TK_ID */
             id = utarray_eltptr(arg_node->subnodes, 0);
             /* log_debug("testing id[%d]: %d %s", i, id->tid, id->s); */

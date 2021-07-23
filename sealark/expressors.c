@@ -79,7 +79,8 @@ EXPORT struct node_s
                                  const char *attr_val)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
-    log_debug("_get_target_attribute %s = %s", attr_name, attr_val);
+    log_debug("sealark_get_target_by_attribute %s = %s",
+              attr_name, attr_val);
 #endif
 
     /* :call-expr[1] > :call-sfx[1] > :arg-list[0] */
@@ -112,7 +113,7 @@ EXPORT struct node_s
         log_debug(" LOOP arg_list[%d] tid: %d %s", i++, arg_node->tid,
                   token_name[arg_node->tid][0]);
 #endif
-        if (arg_node->tid == TK_Arg_Named) { // skip TK_COMMA nodes
+        if (arg_node->tid == TK_Binding) { // skip TK_COMMA nodes
             id = utarray_eltptr(arg_node->subnodes, 0);
             /* log_debug("testing id[%d]: %d %s", i, id->tid, id->s); */
 
@@ -234,7 +235,7 @@ EXPORT UT_array *sealark_attrs_for_target(struct node_s *call_expr)
 
     struct node_s *nd=NULL;
     while( (nd=(struct node_s*)utarray_next(arg_list->subnodes, nd)) ) {
-        if (nd->tid == TK_Arg_Named)
+        if (nd->tid == TK_Binding)
             utarray_push_back(attribs, nd);
     }
     log_debug("found %d attributes (named args)", utarray_len(attribs));
@@ -298,7 +299,7 @@ EXPORT struct node_s *sealark_get_call_attr_by_name(struct node_s *call_expr,
         log_debug(" LOOP arg_list[%d] tid: %d %s", i++, arg_node->tid,
                   token_name[arg_node->tid][0]);
 
-        if (arg_node->tid == TK_Arg_Named) { // skip TK_COMMA nodes
+        if (arg_node->tid == TK_Binding) { // skip TK_COMMA nodes
             id = utarray_eltptr(arg_node->subnodes, 0);
             log_debug("testing id[%d]: %d %s", i, id->tid, id->s);
 

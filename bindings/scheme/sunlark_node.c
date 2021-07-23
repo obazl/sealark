@@ -564,7 +564,7 @@ static s7_pointer _update_ast_node_property(s7_scheme *s7,
    key: tells us what to update, 'name or 'value
 
    attrib structure:
-       :arg-named
+       :binding
            :id
            :eq
            :list-expr || :string || dict-expr || ...etc
@@ -586,7 +586,7 @@ static s7_pointer _update_starlark(s7_scheme *s7,
     switch( sunlark_node_tid(s7, node_s7) ) {
     /* case TK_Call_Expr: /\* build rule *\/ */
     /*     break; */
-    case TK_Arg_Named: /* rule attribute */
+    case TK_Binding: /* rule attribute */
         if ( strncmp(key, "name", 4) == 0 ) {
             return sunlark_update_attribute_name(s7, node_s7, key, val);
         } else {

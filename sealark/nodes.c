@@ -121,7 +121,7 @@ EXPORT const char *token_name[137][2] =
 
      /* non-terminals */
      [TK_Arg_List] = { "TK_Arg_List", "" },
-     [TK_Arg_Named] = { "TK_Arg_Named", "" },
+     [TK_Binding] = { "TK_Binding", "" },
      [TK_Arg_Star] = { "TK_Arg_Star", "" },
      [TK_Arg_Star2] = { "TK_Arg_Star2", "" },
      [TK_Assign_Stmt] = { "TK_Assign_Stmt", "" },
@@ -540,7 +540,7 @@ EXPORT struct node_s *sealark_get_attribute_node(struct node_s *node, char *kw)
     int kwlen = strlen(kw);
     struct node_s *attr = NULL;
     while( (attr=(struct node_s*)utarray_next(arg_list_subnodes, attr)) ) {
-        if (attr->tid == TK_Arg_Named) {
+        if (attr->tid == TK_Binding) {
             struct node_s *id = utarray_eltptr(attr->subnodes, 0);
             if (strncmp(id->s, kw, kwlen) == 0) {
                 return attr;

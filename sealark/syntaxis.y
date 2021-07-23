@@ -130,7 +130,7 @@ i.e. only SimpleStmt allowed in BUILD files.
 /* token constants used to tag non-terminals */
 %token ALIAS .
 %token Arg_List .
-%token Arg_Named .
+%token Binding .
 %token Arg_Star .
 %token Arg_Star2 .
 %token Attr .
@@ -1262,7 +1262,7 @@ arg(Arg) ::= expr(X) . {
 arg(Arg) ::= ID(Id) EQ(Eq) expr(X) . {
     // log_trace(">>arg ::= ID EQ expr");
     Arg = calloc(sizeof(struct node_s), 1);
-    Arg->tid = TK_Arg_Named;
+    Arg->tid = TK_Binding;
     Arg->line  = Id->line;
     Arg->col   = Id->col;
     utarray_new(Arg->subnodes, &node_icd);

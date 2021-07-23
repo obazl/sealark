@@ -124,8 +124,8 @@ s7_pointer sunlark_resolve_path(s7_scheme *s7,
                     return tmp;
                 }
                 break;
-            case TK_Arg_Named: /* rule attribute */
-                log_debug("dispatching on TK_Arg_Named %d", loop_idx);
+            case TK_Binding: /* rule attribute */
+                log_debug("dispatching on TK_Binding %d", loop_idx);
                 /* e.g. (set! (attr :name) "foo") */
                 /* :name, :value */
                 tmp = sunlark_attribute_property_lookup(s7,

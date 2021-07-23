@@ -49,7 +49,7 @@
 #define TK_Attr                           92
 #define TK_Arg_Star2                      91
 #define TK_Arg_Star                       90
-#define TK_Arg_Named                      89
+#define TK_Binding                      89
 #define TK_Arg_List                       88
 #define TK_ALIAS                          87
 #define TK_YIELD                          86
@@ -244,7 +244,7 @@
 
 /*      /\* non-terminals *\/ */
 /*      [TK_Arg_List] = { "TK_Arg_List", "" }, */
-/*      [TK_Arg_Named] = { "TK_Arg_Named", "" }, */
+/*      [TK_Binding] = { "TK_Binding", "" }, */
 /*      [TK_Arg_Star] = { "TK_Arg_Star", "" }, */
 /*      [TK_Arg_Star2] = { "TK_Arg_Star2", "" }, */
 /*      [TK_Assign_Stmt] = { "TK_Assign_Stmt", "" }, */
