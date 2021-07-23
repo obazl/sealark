@@ -30,7 +30,7 @@ EXPORT bool sealark_is_target(struct node_s *call_expr)
     /* :arg-named[0] = :id */
     /* struct node_s *stmt_list = utarray_eltptr(call_expr->subnodes, 0); */
 
-    node_s *binding = sealark_get_call_binding_by_name(call_expr, "name");
+    node_s *binding = sealark_binding_by_name(call_expr, "name");
     if (binding) {
         return true;
     } else
@@ -91,6 +91,62 @@ EXPORT bool sealark_target_has_binding(struct node_s *call_expr,
     return false;
 }
 
+/* EXPORT bool sealark_load_has_name(struct node_s *call_expr, */
+EXPORT bool sealark_target_has_name(struct node_s *call_expr,
+                                       const char *name)
+{
+#if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
+    log_debug("_sealark_target_has_name %s", name);
+#endif
+
+    /* :call-expr[1] > :call-sfx[1] > :arg-list[0] */
+    /* then search arg-list children for arg-named/name=str */
+    /* :arg-named[0] = :id */
+
+    /* log_debug("call_expr %d %s", call_expr->tid, */
+    /*           token_name[call_expr->tid][0]); */
+
+    struct node_s *call_sfx = utarray_eltptr(call_expr->subnodes, 1);
+    struct node_s *arg_list = utarray_eltptr(call_sfx->subnodes, 1);
+
+    /* struct node_s *id; */
+    int name_len = strlen(name);
+
+#if defined(DEBUG_QUERY)
+    log_debug("SEARCHING arg_list %d %s, child ct: %d",
+              arg_list->tid,
+              token_name[arg_list->tid][0],
+              utarray_len(arg_list->subnodes));
+#endif
+    struct node_s *arg_node = NULL;
+    struct node_s *id  = NULL;
+    struct node_s *val = NULL;
+    int i = 0;
+    while((arg_node=(struct node_s*)utarray_next(arg_list->subnodes,
+                                                  arg_node))) {
+#if defined(DEBUG_QUERY)
+        log_debug(" LOOP arg_list[%d] tid: %d %s", i++, arg_node->tid,
+                  token_name[arg_node->tid][0]);
+#endif
+        if (arg_node->tid == TK_Binding) { // skip TK_COMMA nodes
+            /* first subnode is TK_ID */
+            id = utarray_eltptr(arg_node->subnodes, 0);
+            /* log_debug("testing id[%d]: %d %s", i, id->tid, id->s); */
+
+            if ((strncmp(id->s, "name", 4) == 0)
+                && strlen(id->s) == 4 ){
+                val = utarray_eltptr(arg_node->subnodes, 2);
+                if ((strncmp(val->s, name, name_len) == 0)
+                    && strlen(val->s) == name_len ){
+                    return true;
+                }
+            }
+        }
+    }
+    log_debug("false");
+    return false;
+}
+
 /* rule may contain final glob, e.g. 'cc_*' */
 EXPORT bool sealark_target_is_rule_kind(struct node_s *call_expr,
                                         const char *rule_kind)
@@ -102,7 +158,7 @@ EXPORT bool sealark_target_is_rule_kind(struct node_s *call_expr,
     char *rule;
 
     int rule_len = strlen(rule_kind);
-    bool globbing;
+    bool globbing = false;
 
     if (rule_kind[rule_len-1] == '*') {
         globbing = true;

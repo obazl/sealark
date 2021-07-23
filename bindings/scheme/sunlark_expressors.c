@@ -10,6 +10,77 @@
 
 #include "sunlark_expressors.h"
 
+s7_pointer sunlark_path_for_buildfile(s7_scheme *s7,
+                                      struct node_s *bf_node,
+                                      s7_pointer path_args)
+{
+#if defined (DEBUG_TRACE) || defined(DEBUG_PROPERTIES)
+    log_debug("sunlark_path_for_buildfile: %s",
+              s7_object_to_c_string(s7, path_args));
+#endif
+
+    s7_pointer kw = s7_car(path_args);
+
+    s7_pointer result_list;
+
+    if (s7_is_keyword(kw)) {
+
+        if (kw == KW(targets)) {
+            result_list = sunlark_targets_for_buildfile(s7, bf_node);
+        }
+
+        if (kw == KW(target)) {
+            /* NB: same as :targets */
+            result_list = sunlark_targets_for_buildfile(s7, bf_node);
+        }
+
+        if (kw == s7_make_keyword(s7, "load")) {
+            // :build-file > :stmt-list :smallstmt-list > load-expr,...
+            result_list = sunlark_fetch_load_stmts(s7, bf_node);
+        }
+
+        if (kw == s7_make_keyword(s7, "package")) {
+            /* struct node_s *attrs = sunlark_get_attrs_list(s7, bf_node); */
+            /* s7_pointer attrs_s7 = sunlark_node_new(s7, attrs); */
+            /* result_list = attrs_s7; */
+            result_list = NULL;
+        }
+
+        /* predicates */
+        s7_pointer sym = s7_keyword_to_symbol(s7, kw);
+        char *key = (char*)s7_symbol_name(sym);
+        if (strrchr(key, '?') - key == strlen(key)-1 ) {
+            result_list = sunlark_is_kw(s7, key, bf_node);
+        }
+
+        /* common */
+        result_list = sunlark_common_property_lookup(s7, bf_node, kw);
+        if (result_list == NULL) {
+            /* result_list = s7_unspecified(s7); */
+            result_list =(s7_error(s7, s7_make_symbol(s7,
+                                               "invalid_argument"),
+                            s7_list(s7, 2, s7_make_string(s7,
+                                                          "ast-node-ref arg must be one of :package, :loads, :targets; got ~A"),
+                                    kw)));
+        }
+    } else {
+        if (s7_is_integer(kw)) {
+            /* FIXME: check against length */
+            struct node_s *n = utarray_eltptr(bf_node->subnodes, s7_integer(kw));
+            log_debug("build file lookup tid: %d %s",
+                      n->tid, token_name[n->tid][0]);
+            result_list = sunlark_node_new(s7, n);
+        }
+    }
+
+    s7_pointer next_step = s7_cadr(path_args);
+    if (s7_is_null(s7, next_step)) {
+        return result_list;
+    } else {
+        return sunlark_dispatch(s7, result_list, s7_cdr(path_args));
+    }
+}
+
 /*
   only called with :build-file node
 

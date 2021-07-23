@@ -49,7 +49,7 @@ EXPORT UT_array *sealark_targets_for_buildfile(struct node_s *buildfile_node)
         if (exprs->tid == TK_Expr_List) {
             target = utarray_eltptr(exprs->subnodes, 0);
             // target is TK_Call_Expr
-            node_s *binding = sealark_get_call_binding_by_name(target, "name");
+            node_s *binding = sealark_binding_by_name(target, "name");
             if (binding) {
                 utarray_push_back(target_list, target);
             }
@@ -138,13 +138,41 @@ EXPORT struct node_s
 }
 
 /* **************************************************************** */
-EXPORT struct node_s
-*sealark_target_for_index(struct node_s *build_file, int i)
+EXPORT UT_array *sealark_bindings_for_target_by_index
+(struct node_s *build_file, int i)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
-    log_debug("sealark_target_for_index %d", i);
+    log_debug("sealark_bindings_for_target_by_index %d", i);
 #endif
 
+    struct node_s *target = sealark_target_by_index(build_file, i);
+
+    UT_array *bindings = sealark_bindings_for_target(target);
+    return bindings;
+}
+
+/* ******************************** */
+/* includes all args, named or not, including commas */
+EXPORT struct node_s *sealark_arglist_for_target_by_index
+(struct node_s *build_file, int i)
+{
+#if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
+    log_debug("sealark_arglist_for_target_by_index %d", i);
+#endif
+
+    struct node_s *target = sealark_target_by_index(build_file, i);
+
+    struct node_s *args = sealark_arglist_for_target(target);
+    return args;
+}
+
+/* **************************************************************** */
+EXPORT
+struct node_s *sealark_target_by_index(struct node_s *build_file, int i)
+{
+#if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
+    log_debug("sealark_target_by_index %d", i);
+#endif
 
     /* :call-expr[1] > :call-sfx[1] > :arg-list[0] */
     /* then search arg-list children for arg-named/name=str */
@@ -201,7 +229,7 @@ EXPORT struct node_s
             return NULL;
         } else {
             i = target_ct + i;
-            return sealark_target_for_index(build_file, i);
+            return sealark_target_by_index(build_file, i);
         }
     }
 
@@ -217,15 +245,48 @@ EXPORT struct node_s
     /* } */
 }
 
-/* ******************************** */
-/* returns only attributes (TK_Named_Arg) in a new UT_array */
-EXPORT UT_array *sealark_attrs_for_target(struct node_s *call_expr)
+/* **************************************************************** */
+EXPORT struct node_s
+*sealark_target_for_name(struct node_s *build_file,  const char *name)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
-    log_debug("sealark_attrs_for_target");
+    log_debug("sealark_target_for_name %s", name);
 #endif
 
-    log_debug("target %p", call_expr); // tid: %d", call_expr->tid);
+    // :build-file > :stmt-list :smallstmt-list > expr-list > call-expr
+
+    struct node_s *stmt_list = utarray_eltptr(build_file->subnodes, 0);
+    struct node_s *small_list = utarray_eltptr(stmt_list->subnodes, 0);
+
+    struct node_s *expr_nd=NULL;
+    struct node_s *target_nd=NULL;
+
+    while( (expr_nd=(struct node_s*)utarray_next(small_list->subnodes,
+                                                 expr_nd)) ) {
+
+        while( (target_nd=(struct node_s*)utarray_next(expr_nd->subnodes,
+                                                       target_nd)) ) {
+            if (target_nd->tid == TK_Call_Expr) {
+                if (sealark_get_target_by_binding(target_nd, "name",
+                                                    name)) {
+                    return target_nd;
+                }
+            }
+        }
+    }
+
+    return NULL;
+}
+
+/* ******************************** */
+/* returns only bindings (TK_Named_Arg) in a new UT_array */
+EXPORT UT_array *sealark_bindings_for_target(struct node_s *call_expr)
+{
+#if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
+    log_debug("sealark_bindings_for_target");
+#endif
+
+    log_debug("target tid: %d %s", call_expr->tid, TIDNAME(call_expr));
 
     /* :call-expr[1] => :call-sfx[1] => :arg-list */
     struct node_s *call_sfx = utarray_eltptr(call_expr->subnodes, 1);
@@ -243,6 +304,7 @@ EXPORT UT_array *sealark_attrs_for_target(struct node_s *call_expr)
     return attribs;
 }
 
+/* ******************************** */
 /* returns TK_Arg_List node of all args */
 EXPORT struct node_s *sealark_arglist_for_target(struct node_s *call_expr)
 {
@@ -260,21 +322,21 @@ EXPORT struct node_s *sealark_arglist_for_target(struct node_s *call_expr)
 }
 
 /* ******************************** */
-EXPORT struct node_s *sealark_get_call_binding_by_name_val(struct node_s *call_expr,
+EXPORT struct node_s *sealark_binding_by_name_val(struct node_s *call_expr,
                                                          char *name,
                                                          char *val)
 {
 #ifdef DEBUG_QUERY
-    log_debug("sealark_get_call_binding_by_name");
+    log_debug("sealark_binding_by_name");
 #endif
 }
 
 /* ******************************** */
-EXPORT struct node_s *sealark_get_call_binding_by_name(struct node_s *call_expr,
+EXPORT struct node_s *sealark_binding_by_name(struct node_s *call_expr,
                                                     char *binding_name)
 {
 #ifdef DEBUG_QUERY
-    log_debug("sealark_get_call_binding_by_name");
+    log_debug("sealark_binding_by_name");
 #endif
     /* :call-expr[1] > :call-sfx[1] > :arg-list */
     /* then search arg-list children for arg-named/name=str */
