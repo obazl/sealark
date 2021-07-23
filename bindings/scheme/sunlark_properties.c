@@ -68,7 +68,7 @@ s7_pointer sunlark_target_property_lookup(s7_scheme *s7,
     /* common */
     s7_pointer result = sunlark_common_property_lookup(s7, self, prop_kw);
     if (result == NULL) {
-    /*     /\* by elimination, prop_kw must be an attribute name *\/ */
+    /*     /\* by elimination, prop_kw must be an binding name *\/ */
     /*     result = sunlark_attr_list_kw_lookup(s7, self, prop_kw); */
     /* } else { */
         return(s7_error(s7, s7_make_symbol(s7,
@@ -81,13 +81,13 @@ s7_pointer sunlark_target_property_lookup(s7_scheme *s7,
     }
 }
 
-/* attributes have two predefined props: :name, :value */
-s7_pointer sunlark_attribute_property_lookup(s7_scheme *s7,
+/* bindings have two predefined props: :name, :value */
+s7_pointer sunlark_binding_property_lookup(s7_scheme *s7,
                                              struct node_s *attr_node,
                                              const char *key)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_PROPERTIES)
-    log_debug("sunlark_attribute_property_lookup tid %d, prop: %s",
+    log_debug("sunlark_binding_property_lookup tid %d, prop: %s",
               attr_node->tid, key);
 #endif
 
@@ -96,13 +96,13 @@ s7_pointer sunlark_attribute_property_lookup(s7_scheme *s7,
     if ( strncmp(key, "name", 4) == 0 ) {
         c_result = utarray_eltptr(attr_node->subnodes, 0);
         return sunlark_node_new(s7, c_result);
-        /* return sunlark_update_attribute_name(s7, node_s7, key, val); */
+        /* return sunlark_update_binding_name(s7, node_s7, key, val); */
     }
 
     if ( strncmp(key, "value", 5) == 0) {
         c_result = utarray_eltptr(attr_node->subnodes, 2);
         return sunlark_node_new(s7, c_result);
-        /* return sunlark_update_attribute_value(s7, node_s7, key, val); */
+        /* return sunlark_update_binding_value(s7, node_s7, key, val); */
     }
 
     s7_pointer result = sunlark_common_property_lookup(s7, attr_node,
@@ -160,7 +160,7 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
               s7_object_to_c_string(s7, kw));
 #endif
 
-    /* pseudo-attributes */
+    /* pseudo-bindings */
     if (kw == KW(pprint)) {
         char *s = sealark_node_printable_string(ast_node);
         s7_pointer str =  s7_make_string(s7, s);
@@ -173,7 +173,7 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
         return str;
     }
 
-    /* "real" attributes, corresponding to fields in the struct */
+    /* "real" bindings, corresponding to fields in the struct */
     if (kw == kw_tid) { //KW(tid)) {
         log_debug("tid: %d", ast_node->tid);
         return s7_make_integer(s7, ast_node->tid);

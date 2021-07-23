@@ -124,7 +124,7 @@ LOCAL s7_pointer _handle_nodelist_string_query(s7_scheme *s7,
         /* log_debug("child[%d] %d %s", i++, tmp->tid, token_name[tmp->tid][0]); */
         switch(tmp->tid) {
         case TK_Call_Expr:      /* target */
-            attr = sealark_get_target_by_attribute(tmp, "name", str);
+            attr = sealark_get_target_by_binding(tmp, "name", str);
             if (attr) {
                 /* log_debug("GOT ATTR node %d", attr->tid); */
                 /* return sunlark_node_new(s7, attr); */
@@ -172,7 +172,7 @@ LOCAL s7_pointer _handle_nodelist_symbol_query(s7_scheme *s7,
         /* log_debug("child[%d] %d %s", i++, tmp->tid, token_name[tmp->tid][0]); */
         switch(tmp->tid) {
         case TK_Call_Expr:      /* target */
-            attr = sealark_get_target_by_attribute(tmp, "name", str);
+            attr = sealark_get_target_by_binding(tmp, "name", str);
             if (attr) {
                 /* log_debug("GOT ATTR node %d", attr->tid); */
                 /* return sunlark_node_new(s7, attr); */

@@ -49,8 +49,8 @@ EXPORT UT_array *sealark_targets_for_buildfile(struct node_s *buildfile_node)
         if (exprs->tid == TK_Expr_List) {
             target = utarray_eltptr(exprs->subnodes, 0);
             // target is TK_Call_Expr
-            node_s *attr = sealark_get_call_attr_by_name(target, "name");
-            if (attr) {
+            node_s *binding = sealark_get_call_binding_by_name(target, "name");
+            if (binding) {
                 utarray_push_back(target_list, target);
             }
         } else {
@@ -74,13 +74,13 @@ EXPORT struct node_s *sealark_rulename_for_target(struct node_s *call_expr)
 
 /* ******************************** */
 EXPORT struct node_s
-*sealark_get_target_by_attribute(struct node_s *call_expr,
-                                 const char *attr_name,
-                                 const char *attr_val)
+*sealark_get_target_by_binding(struct node_s *call_expr,
+                                 const char *binding_name,
+                                 const char *binding_val)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
-    log_debug("sealark_get_target_by_attribute %s = %s",
-              attr_name, attr_val);
+    log_debug("sealark_get_target_by_binding %s = %s",
+              binding_name, binding_val);
 #endif
 
     /* :call-expr[1] > :call-sfx[1] > :arg-list[0] */
@@ -94,10 +94,10 @@ EXPORT struct node_s
     struct node_s *arg_list = utarray_eltptr(call_sfx->subnodes, 1);
 
     struct node_s *id, *val;
-    int name_len = strlen(attr_name);
-    int attr_val_len = strlen(attr_val);
+    int name_len = strlen(binding_name);
+    int binding_val_len = strlen(binding_val);
 
-    //FIXME: call _get_attr_by_name_unique
+    //FIXME: call _get_binding_by_name_unique
 
 #if defined(DEBUG_QUERY)
     log_debug("SEARCHING arg_list %d %s, child ct: %d",
@@ -117,17 +117,17 @@ EXPORT struct node_s
             id = utarray_eltptr(arg_node->subnodes, 0);
             /* log_debug("testing id[%d]: %d %s", i, id->tid, id->s); */
 
-            if ((strncmp(id->s, attr_name, name_len) == 0)
+            if ((strncmp(id->s, binding_name, name_len) == 0)
                 && strlen(id->s) == name_len ){
 
                 /* name matches, now test value */
                 val = utarray_eltptr(arg_node->subnodes, 2);
-                /* log_debug("\tattr: %s = %s", id->s, val->s); */
+                /* log_debug("\tbinding: %s = %s", id->s, val->s); */
 
-                if ( (strncmp(val->s, attr_val, attr_val_len) == 0)
-                     && strlen(val->s) == attr_val_len ) {
+                if ( (strncmp(val->s, binding_val, binding_val_len) == 0)
+                     && strlen(val->s) == binding_val_len ) {
                     /* log_debug("3 xxxxxxxxxxxxxxxx MATCH %d %s == %s", */
-                    /*           attr_val_len, val->s, attr_val); */
+                    /*           binding_val_len, val->s, binding_val); */
                     return arg_node;
                 }
             }
@@ -137,6 +137,7 @@ EXPORT struct node_s
     return NULL;
 }
 
+/* **************************************************************** */
 EXPORT struct node_s
 *sealark_target_for_index(struct node_s *build_file, int i)
 {
@@ -180,7 +181,7 @@ EXPORT struct node_s
         while( (target_nd=(struct node_s*)utarray_next(expr_nd->subnodes,
                                                        target_nd)) ) {
             if (target_nd->tid == TK_Call_Expr) {
-                if (sealark_target_has_attribute(target_nd, "name")) {
+                if (sealark_target_has_binding(target_nd, "name")) {
                     log_debug("target_ct: %d, i: %d", target_ct, i);
                     if (target_ct == i) {
                         log_debug("MATCH");
@@ -238,7 +239,7 @@ EXPORT UT_array *sealark_attrs_for_target(struct node_s *call_expr)
         if (nd->tid == TK_Binding)
             utarray_push_back(attribs, nd);
     }
-    log_debug("found %d attributes (named args)", utarray_len(attribs));
+    log_debug("found %d bindings (named args)", utarray_len(attribs));
     return attribs;
 }
 
@@ -259,21 +260,21 @@ EXPORT struct node_s *sealark_arglist_for_target(struct node_s *call_expr)
 }
 
 /* ******************************** */
-EXPORT struct node_s *sealark_get_call_attr_by_name_val(struct node_s *call_expr,
+EXPORT struct node_s *sealark_get_call_binding_by_name_val(struct node_s *call_expr,
                                                          char *name,
                                                          char *val)
 {
 #ifdef DEBUG_QUERY
-    log_debug("sealark_get_call_attr_by_name");
+    log_debug("sealark_get_call_binding_by_name");
 #endif
 }
 
 /* ******************************** */
-EXPORT struct node_s *sealark_get_call_attr_by_name(struct node_s *call_expr,
-                                                    char *attr_name)
+EXPORT struct node_s *sealark_get_call_binding_by_name(struct node_s *call_expr,
+                                                    char *binding_name)
 {
 #ifdef DEBUG_QUERY
-    log_debug("sealark_get_call_attr_by_name");
+    log_debug("sealark_get_call_binding_by_name");
 #endif
     /* :call-expr[1] > :call-sfx[1] > :arg-list */
     /* then search arg-list children for arg-named/name=str */
@@ -282,7 +283,7 @@ EXPORT struct node_s *sealark_get_call_attr_by_name(struct node_s *call_expr,
     struct node_s *call_sfx = utarray_eltptr(call_expr->subnodes, 1);
     struct node_s *arg_list = utarray_eltptr(call_sfx->subnodes, 1);
 
-    /* struct node_s *node, *attr; */
+    /* struct node_s *node, *binding; */
 
     log_debug("SEARCHING arg_list %d %s, child ct: %d",
               arg_list->tid,
@@ -290,7 +291,7 @@ EXPORT struct node_s *sealark_get_call_attr_by_name(struct node_s *call_expr,
               utarray_len(arg_list->subnodes));
 
     struct node_s *id;
-    int name_len = strlen(attr_name);
+    int name_len = strlen(binding_name);
     struct node_s *arg_node = NULL;
     int i = 0;
 
@@ -303,7 +304,7 @@ EXPORT struct node_s *sealark_get_call_attr_by_name(struct node_s *call_expr,
             id = utarray_eltptr(arg_node->subnodes, 0);
             log_debug("testing id[%d]: %d %s", i, id->tid, id->s);
 
-            if ((strncmp(id->s, attr_name, name_len) == 0)
+            if ((strncmp(id->s, binding_name, name_len) == 0)
                 && strlen(id->s) == name_len ){
 
                 log_debug("MATCH");
@@ -311,12 +312,12 @@ EXPORT struct node_s *sealark_get_call_attr_by_name(struct node_s *call_expr,
 
                 /* name matches, now test value */
                 /* val = utarray_eltptr(arg_node->subnodes, 2); */
-                /* log_debug("\tattr: %s = %s", id->s, val->s); */
+                /* log_debug("\tbinding: %s = %s", id->s, val->s); */
 
-                /* if ( (strncmp(val->s, attr_val, attr_val_len) == 0) */
-                /*      && strlen(val->s) == attr_val_len ) { */
+                /* if ( (strncmp(val->s, binding_val, binding_val_len) == 0) */
+                /*      && strlen(val->s) == binding_val_len ) { */
                 /*     /\* log_debug("3 xxxxxxxxxxxxxxxx MATCH %d %s == %s", *\/ */
-                /*     /\*           attr_val_len, val->s, attr_val); *\/ */
+                /*     /\*           binding_val_len, val->s, binding_val); *\/ */
                 /*     return arg_node; */
                 /* } */
             }

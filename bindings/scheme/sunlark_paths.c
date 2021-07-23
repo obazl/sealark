@@ -124,11 +124,11 @@ s7_pointer sunlark_resolve_path(s7_scheme *s7,
                     return tmp;
                 }
                 break;
-            case TK_Binding: /* rule attribute */
+            case TK_Binding: /* rule binding */
                 log_debug("dispatching on TK_Binding %d", loop_idx);
                 /* e.g. (set! (attr :name) "foo") */
                 /* :name, :value */
-                tmp = sunlark_attribute_property_lookup(s7,
+                tmp = sunlark_binding_property_lookup(s7,
                                                         s7_c_object_value(self),
                                                         prop);
                 if (s7_is_c_object(tmp)) {

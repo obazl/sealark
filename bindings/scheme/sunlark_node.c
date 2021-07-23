@@ -297,9 +297,9 @@ static s7_pointer sunlark_nodes_are_equivalent(s7_scheme *s7, s7_pointer args)
     In addition the following pseudo-properties are supported:
         :print - returns string for printable nodes, with correct quoting.
 
-        :@<attr> - only for nodes of type :call_expr. returns attribute
-        (i.e. :arg_named node) whose :id is <attr>. E.g. (rulenode :deps)
-        would return the 'deps' attribute of the rulenode.
+        :@<attr> - only for nodes of type :call_expr. returns binding
+        (i.e. :binding node) whose :id is <attr>. E.g. (rulenode :deps)
+        would return the 'deps' binding of the rulenode.
 
  */
 static s7_pointer sunlark_node_ref_specialized(s7_scheme *s7, s7_pointer args)
@@ -559,7 +559,7 @@ static s7_pointer _update_ast_node_property(s7_scheme *s7,
 }
 
 /**
-   update a starlark attribute, i.e. named arg, like deps
+   update a starlark binding, i.e. named arg, like deps
    node arg type == :named_arg
    key: tells us what to update, 'name or 'value
 
@@ -586,12 +586,12 @@ static s7_pointer _update_starlark(s7_scheme *s7,
     switch( sunlark_node_tid(s7, node_s7) ) {
     /* case TK_Call_Expr: /\* build rule *\/ */
     /*     break; */
-    case TK_Binding: /* rule attribute */
+    case TK_Binding: /* rule binding */
         if ( strncmp(key, "name", 4) == 0 ) {
-            return sunlark_update_attribute_name(s7, node_s7, key, val);
+            return sunlark_update_binding_name(s7, node_s7, key, val);
         } else {
             if ( strncmp(key, "value", 5) == 0) {
-                return sunlark_update_attribute_value(s7, node_s7, key, val);
+                return sunlark_update_binding_value(s7, node_s7, key, val);
             } else {
                 return(s7_wrong_type_arg_error(s7,
                                                "ast-node-set! attr update",
@@ -654,8 +654,8 @@ static s7_pointer sunlark_node_set_specialized(s7_scheme *s7, s7_pointer args)
 
     // now update set_target
 
-    /* return sunlark_update_attribute_name(s7, node_s7, key, val); */
-    /* return sunlark_update_attribute_value(s7, node_s7, key, val); */
+    /* return sunlark_update_binding_name(s7, node_s7, key, val); */
+    /* return sunlark_update_binding_value(s7, node_s7, key, val); */
 
     /* _update_ast_node_property(s7, node, key, s7_caddr(args)); */
 

@@ -30,19 +30,19 @@ EXPORT bool sealark_is_target(struct node_s *call_expr)
     /* :arg-named[0] = :id */
     /* struct node_s *stmt_list = utarray_eltptr(call_expr->subnodes, 0); */
 
-    node_s *attr = sealark_get_call_attr_by_name(call_expr, "name");
-    if (attr) {
+    node_s *binding = sealark_get_call_binding_by_name(call_expr, "name");
+    if (binding) {
         return true;
     } else
         return false;
 
 }
 
-EXPORT bool sealark_target_has_attribute(struct node_s *call_expr,
-                                         const char *attr_name)
+EXPORT bool sealark_target_has_binding(struct node_s *call_expr,
+                                         const char *binding_name)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
-    log_debug("_sealark_target_has_attribute %s", attr_name);
+    log_debug("_sealark_target_has_binding %s", binding_name);
 #endif
 
     /* :call-expr[1] > :call-sfx[1] > :arg-list[0] */
@@ -56,9 +56,9 @@ EXPORT bool sealark_target_has_attribute(struct node_s *call_expr,
     struct node_s *arg_list = utarray_eltptr(call_sfx->subnodes, 1);
 
     /* struct node_s *id; */
-    int name_len = strlen(attr_name);
+    int name_len = strlen(binding_name);
 
-    //FIXME: call _get_attr_by_name_unique
+    //FIXME: call _get_binding_by_name_unique
 
 #if defined(DEBUG_QUERY)
     log_debug("SEARCHING arg_list %d %s, child ct: %d",
@@ -80,7 +80,7 @@ EXPORT bool sealark_target_has_attribute(struct node_s *call_expr,
             id = utarray_eltptr(arg_node->subnodes, 0);
             /* log_debug("testing id[%d]: %d %s", i, id->tid, id->s); */
 
-            if ((strncmp(id->s, attr_name, name_len) == 0)
+            if ((strncmp(id->s, binding_name, name_len) == 0)
                 && strlen(id->s) == name_len ){
                 log_debug("true");
                 return true;

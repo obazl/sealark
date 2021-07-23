@@ -51,8 +51,8 @@ UT_array *sunlark_filter_bf_targets_by_list(s7_scheme *s7,
         if (exprs->tid == TK_Expr_List) {
             target = utarray_eltptr(exprs->subnodes, 0);
             // target is TK_Call_Expr
-            node_s *attr = sealark_get_call_attr_by_name(target, "name");
-            if (attr) {
+            node_s *binding = sealark_get_call_binding_by_name(target, "name");
+            if (binding) {
                 /* this is a target call expr; check against list */
                 if (_target_satisfies_filter_criteria(s7,
                                                       target,

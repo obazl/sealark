@@ -87,22 +87,22 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
       break;
 
   case 3:
-      :target <selector> :attrs
-          returns s7_list of attrs without commas
+      :target <selector> :bindings
+          returns s7_list of bindings without commas
 
       :target <selector> :count
       :target <selector> :rulename
       break;
 
   case 4:
-      :target <selector> :attrs 'id
-          returns node of attr with name = "id"
-      :target <selector> :attrs :count
+      :target <selector> :bindings 'id
+          returns node of binding with name = "id"
+      :target <selector> :bindings :count
       break;
 
  case 5:
-     :target <selector> :attrs 'id :name
-     :target <selector> :attrs 'id :value
+     :target <selector> :bindings 'id :name
+     :target <selector> :bindings 'id :value
 
 */
 
@@ -253,13 +253,13 @@ s7_pointer sunlark_dispatch_on_buildfile(s7_scheme *s7,
 
   switch(op count) {
   case 1:
-      :attrs -- returns s7_list
+      :bindings -- returns s7_list
       :rulename
       // common properties: :tid, :line, :col, etc.
       break;
   case 2:
-      :attrs 'sym -- returns node for attr with name sym
-      :attrs :count
+      :bindings 'sym -- returns node for binding with name sym
+      :bindings :count
  */
 //FIXME: LOCAL
 s7_pointer sunlark_dispatch_on_target(s7_scheme *s7,
@@ -293,9 +293,9 @@ s7_pointer sunlark_dispatch_on_target(s7_scheme *s7,
             struct node_s *arg_list=sealark_arglist_for_target(target);
             return nodelist_to_s7_list(s7, arg_list->subnodes);
         }
-        if (KW(attrs) == op) {
-            UT_array *attribs = sealark_attrs_for_target(target);
-            return nodelist_to_s7_list(s7, attribs);
+        if (KW(bindings) == op) {
+            UT_array *bindings = sealark_bindings_for_target(target);
+            return nodelist_to_s7_list(s7, bindings);
         }
         if (KW(rule) == op) {
             struct node_s *id=sealark_rulename_for_target(target);
@@ -309,8 +309,8 @@ s7_pointer sunlark_dispatch_on_target(s7_scheme *s7,
                   s7_object_to_c_string(s7, op));
         break;
     case 2:
-        // :attrs 'sym -- returns node for attr with name sym
-        // :attrs :count
+        // :bindings 'sym -- returns node for binding with name sym
+        // :bindings :count
         break;
     default:
         log_error("too many path steps");

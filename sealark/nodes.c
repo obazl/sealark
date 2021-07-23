@@ -517,7 +517,7 @@ EXPORT char  *sealark_node_printable_string(struct node_s *node)
              list of alternating :arg_named and :comma
                :id (first child of :arg_named)
  */
-EXPORT struct node_s *sealark_get_attribute_node(struct node_s *node, char *kw)
+EXPORT struct node_s *sealark_get_binding_node(struct node_s *node, char *kw)
 {
 #ifdef DEBUG_TRACE
     log_debug("sealark_node_rule_attrib: %s", kw);

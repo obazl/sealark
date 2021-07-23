@@ -8,7 +8,7 @@
 
 #include "s7.h"
 
-#include "sunlark_attributes.h"
+#include "sunlark_bindings.h"
 
 /* docs at bottom */
 
@@ -67,7 +67,7 @@ s7_pointer sunlark_attr_list_kw_lookup(s7_scheme *s7,
 
         /* then search subnodes */
         while((node=(struct node_s*)utarray_next(attrs->subnodes, node))) {
-            if (node->tid == TK_Arg_Named) {
+            if (node->tid == TK_Binding) {
                 struct node_s *attrname_node = utarray_eltptr(node->subnodes, 0);
                     log_debug("attr name: %s", attrname_node->s);
                 if ( strncmp(attr_name, attrname_node->s, len) == 0 ) {
@@ -542,13 +542,13 @@ struct node_s *_update_list_value(s7_scheme *s7,
     return NULL;
 }
 
-s7_pointer sunlark_update_attribute_name(s7_scheme *s7,
+s7_pointer sunlark_update_binding_name(s7_scheme *s7,
                                          s7_pointer node_s7,
                                          const char *key,
                                          s7_pointer val)
 {
 #if defined(DEBUG_TRACE) || defined(DEBUG_ATTR)
-    log_debug(">> sunlark_update_attribute_name, tid: %d",
+    log_debug(">> sunlark_update_binding_name, tid: %d",
               sunlark_node_tid(s7, node_s7));
 #endif
 
@@ -580,13 +580,13 @@ s7_pointer sunlark_update_attribute_name(s7_scheme *s7,
     return s7_make_string(s7, new_name);
 }
 
-s7_pointer sunlark_update_attribute_value(s7_scheme *s7,
+s7_pointer sunlark_update_binding_value(s7_scheme *s7,
                                           s7_pointer node_s7,
                                           const char *key,
                                           s7_pointer val)
 {
 #if defined(DEBUG_TRACE) || defined(DEBUG_ATTR)
-    log_debug(">> sunlark_update_attribute_value, tid: %d",
+    log_debug(">> sunlark_update_binding_value, tid: %d",
               sunlark_node_tid(s7, node_s7));
 #endif
 
