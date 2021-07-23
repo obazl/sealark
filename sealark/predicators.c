@@ -30,7 +30,7 @@ EXPORT bool sealark_is_target(struct node_s *call_expr)
     /* :arg-named[0] = :id */
     /* struct node_s *stmt_list = utarray_eltptr(call_expr->subnodes, 0); */
 
-    node_s *binding = sealark_binding_by_name(call_expr, "name");
+    node_s *binding = sealark_target_binding_for_key(call_expr, "name");
     if (binding) {
         return true;
     } else
@@ -38,11 +38,81 @@ EXPORT bool sealark_is_target(struct node_s *call_expr)
 
 }
 
-EXPORT bool sealark_target_has_binding(struct node_s *call_expr,
-                                         const char *binding_name)
+/* ******************************** */
+/* matches key and value */
+//FIXME: this is an expressor, not a predicate
+/* EXPORT struct node_s *sealark_binding_for_target(struct node_s *call_expr, */
+EXPORT struct node_s *sealark_target_has_binding(struct node_s *call_expr,
+                                                 const char *key,
+                                                 const char *val)
+{
+#ifdef DEBUG_QUERY
+    log_debug("sealark_target_has_binding");
+#endif
+    /* :call-expr[1] > :call-sfx[1] > :arg-list */
+    /* then search arg-list children for arg-named/name=str */
+    /* :arg-named[0] = :id */
+
+    struct node_s *call_sfx = utarray_eltptr(call_expr->subnodes, 1);
+    struct node_s *arg_list = utarray_eltptr(call_sfx->subnodes, 1);
+
+    /* struct node_s *node, *binding; */
+
+    log_debug("SEARCHING arg_list %d %s, child ct: %d",
+              arg_list->tid,
+              token_name[arg_list->tid][0],
+              utarray_len(arg_list->subnodes));
+
+    struct node_s *key_node, *val_node;
+    int key_len = strlen(key);
+    int val_len = strlen(val);
+
+    struct node_s *binding_node = NULL;
+    int i = 0;
+
+    while((binding_node=(struct node_s*)utarray_next(arg_list->subnodes,
+                                                  binding_node))) {
+        log_debug(" LOOP arg_list[%d] tid: %d %s", i++, binding_node->tid,
+                  token_name[binding_node->tid][0]);
+
+        if (binding_node->tid == TK_Binding) { // skip TK_COMMA nodes
+            key_node = utarray_eltptr(binding_node->subnodes, 0);
+            log_debug("testing key_node[%d]: %d %s", i, key_node->tid, key_node->s);
+
+            if ((strncmp(key_node->s, key, key_len) == 0)
+                && strlen(key_node->s) == key_len ){
+
+                log_debug("MATCHED KEY %s", key);
+
+                /* key matches, now test value */
+                val_node = utarray_eltptr(binding_node->subnodes, 2);
+                if (val_node->tid == TK_STRING) {
+                    log_debug("\tbinding: %s = %s", key_node->s, val_node->s);
+
+                    if ( (strncmp(val_node->s, val, val_len) == 0)
+                         && strlen(val_node->s) == val_len ) {
+                        /* log_debug("3 xxxxxxxxxxxxxxxx MATCH %d %s == %s", */
+                        /*           val_len, val->s, val); */
+                        return binding_node;
+                    }
+                } else {
+                    log_debug("binding val not string: %d %s",
+                              val_node->tid, TIDNAME(val_node));
+                }
+            }
+        } else {
+        }
+    }
+    return NULL;
+}
+
+/* **************** */
+/* matches key only */
+EXPORT bool sealark_target_has_binding_key(struct node_s *call_expr,
+                                           const char *key)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
-    log_debug("_sealark_target_has_binding %s", binding_name);
+    log_debug("_sealark_target_has_binding %s", key);
 #endif
 
     /* :call-expr[1] > :call-sfx[1] > :arg-list[0] */
@@ -56,7 +126,7 @@ EXPORT bool sealark_target_has_binding(struct node_s *call_expr,
     struct node_s *arg_list = utarray_eltptr(call_sfx->subnodes, 1);
 
     /* struct node_s *id; */
-    int name_len = strlen(binding_name);
+    int key_len = strlen(key);
 
     //FIXME: call _get_binding_by_name_unique
 
@@ -80,8 +150,8 @@ EXPORT bool sealark_target_has_binding(struct node_s *call_expr,
             id = utarray_eltptr(arg_node->subnodes, 0);
             /* log_debug("testing id[%d]: %d %s", i, id->tid, id->s); */
 
-            if ((strncmp(id->s, binding_name, name_len) == 0)
-                && strlen(id->s) == name_len ){
+            if ((strncmp(id->s, key, key_len) == 0)
+                && strlen(id->s) == key_len ){
                 log_debug("true");
                 return true;
             }

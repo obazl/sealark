@@ -61,7 +61,7 @@ s7_pointer sunlark_target_property_lookup(s7_scheme *s7,
 
     if (prop_kw == KW(rule)) {
         /* struct node_s *node = s7_c_object_value(self); */
-        struct node_s *rulename = sealark_rulename_for_target(self);
+        struct node_s *rulename = sealark_ruleid_for_target(self);
         return sunlark_node_new(s7, rulename); /* tid :id */
     }
 

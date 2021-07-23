@@ -10,6 +10,8 @@
 
 #include "sunlark_expressors.h"
 
+/* **************************************************************** */
+/* **************** */
 s7_pointer sunlark_path_for_buildfile(s7_scheme *s7,
                                       struct node_s *bf_node,
                                       s7_pointer path_args)
@@ -145,6 +147,9 @@ s7_pointer sunlark_targets_for_buildfile(s7_scheme *s7,
 
     return nodelist_to_s7_list(s7, target_list);
 }
+
+/* **************************************************************** */
+/* **************************************************************** */
 
 s7_pointer nodelist_to_s7_list(s7_scheme *s7, UT_array *target_list)
 {

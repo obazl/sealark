@@ -898,6 +898,17 @@ EXPORT s7_pointer sunlark_node_new(s7_scheme *s7, struct node_s *node)
     log_debug("sunlark_node_new");
 #endif
 
+    //FIXME: maybe use s7_make_c_object_without_gc ???
+    // for the original AST, we want without gc
+    // but for transient nodes created by expressors,
+    // we want gc?
+
+    // then the user would have to explicitly destroy the ast?
+    // or: only the root node is GCed?
+
+    // BUT, we do not want copies of AST nodes; all c-object nodes
+    // should just point to the AST. So that updates always update
+    // the AST.  User must explicitly copy to get a copy.
     s7_pointer new_ast_node_s7 = s7_make_c_object(s7, ast_node_t,
                                                   (void *)node);
 

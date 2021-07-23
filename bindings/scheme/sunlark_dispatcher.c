@@ -58,90 +58,6 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
     }
 }
 
-/** sunlark_dispatch_on_buildfile
-
-  switch(op count) {
-  case 1:
-      // must be :target, :targets, :load, :loads, :package, ??
-      // OR: :call-expr to get targets and fn applications?
-      // OR: :toplevel to get all top-levels? or, compose :loads,
-      // :targets, etc.?
-
-      // note that load "stmts" package stmts, and targets are all
-      // call exprs.
-
-      // targets have bindings but no args; load stmts may have both
-
-      // also note that args may be vectors, e.g. glob(["**"])
-
-      returns s7_list
-      break;
-  case 2:
-      :targets i (integer)
-          returns node at index i of targets list
-          sunlark_target_by_index_from_targets
-
-      :targets 'sym
-          returns s7 list of targets with rulename sym
-          sunlark_targets_by_symbol_from_targets
-
-      :targets '(sym string int)
-          returns s7 list of targets filtered by rule/name/index
-          sunlark_targets_by_filter_from_targets
-
-      :targets <predicate>
-          returns s7 list of targets satisfying predicate (a fn)
-          sunlark_targets_by_lambda_from_targets
-
-      :target "string"
-          returns node for target with name = "string"
-          sunlark_target_for_name_from_targets
-
-      :load "string"
-          returns node for load stmt whose first arg is string
-          => sunlark_load_for_name
-      break;
-
-  case 3:
-
-    filter then select
-      :targets <selector> :count
-          <selector> :: filter list, rule sym
-          sunlark_count_targets_from_filter
-
-      :targets <filter> idx
-          sunlark_target_by_index_from_filter
-
-    select then express
-      :targets 0 :bindings
-          sunlark_bindings_for_target_by_index_from_targets
-
-      :targets 0 :rule
-          sunlark_rule_for_target_by_index
-
-      :target "string" :bindings
-          returns s7_list of bindings without commas
-          sunlark_bindings_for_target_by_name_from_targets
-
-      :target "name" :rule
-          sunlark_rule_for_target_by_name
-
-  case 4:
-      :target <selector> :bindings 'id
-          returns node of binding with name = "id"
-          sunlark_binding_from_bindings_from_filter_from_targets
-
-      :target <selector> :bindings :count
-      break;
-
- case 5:
-     :target <selector> :bindings 'id :key
-         sunlark_key_for_binding_from_bindings_from_filter
-     :target <selector> :bindings 'id :value
-         sunlark_value_for_binding_from_bindings_from_filter
-
-*/
-
 //FIXME: LOCAL
 s7_pointer sunlark_dispatch_on_buildfile(s7_scheme *s7,
                                          s7_pointer data,
@@ -194,7 +110,7 @@ s7_pointer sunlark_dispatch_on_buildfile(s7_scheme *s7,
         return buildfile_handle_triadic_path(s7, bf_node, path_args);
         break;
     case 4:
-        /* return buildfile_handle_tetradic_path(s7, bf_node, path_args); */
+        return buildfile_handle_tetradic_path(s7, bf_node, path_args);
         break;
     case 5:
         /* return buildfile_handle_pentadic_path(s7, bf_node, path_args); */
@@ -281,7 +197,7 @@ s7_pointer sunlark_dispatch_on_target(s7_scheme *s7,
             return nodelist_to_s7_list(s7, bindings);
         }
         if (KW(rule) == op) {
-            struct node_s *id=sealark_rulename_for_target(target);
+            struct node_s *id=sealark_ruleid_for_target(target);
             return sunlark_node_new(s7, id);
         }
         /* common properties */
@@ -506,7 +422,7 @@ s7_pointer buildfile_handle_triadic_path(s7_scheme *s7,
             if (s7_is_integer(op3)) {
                 log_debug("target_by_index_from_filtersym");
                 struct node_s *tgt = sunlark_target_by_index_from_filtersym
-                    (s7, bf_node, op2, s7_integer(op3));
+                    (s7, bf_node, s7_symbol_name(op2), s7_integer(op3));
                      /* s7_pointer select_list); */
                 return sunlark_node_new(s7, tgt);
             }
@@ -547,7 +463,6 @@ s7_pointer buildfile_handle_triadic_path(s7_scheme *s7,
                     (bf_node, s7_integer(op2));
                 result_list = nodelist_to_s7_list(s7, bindings);
                 return result_list;
-
             }
             if (op3 == KW(arg-list)) {
                 log_debug("arg_list_for_target_by_index");
@@ -556,11 +471,13 @@ s7_pointer buildfile_handle_triadic_path(s7_scheme *s7,
                     (bf_node, s7_integer(op2));
                 result_list = nodelist_to_s7_list(s7, arglist->subnodes);
                 return result_list;
-
             }
             if (op3 == KW(rule)) {
-                log_debug("rulename_for_target_by_index");
-                return NULL;
+                log_debug("ruleid_for_target_by_index");
+                struct node_s *ruleid = sealark_ruleid_for_target_by_index
+                    (bf_node, s7_integer(op2));
+                /* log_debug("ruleid: %d %s", ruleid->tid, TIDNAME(ruleid)); */
+                return sunlark_node_new(s7, ruleid);
             }
             log_error("Not yet supported: %s", s7_object_to_c_string(s7, op3));
             exit(EXIT_FAILURE);
@@ -583,11 +500,276 @@ s7_pointer buildfile_handle_triadic_path(s7_scheme *s7,
         if (s7_is_string(op2)) {
             if (op3 == KW(bindings)) {
                 log_debug("bindings_for_target_by_name");
-                return NULL;
+                errno = 0;
+                UT_array *bindings = sealark_bindings_for_target_by_name
+                    (bf_node, s7_string(op2));
+                result_list = nodelist_to_s7_list(s7, bindings);
+                return result_list;
+            }
+            if (op3 == KW(arg-list)) {
+                log_debug("arg_list_for_target_by_name");
+                errno = 0;
+                struct node_s *arglist = sealark_arglist_for_target_by_name
+                    (bf_node, s7_string(op2));
+                result_list = nodelist_to_s7_list(s7, arglist->subnodes);
+                return result_list;
             }
             if (op3 == KW(rule)) {
-                log_debug("rule_for_target_by_name");
+                /* log_debug("ruleid_for_target_by_name"); */
+                struct node_s * tgt = sealark_ruleid_for_target_by_name
+                    (bf_node, s7_string(op2));
+                return sunlark_node_new(s7, tgt);
+            }
+        }
+        // only strings after :target
+        log_error("Only string arg after :target");
+        return(s7_error(s7,
+                        s7_make_symbol(s7, "invalid_argument"),
+                            s7_list(s7, 2, s7_make_string(s7,
+                             "Only string arg allowd after :target; got ~A"),
+                                    op2)));
+    }
+
+    /* ******************************** */
+    if (op == KW(loads)) {
+        if (s7_is_list(s7, op2)) {
+            if (op3 == KW(count)) {
+                log_debug("counting filtered load stmts");
                 return NULL;
+            }
+            log_error("Path op %s not supported following :loads ~s",
+                      s7_object_to_c_string(s7, op3),
+                      s7_symbol_name(op));
+            return NULL;
+        }
+        if (s7_is_integer(op2)) {
+            if (op3 == KW(key)) {
+                log_debug("key_for_load_by_index_from_loads");
+                return NULL;
+            }
+            if (op3 == KW(args)) {
+                log_debug("args_for_load_by_index_from_loads");
+                return NULL;
+            }
+            if (op3 == KW(bindings)) {
+                log_debug("bindings_for_load_by_index_from_loads");
+                return NULL;
+            }
+            log_error("Path op %s not supported following :loads ~s",
+                      s7_object_to_c_string(s7, op3),
+                      s7_symbol_name(op));
+            return NULL;
+        }
+        if (s7_is_string(op2)) {
+            log_error("String op %s not supported following :loads",
+                      s7_object_to_c_string(s7, op3));
+            return(s7_error(s7,
+                        s7_make_symbol(s7, "invalid_argument"),
+                            s7_list(s7, 2, s7_make_string(s7,
+                            "String op not supported following :loads; got ~S"),
+                                    op2)));
+            return NULL;
+        }
+    }
+
+    /* ******************************** */
+    if (op == KW(load)) {
+        if (s7_is_string(op2)) {
+            if (op3 == KW(key)) {
+                log_debug("key_for_load_by_name");
+                return NULL;
+            }
+            if (op3 == KW(args)) {
+                log_debug("args_for_load_by_name");
+                return NULL;
+            }
+            if (op3 == KW(bindings)) {
+                log_debug("bindings_for_load_by_name");
+                return NULL;
+            }
+            log_error("Path op %s not supported following :loads ~s",
+                      s7_object_to_c_string(s7, op3),
+                      s7_symbol_name(op));
+            return NULL;
+        }
+        if (s7_is_list(s7, op2)) {
+            if (op3 == KW(count)) {
+                log_debug("counting filtered load stmts");
+                return NULL;
+            }
+            log_error("Path op %s not supported following :loads ~s",
+                      s7_object_to_c_string(s7, op3),
+                      s7_symbol_name(op));
+            return NULL;
+        }
+    }
+}
+
+/* ************************************************** */
+s7_pointer buildfile_handle_tetradic_path(s7_scheme *s7,
+                                         struct node_s *bf_node,
+                                         s7_pointer path_args)
+{
+#if defined (DEBUG_TRACE) || defined(DEBUG_PROPERTIES)
+    log_debug("buildfile_handle_tetradic_path: %s",
+              s7_object_to_c_string(s7, path_args));
+#endif
+    /* int op_count = s7_list_length(s7, path_args); */
+    /* log_debug("op count: %d", op_count); */
+
+    s7_pointer op = s7_car(path_args);
+
+    if ( !s7_is_keyword(op) ) {
+        log_error("Path op %s not supported for :build-file nodes",
+                  s7_object_to_c_string(s7, op));
+        exit(EXIT_FAILURE);     /* FIXME */
+    }
+
+    s7_pointer result_list;
+
+
+    s7_pointer op2 = s7_cadr(path_args);
+    s7_pointer op3 = s7_caddr(path_args);
+    s7_pointer op4 = s7_cadddr(path_args);
+
+    /* ******************************** */
+    if (op == KW(targets)) {
+        if (s7_is_symbol(op2)) {
+            if (op3 == KW(count)) {
+                /* e.g. :targets 'cc_test :count */
+                log_error(":count not supported, use length function");
+                return NULL;
+            }
+            if (s7_is_integer(op3)) {
+                if (op4 = KW(bindings)) {
+                    log_debug("bindings_for_target_by_index_from_filtersym");
+                    struct node_s *tgt = sunlark_target_by_index_from_filtersym
+                        (s7, bf_node, s7_symbol_name(op2), s7_integer(op3));
+                    UT_array *bindings = sealark_bindings_for_target(tgt);
+                    return nodelist_to_s7_list(s7, bindings);
+                }
+                log_error("Path op %s not supported following :targets sym int",
+                          s7_object_to_c_string(s7, op3));
+                      /* s7_symbol_name(op)); */
+                    return NULL;
+            }
+            log_error("Path op %s not supported following :targets ~s",
+                      s7_object_to_c_string(s7, op3),
+                      s7_symbol_name(op));
+            return NULL;
+        }
+        /* **************** */
+        if (s7_is_list(s7, op2)) {
+            if (s7_is_integer(op3)) {
+                if (op4 = KW(bindings)) {
+                    log_debug("bindings_for_target_by_index_from_filterlist");
+                    struct node_s *tgt = sunlark_target_by_index_from_filterlist
+                        (s7, bf_node, op2, s7_integer(op3));
+                    /* s7_pointer select_list); */
+                    UT_array *bindings = sealark_bindings_for_target(tgt);
+                    return nodelist_to_s7_list(s7, bindings);
+                }
+            }
+            /* if (op3 == KW(count)) { */
+            /*     log_debug("count_of_targets_from_filterlist"); */
+            /*     return NULL; */
+            /* } */
+            log_error("Path op %s not supported following :targets %s",
+                      s7_object_to_c_string(s7, op3),
+                      s7_symbol_name(op));
+            return(s7_error(s7,
+                            s7_make_symbol(s7, "invalid_argument"),
+                            s7_list(s7, 2, s7_make_string(s7,
+                  "Path op ~A not supported following :targets and filter"),
+                                    op3)));
+            return NULL;
+        }
+        /* **************** */
+        if (s7_is_integer(op2)) {
+            if (op3 == KW(bindings)) {
+                if (s7_is_symbol(op4)) {
+                    log_debug("binding_for_key_from_target_by_index");
+                    errno = 0;
+                    struct node_s *binding
+                        = sealark_binding_for_key_from_target_by_index
+                        (bf_node, s7_integer(op2), s7_symbol_name(op4));
+                    result_list = sunlark_node_new(s7, binding);
+                    return result_list;
+                }
+                if (s7_is_integer(op4)) {
+                    log_debug("binding_by_index_from_target_by_index");
+                    errno = 0;
+                    struct node_s *binding
+                        = sealark_binding_by_index_from_target_by_index
+                        (bf_node, s7_integer(op2), s7_integer(op4));
+                    result_list = sunlark_node_new(s7, binding);
+                    return result_list;
+                }
+            }
+            if (op3 == KW(arg-list)) {
+                log_debug("arg_list_for_target_by_index");
+                errno = 0;
+                struct node_s *arglist = sealark_arglist_for_target_by_index
+                    (bf_node, s7_integer(op2));
+                result_list = nodelist_to_s7_list(s7, arglist->subnodes);
+                return result_list;
+            }
+            if (op3 == KW(rule)) {
+                log_debug("ruleid_for_target_by_index");
+                struct node_s *ruleid = sealark_ruleid_for_target_by_index
+                    (bf_node, s7_integer(op2));
+                /* log_debug("ruleid: %d %s", ruleid->tid, TIDNAME(ruleid)); */
+                return sunlark_node_new(s7, ruleid);
+            }
+            log_error("Not yet supported: %s", s7_object_to_c_string(s7, op3));
+            exit(EXIT_FAILURE);
+        }
+        /* **************** */
+        if (s7_is_string(op2)) {
+            log_error("String arg after :targets not supported; did you mean ':target'?");
+            return(s7_error(s7,
+                            s7_make_symbol(s7, "invalid_argument"),
+                            s7_list(s7, 2, s7_make_string(s7,
+                                                          "String arg \"~A\" after :targets not supported; did you mean ':target'?"),
+                                    op2)));
+        }
+        /* **************** */
+        // op not supported..
+    }
+
+    /* ******************************** */
+    if (op == KW(target)) {
+        if (s7_is_string(op2)) {
+            if (op3 == KW(bindings)) {
+                if (s7_is_symbol(op4)) {
+                    log_debug("binding_for_key_from_bindings_of_target_for_name");
+                    errno = 0;
+                    struct node_s *binding
+                        = sealark_binding_for_key_from_target_for_name(bf_node, s7_string(op2), s7_symbol_name(op4));
+                    return sunlark_node_new(s7, binding);
+                }
+                if (s7_is_integer(op4)) {
+                    log_debug("binding_by_index_from_bindings_of_target_for_name");
+                    errno = 0;
+                    struct node_s *binding
+                        = sealark_binding_by_index_from_target_for_name(bf_node, s7_string(op2), s7_integer(op4));
+                    return sunlark_node_new(s7, binding);
+                    return NULL;
+                }
+            }
+            if (op3 == KW(arg-list)) {
+                log_debug("arg_list_for_target_by_name");
+                errno = 0;
+                struct node_s *arglist = sealark_arglist_for_target_by_name
+                    (bf_node, s7_string(op2));
+                result_list = nodelist_to_s7_list(s7, arglist->subnodes);
+                return result_list;
+            }
+            if (op3 == KW(rule)) {
+                /* log_debug("ruleid_for_target_by_name"); */
+                struct node_s * tgt = sealark_ruleid_for_target_by_name
+                    (bf_node, s7_string(op2));
+                return sunlark_node_new(s7, tgt);
             }
         }
         // only strings after :target
