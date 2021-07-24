@@ -115,6 +115,37 @@ EXPORT void sealark_nodelist2string(UT_array *nodes, UT_string *buffer)
     }
 }
 
+#if EXPORT_INTERFACE
+#define SEALARK_STRTYPE(Q) ((Q & BINARY_STR) &&      \
+                 (Q & RAW_STR))? "br" \
+                : (Q & BINARY_STR)? "b" \
+                : (Q & RAW_STR)? "r" \
+                          : "";
+#endif
+
+EXPORT char *sealark_quote_type(struct node_s *node)
+{
+    char *q;
+    if (node->qtype & SQUOTE) {
+        if (node->qtype & TRIPLE) {
+            q = "'''";
+        } else {
+            q = "'";
+        }
+    } else {
+        if (node->qtype & DQUOTE) {
+            if (node->qtype & TRIPLE) {
+                q = "\"\"\"";
+            } else {
+                q = "\"";
+            }
+        } else {
+            q = "";
+        }
+    }
+    return q;
+}
+
 LOCAL void _node2string(struct node_s *node, UT_string *buffer)
 {
     /* log_debug("_node2string, line %d", line); */
@@ -141,30 +172,9 @@ LOCAL void _node2string(struct node_s *node, UT_string *buffer)
         /*           node->s); */
         if (node->tid == TK_STRING) {
             //FIXME: call ast_node_printable_string?
-            char * br =
-                ((node->qtype & BINARY_STR) &&
-                 (node->qtype & RAW_STR))? "br"
-                : (node->qtype & BINARY_STR)? "b"
-                : (node->qtype & RAW_STR)? "r"
-                : "";
-            char *q;
-            if (node->qtype & SQUOTE) {
-                if (node->qtype & TRIPLE) {
-                    q = "'''";
-                } else {
-                    q = "'";
-                }
-            } else {
-                if (node->qtype & DQUOTE) {
-                    if (node->qtype & TRIPLE) {
-                        q = "\"\"\"";
-                    } else {
-                        q = "\"";
-                    }
-                } else {
-                    q = "";
-                }
-            }
+
+            char * br = SEALARK_STRTYPE(node->qtype);
+            char *q = sealark_quote_type(node);
 
             utstring_printf(buffer,
                             "%s%s%s%s",
