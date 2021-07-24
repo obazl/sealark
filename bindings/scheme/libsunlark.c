@@ -66,7 +66,7 @@ void export_token_tables(s7_scheme *s7)
     /* log_debug("export_token_tables"); */
 
     /* WARNING: token_ct must match the #define ct in syntaxis.h */
-    int token_ct = 137;
+    int token_ct = 136;
     s7_pointer toks = s7_make_vector(s7, (s7_int)token_ct);
     s7_pointer tids = s7_make_hash_table(s7, (s7_int)token_ct);
     int i, j, len;

@@ -9,6 +9,52 @@
 
 #include "expressors.h"
 
+/* returns all toplevel productions: load stmts, targets, etc. */
+EXPORT UT_array *sealark_toplevel(struct node_s *buildfile_node)
+{
+#if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
+    log_debug("sealark_toplevel");
+#endif
+    // :build-file > :stmt-list :smallstmt-list > expr-list > call-expr
+
+    struct node_s *stmt_list = utarray_eltptr(buildfile_node->subnodes, 0);
+    struct node_s *small_list = utarray_eltptr(stmt_list->subnodes, 0);
+    log_debug("small_list child ct: %d",
+              utarray_len(small_list->subnodes));
+
+    // each call_expr is wrapped in expr_list
+
+    /* target_exprs will be freed when gc calls g_destroy_ast_nodelist? */
+    UT_array *target_list;
+    utarray_new(target_list, &node_icd);
+
+    struct node_s *exprs=NULL;
+    struct node_s *target;
+    log_debug("SEARCHING %s (%d), child ct: %d for %s (%d)",
+              TIDNAME(small_list),
+              small_list->tid,
+              utarray_len(small_list->subnodes),
+              token_name[TK_Expr_List][0],
+              TK_Expr_List);
+    int i = 0;
+    while((exprs
+           =(struct node_s*)utarray_next(small_list->subnodes, exprs))) {
+        log_debug("  LOOP (fetch) %d: %s (%d)",
+                  i++, TIDNAME(exprs), exprs->tid);
+        if (exprs->tid == TK_Expr_List) {
+            target = utarray_eltptr(exprs->subnodes, 0);
+            // target is TK_Call_Expr
+            node_s *binding = sealark_target_binding_for_key(target, "name");
+            if (binding) {
+                utarray_push_back(target_list, target);
+            }
+        } else {
+            /* ignore non-targets */
+        }
+    }
+    return target_list;
+}
+
 EXPORT UT_array *sealark_targets_for_buildfile(struct node_s *buildfile_node)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)

@@ -14,8 +14,8 @@ cc_library(
         "debug.h",  # select
         "expressors.c",
         "expressors.h",
-        # "constants.c",
-        # "constants.h",
+        "expressors_load.c",
+        "expressors_load.h",
         "nodes.c",
         "nodes.h",
         "parse.c",
@@ -204,6 +204,7 @@ genrule(
     srcs = [
         # "constants.c",
         "expressors.c",
+        "expressors_load.c",
         "lexis.c",
         "nodes.c",
         "parse.c",
@@ -216,6 +217,7 @@ genrule(
     outs = [
         # "constants.h",
         "expressors.h",
+        "expressors_load.h",
         "lexis.h",
         "nodes.h",
         "parse.h",
@@ -233,6 +235,7 @@ genrule(
         # "    $(locations //vendored/uthash) \\",
         # "    $(location constants.c) \\",
         "    $(location expressors.c) \\",
+        "    $(location expressors_load.c) \\",
         "    $(location lexis.c) \\",
         "    $(location nodes.c) \\",
         "    $(location parse.c) \\",
@@ -251,6 +254,7 @@ genrule(
     srcs = [
         "constants.c",
         "expressors.c",
+        "expressors_load.c",
         "lexis.c",
         "nodes.c",
         "parse.c",
@@ -272,6 +276,7 @@ genrule(
         # "    $(locations //vendored/uthash) \\",
         "    $(location constants.c) \\",
         "    $(location expressors.c) \\",
+        "    $(location expressors_load.c) \\",
         "    $(location lexis.c) \\",
         "    $(location nodes.c) \\",
         "    $(location parse.c) \\",

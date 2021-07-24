@@ -28,10 +28,10 @@ EXPORT const int printable_tokens[] =
 #define TIDNAME(X) (token_name[ X->tid ][0])
 #endif
 
-const int token_ct = 137;
-EXPORT const char *token_name[137][2] =
+const int token_ct = 136;
+EXPORT const char *token_name[136][2] =
     {
-     [TK_ALIAS] = { "TK_ALIAS", "" },
+     /* [TK_ALIAS] = { "TK_ALIAS", "" }, */
      [TK_AMP] = { "TK_AMP", "&" },
      [TK_AMP_EQ] = { "TK_AMP_EQ", "&=" },
      [TK_AND] = { "TK_AND", "and" },

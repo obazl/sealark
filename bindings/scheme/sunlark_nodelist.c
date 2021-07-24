@@ -939,7 +939,12 @@ static void _register_ast_nodelist_fns(s7_scheme *s7)
                              2, 1, true,
                              SUNLARK_NODELIST_REF_SPECIALIZED_HELP,
                              SUNLARK_NODELIST_REF_SPECIALIZED_SIG);
-    s7_define_typed_function(s7, "ast-nodelist-set!", sunlark_nodelist_set_specialized, 3, 0, false, SUNLARK_NODELIST_SET_SPECIALIZED_HELP, SUNLARK_NODELIST_SET_SPECIALIZED_SIG);
+
+    s7_define_typed_function(s7, "ast-nodelist-set!",
+                             sunlark_nodelist_set_specialized,
+                             3, 0, false,
+                             SUNLARK_NODELIST_SET_SPECIALIZED_HELP,
+                             SUNLARK_NODELIST_SET_SPECIALIZED_SIG);
 
     // ast_nodelist-let => s7_c_object_let, a let for the instance not the type
     /* s7_define_safe_function(s7, "sunlark-nodelist-let", sunlark_nodelist_let, 1, 0, false, sunlark_nodelist_let_help); */

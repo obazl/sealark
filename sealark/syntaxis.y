@@ -128,7 +128,7 @@ i.e. only SimpleStmt allowed in BUILD files.
 %token YIELD .
 
 /* token constants used to tag non-terminals */
-%token ALIAS .
+/* %token ALIAS . */
 %token Arg_List .
 %token Binding .
 %token Arg_Star .
@@ -322,7 +322,7 @@ str_assign(ALIAS) ::= ID(Id) EQ(Eq) STRING(S). {
     /* log_trace("  rhs EQ(Eq)"); */
     /* log_trace("  rhs STRING(S)"); */
     ALIAS = calloc(sizeof(struct node_s), 1);
-    ALIAS->tid = TK_ALIAS;
+    ALIAS->tid = TK_Binding;
     ALIAS->line  = Id->line;
     ALIAS->col   = Id->col;
     utarray_new(ALIAS->subnodes, &node_icd);

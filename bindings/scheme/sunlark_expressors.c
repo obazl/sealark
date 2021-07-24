@@ -4,7 +4,7 @@
 #include <math.h>
 
 #include "log.h"
-/* #include "utarray.h" */
+#include "utarray.h"
 
 #include "s7.h"
 
@@ -38,7 +38,8 @@ s7_pointer sunlark_path_for_buildfile(s7_scheme *s7,
 
         if (kw == s7_make_keyword(s7, "load")) {
             // :build-file > :stmt-list :smallstmt-list > load-expr,...
-            result_list = sunlark_fetch_load_stmts(s7, bf_node);
+            UT_array *loads = sealark_loadstmts(bf_node);
+            return nodelist_to_s7_list(s7, loads);
         }
 
         if (kw == s7_make_keyword(s7, "package")) {
@@ -81,45 +82,6 @@ s7_pointer sunlark_path_for_buildfile(s7_scheme *s7,
     } else {
         return sunlark_dispatch(s7, result_list, s7_cdr(path_args));
     }
-}
-
-/*
-  only called with :build-file node
-
- */
-s7_pointer sunlark_fetch_load_stmts(s7_scheme *s7,
-                                    struct node_s *buildfile_node)
-{
-#if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
-    log_debug("sunlark_fetch_load_stmts");
-#endif
-
-    if (buildfile_node->tid != TK_Build_File) {
-        log_warn("property :loads only valid for :build-file nodes");
-        return s7_unspecified(s7);
-    }
-
-    // :build-file > :stmt-list :smallstmt-list > load-stmt,...
-
-    struct node_s *stmt_list = utarray_eltptr(buildfile_node->subnodes, 0);
-    struct node_s *smalllist = utarray_eltptr(stmt_list->subnodes, 0);
-    /* log_debug("smalllist child ct: %d", utarray_len(smalllist->subnodes)); */
-
-    struct node_s *n=NULL;
-
-    /* load_stmts will be freed when gc calls g_destroy_ast_nodelist? */
-    UT_array *load_stmts;
-    utarray_new(load_stmts, &node_icd);
-
-    while( (n=(struct node_s*)utarray_next(smalllist->subnodes, n)) ) {
-        /* log_debug("child %d %s", n->tid, token_name[n->tid][0]); */
-        if (n->tid == TK_Load_Stmt) {
-            utarray_push_back(load_stmts, n);
-        }
-    }
-    /* log_debug("load-stmt ct: %d", utarray_len(load_stmts)); */
-
-    return sunlark_nodelist_new(s7, load_stmts);
 }
 
 /* ******************************** */
