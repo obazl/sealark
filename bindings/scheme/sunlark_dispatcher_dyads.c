@@ -48,11 +48,11 @@ s7_pointer buildfile_handle_dyadic_path(s7_scheme *s7,
             return nodelist_to_s7_list(s7, l);
         }
         if (s7_is_integer(op2)) {
-            log_debug("target_by_index %d", s7_integer(op2));
+            log_debug("target_for_index %d", s7_integer(op2));
             /* struct node_s *n = utarray_eltptr(bf_node->subnodes, */
             /*                                   s7_integer(op)); */
             errno = 0;
-            struct node_s *n = sealark_target_by_index(bf_node,
+            struct node_s *n = sealark_target_for_index(bf_node,
                                                        s7_integer(op2));
             if (n == NULL) {
                 switch(errno) {
@@ -131,7 +131,7 @@ s7_pointer buildfile_handle_dyadic_path(s7_scheme *s7,
         if (s7_is_integer(op2)) {
             log_debug("dyad_int_loads");
             struct node_s *loadstmt
-                = sealark_loadstmt_by_index(bf_node, s7_integer(op2));
+                = sealark_loadstmt_for_index(bf_node, s7_integer(op2));
             return sunlark_node_new(s7, loadstmt);
         }
         if (s7_is_list(s7, op2)) {

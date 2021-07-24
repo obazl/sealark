@@ -46,8 +46,8 @@ s7_pointer buildfile_handle_triadic_path(s7_scheme *s7,
                 return NULL;
             }
             if (s7_is_integer(op3)) {
-                log_debug("target_by_index_from_filtersym");
-                struct node_s *tgt = sunlark_target_by_index_from_filtersym
+                log_debug("target_for_index_from_filtersym");
+                struct node_s *tgt = sunlark_target_for_index_from_filtersym
                     (s7, bf_node, s7_symbol_name(op2), s7_integer(op3));
                      /* s7_pointer select_list); */
                 return sunlark_node_new(s7, tgt);
@@ -60,8 +60,8 @@ s7_pointer buildfile_handle_triadic_path(s7_scheme *s7,
         /* **************** */
         if (s7_is_list(s7, op2)) {
             if (s7_is_integer(op3)) {
-                log_debug("target_by_index_from_filterlist");
-                struct node_s *tgt = sunlark_target_by_index_from_filterlist
+                log_debug("target_for_index_from_filterlist");
+                struct node_s *tgt = sunlark_target_for_index_from_filterlist
                     (s7, bf_node, op2, s7_integer(op3));
                      /* s7_pointer select_list); */
                 return sunlark_node_new(s7, tgt);
@@ -83,24 +83,24 @@ s7_pointer buildfile_handle_triadic_path(s7_scheme *s7,
         /* **************** */
         if (s7_is_integer(op2)) {
             if (op3 == KW(bindings)) {
-                log_debug("bindings_for_target_by_index");
+                log_debug("bindings_for_target_for_index");
                 errno = 0;
-                UT_array *bindings = sealark_bindings_for_target_by_index
+                UT_array *bindings = sealark_bindings_for_target_for_index
                     (bf_node, s7_integer(op2));
                 result_list = nodelist_to_s7_list(s7, bindings);
                 return result_list;
             }
             if (op3 == KW(arg-list)) {
-                log_debug("arglist_for_target_by_index");
+                log_debug("arglist_for_target_for_index");
                 errno = 0;
-                struct node_s *arglist = sealark_arglist_for_target_by_index
+                struct node_s *arglist = sealark_arglist_for_target_for_index
                     (bf_node, s7_integer(op2));
                 result_list = nodelist_to_s7_list(s7, arglist->subnodes);
                 return result_list;
             }
             if (op3 == KW(rule)) {
-                log_debug("ruleid_for_target_by_index");
-                struct node_s *ruleid = sealark_ruleid_for_target_by_index
+                log_debug("ruleid_for_target_for_index");
+                struct node_s *ruleid = sealark_ruleid_for_target_for_index
                     (bf_node, s7_integer(op2));
                 /* log_debug("ruleid: %d %s", ruleid->tid, TIDNAME(ruleid)); */
                 return sunlark_node_new(s7, ruleid);
@@ -125,37 +125,46 @@ s7_pointer buildfile_handle_triadic_path(s7_scheme *s7,
     if (op == KW(target)) {
         if (s7_is_string(op2)) {
             if (op3 == KW(bindings)) {
-                log_debug("bindings_for_target_by_name");
+                log_debug("bindings_for_target_for_name");
                 errno = 0;
-                UT_array *bindings = sealark_bindings_for_target_by_name
+                UT_array *bindings = sealark_bindings_for_target_for_name
                     (bf_node, s7_string(op2));
                 result_list = nodelist_to_s7_list(s7, bindings);
                 return result_list;
             }
             if (op3 == KW(arg-list)) {
-                log_debug("arglist_for_target_by_name");
+                log_debug("arglist_for_target_for_name");
                 errno = 0;
-                struct node_s *arglist = sealark_arglist_for_target_by_name
+                struct node_s *arglist = sealark_arglist_for_target_for_name
                     (bf_node, s7_string(op2));
                 result_list = nodelist_to_s7_list(s7, arglist->subnodes);
                 return result_list;
             }
             if (op3 == KW(rule)) {
-                /* log_debug("ruleid_for_target_by_name"); */
-                struct node_s * tgt = sealark_ruleid_for_target_by_name
+                /* log_debug("ruleid_for_target_for_name"); */
+                struct node_s * tgt = sealark_ruleid_for_target_for_name
                     (bf_node, s7_string(op2));
                 return sunlark_node_new(s7, tgt);
             }
         }
-        // only strings after :target
-        log_error("Only string arg after :target");
-        return(s7_error(s7,
-                        s7_make_symbol(s7, "invalid_argument"),
+        if (op == KW(target)) {
+            log_error("String arg not allowed after :target; did you mean \":targets %d\" ?", s7_integer(op2));
+            return(s7_error(s7,
+                            s7_make_symbol(s7, "invalid_argument"),
                             s7_list(s7, 2, s7_make_string(s7,
-                             "Only string arg allowd after :target; got ~A"),
+                                                          "String arg not allowed after :target; did you mean \":targets ~A\" ?"),
                                     op2)));
-    }
 
+        } else {
+            // only strings after :target
+            log_error("Only string arg after :target");
+            return(s7_error(s7,
+                            s7_make_symbol(s7, "invalid_argument"),
+                            s7_list(s7, 2, s7_make_string(s7,
+                                                          "Only string arg allowd after :target; got ~A"),
+                                    op2)));
+        }
+    }
     /* ******************************** */
     if (op == KW(loads)) {
         if (s7_is_list(s7, op2)) {
@@ -170,13 +179,13 @@ s7_pointer buildfile_handle_triadic_path(s7_scheme *s7,
         }
         if (s7_is_integer(op2)) {
             if (op3 == KW(key)) {
-                log_debug("key_for_load_by_index_from_loads");
+                log_debug("key_for_load_for_index_from_loads");
                 return NULL;
             }
             if (op3 == KW(args)) {
                 log_debug("triad_args_int_loads");
                 struct node_s *load =
-                    sealark_loadstmt_by_index(bf_node, s7_integer(op2));
+                    sealark_loadstmt_for_index(bf_node, s7_integer(op2));
                 UT_array *args =
                     sealark_loadstmt_args(load);
                 return nodelist_to_s7_list(s7, args);

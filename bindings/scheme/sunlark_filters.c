@@ -21,7 +21,7 @@ UT_array *sunlark_targets_from_filterlist(s7_scheme *s7,
                                              s7_pointer filter_list)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_FILTERS)
-    log_debug("sunlark_bf_targets_by_list: %s",
+    log_debug("sunlark_bf_targets_for_list: %s",
               s7_object_to_c_string(s7, filter_list));
 #endif
 
@@ -72,13 +72,13 @@ UT_array *sunlark_targets_from_filterlist(s7_scheme *s7,
 
 /* ******************************************************* */
 //FIXME: most of this code duplicates sunlark_targets_from_filterlist above
-struct node_s *sunlark_target_by_index_from_filterlist(s7_scheme *s7,
+struct node_s *sunlark_target_for_index_from_filterlist(s7_scheme *s7,
                                               struct node_s *bf_node,
                                               s7_pointer filter_list,
                                                            int index)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_FILTERS)
-    log_debug("sunlark_bf_targets_by_list: %s",
+    log_debug("sunlark_bf_targets_for_list: %s",
               s7_object_to_c_string(s7, filter_list));
 #endif
 
@@ -133,13 +133,13 @@ struct node_s *sunlark_target_by_index_from_filterlist(s7_scheme *s7,
 }
 
 /* *************************************************************** */
-struct node_s *sunlark_target_by_index_from_filtersym(s7_scheme *s7,
+struct node_s *sunlark_target_for_index_from_filtersym(s7_scheme *s7,
                                              struct node_s *bf_node,
                                               const char *filtersym,
                                                           int index)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_FILTERS)
-    log_debug("sunlark_target_by_index_from_filtersym: %d, %s",
+    log_debug("sunlark_target_for_index_from_filtersym: %d, %s",
               index, filtersym);
 #endif
 
@@ -196,13 +196,13 @@ struct node_s *sunlark_target_by_index_from_filtersym(s7_scheme *s7,
 }
 
 /* *************************************************************** */
-struct node_s *sunlark_bindings_for_target_by_index_from_filtersym(s7_scheme *s7,
+struct node_s *sunlark_bindings_for_target_for_index_from_filtersym(s7_scheme *s7,
                                              struct node_s *bf_node,
                                                s7_pointer filtersym,
                                                           int index)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_FILTERS)
-    log_debug("sunlark_target_by_index_from_filtersym: %d, %s",
+    log_debug("sunlark_target_for_index_from_filtersym: %d, %s",
               index, s7_symbol_name(filtersym));
 #endif
 

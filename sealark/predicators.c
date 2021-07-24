@@ -128,7 +128,7 @@ EXPORT bool sealark_target_has_binding_key(struct node_s *call_expr,
     /* struct node_s *id; */
     int key_len = strlen(key);
 
-    //FIXME: call _get_binding_by_name_unique
+    //FIXME: call _get_binding_for_name_unique
 
 #if defined(DEBUG_QUERY)
     log_debug("SEARCHING arg_list %d %s, child ct: %d",

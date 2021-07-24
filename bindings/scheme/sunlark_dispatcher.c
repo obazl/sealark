@@ -201,7 +201,7 @@ s7_pointer sunlark_dispatch_on_target(s7_scheme *s7,
             return nodelist_to_s7_list(s7, arg_list->subnodes);
         }
         if (KW(bindings) == op) {
-            UT_array *bindings = sealark_bindings_for_target(target);
+            UT_array *bindings = sealark_target_bindings(target);
             return nodelist_to_s7_list(s7, bindings);
         }
         if (KW(rule) == op) {

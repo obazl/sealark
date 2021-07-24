@@ -54,7 +54,7 @@ struct node_s *sealark_loadstmt_for_name(struct node_s *build_file,
                                                    const char *name)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
-    log_debug("sealark_loadstmt_by_name %s", name);
+    log_debug("sealark_loadstmt_for_name %s", name);
 #endif
 
     /* :call-expr[1] > :call-sfx[1] > :arg-list[0] */
@@ -90,11 +90,11 @@ struct node_s *sealark_loadstmt_for_name(struct node_s *build_file,
 
 /* **************** */
 EXPORT
-struct node_s *sealark_loadstmt_by_index(struct node_s *build_file,
+struct node_s *sealark_loadstmt_for_index(struct node_s *build_file,
                                          int index)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
-    log_debug("sealark_loadstmt_by_index %d", index);
+    log_debug("sealark_loadstmt_for_index %d", index);
 #endif
 
     struct node_s *stmt_list = utarray_eltptr(build_file->subnodes, 0);
@@ -107,7 +107,6 @@ struct node_s *sealark_loadstmt_by_index(struct node_s *build_file,
 
     while( (expr_nd=(struct node_s*)utarray_next(small_list->subnodes,
                                                  expr_nd)) ) {
-        log_debug("xnode %d %s", expr_nd->tid, TIDNAME(expr_nd));
         if (expr_nd->tid == TK_Load_Stmt) {
             if (load_ct == index)
                 return expr_nd;

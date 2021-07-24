@@ -363,7 +363,7 @@ s7_pointer buildfile_handle_pentadic_path(s7_scheme *s7,
                 return NULL;
             }
             if (op3 == KW(arg-list)) {
-                log_debug("arglist_for_load_by_name");
+                log_debug("arglist_for_load_for_name");
                 if (s7_is_integer(op4)) {
                     if (op5 == KW(key)) {
                         log_debug("pentad_key_int_arglist_string_load");
