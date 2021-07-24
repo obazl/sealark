@@ -20,7 +20,7 @@ int   display_bufsz;
 char *display_ptr;
 
 //FIXME: handle large files. use dynamic alloc
-char *sunlark_node_display(s7_scheme *s7, void *value)
+void sunlark_node_display(s7_scheme *s7, void *value, UT_string *buffer)
 {
 #ifdef DEBUG_TRACE
     /* log_debug("sunlark_node_display"); */
@@ -30,89 +30,113 @@ char *sunlark_node_display(s7_scheme *s7, void *value)
 
     // check display_buf size, expand if needed
 
-    char buf[128];
+    /* char buf[128]; */
+    /* UT_string *buf; */
+    /* utstring_new(buf); */
     int len;
 
-    sprintf(buf, "#ast_node<\n");
-    len = strlen(buf);
-    snprintf(display_ptr, len+1, "%s", buf);
-    display_ptr += len;
+    utstring_printf(buffer, "#ast_node<");
+    /* sprintf(buf, "#ast_node<\n"); */
+    /* len = strlen(buf); */
+    /* snprintf(display_ptr, len+1, "%s", buf); */
+    /* display_ptr += len; */
 
-    sprintf(buf, " tid  = %d,\n", nd->tid);
-    len = strlen(buf);
-    snprintf(display_ptr, len+1, "%s", buf);
-    display_ptr += len;
+    utstring_printf(buffer, "tid=%d", nd->tid);
+    /* sprintf(buf, " tid  = %d,\n", nd->tid); */
+    /* len = strlen(buf); */
+    /* snprintf(display_ptr, len+1, "%s", buf); */
+    /* display_ptr += len; */
 
-    sprintf(buf, " tnm  = %s,\n", token_name[nd->tid][0]);
-    len = strlen(buf);
-    snprintf(display_ptr, len+1, "%s", buf);
-    display_ptr += len;
+    utstring_printf(buffer, " tnm=%s", token_name[nd->tid][0]);
+    /* sprintf(buf, " tnm  = %s,\n", token_name[nd->tid][0]); */
+    /* len = strlen(buf); */
+    /* snprintf(display_ptr, len+1, "%s", buf); */
+    /* display_ptr += len; */
 
-    sprintf(buf, " line  = %d,\n", nd->line);
-    len = strlen(buf);
-    snprintf(display_ptr, len+1, "%s", buf);
-    display_ptr += len;
+    utstring_printf(buffer, " line=%d", nd->line);
+    /* sprintf(buf, " line  = %d,\n", nd->line); */
+    /* len = strlen(buf); */
+    /* snprintf(display_ptr, len+1, "%s", buf); */
+    /* display_ptr += len; */
 
-    sprintf(buf, " col   = %d,\n", nd->col);
-    len = strlen(buf);
-    snprintf(display_ptr, len+1, "%s", buf);
-    display_ptr += len;
+    utstring_printf(buffer, " col=%d", nd->col);
+    /* sprintf(buf, " col   = %d,\n", nd->col); */
+    /* len = strlen(buf); */
+    /* snprintf(display_ptr, len+1, "%s", buf); */
+    /* display_ptr += len; */
 
-    sprintf(buf, " trailing_newline = %d,\n", nd->trailing_newline);
-    len = strlen(buf);
-    snprintf(display_ptr, len+1, "%s", buf);
-    display_ptr += len;
+    utstring_printf(buffer, " trailing_newline=%d", nd->trailing_newline);
+    /* sprintf(buf, " trailing_newline = %d,\n", nd->trailing_newline); */
+    /* len = strlen(buf); */
+    /* snprintf(display_ptr, len+1, "%s", buf); */
+    /* display_ptr += len; */
 
     if (nd->tid == TK_STRING) {
-        sprintf(buf, " qtype = #x%#X,\n", nd->qtype);
-        len = strlen(buf);
-        snprintf(display_ptr, len+1, "%s", buf);
-        display_ptr += len;
+        utstring_printf(buffer, " qtype=#x%#X", nd->qtype);
+        /* sprintf(buf, " qtype = #x%#X,\n", nd->qtype); */
+        /* len = strlen(buf); */
+        /* snprintf(display_ptr, len+1, "%s", buf); */
+        /* display_ptr += len; */
     }
 
     if (nd->s) {
-        sprintf(buf, " s     = %s,\n", nd->s);
-        len = strlen(buf);
-        snprintf(display_ptr, len+1, "%s", buf);
-        display_ptr += len;
+        char *br = SEALARK_STRTYPE(nd->qtype);
+        char *q = sealark_quote_type(nd);
+
+        utstring_printf(buffer, " s=%s%s%s%s",
+                        br, q, nd->s, q);
+
+        /* sprintf(buf, " s     = %s,\n", nd->s); */
+        /* len = strlen(buf); */
+        /* snprintf(display_ptr, len+1, "%s", buf); */
+        /* display_ptr += len; */
     }
 
     if (nd->comments) {
-        sprintf(buf, " comments = ");
-        len = strlen(buf);
-        snprintf(display_ptr, len+1, "%s", buf);
-        display_ptr += len;
+        utstring_printf(buffer, " comments= ");
+        /* sprintf(buf, " comments = "); */
+        /* len = strlen(buf); */
+        /* snprintf(display_ptr, len+1, "%s", buf); */
+        /* display_ptr += len; */
 
         /* updates global display_buf */
-        sunlark_nodelist_display(s7, (UT_array*)nd->comments);
+        //FIXME sunlark_nodelist_display(s7, (UT_array*)nd->comments);
 
-        sprintf(buf, ",\n");
-        len = strlen(buf);
-        snprintf(display_ptr, len+1, "%s", buf);
-        display_ptr += len;
+        utstring_printf(buffer, ",");
+        /* sprintf(buf, ",\n"); */
+        /* len = strlen(buf); */
+        /* snprintf(display_ptr, len+1, "%s", buf); */
+        /* display_ptr += len; */
     }
 
     if (nd->subnodes) {
-        sprintf(buf, " subnodes =\n\t");
-        len = strlen(buf);
-        snprintf(display_ptr, len+1, "%s", buf);
-        display_ptr += len;
+        utstring_printf(buffer, "\n  subnodes=[");
+        /* sprintf(buf, " subnodes =\n\t"); */
+        /* len = strlen(buf); */
+        /* snprintf(display_ptr, len+1, "%s", buf); */
+        /* display_ptr += len; */
 
-        /* updates global display_buf */
-        sunlark_nodelist_display(s7, (UT_array*)nd->subnodes);
+        //FIXME sunlark_nodelist_display(s7, (UT_array*)nd->subnodes);
+        struct node_s *subn = NULL;
+        while((subn=(struct node_s*)utarray_next(nd->subnodes,
+                                                 subn))) {
+            sunlark_node_display(s7, subn, buffer);
+        }
 
-        sprintf(buf, ",\n");
-        len = strlen(buf);
-        snprintf(display_ptr, len+1, "%s", buf);
-        display_ptr += len;
+        utstring_printf(buffer, "]");
+        /* sprintf(buf, ",\n"); */
+        /* len = strlen(buf); */
+        /* snprintf(display_ptr, len+1, "%s", buf); */
+        /* display_ptr += len; */
     }
 
-    sprintf(display_ptr - 2, ">,\n");
+    utstring_printf(buffer, ">\n");
+    /* sprintf(display_ptr - 2, ">,\n"); */
     /* len = strlen(buf); */
     /* snprintf(display_ptr, len+1, "%s", buf); */
-    display_ptr++; // -= 1;
+    /* display_ptr++; // -= 1; */
 
-    return display_buf;
+    /* return display_buf; */
 }
 
 /** sunlark_node_display_readably
@@ -135,7 +159,7 @@ char *sunlark_node_display_readably(s7_scheme *s7, void *value)
 
     sprintf(display_ptr++, "(");
 
-    sprintf(buf, "(tid %d) ;; %s\n", nd->tid, token_name[nd->tid][0]);
+   sprintf(buf, "(tid %d) ;; %s\n", nd->tid, token_name[nd->tid][0]);
     len = strlen(buf);
     snprintf(display_ptr, len+1, "%s", buf);
     display_ptr += len;
@@ -176,7 +200,7 @@ char *sunlark_node_display_readably(s7_scheme *s7, void *value)
         display_ptr += len;
 
         /* updates global display_buf */
-        sunlark_nodelist_display_readably(s7, (UT_array*)nd->comments);
+        //FIXME sunlark_nodelist_display_readably(s7, (UT_array*)nd->comments);
 
         /* sprintf(buf, ") ;; end comments\n\n"); */
         sprintf(buf, ")\n");
@@ -192,7 +216,7 @@ char *sunlark_node_display_readably(s7_scheme *s7, void *value)
         display_ptr += len;
 
         /* updates global display_buf */
-        sunlark_nodelist_display_readably(s7, (UT_array*)nd->subnodes);
+        //FIXME sunlark_nodelist_display_readably(s7, (UT_array*)nd->subnodes);
 
         sprintf(buf, ")\n");
         len = strlen(buf);
@@ -253,7 +277,11 @@ s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
                 _list = s7_cdr(_list);
             }
         } else {
-            log_error("Unexpected form for printing, should be c-object or list.");
+            if (s7_is_character(form)) {
+                utstring_printf(buf, "%c", s7_character(form));
+            } else {
+                log_error("Unexpected form for printing, should be c-object or list.");
+            }
         }
     }
 
@@ -360,9 +388,13 @@ s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
 s7_pointer sunlark_node_to_string(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
-    /* log_debug("sunlark_node_to_string"); */
-    /* debug_print_s7(s7, "to_string cdr: ", s7_cdr(args)); */
+    log_debug("sunlark_node_to_string");
+    debug_print_s7(s7, "to_string cdr: ", s7_cdr(args));
 #endif
+
+    UT_string *buffer;
+    utstring_new(buffer);
+
     display_buf = calloc(1, SZDISPLAY_BUF);
     if (display_buf == NULL) {
         log_error("ERROR on calloc");
@@ -379,58 +411,64 @@ s7_pointer sunlark_node_to_string(s7_scheme *s7, s7_pointer args)
     if (s7_is_pair(s7_cdr(args)))
         choice = s7_cadr(args);
     else choice = s7_t(s7);
+
     if (choice == s7_make_keyword(s7, "readable")) {
         memset(display_buf, '\0', SZDISPLAY_BUF);
         display_ptr = (char*)display_buf;
         descr = sunlark_node_display_readably(s7, s7_c_object_value(obj));
     }
-    else descr = sunlark_node_display(s7, s7_c_object_value(obj));
+    else {
+        /* descr = sunlark_node_display(s7, s7_c_object_value(obj)); */
+        sunlark_node_display(s7, s7_c_object_value(obj), buffer);
+    }
 
     /* log_debug("TO_STRING LEN: %d", strlen(descr)); */
-    obj = s7_make_string(s7, descr);
+    obj = s7_make_string(s7, utstring_body(buffer));
+    /* obj = s7_make_string(s7, descr); */
 
-    free(descr); // frees display_buf?
-    display_bufsz = 0;
+    /* free(descr); // frees display_buf? */
+    /* display_bufsz = 0; */
+    utstring_free(buffer);
     return(obj);
 }
 
 /* **************************************************************** */
-s7_pointer sunlark_nodelist_to_string(s7_scheme *s7, s7_pointer args)
-{
-#ifdef DEBUG_TRACE
-    log_debug("sunlark_nodelist_to_string");
-    /* debug_print_s7(s7, "to_string cdr: ", s7_cdr(args)); */
-#endif
-    if (display_bufsz == 0) {
-        display_buf = calloc(1, SZDISPLAY_BUF);
-        if (display_buf == NULL) {
-            log_error("ERROR on calloc");
-            //FIXME cleanup
-            exit(EXIT_FAILURE);
-        } else {
-            display_bufsz = SZDISPLAY_BUF;
-        }
-    }
+/* s7_pointer sunlark_nodelist_to_string(s7_scheme *s7, s7_pointer args) */
+/* { */
+/* #ifdef DEBUG_TRACE */
+/*     log_debug("sunlark_nodelist_to_string"); */
+/*     /\* debug_print_s7(s7, "to_string cdr: ", s7_cdr(args)); *\/ */
+/* #endif */
+/*     if (display_bufsz == 0) { */
+/*         display_buf = calloc(1, SZDISPLAY_BUF); */
+/*         if (display_buf == NULL) { */
+/*             log_error("ERROR on calloc"); */
+/*             //FIXME cleanup */
+/*             exit(EXIT_FAILURE); */
+/*         } else { */
+/*             display_bufsz = SZDISPLAY_BUF; */
+/*         } */
+/*     } */
 
-    display_ptr = display_buf;
+/*     display_ptr = display_buf; */
 
-    s7_pointer obj, choice;
-    char *descr;
-    obj = s7_car(args);
+/*     s7_pointer obj, choice; */
+/*     char *descr; */
+/*     obj = s7_car(args); */
 
-    if (s7_is_pair(s7_cdr(args)))
-        choice = s7_cadr(args);
-    else choice = s7_t(s7);
+/*     if (s7_is_pair(s7_cdr(args))) */
+/*         choice = s7_cadr(args); */
+/*     else choice = s7_t(s7); */
 
-    if (choice == s7_make_keyword(s7, "readable"))
-        descr = sunlark_nodelist_display_readably(s7, s7_c_object_value(obj));
-    else descr = sunlark_nodelist_display(s7, s7_c_object_value(obj));
+/*     if (choice == s7_make_keyword(s7, "readable")) */
+/*         descr = sunlark_nodelist_display_readably(s7, s7_c_object_value(obj)); */
+/*     else descr = sunlark_nodelist_display(s7, s7_c_object_value(obj)); */
 
-    /* printf("sunlark_nodelist_display => %s", descr); */
-    obj = s7_make_string(s7, descr);
+/*     /\* printf("sunlark_nodelist_display => %s", descr); *\/ */
+/*     obj = s7_make_string(s7, descr); */
 
-    /* free(descr); //BUG? FIXME free substruct strings */
-    return(obj);
-}
+/*     /\* free(descr); //BUG? FIXME free substruct strings *\/ */
+/*     return(obj); */
+/* } */
 /* /section: serialization */
 
