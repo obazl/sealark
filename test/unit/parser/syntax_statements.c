@@ -1,7 +1,7 @@
 #include "log.h"
 #include "utarray.h"
 #include "unity.h"
-#include "starlark.h"
+#include "sealark.h"
 
 #include "syntax_statements.h"
 
@@ -146,10 +146,10 @@ void test_simple(void) {
         test_str = simple[i];
         root = sealark_parse_string(test_str);
         utstring_renew(buf);
-        starlark_node2string(root, buf);
+        sealark_node_to_starlark(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
-        node_dtor(root);
+        sealark_node_free(root);
     }
 }
 
@@ -161,10 +161,10 @@ void test_def_stmts(void) {
         test_str = def_stmts[i];
         root = sealark_parse_string(test_str);
         utstring_renew(buf);
-        starlark_node2string(root, buf);
+        sealark_node_to_starlark(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
-        node_dtor(root);
+        sealark_node_free(root);
     }
 }
 
@@ -176,10 +176,10 @@ void test_if_stmts(void) {
         test_str = if_stmts[i];
         root = sealark_parse_string(test_str);
         utstring_renew(buf);
-        starlark_node2string(root, buf);
+        sealark_node_to_starlark(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
-        node_dtor(root);
+        sealark_node_free(root);
     }
 }
 
@@ -191,10 +191,10 @@ void test_for_stmts(void) {
         test_str = for_stmts[i];
         root = sealark_parse_string(test_str);
         utstring_renew(buf);
-        starlark_node2string(root, buf);
+        sealark_node_to_starlark(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
-        node_dtor(root);
+        sealark_node_free(root);
     }
 }
 
@@ -206,10 +206,10 @@ void test_assignments(void) {
         test_str = assignments[i];
         root = sealark_parse_string(test_str);
         utstring_renew(buf);
-        starlark_node2string(root, buf);
+        sealark_node_to_starlark(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
-        node_dtor(root);
+        sealark_node_free(root);
     }
 }
 
@@ -221,10 +221,10 @@ void test_multi_assignments(void) {
         test_str = multi_assignments[i];
         root = sealark_parse_string(test_str);
         utstring_renew(buf);
-        starlark_node2string(root, buf);
+        sealark_node_to_starlark(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
-        node_dtor(root);
+        sealark_node_free(root);
     }
 }
 
@@ -236,10 +236,10 @@ void test_augmented_assignments(void) {
         test_str = augmented_assignments[i];
         root = sealark_parse_string(test_str);
         utstring_renew(buf);
-        starlark_node2string(root, buf);
+        sealark_node_to_starlark(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
-        node_dtor(root);
+        sealark_node_free(root);
     }
 }
 
@@ -251,10 +251,10 @@ void test_load_stmts(void) {
         test_str = load_stmts[i];
         root = sealark_parse_string(test_str);
         utstring_renew(buf);
-        starlark_node2string(root, buf);
+        sealark_node_to_starlark(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
-        node_dtor(root);
+        sealark_node_free(root);
     }
 }
 

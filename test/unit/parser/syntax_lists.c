@@ -1,7 +1,7 @@
 #include "log.h"
 #include "utarray.h"
 #include "unity.h"
-#include "starlark.h"
+#include "sealark.h"
 
 #include "syntax_lists.h"
 
@@ -58,10 +58,10 @@ void test_list_comp(void) {
         test_str = list_comp[i];
         root = sealark_parse_string(test_str);
         utstring_renew(buf);
-        starlark_node2string(root, buf);
+        sealark_node_to_starlark(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
-        node_dtor(root);
+        sealark_node_free(root);
     }
 }
 
@@ -73,10 +73,10 @@ void test_list_expr(void) {
         test_str = list_expr[i];
         root = sealark_parse_string(test_str);
         utstring_renew(buf);
-        starlark_node2string(root, buf);
+        sealark_node_to_starlark(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
-        node_dtor(root);
+        sealark_node_free(root);
     }
 }
 

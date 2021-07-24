@@ -2,10 +2,21 @@ package(default_visibility = ["//visibility:public"])
 
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
 
+load(
+    "@arepo//apkg:afile.bzl",
+    "arg1c", "arg2c", "arg3c",
+    key1c = "val1c",
+    key2c = "val2c",
+    lastkey3c = "lastval3c",
+)
+
+DEFINES = ["DEBUG", "FOO"]
+
 cc_library(
     name = "hello-lib",
     srcs = ["hello-lib.cc", "howdy.cc", "howdy.h"],
     hdrs = ["hello-lib.h"],
+    defines = DEFINES
 )
 
 cc_binary(
@@ -27,6 +38,8 @@ cc_test(
     srcs = ["hello-fail.cc"],
     deps = [":hello-lib"],
 )
+
+a,b = "foo", "bar"  # multiple assignment
 
 filegroup(
     name = "srcs",

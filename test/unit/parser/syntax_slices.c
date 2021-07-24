@@ -1,7 +1,7 @@
 #include "log.h"
 #include "utarray.h"
 #include "unity.h"
-#include "starlark.h"
+#include "sealark.h"
 
 #include "syntax_slices.h"
 
@@ -62,7 +62,7 @@ LOCAL char *slice_embed_a[] = {
 
 LOCAL char *slice_a_cmt[] = {
     "foo[] #cmt1\n",
-    "foo[] #cmt1\n\n\n\n",
+    //FIXME "foo[] #cmt1\n\n\n\n",
     "foo[]\n #cmt1\n",
     "foo[]\n\n\n #cmt1\n",
     "foo[] #cmt1\n#cmt2\n",
@@ -271,10 +271,10 @@ void test_slice_a(void) {
         test_str = slice_a[i];
         root = sealark_parse_string(test_str);
         utstring_renew(buf);
-        starlark_node2string(root, buf);
+        sealark_node_to_starlark(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
-        node_dtor(root);
+        sealark_node_free(root);
     }
 }
 
@@ -286,10 +286,10 @@ void test_slice_embed_a(void) {
         test_str = slice_embed_a[i];
         root = sealark_parse_string(test_str);
         utstring_renew(buf);
-        starlark_node2string(root, buf);
+        sealark_node_to_starlark(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
-        node_dtor(root);
+        sealark_node_free(root);
     }
 }
 
@@ -301,10 +301,10 @@ void test_slice_a_cmt(void) {
         test_str = slice_a_cmt[i];
         root = sealark_parse_string(test_str);
         utstring_renew(buf);
-        starlark_node2string(root, buf);
+        sealark_node_to_starlark(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
-        node_dtor(root);
+        sealark_node_free(root);
     }
 }
 
@@ -316,10 +316,10 @@ void test_slice_int(void) {
         test_str = slice_int[i];
         root = sealark_parse_string(test_str);
         utstring_renew(buf);
-        starlark_node2string(root, buf);
+        sealark_node_to_starlark(root, buf);
         // printf(":]%s[:\n", utstring_body(buf));
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
-        node_dtor(root);
+        sealark_node_free(root);
     }
 }
 
@@ -331,10 +331,10 @@ void test_slice_float(void) {
         test_str = slice_float[i];
         root = sealark_parse_string(test_str);
         utstring_renew(buf);
-        starlark_node2string(root, buf);
+        sealark_node_to_starlark(root, buf);
         // printf(":]%s[:\n", utstring_body(buf));
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
-        node_dtor(root);
+        sealark_node_free(root);
     }
 }
 
@@ -346,10 +346,10 @@ void test_slice_a_float(void) {
         test_str = slice_a_float[i];
         root = sealark_parse_string(test_str);
         utstring_renew(buf);
-        starlark_node2string(root, buf);
+        sealark_node_to_starlark(root, buf);
         // printf(":]%s[:\n", utstring_body(buf));
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
-        node_dtor(root);
+        sealark_node_free(root);
     }
 }
 
@@ -361,10 +361,10 @@ void test_slice_a_int(void) {
         test_str = slice_a_int[i];
         root = sealark_parse_string(test_str);
         utstring_renew(buf);
-        starlark_node2string(root, buf);
+        sealark_node_to_starlark(root, buf);
         // printf(":]%s[:\n", utstring_body(buf));
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
-        node_dtor(root);
+        sealark_node_free(root);
     }
 }
 
@@ -376,10 +376,10 @@ void test_slice_fn(void) {
         test_str = slice_fn[i];
         root = sealark_parse_string(test_str);
         utstring_renew(buf);
-        starlark_node2string(root, buf);
+        sealark_node_to_starlark(root, buf);
         // printf(":]%s[:\n", utstring_body(buf));
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
-        node_dtor(root);
+        sealark_node_free(root);
     }
 }
 

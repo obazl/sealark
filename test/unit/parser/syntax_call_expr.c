@@ -70,7 +70,7 @@ void test_call_a(void) {
         test_str = call_a[i];
         root = sealark_parse_string(test_str);
         utstring_renew(buf);
-        starlark_node2string(root, buf);
+        sealark_node_to_starlark(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         sealark_node_free(root);
@@ -85,7 +85,7 @@ void test_call_rules(void) {
         test_str = call_rules[i];
         root = sealark_parse_string(test_str);
         utstring_renew(buf);
-        starlark_node2string(root, buf);
+        sealark_node_to_starlark(root, buf);
         /* printf(":]%s[:\n", utstring_body(buf)); */
         TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
         sealark_node_free(root);
