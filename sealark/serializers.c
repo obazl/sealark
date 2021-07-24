@@ -97,7 +97,7 @@ EXPORT char *sealark_squeeze_string(UT_string *src)
 
 EXPORT void sealark_node_to_starlark(struct node_s *node, UT_string *buffer)
 {
-    log_debug("sealark_node_to_starlark");
+    /* log_debug("sealark_node_to_starlark"); */
     line = col = 0;
     _node2string(node, buffer);
     if (utstring_body(buffer)[utstring_len(buffer)-1] != '\n') {
@@ -105,7 +105,7 @@ EXPORT void sealark_node_to_starlark(struct node_s *node, UT_string *buffer)
     }
 }
 
-EXPORT void starlark_nodelist2string(UT_array *nodes, UT_string *buffer)
+EXPORT void sealark_nodelist2string(UT_array *nodes, UT_string *buffer)
 {
     /* log_debug("rootlist2string, line %d", line); */
     line = col = 0;

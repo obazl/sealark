@@ -73,19 +73,6 @@ s7_pointer sunlark_parse_string(s7_scheme *s7,
     return sunlark_node2scm(s7, node);
 }
 
-s7_pointer sunlark_nodelist2scm(s7_scheme *s7, UT_array *nodelist, int level)
-{
-#if defined (DEBUG_TRACE) || defined(DEBUG_PARSE)
-    /* log_debug("sunlark_nodelist2scm level %d ct: %d", */
-    /*           level, utarray_len(_nodelist)); */
-#endif
-
-    s7_pointer new_ast_nodelist_s7 = s7_make_c_object(s7,
-                                                      ast_nodelist_t,
-                                                      (void *)nodelist);
-    return new_ast_nodelist_s7;
-}
-
 s7_pointer sunlark_node2scm(s7_scheme *s7, struct node_s *node)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_PARSE)

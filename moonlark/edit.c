@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) // , char **envp)
     }
 
     /* now parse the file using libstarlark */
-    struct parse_state_s *parse_state = starlark_parse_file(build_file);
+    struct parse_state_s *parse_state = sealark_parse_file(build_file);
     /* log_debug("parsed file %s", parse_state->lexer->fname); */
 
     /* convert build file to Lua AST table */
@@ -130,4 +130,6 @@ int main(int argc, char *argv[]) // , char **envp)
 
     /* call callback on (Lua) AST */
     moonlark_call_user_handler(L, callback);
+
+    sealark_parse_state_free(parse_state);
 }

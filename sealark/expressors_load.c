@@ -18,34 +18,35 @@
     > :load, :lparen, :string, :comma, :alias > :id, :eq, :string
    **************************************************************** */
 
-EXPORT UT_array *sealark_loadstmts(struct node_s *buildfile_node)
-{
-#if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
-    log_debug("sunlark_fetch_load_stmts");
-#endif
+//FIXME: don't use this, use sealark_procs_for_id(bf_node, "load");
+/* EXPORT UT_array *sealark_loadstmts(struct node_s *buildfile_node) */
+/* { */
+/* #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY) */
+/*     log_debug("sunlark_fetch_load_stmts"); */
+/* #endif */
 
-    if (buildfile_node->tid != TK_Build_File) {
-        log_warn("property :loads only valid for :build-file nodes");
-        return NULL;
-    }
+/*     if (buildfile_node->tid != TK_Build_File) { */
+/*         log_warn("property :loads only valid for :build-file nodes"); */
+/*         return NULL; */
+/*     } */
 
-    struct node_s *stmt_list = utarray_eltptr(buildfile_node->subnodes, 0);
-    struct node_s *smalllist = utarray_eltptr(stmt_list->subnodes, 0);
+/*     struct node_s *stmt_list = utarray_eltptr(buildfile_node->subnodes, 0); */
+/*     struct node_s *smalllist = utarray_eltptr(stmt_list->subnodes, 0); */
 
-    /* load_stmts will be freed when gc calls g_destroy_ast_nodelist? */
-    UT_array *load_stmts;
-    utarray_new(load_stmts, &node_icd);
+/*     /\* load_stmts will be freed when gc calls g_destroy_ast_nodelist? *\/ */
+/*     UT_array *load_stmts; */
+/*     utarray_new(load_stmts, &node_icd); */
 
-    struct node_s *nd=NULL;
-    while( (nd=(struct node_s*)utarray_next(smalllist->subnodes, nd)) ) {
-        if (nd->tid == TK_Load_Stmt) {
-            utarray_push_back(load_stmts, nd);
-        }
-    }
-    /* log_debug("load-stmt ct: %d", utarray_len(load_stmts)); */
+/*     struct node_s *nd=NULL; */
+/*     while( (nd=(struct node_s*)utarray_next(smalllist->subnodes, nd)) ) { */
+/*         if (nd->tid == TK_Load_Stmt) { */
+/*             utarray_push_back(load_stmts, nd); */
+/*         } */
+/*     } */
+/*     /\* log_debug("load-stmt ct: %d", utarray_len(load_stmts)); *\/ */
 
-    return load_stmts;
-}
+/*     return load_stmts; */
+/* } */
 
 /* **************** */
 EXPORT

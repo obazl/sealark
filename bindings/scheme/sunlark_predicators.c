@@ -50,20 +50,6 @@ bool c_is_sunlark_node(s7_scheme *s7, s7_pointer node_s7)
         return eq;
     } else {
         return s7_f(s7);
-
-        /* if (s7_is_list(s7, node_s7)) { */
-        /*     return s7_c_object_type(s7_car(node_s7)) == ast_node_t; */
-        /* } else { */
-        /*     return false; */
-        /* } */
-        /* log_debug("0  not a cobj"); */
-
-        /* return false; */
-        /* if (s7_is_list(s7, node_s7)) { */
-        /*     return s7_c_object_type(s7_car(node_s7)) == ast_node_t; */
-        /* } else { */
-        /*     return false; */
-        /* } */
     }
 }
 
@@ -72,39 +58,6 @@ bool c_is_sunlark_node(s7_scheme *s7, s7_pointer node_s7)
 #define SUNLARK_IS_NODELIST_HELP "(ast-nodelist? obj) returns #t if obj is a ast_nodelist."
 #define SUNLARK_IS_NODELIST_SIG s7_make_signature(s7, 2, s7_make_symbol(s7, "boolean?"), s7_t(s7))
 #endif
-
-/* called by Scheme 'nodelist?'; internally, use c_is_sunlark_nodelist */
-s7_pointer sunlark_is_nodelist(s7_scheme *s7, s7_pointer node_s7)
-{
-#ifdef DEBUG_TRACE
-    log_debug("sunlark_is_nodelist");
-#endif
-    return s7_make_boolean(s7, c_is_sunlark_nodelist(s7, node_s7));
-}
-
-/* for internal C use (bool); Scheme 'nodelist?' calls sunlark_is_nodelist */
-bool c_is_sunlark_nodelist(s7_scheme *s7, s7_pointer node_s7)
-{
-#ifdef DEBUG_TRACE
-    log_debug("c_is_sunlark_nodelist");
-#endif
-
-    if (s7_is_c_object(node_s7)) {
-        log_debug("nl0 cobj xxxxxxxxxxxxxxxx");
-        bool eq = s7_c_object_type(node_s7) == ast_nodelist_t;
-        log_debug("nl 10 obj t %d, nodlist t %d",
-                  s7_c_object_type(node_s7), ast_nodelist_t);
-        return eq;
-    } else {
-        log_debug("nl 20 xxxxxxxxxxxxxxxx");
-
-        if (s7_is_list(s7, node_s7)) {
-            return s7_c_object_type(s7_car(node_s7)) == ast_nodelist_t;
-        } else {
-            return false;
-        }
-    }
-}
 
 /* **************************************************************** */
 s7_pointer sunlark_is_kw(s7_scheme *s7, char *kw, struct node_s *self)

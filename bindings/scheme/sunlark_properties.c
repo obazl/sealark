@@ -210,9 +210,8 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
 
     if (kw == KW(subnodes)) {
         if (ast_node->subnodes) {
-            s7_pointer new_nodelist
-                = sunlark_nodelist_new(s7, ast_node->subnodes);
-            return new_nodelist;
+            //FIXME
+            return s7_unspecified(s7);
         } else {
             return s7_nil(s7);
         }

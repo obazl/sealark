@@ -81,15 +81,20 @@ int sunlark_node_tid(s7_scheme *s7, s7_pointer node_s7)
         if (c_is_sunlark_node(s7, s7_list(s7, 1, node_s7))) {
             struct node_s *n = s7_c_object_value(node_s7);
             return n->tid;
+        /* } else { */
+        /*     if (c_is_sunlark_nodelist(s7, node_s7)) { */
+        /*         return TK_Node_List; */
+        /*     } else { */
+        /*         return TK_Unspecified; */
+        /*     } */
+        /* } */
         } else {
-            if (c_is_sunlark_nodelist(s7, node_s7)) {
-                return TK_Node_List;
-            } else {
-                return TK_Unspecified;
-            }
+            //FIXME
+            log_error("Found c object that is  not sunlark node");
+            exit(EXIT_FAILURE);
         }
-    } else {
-        //FIXME
+        log_error("Applying tid to non-c-object");
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -331,11 +336,11 @@ static s7_pointer sunlark_node_ref_specialized(s7_scheme *s7, s7_pointer args)
 
     log_debug("get_target");
     /* may return c-objects (node, nodelist) or primitives (s7_integer) */
-    s7_pointer get_target = sunlark_resolve_path(s7, self_s7, params);
-    if (s7_is_c_object(get_target)) {
-        log_debug("get_target tid: %d", sunlark_node_tid(s7, get_target));
-    }
-    return get_target;
+    /* s7_pointer get_target = sunlark_resolve_path(s7, self_s7, params); */
+    /* if (s7_is_c_object(get_target)) { */
+    /*     log_debug("get_target tid: %d", sunlark_node_tid(s7, get_target)); */
+    /* } */
+    /* return get_target; */
 }
 
 /** sunlark_node_object_applicator

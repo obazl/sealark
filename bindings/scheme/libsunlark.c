@@ -116,7 +116,7 @@ EXPORT s7_scheme *sunlark_init(void)
         gc_loc = s7_gc_protect(s7, old_port);
 
     s7_int an_t = configure_s7_ast_node_type(s7);
-    s7_int anl_t = configure_s7_ast_nodelist_type(s7);
+    /* s7_int anl_t = configure_s7_ast_nodelist_type(s7); */
 
     s7_define_function(s7, "error-handler",
                        error_handler, 1, 0, false,
@@ -207,14 +207,14 @@ EXPORT void sunlark_augment_load_path(s7_scheme *s7, char *path)
  */
 EXPORT void sunlark_scm_load_file(s7_scheme *s7, char *scm_file)
 {
-    // log_debug("starlark_scm_load_handlers");
+    // log_debug("sealark_scm_load_handlers");
 
     /* log_debug("loading scm file: %s", default_handler_file_name); */
 }
 
 EXPORT void sunlark_create_token_enums(s7_scheme *s7)
 {
-    /* log_debug("starlark_scm_create_tokens_enum"); */
+    /* log_debug("sealark_scm_create_tokens_enum"); */
 }
 
 /*

@@ -247,7 +247,7 @@ struct node_s *_remove_attr_list_all(s7_scheme *s7,
                                      struct node_s *expr_list)
 {
 #if defined(DEBUG_TRACE) || defined(DEBUG_ATTR)
-    log_debug("_replace_attr_list_all, tid: %d", expr_list->tid);
+    log_debug("_remove_attr_list_all, tid: %d", expr_list->tid);
 #endif
 
     utarray_clear(expr_list->subnodes);
@@ -474,7 +474,7 @@ struct node_s *_update_list_value(s7_scheme *s7,
         exit(EXIT_FAILURE);
     }
 
-    /* :named_arg structure: */
+    /* :binding structure: */
     /*   child[0] = '[', child[1] = expr_list, child[2] = ']'*/
     struct node_s *expr_list = utarray_eltptr(list_expr_node->subnodes, 1);
 

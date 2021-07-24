@@ -62,11 +62,11 @@ EXPORT void parser_free(parse_state_s *parser)
     sealark_node_free(parser->root);
 }
 
-EXPORT UT_array *starlark_lex_string(const char *buffer)
+EXPORT UT_array *sealark_lex_string(const char *buffer)
 {
     log_set_quiet(false);
 
-    /* log_info("starlark_lex_string:\n%s", buffer); */
+    /* log_info("sealark_lex_string:\n%s", buffer); */
 
     UT_array *token_list;
     utarray_new(token_list, &node_icd);
@@ -100,7 +100,7 @@ EXPORT UT_array *starlark_lex_string(const char *buffer)
     return token_list;
 }
 
-EXPORT UT_array *starlark_lex_file(char *fname)
+EXPORT UT_array *sealark_lex_file(char *fname)
 {
     log_set_quiet(false);
 

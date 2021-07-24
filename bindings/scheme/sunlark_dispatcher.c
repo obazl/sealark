@@ -68,7 +68,6 @@ s7_pointer sunlark_dispatch_on_buildfile(s7_scheme *s7,
               s7_object_to_c_string(s7, path_args));
 #endif
     struct node_s *bf_node = s7_c_object_value(data);
-
     if (bf_node->tid != TK_Build_File) {
         log_error("Expected node tid %d, got %d %s", TK_Build_File,
                   bf_node->tid, TIDNAME(bf_node));
