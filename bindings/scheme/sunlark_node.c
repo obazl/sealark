@@ -652,8 +652,10 @@ static s7_pointer sunlark_node_set_specialized(s7_scheme *s7, s7_pointer args)
     s7_pointer update_val = s7_car(params);
     params = s7_reverse(s7, s7_cdr(params));
 
-    s7_pointer set_target = sunlark_resolve_path(s7, self, params);
+    /* s7_pointer set_target = sunlark_resolve_path(s7, self, params); */
 
+    s7_pointer resolved_path = sunlark_dispatch(s7, self, params);
+    return resolved_path;
     /* log_debug("set_target: %s", s7_object_to_c_string(s7, set_target)); */
     /* log_debug("update_val: %s", s7_object_to_c_string(s7, update_val)); */
 

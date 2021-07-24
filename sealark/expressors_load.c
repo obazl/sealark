@@ -186,3 +186,33 @@ UT_array *sealark_loadstmt_bindings(struct node_s *load_stmt)
     }
     return args;
 }
+
+/* **************** */
+EXPORT
+struct node_s *sealark_loadstmt_binding_for_index(struct node_s *load_stmt,
+                                                  int index)
+{
+#if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
+    log_debug("sealark_loadstmt_binding_for_index: %d", index);
+#endif
+
+    struct node_s *binding=NULL;
+
+    UT_array *args;
+    utarray_new(args, &node_icd);
+
+    int ct = 0;
+
+    while( (binding=(struct node_s*)utarray_next(load_stmt->subnodes,
+                                                 binding)) ) {
+        log_debug("binding[%d] %d %s",
+                  ct, binding->tid, TIDNAME(binding));
+
+        if (binding->tid == TK_Binding) {
+            if (ct == index)
+                return binding;
+            ct++;
+        }
+    }
+    return NULL;
+}
