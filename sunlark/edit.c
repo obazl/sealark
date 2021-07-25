@@ -20,7 +20,7 @@
 
 #include "s7.h"
 
-/* #include "sunlark.h" */
+#include "sunlark.h"
 #include "edit.h"
 
 UT_string *build_file;

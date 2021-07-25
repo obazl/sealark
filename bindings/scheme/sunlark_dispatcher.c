@@ -50,6 +50,26 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
         return sunlark_dispatch_on_target(s7, data, path_args);
         break;
 
+    case TK_Binding:
+        log_debug("dispatching on TK_Binding");
+        return sunlark_dispatch_on_binding(s7, data, path_args);
+        break;
+
+    case TK_ID:
+        log_debug("dispatching on TK_ID");
+        return sunlark_dispatch_on_id(s7, data, path_args);
+        break;
+
+    case TK_STRING:
+        log_debug("dispatching on TK_STRING");
+        return sunlark_dispatch_on_string(s7, data, path_args);
+        break;
+
+    case TK_List_Expr:          /* e.g. as binding value */
+        log_debug("dispatching on TK_List_Expr");
+        return sunlark_dispatch_on_vector(s7, data, path_args);
+        break;
+
     default:
         /* common properties work for any tid */
         return sunlark_dispatch_on_any(s7, data, path_args);
@@ -265,6 +285,108 @@ s7_pointer sunlark_dispatch_on_target(s7_scheme *s7,
 
 }
 
+/* **************** */
+LOCAL s7_pointer sunlark_dispatch_on_string(s7_scheme *s7,
+                                         s7_pointer node,
+                                         s7_pointer path_args)
+{
+#if defined (DEBUG_TRACE) || defined(DEBUG_PROPERTIES)
+    log_debug("sunlark_dispatch_on_string: %s",
+              s7_object_to_c_string(s7, path_args));
+#endif
+
+    int op_count = s7_list_length(s7, path_args);
+    log_debug("op count: %d", op_count);
+
+    if (op_count > 1) {
+        //error, :s, :tid etc. allowed
+        log_error("FIXME, only one op allowed here");
+    }
+
+    s7_pointer kw = s7_car(path_args);
+
+    s7_pointer result = sunlark_common_property_lookup(s7,
+                                                       s7_c_object_value(node),
+                                                       kw);
+    return result;
+}
+
+/* **************** */
+LOCAL s7_pointer sunlark_dispatch_on_id(s7_scheme *s7,
+                                         s7_pointer node,
+                                         s7_pointer path_args)
+{
+#if defined (DEBUG_TRACE) || defined(DEBUG_PROPERTIES)
+    log_debug("sunlark_dispatch_on_id: %s",
+              s7_object_to_c_string(s7, path_args));
+#endif
+
+    int op_count = s7_list_length(s7, path_args);
+    log_debug("op count: %d", op_count);
+
+    if (op_count > 1) {
+        //error, :s, :tid etc. allowed
+        log_error("FIXME, only one op allowed here");
+    }
+
+    s7_pointer kw = s7_car(path_args);
+
+    s7_pointer result = sunlark_common_property_lookup(s7,
+                                                       s7_c_object_value(node),
+                                                       kw);
+    return result;
+}
+
+/* **************** */
+LOCAL s7_pointer sunlark_dispatch_on_vector(s7_scheme *s7,
+                                            s7_pointer data,
+                                            s7_pointer path_args)
+{
+#if defined (DEBUG_TRACE) || defined(DEBUG_PROPERTIES)
+    log_debug("sunlark_dispatch_on_vector: %s",
+              s7_object_to_c_string(s7, path_args));
+#endif
+
+    debug_print_ast_outline(s7_c_object_value(data), 0);
+
+    int op_count = s7_list_length(s7, path_args);
+    log_debug("op count: %d", op_count);
+
+    /* vector ops:  int index, ? :print, :tid, etc. */
+    if (op_count > 1) {
+        //error, :s, :tid etc. allowed
+        log_error("FIXME, only one op allowed here");
+    }
+
+    // :list-expr > :lbrack, :expr-list, :rbrack
+    //  :expr-list > :string, :comma, etc.
+    struct node_s *list_expr = s7_c_object_value(data);
+    struct node_s *vector = utarray_eltptr(list_expr->subnodes, 1);
+    log_debug("vector tid %d %s", vector->tid, TIDNAME(vector));
+    s7_pointer op = s7_car(path_args);
+
+    if (s7_is_integer(op)) {
+        int idx = s7_integer(op);
+        int len = utarray_len(vector->subnodes);
+        if (idx > len) {
+            log_error("index out of bounds: % > %", idx, len);
+            return NULL;
+        }
+        struct node_s *val
+            = utarray_eltptr(vector->subnodes, s7_integer(op));
+        log_debug("0 val %p", val);
+        log_debug("vector at %d: %d %s", idx,
+                  val->tid, TIDNAME(val));
+
+        return sunlark_node_new(s7, val);
+    } else {
+        s7_pointer result
+            = sunlark_common_property_lookup(s7, vector, op);
+        return result;
+    }
+}
+
+/* **************** */
 LOCAL s7_pointer sunlark_dispatch_on_any(s7_scheme *s7,
                                          s7_pointer node,
                                          s7_pointer path_args)
@@ -274,9 +396,16 @@ LOCAL s7_pointer sunlark_dispatch_on_any(s7_scheme *s7,
               s7_object_to_c_string(s7, path_args));
 #endif
 
+    log_debug("path args is list? %d", s7_is_list(s7, path_args));
+    log_debug("path args is kw? %d", s7_is_keyword(path_args));
+    log_debug("path args is sym? %d", s7_is_symbol(path_args));
+    log_debug("path args is string? %d", s7_is_string(path_args));
+
+    //FIXME: constraints on path_args
+
     /* should be only one path arg? */
     s7_pointer result = sunlark_common_property_lookup(s7,
                                                        s7_c_object_value(node),
-                                                       s7_car(path_args));
+                                                       path_args);
     return result;
 }

@@ -11,6 +11,9 @@ cc_test(
         "buildfile_expressors.c",
         "buildfile_expressors.h",
     ],
+    data = [
+        "//test/data/cc:BUILD.test"
+    ],
     copts = select({
         "//bzl/host:macos": ["-std=c11"],
         "//bzl/host:linux": ["-std=gnu11"],

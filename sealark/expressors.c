@@ -365,33 +365,30 @@ struct node_s *sealark_target_for_name(struct node_s *build_file,
 /*     return NULL; */
 /* } */
 
-/* ******************************** */
-/* returns only bindings (TK_Named_Arg) in a new UT_array */
-/* **************************************************************** */
-EXPORT UT_array *sealark_target_bindings(struct node_s *target)
-/* EXPORT UT_array *sealark_bindings_for_target(struct node_s *call_expr) */
-{
-#if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
-    log_debug("sealark_target_bindings");
-#endif
+/* EXPORT UT_array *sealark_target_bindings(struct node_s *target) */
+/* /\* EXPORT UT_array *sealark_bindings_for_target(struct node_s *call_expr) *\/ */
+/* { */
+/* #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY) */
+/*     log_debug("sealark_target_bindings"); */
+/* #endif */
 
-    log_debug("target tid: %d %s", target->tid, TIDNAME(target));
+/*     log_debug("target tid: %d %s", target->tid, TIDNAME(target)); */
 
-    /* :call-expr[1] => :call-sfx[1] => :arg-list */
-    struct node_s *call_sfx = utarray_eltptr(target->subnodes, 1);
-    struct node_s *arg_list = utarray_eltptr(call_sfx->subnodes, 1);
+/*     /\* :call-expr[1] => :call-sfx[1] => :arg-list *\/ */
+/*     struct node_s *call_sfx = utarray_eltptr(target->subnodes, 1); */
+/*     struct node_s *arg_list = utarray_eltptr(call_sfx->subnodes, 1); */
 
-    UT_array *attribs;
-    utarray_new(attribs, &node_icd);
+/*     UT_array *attribs; */
+/*     utarray_new(attribs, &node_icd); */
 
-    struct node_s *nd=NULL;
-    while( (nd=(struct node_s*)utarray_next(arg_list->subnodes, nd)) ) {
-        if (nd->tid == TK_Binding)
-            utarray_push_back(attribs, nd);
-    }
-    log_debug("found %d bindings (named args)", utarray_len(attribs));
-    return attribs;
-}
+/*     struct node_s *nd=NULL; */
+/*     while( (nd=(struct node_s*)utarray_next(arg_list->subnodes, nd)) ) { */
+/*         if (nd->tid == TK_Binding) */
+/*             utarray_push_back(attribs, nd); */
+/*     } */
+/*     log_debug("found %d bindings (named args)", utarray_len(attribs)); */
+/*     return attribs; */
+/* } */
 
 /* ******************************** */
 /* returns TK_Arg_List node of all args */

@@ -360,28 +360,37 @@ EXPORT int sealark_kw_to_tid(char *kw)
     char tag[128];
     sprintf(tag, "TK-%s", kw);
 
-    int len = strlen(tag);
-    tag[3] = toupper(tag[3]);
-    /* to camel_case */
-    for (int j = 0; j < len; j++) {
-        if (tag[j-1] == '-')
-            tag[j] = toupper(tag[j]);
+    /* tokens for strings and identifiers are special cased */
+    if (strcmp(kw, "string") == 0 && strlen(kw) == 6) {
+        sprintf(tag, "TK-STRING");
+    } else {
+        if (strcmp(kw, "id") == 0 && strlen(kw) == 2) {
+            sprintf(tag, "TK-ID");
+        } else {
+            int len = strlen(tag);
+            tag[3] = toupper(tag[3]);
+            /* to camel_case */
+            for (int j = 0; j < len; j++) {
+                if (tag[j-1] == '-')
+                    tag[j] = toupper(tag[j]);
+            }
+        }
     }
     log_debug("sealark_kw_to_tid: %s", tag);
 
     /* the C names use _ but scheme uses - so we have to convert */
     /* fix me: make a static table so we don't have to do all this computing */
     char workbuf[64];
-    int j;
+    int j, len;
     for(int i = 1; i < token_ct; i++) {
-        /* log_debug("tag: %s, toknm: %s", tag, token_name[i][0]); */
+        log_debug("tag: %s, toknm: %s", tag, token_name[i][0]);
         if (token_name[i][0] == NULL) return -1;
         len = strlen(token_name[i][0]) + 1; /* add one for \0 */
         strncpy(workbuf, token_name[i][0], len);
         for(j=0; j < len; j++) if (workbuf[j] == '_') workbuf[j] = '-';
-        /* log_debug("CONVERTED TAGSTRING: %s", workbuf); */
+        log_debug("CONVERTED TAGSTRING: %s", workbuf);
         if ( strncmp(tag, workbuf, len) == 0 ) {
-            /* log_debug("MATCH %d", i); */
+            log_debug("MATCH %d", i);
             return i;
         }
     }

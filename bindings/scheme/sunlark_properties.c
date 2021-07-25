@@ -174,7 +174,7 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
     }
 
     /* "real" bindings, corresponding to fields in the struct */
-    if (kw == kw_tid) { //KW(tid)) {
+    if (kw == KW(tid)) {
         log_debug("tid: %d", ast_node->tid);
         return s7_make_integer(s7, ast_node->tid);
     }
@@ -191,8 +191,13 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
         return s7_make_string(s7, s);
     }
 
-    /* if (kw == KW(line)) */
-    if (kw == kw_line)
+    if (kw == KW(node-type)) {
+        log_debug("node-type: %d", ast_node->tid);
+        char *s = sealark_tid_to_string(ast_node->tid);
+        return s7_make_keyword(s7, s);
+    }
+
+    if (kw == KW(line))
         return s7_make_integer(s7, ast_node->line);
 
     if (kw == KW(col))
@@ -227,7 +232,9 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
     s7_pointer sym = s7_keyword_to_symbol(s7, kw);
     char *key = (char*)s7_symbol_name(sym);
     if (strrchr(key, '?') - key == strlen(key)-1 ) {
-        return sunlark_is_kw(s7, key, ast_node);
+        s7_pointer is = sunlark_is_kw(s7, key, ast_node);
+        log_debug("is? %d", s7_object_to_c_string(s7, is));
+        return is;
         /* if (is_p == s7_f(s7)) { */
         /*     return is_p; */
         /* } else { */

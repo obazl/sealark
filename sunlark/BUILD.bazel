@@ -90,10 +90,10 @@ genrule(
     name = "mkhdrs",
     srcs = [
         "edit.c",
-        "//bindings/scheme:libsunlark.c",
+        # "//bindings/scheme:libsunlark.c",
         "//bazel:bazel_config.c",
         # "//sealark:mkhdrs-export",
-        "//bindings/scheme:mkhdrs-export",
+        # "//bindings/scheme:mkhdrs-export",
     ],
     outs = [
         "edit.h",
@@ -102,8 +102,8 @@ genrule(
         "SRC1=$(location edit.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "$(location //vendored/makeheaders) \\",
-        "    $(location //bindings/scheme:libsunlark.c) \\",
-        "    $(location //bindings/scheme:mkhdrs-export) \\",
+        # "    $(location //bindings/scheme:libsunlark.c) \\",
+        # "    $(location //bindings/scheme:mkhdrs-export) \\",
         "    $(location //bazel:bazel_config.c) \\",
         # "    $(location //sealark:mkhdrs-export) \\",
         "    $(location edit.c)",

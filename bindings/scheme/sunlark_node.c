@@ -68,7 +68,7 @@ void debug_print_s7(s7_scheme *s7, char *label, s7_pointer obj);
 #define NODE_TID (NODE_S7) ((s7_c_object_value(s7, NODE_S7)->tid;))
 
 /* arg may be a node or a nodelist */
-int sunlark_node_tid(s7_scheme *s7, s7_pointer node_s7)
+EXPORT int sunlark_node_tid(s7_scheme *s7, s7_pointer node_s7)
 {
     if (s7_is_c_object(node_s7))
 #ifdef DEBUG_TID
@@ -382,9 +382,15 @@ s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
 #endif
 
     s7_pointer rest = s7_cdr(args);
-    if (s7_is_null(s7, rest))
-        return(s7_wrong_type_arg_error(s7, "ast-node-fn",
-                                       1, rest, "missing keyword arg"));
+    /* if (s7_is_null(s7, rest)) */
+    /*     //FIXME: err msg depends on data type of car */
+    /*     if (sunlark_node_tid(s7, s7_car(args)) == TK_Binding) { */
+    /*         return(s7_wrong_type_arg_error(s7, "node applicator", */
+    /*                                        1, rest, ":key or :value")); */
+    /*     } else { */
+    /*         return(s7_wrong_type_arg_error(s7, "node applicator", */
+    /*                                        1, rest, "non-nil")); */
+    /*     } */
 
     s7_pointer self_s7 = s7_car(args);
     s7_pointer params = s7_cdr(args);

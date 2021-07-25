@@ -163,7 +163,7 @@ genrule(
         "sunlark_properties.c",
         "sunlark_serializers.c",
         "//bazel:bazel_config.c",
-        "//sealark:mkhdrs-export",
+        # "//sealark:sealark.h", ## mkhdrs-export",
         "//vendored/uthash:utarray.h",
     ],
     outs = [
@@ -175,7 +175,7 @@ genrule(
         "$(location //vendored/makeheaders) -H \\",
         "    $(locations //vendored/uthash:utarray.h) \\",
         "    $(location //bazel:bazel_config.c) \\",
-        "    $(location //sealark:mkhdrs-export) \\",
+        # "    $(location //sealark:sealark.h) \\",
         "    $(location libsunlark.c) \\",
         "    $(location sunlark_bindings.c) \\",
         "    $(location sunlark_dispatcher.c) \\",

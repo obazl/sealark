@@ -24,7 +24,7 @@
 
 #include "parse.h"
 
-UT_string *build_file;
+/* UT_string *build_file; */
 
 int line;
 int col;
@@ -347,4 +347,10 @@ EXPORT struct parse_state_s *sealark_parse_file(const char *fname)
 
     free(buffer);
     return parse_state;
+}
+
+EXPORT void sealark_parse_state_free(struct parse_state_s *ps)
+{
+    //FIXME: implement
+    log_warn("sealark_parse_state_free NOT YET IMPLEMENTED");
 }

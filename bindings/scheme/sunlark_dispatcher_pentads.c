@@ -152,16 +152,10 @@ s7_pointer buildfile_handle_pentadic_path(s7_scheme *s7,
                     /* same as prev sym op4 */
                     if (op5 == KW(key)) {
                         log_debug("pentad_key_sym_binding_string_target");
-                        /* struct node_s *binding */
-                        /*     = sealark_key_sym_bindings_string_target(bf_node, s7_string(op2), s7_symbol_name(op4)); */
-                        /* return sunlark_node_new(s7, binding); */
                         return NULL;
                     }
                     if (op5 == KW(value)) {
                         log_debug("pentad_val_sym_binding_string_target");
-                        /* struct node_s *binding */
-                        /*     = sealark_val_sym_bindings_string_target(bf_node, s7_string(op2), s7_symbol_name(op4)); */
-                        /* return sunlark_node_new(s7, binding); */
                         return NULL;
                     }
                     log_error("Fifth path op %s not supported here.",

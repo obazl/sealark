@@ -16,6 +16,80 @@
 #define ESUNLARK_ARG_TYPE_ERR -2
 #define ESUNLARK_LOCN_ARG_ERR -3
 
+/* ******************************** */
+/* binding accepts :key, :value
+       :value optionally followed by int index
+ */
+s7_pointer sunlark_dispatch_on_binding(s7_scheme *s7,
+                                      s7_pointer _binding,
+                                      s7_pointer path_args)
+{
+#if defined (DEBUG_TRACE) || defined(DEBUG_PROPERTIES)
+    log_debug("sunlark_dispatch_on_binding: %s",
+              s7_object_to_c_string(s7, path_args));
+#endif
+
+    struct node_s *binding = s7_c_object_value(_binding);
+
+    if (binding->tid != TK_Binding) {
+        log_error("Expected node tid %d, got %d %s", TK_Binding,
+                  binding->tid, TIDNAME(binding));
+        exit(EXIT_FAILURE);     /* FIXME */
+    }
+
+    int op_count = s7_list_length(s7, path_args);
+    s7_pointer op = s7_car(path_args);
+
+    struct node_s *tmp_node;
+
+    s7_pointer result_list;
+
+    switch(op_count) {
+    case 0:
+        //FIXME: should we support (binding) and just return the binding?
+        log_error("not enough path steps");
+        return(s7_wrong_type_arg_error(s7, "node type :binding applicator:",
+                                       1, path_args, ":key or :value"));
+    case 1:
+        if (KW(key) == op) {
+            tmp_node = utarray_eltptr(binding->subnodes, 0);
+            return sunlark_node_new(s7, tmp_node);
+        }
+        if (KW(value) == op) {
+            tmp_node = utarray_eltptr(binding->subnodes, 2);
+            return sunlark_node_new(s7, tmp_node);
+        }
+        /* common properties */
+        s7_pointer result = sunlark_common_property_lookup(s7, binding, op);
+        if (result) return result;
+
+        log_error("dispatch on %s for binding not yet implemented",
+                  s7_object_to_c_string(s7, op));
+        break;
+    case 2:
+        // :bindings 'sym -- returns node for binding with name sym
+        // :bindings :count
+        break;
+    default:
+        log_error("too many path steps");
+        exit(EXIT_FAILURE);     /* FIXME */
+    }
+
+
+    // obsol
+    /* tmp = sunlark_target_property_lookup(s7, */
+    /*                                      s7_c_object_value(self), */
+    /*                                      path_arg); */
+    /* if (s7_is_c_object(tmp)) { */
+    /*     self = tmp; */
+    /*     self_tid = sunlark_node_tid(s7, tmp); */
+    /* } else { */
+    /*     return tmp; */
+    /* } */
+
+}
+
+/* **************************************************************** */
 struct node_s *sunlark_get_attrs_list(s7_scheme *s7,
                                       struct node_s *target_node)
 {

@@ -89,7 +89,7 @@ s7_pointer sunlark_is_kw(s7_scheme *s7, char *kw, struct node_s *self)
     }
 
     int tokid = sealark_kw_to_tid(buf);
-    /* log_debug("kw to tid: %d", tokid); */
+    log_debug("kw to tid: %d", tokid);
     if (tokid < 0) {
         return s7_f(s7);
     }
