@@ -8,7 +8,7 @@
 #include "sealark.h"
 #include "sunlark.h"
 
-#include "bindings.h"
+#include "definitions.h"
 
 UT_string *buf;
 UT_string *test_s;

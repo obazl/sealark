@@ -38,12 +38,44 @@ DEPS = [
 test_suite(
     name = "sunlark",
     tests = [
+        ":bindings",
+        ":definitions",
+        ":loads",
+        ":targets",
+        ":tetrads"
     ])
 
 cc_test(
     name = "bindings",
     srcs = ["bindings.c", "bindings.h"],
-    data = [":BUILD.paths_tetradic"],
+    data = [":BUILD.test1"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
+    name = "definitions",
+    srcs = ["definitions.c", "definitions.h"],
+    data = [":BUILD.test1"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
+    name = "loads",
+    srcs = ["loads.c", "loads.h"],
+    data = [":BUILD.test1"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
+    name = "targets",
+    srcs = ["targets.c", "targets.h"],
+    data = [":BUILD.test1"],
     copts = COPTS,
     deps = DEPS,
     linkstatic = 1
@@ -52,7 +84,7 @@ cc_test(
 cc_test(
     name = "tetrads",
     srcs = ["paths_tetradic.c", "paths_tetradic.h"],
-    data = [":BUILD.paths_tetradic"],
+    data = [":BUILD.test1"],
     copts = COPTS,
     deps = DEPS,
     linkstatic = 1
@@ -64,11 +96,17 @@ genrule(
     srcs = [
         "//sealark:debug.c",
         "bindings.c",
+        "definitions.c",
+        "loads.c",
         "paths_tetradic.c",
+        "targets.c",
     ],
     outs = [
         "bindings.h",
+        "definitions.h",
+        "loads.h",
         "paths_tetradic.h",
+        "targets.h",
     ],
     cmd = "\n".join([
         "SRC1=$(location paths_tetradic.c)",
@@ -76,7 +114,10 @@ genrule(
         "$(location //vendored/makeheaders) \\",
         "    $(location //sealark:debug.c) \\",
         "    $(location bindings.c) \\",
-        "    $(location paths_tetradic.c)",
+        "    $(location definitions.c) \\",
+        "    $(location loads.c) \\",
+        "    $(location paths_tetradic.c) \\",
+        "    $(location targets.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),
     tools = ["//vendored/makeheaders"],

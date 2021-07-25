@@ -277,10 +277,24 @@ s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
                 _list = s7_cdr(_list);
             }
         } else {
-            if (s7_is_character(form)) {
-                utstring_printf(buf, "%c", s7_character(form));
+            if (s7_is_string(form)) {
+                utstring_printf(buf, "%s", s7_string(form));
             } else {
-                log_error("Unexpected form for printing, should be c-object or list.");
+                if (s7_is_character(form)) {
+                    utstring_printf(buf, "%c", s7_character(form));
+                } else {
+                    if (s7_is_number(form)) {
+                        utstring_printf(buf, "%s", s7_number_to_string(s7,form,10));
+                    } else {
+                        if (s7_is_keyword(form)) {
+                            s7_pointer sym = s7_keyword_to_symbol(s7,form);
+                            utstring_printf(buf, "%s",
+                                            s7_symbol_name(form));
+                        } else {
+                            log_error("Unexpected form for printing, should be c-object or list.");
+                        }
+                    }
+                }
             }
         }
     }

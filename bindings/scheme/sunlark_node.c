@@ -10,7 +10,12 @@
 #include "sunlark_node.h"
 
 /* exported s7 c-types */
-s7_int ast_node_t = 0;
+
+s7_int ast_node_t;
+
+#if EXPORT_INTERFACE
+#define AST_NODE_T ast_node_t
+#endif
 
 static s7_pointer sunlark_node_methods_let;
 

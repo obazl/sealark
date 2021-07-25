@@ -255,6 +255,10 @@ s7_pointer sunlark_dispatch_on_target(s7_scheme *s7,
             struct node_s *id=sealark_ruleid_for_target(target);
             return sunlark_node_new(s7, id);
         }
+        if (KW(name) == op) {
+            struct node_s *id=sealark_target_name(target);
+            return sunlark_node_new(s7, id);
+        }
         /* common properties */
         s7_pointer result = sunlark_common_property_lookup(s7, target, op);
         if (result) return result;

@@ -27,11 +27,11 @@ void tearDown(void) {
 void test_target_for_index(void) {
     // (:targets 1 :bindings))
     struct node_s *target = sealark_target_for_index(ast, 0);
-    TEST_ASSERT_EQUAL_INT(4, sealark_target_bindings_ct(target));
+    TEST_ASSERT_EQUAL_INT(4, sealark_target_bindings_count(target));
     TEST_ASSERT_EQUAL_INT(target->tid, TK_Call_Expr);
 
     target = sealark_target_for_index(ast, 1);
-    TEST_ASSERT_EQUAL_INT(3, sealark_target_bindings_ct(target));
+    TEST_ASSERT_EQUAL_INT(3, sealark_target_bindings_count(target));
     TEST_ASSERT_EQUAL_INT(target->tid, TK_Call_Expr);
 }
 
