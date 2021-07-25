@@ -1,0 +1,84 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+COPTS = select({
+    "//bzl/host:macos": ["-std=c11"],
+    "//bzl/host:linux": ["-std=gnu11"],
+    "//conditions:default": ["-std=c11"],
+}) + [
+    "-pedantic-errors",
+
+        "-I$(GENDIR)/test/unit/sunlark",
+    "-I$(GENDIR)/external/sealark/test/unit/sunlark",
+
+        "-I$(GENDIR)/bindings/scheme",
+    "-I$(GENDIR)/external/sealark/bindings/scheme",
+
+        "-I$(GENDIR)/sealark",
+    "-I$(GENDIR)/external/sealark/sealark",
+
+        "-Ivendored/logc",
+    "-Iexternal/sealark/vendored/logc",
+    "-Ivendored/s7",
+    "-Iexternal/sealark/vendored/s7",
+    "-Ivendored/unity",
+    "-Iexternal/sealark/vendored/unity",
+    "-Ivendored/uthash",
+    "-Iexternal/sealark/vendored/uthash",
+]
+
+DEPS = [
+    "//sealark",
+    "//bindings/scheme:sunlark",
+    "//vendored/logc",
+    "//vendored/s7",
+    "//vendored/unity",
+    "//vendored/uthash",
+]
+
+test_suite(
+    name = "sunlark",
+    tests = [
+    ])
+
+cc_test(
+    name = "bindings",
+    srcs = ["bindings.c", "bindings.h"],
+    data = [":BUILD.paths_tetradic"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
+    name = "tetrads",
+    srcs = ["paths_tetradic.c", "paths_tetradic.h"],
+    data = [":BUILD.paths_tetradic"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+################################################################
+genrule(
+    name = "mkhdrs",
+    srcs = [
+        "//sealark:debug.c",
+        "bindings.c",
+        "paths_tetradic.c",
+    ],
+    outs = [
+        "bindings.h",
+        "paths_tetradic.h",
+    ],
+    cmd = "\n".join([
+        "SRC1=$(location paths_tetradic.c)",
+        "SRCDIR1=`dirname $$SRC1`",
+        "$(location //vendored/makeheaders) \\",
+        "    $(location //sealark:debug.c) \\",
+        "    $(location bindings.c) \\",
+        "    $(location paths_tetradic.c)",
+        "cp $${SRCDIR1}/*.h $(@D)",
+    ]),
+    tools = ["//vendored/makeheaders"],
+    visibility = ["//visibility:public"]
+)
