@@ -1,11 +1,3 @@
-yycmd = "\n".join([
-        "$(location //vendored/lemon) -m \\",
-        "$(location syntaxis.y) \\",
-        "-T$(location //vendored/lemon:lempar.c) \\",
-        "{defines} \\".format(defines = "-DTEST_VECTORS"),
-        "-d$(RULEDIR)",
-    ])
-
 def _gensyntax_impl(ctx):
     out_c = ctx.actions.declare_file("syntaxis.c")
     out_out = ctx.actions.declare_file("syntaxis.out")
@@ -38,12 +30,7 @@ gensyntax = rule(
             allow_single_file = True,
             default = "syntaxis.y"
         ),
-        "outs": attr.output_list(
-            # default = [
-            #     "syntaxis.c",
-            #     "syntaxis.out"
-            # ]
-        ),
+        "outs": attr.output_list( ),
         "defines": attr.string_list(
         ),
         "template": attr.label(
