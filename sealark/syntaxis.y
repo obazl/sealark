@@ -251,11 +251,11 @@ i.e. only SimpleStmt allowed in BUILD files.
     /* log_trace("\n\n\t\t%%%%%%%%%%%%%%%% PARSE: SUCCESS %%%%%%%%%%%%%%%%\n"); */
 }
 
-%start_symbol buildfile
+%start_symbol program
 /* File = {Statement | newline} eof . */
-buildfile ::= stmt_list(SS) .
+program ::= stmt_list(SS) .
 {
-    /* log_trace(">>buildfile ::= stmt_list ."); */
+    /* log_trace(">>program ::= stmt_list ."); */
     struct node_s *root = calloc(sizeof(struct node_s), 1);
     root->tid = TK_Build_File;
     utarray_new(root->subnodes, &node_icd);
@@ -263,46 +263,57 @@ buildfile ::= stmt_list(SS) .
     parse_state->root = root;
 }
 
-%ifdef TEST
-/* buildfile(File) ::= small_stmt_list(S) . { */
-/*     log_trace(">>buildfile(File) ::= small_stmt ."); */
+%ifdef DEBUG_VECTORS
+program(File) ::= list_expr(VEC) . [FOR] {
+    log_trace(">>program(File) ::= list_expr(X) .");
+    /* log_debug("START dump"); */
+    /* dump_node(X); */
+    /* log_debug("/START dump"); */
+    parse_state->root = VEC;
+}
+%endif
+
+%ifdef DEBUG_LOAD
+program(File) ::= load_stmt(LOAD) . [FOR] {
+    log_trace(">>program(File) ::= load_stmt(X) .");
+    /* log_debug("START dump"); */
+    /* dump_node(X); */
+    /* log_debug("/START dump"); */
+    parse_state->root = LOAD;
+}
+%endif
+
+
+/* program(File) ::= small_stmt_list(S) . { */
+/*     log_trace(">>program(File) ::= small_stmt ."); */
 /*     parse_state->root = S; */
 /* } */
 
-/* buildfile(File) ::= expr(X) . { */
-/*     log_trace(">>buildfile(File) ::= expr(X) ."); */
+/* program(File) ::= expr(X) . { */
+/*     log_trace(">>program(File) ::= expr(X) ."); */
 /*     parse_state->root = X; */
 /* } */
 
-/* buildfile(File) ::= primary_expr(X) . { */
-/*     log_trace(">>buildfile(File) ::= primary_expr(X) ."); */
+/* program(File) ::= primary_expr(X) . { */
+/*     log_trace(">>program(File) ::= primary_expr(X) ."); */
 /*     *root = X; */
 /* } */
 
-/* buildfile(File) ::= list_expr(X) . [NOT] { */
-/*     log_trace(">>buildfile(File) ::= list_expr(X) ."); */
+/* program(File) ::= unary_expr(X) . { */
+/*     log_trace(">>program(File) ::= unary_expr(X) ."); */
 /*     log_debug("START dump"); */
 /*     dump_node(X); */
 /*     log_debug("/START dump"); */
     /* parse_state->root = X; */
 /* } */
 
-/* buildfile(File) ::= unary_expr(X) . { */
-/*     log_trace(">>buildfile(File) ::= unary_expr(X) ."); */
-/*     log_debug("START dump"); */
-/*     dump_node(X); */
-/*     log_debug("/START dump"); */
-    /* parse_state->root = X; */
-/* } */
-
-/* buildfile(File) ::= binary_expr(X) . { */
-/*     log_trace(">>buildfile(File) ::= binary_expr(X) ."); */
+/* program(File) ::= binary_expr(X) . { */
+/*     log_trace(">>program(File) ::= binary_expr(X) ."); */
 /*     /\* log_debug("START dump"); *\/ */
 /*     /\* dump_node(X); *\/ */
 /*     /\* log_debug("/START dump"); *\/ */
     /* parse_state->root = X; */
 /* } */
-%endif
 
 /* %ifdef STRINGS || ALL */
 /* %type string_list { UT_array* } */
@@ -313,7 +324,6 @@ buildfile ::= stmt_list(SS) .
 
 /* %endif */
 
-/* %if LOAD_STMT */
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 /* str_assign is for load stmts */
 str_assign(ALIAS) ::= ID(Id) EQ(Eq) STRING(S). {
