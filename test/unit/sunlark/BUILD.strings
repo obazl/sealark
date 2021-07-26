@@ -1,0 +1,24 @@
+
+sunlark_test(
+    name = "string-attrs-single",
+    plaindq = "I am a plain double-quoted string",
+    plainsq = 'I am a plain single-quoted string',
+    rawdq = r"I am a raw double-quoted string",
+    rawsq = r'I am a raw single-quoted string',
+    bindq = b"I am a binary double-quoted string",
+    binsq = b'I am a binary single-quoted string',
+    binrawdq = br"I am a binary raw double-quoted string",
+    binrawsq = br'I am a binary raw double-quoted string',
+)
+
+sunlark_test(
+    name = "string-attrs-triple",
+    plaindq3 = """I am a plain triple double-quoted string""",
+    plainsq3 = '''I am a plain triple single-quoted string''',
+    rawdq3 = r"""I am a raw triple double-quoted string""",
+    rawsq3 = r'''I am a raw triple single-quoted string''',
+    bindq3 = b"""I am a binary triple double-quoted string""",
+    binsq3 = b'''I am a binary triple single-quoted string''',
+    binrawdq3 = br"""I am a binary triple raw double-quoted string""",
+    binrawsq3 = br'''I am a binary triple raw double-quoted string''',
+)

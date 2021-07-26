@@ -4,7 +4,7 @@
 
 /* ******************************** */
 /* recursively print outline */
-EXPORT void debug_print_ast_outline(struct node_s *node, int level)
+EXPORT void sealark_debug_print_ast_outline(struct node_s *node, int level)
 {
 #ifdef DEBUG_QUERY
     /* log_debug("sealark_print_ast_outline level %d, node %d %s", */
@@ -22,7 +22,7 @@ EXPORT void debug_print_ast_outline(struct node_s *node, int level)
         struct node_s *subnode = NULL;
         while((subnode=(struct node_s*)utarray_next(node->subnodes,
                                                     subnode))) {
-            debug_print_ast_outline(subnode, level+1);
+            sealark_debug_print_ast_outline(subnode, level+1);
         }
      }
 }

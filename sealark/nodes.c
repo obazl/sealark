@@ -383,14 +383,14 @@ EXPORT int sealark_kw_to_tid(char *kw)
     char workbuf[64];
     int j, len;
     for(int i = 1; i < token_ct; i++) {
-        log_debug("tag: %s, toknm: %s", tag, token_name[i][0]);
+        /* log_debug("tag: %s, toknm: %s", tag, token_name[i][0]); */
         if (token_name[i][0] == NULL) return -1;
         len = strlen(token_name[i][0]) + 1; /* add one for \0 */
         strncpy(workbuf, token_name[i][0], len);
         for(j=0; j < len; j++) if (workbuf[j] == '_') workbuf[j] = '-';
-        log_debug("CONVERTED TAGSTRING: %s", workbuf);
+        /* log_debug("CONVERTED TAGSTRING: %s", workbuf); */
         if ( strncmp(tag, workbuf, len) == 0 ) {
-            log_debug("MATCH %d", i);
+            /* log_debug("MATCH %d", i); */
             return i;
         }
     }
@@ -399,63 +399,74 @@ EXPORT int sealark_kw_to_tid(char *kw)
 
 /* **************************************************************** */
 //FIXME: move nodelist API to nodelist.c?
-EXPORT UT_array *sealark_nodelist_new()
-{
-    log_debug("sealark_nodelist_new");
-    UT_array *nl;
-    utarray_new(nl, &node_icd);
-    return nl;
-}
+/* EXPORT UT_array *sealark_nodelist_new() */
+/* { */
+/*     log_debug("sealark_nodelist_new"); */
+/*     UT_array *nl; */
+/*     utarray_new(nl, &node_icd); */
+/*     return nl; */
+/* } */
 
-EXPORT void sealark_nodelist_free(UT_array *nl)
-{
-    log_debug("sealark_nodelist_free");
-    utarray_free(nl);
-}
+/* EXPORT void sealark_nodelist_free(UT_array *nl) */
+/* { */
+/*     log_debug("sealark_nodelist_free"); */
+/*     utarray_free(nl); */
+/* } */
 
-EXPORT int sealark_nodelist_len(UT_array *nl)
-{
-    log_debug("sealark_nodelist_len");
-    return utarray_len(nl);
-}
+/* EXPORT int sealark_nodelist_len(UT_array *nl) */
+/* { */
+/*     log_debug("sealark_nodelist_len"); */
+/*     return utarray_len(nl); */
+/* } */
 
-EXPORT int sealark_nodelist_copy(UT_array *_dst, UT_array *_src)
-{
-    log_debug("node_copy: %p <- %p", _dst, _src);
-    if (utarray_len(_dst) > 0) {
-        log_error("dest nodelist of copy is non-empty");
-        return -1;
-    }
-    utarray_concat(_dst, _src);
-    return 0;
-}
+/* EXPORT int sealark_nodelist_copy(UT_array *_dst, UT_array *_src) */
+/* { */
+/*     log_debug("node_copy: %p <- %p", _dst, _src); */
+/*     if (utarray_len(_dst) > 0) { */
+/*         log_error("dest nodelist of copy is non-empty"); */
+/*         return -1; */
+/*     } */
+/*     utarray_concat(_dst, _src); */
+/*     return 0; */
+/* } */
 
-EXPORT int sealark_nodelist_copy_destructively(UT_array *_dst, UT_array *_src)
-{
-    log_debug("node_copy_destructively: %p <- %p", _dst, _src);
-    utarray_clear(_dst);
-    utarray_concat(_dst, _src);
-    return 0;
-}
+/* EXPORT int sealark_nodelist_copy_destructively(UT_array *_dst, UT_array *_src) */
+/* { */
+/*     log_debug("node_copy_destructively: %p <- %p", _dst, _src); */
+/*     utarray_clear(_dst); */
+/*     utarray_concat(_dst, _src); */
+/*     return 0; */
+/* } */
 
 /* **************************************************************** */
 EXPORT struct node_s *sealark_node_new()
 {
+#if defined(DEBUG_MEM)
+    log_debug("sealark_node_new");
+#endif
     struct node_s *n = (struct node_s *)calloc(1, sizeof(struct node_s));
     return n;
 }
 
 EXPORT void sealark_node_free(void *_elt) {
-    /* log_debug("NODE_DTOR: %s (%d)", */
-    /*           token_name[((struct node_s*)_elt)->tid][0], */
-    /*           ((struct node_s*)_elt)->tid); */
+#if defined(DEBUG_MEM)
+    log_debug("NODE_DTOR: %s (%d)",
+              token_name[((struct node_s*)_elt)->tid][0],
+              ((struct node_s*)_elt)->tid);
+#endif
     struct node_s *elt = (struct node_s*)_elt;
     if (elt->s) {
-        /* log_debug("\tfreeing string %s", elt->s); */
+#if defined(DEBUG_MEM)
+        log_debug("\tfreeing string %s", elt->s);
+#endif
         free(elt->s);
     }
     if (elt->comments) utarray_free(elt->comments);
     if (elt->subnodes) utarray_free(elt->subnodes);
+
+    /* DO NOT FREE: utarray copies elements into a buffer, so its
+       pointers are not malloced */
+    /* free(_elt); */
 }
 
 /* FIXME: rename? to_string? */

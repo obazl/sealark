@@ -176,8 +176,16 @@ s7_pointer buildfile_handle_pentadic_path(s7_scheme *s7,
                       s7_object_to_c_string(s7, op3));
             exit(EXIT_FAILURE);
         }
-        log_error("Second path op %s not supported here.",
-                  s7_object_to_c_string(s7, op2));
+        log_error("Second path op %s not supported here; did you mean ':target %s'?",
+                  s7_object_to_c_string(s7, op2),
+                  s7_object_to_c_string(s7, op2)
+                  );
+        return(s7_error(s7,
+                        s7_make_symbol(s7, "invalid_argument"),
+                        s7_list(s7, 4, s7_make_string(s7,
+                        "~S: ~S not supported after :targets; did you mean (:target ~S...)?"),
+                                path_args, op2, op2)));
+
         exit(EXIT_FAILURE);
     }
 
@@ -204,9 +212,7 @@ s7_pointer buildfile_handle_pentadic_path(s7_scheme *s7,
                         struct node_s *binding
                             = sealark_target_binding_for_key(target,
                                                              s7_symbol_name(op4));
-                        struct node_s *val
-                            = utarray_eltptr(binding->subnodes, 2);
-                        return sunlark_node_new(s7, val);
+                        return sunlark_value_for_binding(s7, binding);
                     }
                     log_error("Fifth path op %s not supported here.",
                               s7_object_to_c_string(s7, op5));
@@ -468,4 +474,12 @@ s7_pointer buildfile_handle_pentadic_path(s7_scheme *s7,
             return NULL;
         }
     }
+    log_error("Path op %s not supported",
+              s7_object_to_c_string(s7, op));
+        return(s7_error(s7,
+                        s7_make_symbol(s7, "invalid_argument"),
+                        s7_list(s7, 3, s7_make_string(s7,
+                                      "~S: path op ~S not supported"),
+                                path_args, op)));
+
 }

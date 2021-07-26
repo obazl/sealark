@@ -59,6 +59,8 @@ cc_library(
         "predicators.h",
         "serializers.c",
         "serializers.h",
+        "vectors.c",
+        "vectors.h",
         "//vendored/logc:log.h"
    ],
     hdrs = [
@@ -229,6 +231,7 @@ genrule(
         "predicators.c",
         "syntaxis.c",
         "serializers.c",
+        "vectors.c",
         "debug.c",
         # "//vendored/uthash",
     ],
@@ -243,6 +246,7 @@ genrule(
         "predicators.h",
         "syntaxis.h",
         "serializers.h",
+        "vectors.h",
         "debug.h",
     ],
     cmd = "\n".join([
@@ -262,6 +266,7 @@ genrule(
         "    $(location predicators.c) \\",
         "    $(location syntaxis.c) \\",
         "    $(location serializers.c) \\",
+        "    $(location vectors.c) \\",
         "    $(location debug.c) ",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),
@@ -282,6 +287,7 @@ genrule(
         "predicators.c",
         "syntaxis.h",
         "serializers.c",
+        "vectors.c",
         "debug.c",
         # "test_lex.c",
         # "test_parse.c",
@@ -304,6 +310,7 @@ genrule(
         "    $(location parse.c) \\",
         "    $(location predicators.c) \\",
         "    $(location serializers.c) \\",
+        "    $(location vectors.c) \\",
         "    $(location syntaxis.h) \\",
         "    $(location debug.c) \\",
         "    > $@",

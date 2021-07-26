@@ -148,7 +148,6 @@ s7_pointer buildfile_handle_tetradic_path(s7_scheme *s7,
     if (op == KW(target)) {
         if (s7_is_string(op2)) {
             if (op3 == KW(bindings)) {
-                log_debug("0 xxxxxxxxxxxxxxxx");
                 log_debug("op 4 %s", s7_object_to_c_string(s7, op4));
                 if (s7_is_symbol(op4)) {
                     log_debug("binding_for_key_from_bindings_of_target_for_name");
@@ -165,6 +164,22 @@ s7_pointer buildfile_handle_tetradic_path(s7_scheme *s7,
                     return sunlark_node_new(s7, binding);
                     return NULL;
                 }
+                if (s7_is_string(op4)) {
+                    /* FIXME: support string refs too? */
+                    log_error("Bad 4th arg %d", s7_is_string(op4));
+                    return(s7_error(s7,
+                                    s7_make_symbol(s7, "invalid_argument"),
+                                s7_list(s7, 4, s7_make_string(s7,
+                    "~A: string arg ~S invalid; did you mean to use a symbol '~A ?"),
+                                        path_args, op4,
+                                        op4)));
+                }
+                log_error("bad 4th arg %d", s7_is_string(op4));
+                return(s7_error(s7,
+                                s7_make_symbol(s7, "invalid_argument"),
+                                s7_list(s7, 3, s7_make_string(s7,
+                    "~A: 4th arg ~S invalid type"),
+                                        path_args, op4)));
             }
             if (op3 == KW(arg-list)) {
                 log_debug("arg_list_for_target_for_name");

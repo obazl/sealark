@@ -25,6 +25,12 @@ cc_binary(
     deps = [":hello-lib"],
 )
 
+sunlark_test(
+    name = "vectors",
+    string-vec = ["a", "b", "c"],
+    int-vec = [1, 2, 3]
+)
+
 cc_test(
     name = "hello-success_test",
 

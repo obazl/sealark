@@ -46,7 +46,6 @@ bool c_is_sunlark_node(s7_scheme *s7, s7_pointer node_s7)
 
     if (s7_is_c_object(node_s7)) {
         bool eq = s7_c_object_type(node_s7) == ast_node_t;
-        log_debug("5 is node? %d", eq);
         return eq;
     } else {
         return s7_f(s7);

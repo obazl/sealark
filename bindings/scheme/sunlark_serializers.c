@@ -403,7 +403,7 @@ s7_pointer sunlark_node_to_string(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
     log_debug("sunlark_node_to_string");
-    debug_print_s7(s7, "to_string cdr: ", s7_cdr(args));
+    /* debug_print_s7(s7, "to_string cdr: ", s7_cdr(args)); */
 #endif
 
     UT_string *buffer;

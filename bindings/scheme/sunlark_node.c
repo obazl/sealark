@@ -29,8 +29,6 @@ static s7_pointer sunlark_nodes_are_equivalent(s7_scheme *s7, s7_pointer args);
 
 /* section: getters and setters */
 static s7_pointer sunlark_node_ref_specialized(s7_scheme *s7, s7_pointer args);
-static s7_pointer sunlark_node_set_specialized(s7_scheme *s7, s7_pointer args);
-
 s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args);
 
 static void _register_get_and_set(s7_scheme *s7);
@@ -378,12 +376,14 @@ static s7_pointer sunlark_node_ref_specialized(s7_scheme *s7, s7_pointer args)
 s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
-    log_debug(">>>> sunlark_node_object_applicator, path: %s",
-              s7_object_to_c_string(s7, s7_cdr(args)));
+    log_debug(">>>>>>>>>>>>>>>> sunlark_node_object_applicator <<<<<<<<<<<<<<<<");
     log_debug("\tSELF tid: %d %s",
               sunlark_node_tid(s7, s7_car(args)),
               token_name[sunlark_node_tid(s7, s7_car(args))][0]);
     /* debug_print_s7(s7, "\tAPPLICATOR ARGS: ", s7_cdr(args)); */
+    log_debug("\targs: %s",
+              s7_object_to_c_string(s7, s7_cdr(args)));
+    sealark_debug_print_ast_outline(s7_c_object_value(s7_car(args)), 0);
 #endif
 
     s7_pointer rest = s7_cdr(args);
@@ -622,77 +622,6 @@ static s7_pointer _update_starlark(s7_scheme *s7,
                           s7_make_string(s7, "node type: ~D not yet supported"),
                           sunlark_node_tid(s7, node_s7))));
     }
-}
-
-/* sunlark_node_set_specialized
-
-   implements (ast_node_set! ...)
-
-   what about (set! (node :subnodes) nodelist)? we need ctype for nodelist
- */
-static s7_pointer sunlark_node_set_specialized(s7_scheme *s7, s7_pointer args)
-{
-#ifdef DEBUG_TRACE
-    log_debug("sunlark_node_set_specialized");
-#endif
-    struct node_s *node;
-    s7_int typ;
-    s7_pointer self, key;
-
-    /* log_debug("set_specialized args (excluding self): %s", */
-    /*           s7_object_to_c_string(s7, s7_cdr(args))); */
-
-    /* last arg is new value to set? */
-
-    /* set! methods/procedures need to check that they have
-       been passed the correct number of arguments: 3 */
-
-    /* if (s7_list_length(s7, args) != 3) */
-    /*     return(s7_wrong_number_of_args_error(s7, "ast-node-set! takes 3 arguments: ~~S", args)); */
-
-    self = s7_car(args);
-    /* qua procedure, check type of first arg */
-    typ = s7_c_object_type(self);
-    if (typ != ast_node_t)
-        return(s7_wrong_type_arg_error(s7, "ast-node-set!", 1, self, "a ast_node"));
-
-    if (s7_is_immutable(self))
-        return(s7_wrong_type_arg_error(s7, "ast-node-set!", 1, self, "a mutable ast_node"));
-
-    s7_pointer params = s7_reverse(s7, s7_cdr(args));
-    s7_pointer update_val = s7_car(params);
-    params = s7_reverse(s7, s7_cdr(params));
-
-    /* s7_pointer set_target = sunlark_resolve_path(s7, self, params); */
-
-    s7_pointer resolved_path = sunlark_dispatch(s7, self, params);
-    return resolved_path;
-    /* log_debug("set_target: %s", s7_object_to_c_string(s7, set_target)); */
-    /* log_debug("update_val: %s", s7_object_to_c_string(s7, update_val)); */
-
-    // now update set_target
-
-    /* return sunlark_update_binding_name(s7, node_s7, key, val); */
-    /* return sunlark_update_binding_value(s7, node_s7, key, val); */
-
-    /* _update_ast_node_property(s7, node, key, s7_caddr(args)); */
-
-    /* _update_starlark(s7, self, s7_symbol_name(key), s7_caddr(args)); */
-
-    //FIXME: r7rs says result of set! is unspecified. does that mean
-    //implementation-specified?
-    return s7_unspecified(s7);
-
-    /* return sunlark_node_new(set_target); */
-}
-
-static s7_pointer sunlark_node_set_generic(s7_scheme *s7, s7_pointer args)
-{
-#ifdef DEBUG_TRACE
-    log_debug("sunlark_node_set_generic");
-    /* debug_print_s7(s7, "set_generic spec: ", args); */
-#endif
-    return sunlark_node_set_specialized(s7, args);
 }
 
 static void _register_get_and_set(s7_scheme *s7)
@@ -1130,7 +1059,7 @@ static s7_pointer sunlark_node_gc_mark(s7_scheme *s7, s7_pointer p)
 /* section: debugging */
 void debug_print_s7(s7_scheme *s7, char *label, s7_pointer obj)
 {
-    /* log_debug("debug_print_s7: "); */
+    log_debug("debug_print_s7: ");
     /* s7_pointer p = s7_current_output_port(s7); */
     /* s7_display(s7, s7_make_string(s7, label), p); */
     log_debug("%s", label);

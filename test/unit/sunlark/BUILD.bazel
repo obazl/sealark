@@ -1,5 +1,18 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
+test_suite(
+    name = "sunlark",
+    tests = [
+        ":binding_val_strings",
+        ":binding_val_vectors",
+        ":bindings",
+        ":definitions",
+        ":loads",
+        ":targets",
+        ":tetrads",
+        ":vectors",
+    ])
+
 COPTS = select({
     "//bzl/host:macos": ["-std=c11"],
     "//bzl/host:linux": ["-std=gnu11"],
@@ -34,16 +47,6 @@ DEPS = [
     "//vendored/unity",
     "//vendored/uthash",
 ]
-
-test_suite(
-    name = "sunlark",
-    tests = [
-        ":bindings",
-        ":definitions",
-        ":loads",
-        ":targets",
-        ":tetrads"
-    ])
 
 cc_test(
     name = "bindings",
@@ -82,9 +85,36 @@ cc_test(
 )
 
 cc_test(
+    name = "binding_val_strings",
+    srcs = ["binding_val_strings.c", "binding_val_strings.h"],
+    data = [":BUILD.strings"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
+    name = "binding_val_vectors",
+    srcs = ["binding_val_vectors.c", "binding_val_vectors.h"],
+    data = [":BUILD.vectors"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
     name = "tetrads",
     srcs = ["paths_tetradic.c", "paths_tetradic.h"],
     data = [":BUILD.test1"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
+    name = "vectors",
+    srcs = ["vectors.c", "vectors.h"],
+    data = [":BUILD.vectors"],
     copts = COPTS,
     deps = DEPS,
     linkstatic = 1
@@ -99,14 +129,20 @@ genrule(
         "definitions.c",
         "loads.c",
         "paths_tetradic.c",
+        "binding_val_strings.c",
+        "binding_val_vectors.c",
         "targets.c",
+        "vectors.c"
     ],
     outs = [
         "bindings.h",
         "definitions.h",
         "loads.h",
         "paths_tetradic.h",
+        "binding_val_strings.h",
+        "binding_val_vectors.h",
         "targets.h",
+        "vectors.h"
     ],
     cmd = "\n".join([
         "SRC1=$(location paths_tetradic.c)",
@@ -117,7 +153,10 @@ genrule(
         "    $(location definitions.c) \\",
         "    $(location loads.c) \\",
         "    $(location paths_tetradic.c) \\",
-        "    $(location targets.c)",
+        "    $(location binding_val_strings.c) \\",
+        "    $(location binding_val_vectors.c) \\",
+        "    $(location targets.c) \\",
+        "    $(location vectors.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),
     tools = ["//vendored/makeheaders"],

@@ -82,13 +82,23 @@ s7_pointer buildfile_handle_triadic_path(s7_scheme *s7,
         }
         /* **************** */
         if (s7_is_integer(op2)) {
-            if (op3 == KW(bindings)) {
+            if (op3 == KW(bindings)) { /* plurual */
                 log_debug("bindings_for_target_for_index");
                 errno = 0;
                 UT_array *bindings = sealark_bindings_for_target_for_index
                     (bf_node, s7_integer(op2));
                 result_list = nodelist_to_s7_list(s7, bindings);
                 return result_list;
+            }
+            if (op3 == KW(binding)) { /* singular */
+                log_error("Not yet supported: %s",
+                          s7_object_to_c_string(s7, op3));
+                return(s7_error(s7,
+                                s7_make_symbol(s7, "invalid_argument"),
+                                s7_list(s7, 3,
+                                        s7_make_string(s7,
+                     "Bad arg '~A' in ~A; did you mean ':binding'?"),
+                                        op3, path_args)));
             }
             if (op3 == KW(arg-list)) {
                 log_debug("arglist_for_target_for_index");

@@ -8,6 +8,28 @@ UT_string *buf;
 LOCAL char *test_str;
 UT_array *result;
 
+LOCAL char *quotes_singlets[] = {
+    "\"I am a plain double-quoted string\"\n",
+    "'I am a plain single-quoted string'\n",
+    "r\"I am a raw double-quoted string\"\n",
+    "r'I am a raw single-quoted string'\n",
+    "b\"I am a binary double-quoted string\"\n",
+    "b'I am a binary single-quoted string'\n",
+    "br\"I am a binary raw double-quoted string\"\n",
+    "br'I am a binary raw double-quoted string'\n"
+};
+
+LOCAL char *quotes_triplets[] = {
+    "\"\"\"I am a plain triple double-quoted string\"\"\"\n",
+    "'''I am a plain triple single-quoted string'''\n",
+    "r\"\"\"I am a raw double-quoted string\"\"\"\n",
+    "r'''I am a raw single-quoted string'''\n",
+    "b\"\"\"I am a binary double-quoted string\"\"\"\n",
+    "b'''I am a binary single-quoted string'''\n",
+    "br\"\"\"I am a binary raw double-quoted string\"\"\"\n",
+    "br'''I am a binary raw double-quoted string'''\n"
+};
+
 LOCAL char *multicomments[] = {
     "'hello' #cmt1\n",
     "\"hello\" #cmt1\n",
@@ -262,6 +284,40 @@ void test_mix1(void) {
     utarray_free(result);
 }
 
+void test_quotes_singlets(void) {
+    int ct;
+    for (ct=0; quotes_singlets[ct] != NULL; ct++);
+    for (int i=0; i < ct; i++) {
+        /* printf("case %d: %s\n", i, quotes_singlets[i]); */
+        test_str = quotes_singlets[i];
+        result = sealark_lex_string(test_str);
+        /* printf("\n"); */
+        /* dump_nodes(result); */
+        utstring_renew(buf);
+        sealark_nodelist2string(result, buf);
+        /* printf(":]%s[:\n", utstring_body(buf)); */
+        TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
+        utarray_free(result);
+    }
+}
+
+void test_quotes_triplets(void) {
+    int ct;
+    for (ct=0; quotes_triplets[ct] != NULL; ct++);
+    for (int i=0; i < ct; i++) {
+        /* printf("case %d: %s\n", i, quotes_triplets[i]); */
+        test_str = quotes_triplets[i];
+        result = sealark_lex_string(test_str);
+        /* printf("\n"); */
+        /* dump_nodes(result); */
+        utstring_renew(buf);
+        sealark_nodelist2string(result, buf);
+        /* printf(":]%s[:\n", utstring_body(buf)); */
+        TEST_ASSERT_EQUAL_STRING(test_str, utstring_body(buf));
+        utarray_free(result);
+    }
+}
+
 void test_multicomments(void) {
     int ct;
     for (ct=0; multicomments[ct] != NULL; ct++); ct--;
@@ -325,6 +381,9 @@ int main(void) {
     RUN_TEST(test_single_line_single_quote_nl_cmt1);
     RUN_TEST(test_single_line_single_quote_nl_cmt1_nl_cmt2a);
     RUN_TEST(test_single_line_single_quote_nl_cmt1_nl_cmt2b);
+
+    RUN_TEST(test_quotes_singlets);
+    RUN_TEST(test_quotes_triplets);
 
     RUN_TEST(test_multicomments);
     RUN_TEST(test_mix1);

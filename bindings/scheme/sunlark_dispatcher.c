@@ -52,7 +52,9 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
 
     case TK_Binding:
         log_debug("dispatching on TK_Binding");
-        return sunlark_dispatch_on_binding(s7, data, path_args);
+        struct node_s *result =sunlark_dispatch_on_binding(s7, data, path_args);
+        /* FIXME: type of result? */
+        return sunlark_node_new(s7, result);
         break;
 
     case TK_ID:
@@ -144,7 +146,7 @@ s7_pointer sunlark_dispatch_on_buildfile(s7_scheme *s7,
             return NULL;
         }
         if (op == KW(definitions)) {
-            /* debug_print_ast_outline(bf_node, 0); */
+            /* sealark_debug_print_ast_outline(bf_node, 0); */
             UT_array *defns = sealark_definitions(bf_node);
             return nodelist_to_s7_list(s7, defns);
         }
@@ -157,6 +159,9 @@ s7_pointer sunlark_dispatch_on_buildfile(s7_scheme *s7,
             UT_array *procs = sealark_procs(bf_node);
             return nodelist_to_s7_list(s7, procs);
         }
+        /* common properties */
+        s7_pointer result = sunlark_common_property_lookup(s7, bf_node, op);
+        if (result) return result;
         break;
     case 2:
         return buildfile_handle_dyadic_path(s7, bf_node, path_args);
@@ -342,6 +347,11 @@ LOCAL s7_pointer sunlark_dispatch_on_id(s7_scheme *s7,
 }
 
 /* **************** */
+/*
+  vectors (a/k/a starlark "lists") in the ast contain metadata like
+  punctuation (commas, etc.) and delimiters. to index we need to skip
+  those.
+ */
 LOCAL s7_pointer sunlark_dispatch_on_vector(s7_scheme *s7,
                                             s7_pointer data,
                                             s7_pointer path_args)
@@ -351,7 +361,7 @@ LOCAL s7_pointer sunlark_dispatch_on_vector(s7_scheme *s7,
               s7_object_to_c_string(s7, path_args));
 #endif
 
-    debug_print_ast_outline(s7_c_object_value(data), 0);
+    sealark_debug_print_ast_outline(s7_c_object_value(data), 0);
 
     int op_count = s7_list_length(s7, path_args);
     log_debug("op count: %d", op_count);
@@ -361,31 +371,49 @@ LOCAL s7_pointer sunlark_dispatch_on_vector(s7_scheme *s7,
         //error, :s, :tid etc. allowed
         log_error("FIXME, only one op allowed here");
     }
+    s7_pointer op;
+    if (s7_is_list(s7,path_args))
+        op = s7_car(path_args);
+    else
+        op = path_args;
 
     // :list-expr > :lbrack, :expr-list, :rbrack
     //  :expr-list > :string, :comma, etc.
     struct node_s *list_expr = s7_c_object_value(data);
     struct node_s *vector = utarray_eltptr(list_expr->subnodes, 1);
+
+    /* tid: TK_Expr-List */
     log_debug("vector tid %d %s", vector->tid, TIDNAME(vector));
-    s7_pointer op = s7_car(path_args);
+
+    /* treat first item as prototype, giving list type */
+    struct node_s *prototype = utarray_eltptr(vector->subnodes, 0);
+    int item_type = prototype->tid;
+    log_debug("item_type: %d", item_type);
+    int item_ct = 0;
 
     if (s7_is_integer(op)) {
         int idx = s7_integer(op);
+        log_debug("indexing on %d", idx);
         int len = utarray_len(vector->subnodes);
         if (idx > len) {
             log_error("index out of bounds: % > %", idx, len);
             return NULL;
         }
-        struct node_s *val
-            = utarray_eltptr(vector->subnodes, s7_integer(op));
-        log_debug("0 val %p", val);
-        log_debug("vector at %d: %d %s", idx,
-                  val->tid, TIDNAME(val));
-
-        return sunlark_node_new(s7, val);
+        /* index by (semantic) items, skipping metadata */
+        struct node_s *node = NULL;
+        while( (node
+                =(struct node_s*)utarray_next(vector->subnodes, node)) ) {
+            if (node->tid == item_type) {
+                if (item_ct == idx)
+                    return sunlark_node_new(s7, node);
+                item_ct++;
+            }
+        }
+        //FIXME: handle index out of bounds
+        return s7_unspecified(s7);
     } else {
         s7_pointer result
-            = sunlark_common_property_lookup(s7, vector, op);
+            = sunlark_common_property_lookup(s7, list_expr, op);
         return result;
     }
 }
