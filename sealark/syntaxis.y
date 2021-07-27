@@ -240,7 +240,17 @@ i.e. only SimpleStmt allowed in BUILD files.
 
 %syntax_error {
     log_trace("**************** Syntax error! ****************");
-    exit(EXIT_FAILURE);
+/* args passed:
+   yyParser *yypParser, /\* The parser *\/
+   int yymajor, /\* The major type of the error token *\/
+   ParseTOKENTYPE yyminor /\* The minor type of the error token *\/
+   ParseTOKENTYPE is struct node_s *
+ */
+    log_error("error token: %d %s @ %d:%d",
+              yyminor->tid, token_name[yyminor->tid][0],
+              yyminor->line, yyminor->col);
+
+    //int: yymajor, yyminor
 }
 
 %parse_failure {
@@ -261,6 +271,11 @@ program ::= stmt_list(SS) .
     utarray_new(root->subnodes, &node_icd);
     utarray_push_back(root->subnodes, SS);
     parse_state->root = root;
+}
+
+program(File) ::= error(E) . [FOR] {
+    log_trace(">>program(File) ::= error(E) .");
+    /* parse_state->root = E; */
 }
 
 %ifdef DEBUG_VECTORS
@@ -502,7 +517,9 @@ param_star2(Param) ::= STAR2(Star2) ID(Id) . {
 /* precedence: must be lower than binary_expr */
 expr_list(Xs) ::= expr(X) . [PLUS]
 {
-    // log_trace(">>expr_list(XList) ::= expr(X");
+#if defined(DEBUG_YYTRACE)
+    log_trace(">>expr_list(XList) ::= expr(X");
+#endif
     Xs = calloc(sizeof(struct node_s), 1);
     Xs->tid  = TK_Expr_List;
     Xs->line  = X->line;
@@ -2000,4 +2017,8 @@ lambda_expr(LambdaX) ::= LAMBDA(Lambda) param_list(Params) COLON(Colon) expr(X) 
     utarray_push_back(LambdaX->subnodes, X);
 }
 
-/* %endif // EXPRESSIONS */
+/* foo ::= error . */
+/* { */
+/*     log_trace("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"); */
+/* } */
+/* /\* %endif // EXPRESSIONS *\/ */
