@@ -62,6 +62,7 @@ function emit_node_starlark(node)
          col = col + #s
       end
    end
+   return true
 end
 
 function emit_starlark(node, ofile)
@@ -76,4 +77,5 @@ end
 
 return {
    emit_starlark = emit_starlark,
+   emit_node_starlark = emit_node_starlark
 }
