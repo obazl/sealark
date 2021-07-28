@@ -60,26 +60,37 @@ function emit_node_starlark(node)
          col = col + #s
       end
    end
+   return true
 end
 
 -- FIXME: put 'walk' in a different lib ('ast.lua'?)
 function walk(t, handlers)
-   if (handlers[t.type]) then
-      handlers[t.type](t)
-   else
-      handlers.default(t)
-   end
-   if (t.comments) then
-      for k,v in ipairs(t.comments) do
-         walk(v, handlers)
+   if t.type then -- a node
+      if (handlers[t.type]) then
+         continue = handlers[t.type](t)
+      else
+         continue = handlers.default(t)
       end
-   end
-   if (t.subnodes) then
-      for k,v in ipairs(t.subnodes) do
+      if continue then
+         if (t.comments) then
+            for k,v in ipairs(t.comments) do
+               walk(v, handlers)
+            end
+         end
+         if (t.subnodes) then
+            for k,v in ipairs(t.subnodes) do
+               walk(v, handlers)
+            end
+         end
+      end
+   else
+      -- nodelist
+      for k,v in ipairs(t) do
          walk(v, handlers)
       end
    end
 end
+
 
 function emit_starlark(node, ofile)
    handlers = {}
@@ -94,4 +105,5 @@ end
 return {
    walk = walk,
    emit_starlark = emit_starlark,
+   emit_node_starlark = emit_node_starlark
 }
