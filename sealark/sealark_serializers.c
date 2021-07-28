@@ -20,7 +20,7 @@
 /* #include "utstring.h" */
 /* #endif */
 
-#include "serializers.h"
+#include "sealark_serializers.h"
 
 //FIXME: rename 2string => 2starlark
 
@@ -32,7 +32,7 @@
  */
 EXPORT char *sealark_crush_string(UT_string *src)
 {
-    log_debug("sealark_crush_string");
+    /* log_debug("sealark_crush_string"); */
 
     char *srcptr = utstring_body(src);
     char *dstptr = calloc(utstring_len(src), sizeof(char));
@@ -95,9 +95,12 @@ EXPORT char *sealark_squeeze_string(UT_string *src)
     return dstptr;
 }
 
+//FIXME: for debugging, make this return char* ?
 EXPORT void sealark_node_to_starlark(struct node_s *node, UT_string *buffer)
 {
-    /* log_debug("sealark_node_to_starlark"); */
+#if defined(DEBUG_SERIALIZERS)
+    log_debug("sealark_node_to_starlark");
+#endif
     line = col = 0;
     _node2string(node, buffer);
     if (utstring_body(buffer)[utstring_len(buffer)-1] != '\n') {
@@ -148,7 +151,9 @@ EXPORT char *sealark_quote_type(struct node_s *node)
 
 LOCAL void _node2string(struct node_s *node, UT_string *buffer)
 {
-    /* log_debug("_node2string, line %d", line); */
+#if defined(DEBUG_SERIALIZERS)
+    log_debug("_node2string, line %d", line);
+#endif
     int i;
     /* node->line is absolute; relativize it; */
     /* int l = node->line - line; */

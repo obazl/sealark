@@ -8,13 +8,13 @@
 #include "sealark.h"
 #include "sunlark.h"
 
-#include "targets.h"
+#include "test_targets.h"
 
 UT_string *buf;
 UT_string *test_s;
 UT_array  *result;
 
-char *build_file = "test/unit/sunlark/BUILD.test1";
+char *build_file = "test/unit/sunlark/BUILD.targets";
 
 s7_scheme *s7;
 
@@ -25,8 +25,7 @@ struct node_s *root;
 
 void setUp(void) {
     s7 = sunlark_init();
-    /* parse_state = sealark_parse_file(build_file); */
-    /* ast = parse_state->root; */
+    init_s7_syms(s7);
     ast = sunlark_parse_build_file(s7,
                                    s7_list(s7, 1,
                                            s7_make_string(s7, build_file)));
@@ -38,7 +37,7 @@ void tearDown(void) {
     s7_quit(s7);
 }
 
-void test_targets(void) {
+void test_forall_targets(void) {
     s7_pointer path = s7_eval_c_string(s7,
                        "'(:targets)");
     s7_pointer targets = s7_apply_function(s7, ast, path);
@@ -46,7 +45,17 @@ void test_targets(void) {
     /* check type, tid */
     TEST_ASSERT( !s7_is_c_object(targets) );
     TEST_ASSERT( s7_is_list(s7, targets) );
-    TEST_ASSERT( s7_list_length(s7, targets) == 5 );
+    TEST_ASSERT( s7_list_length(s7, targets) == 6 );
+
+    /* same with concise op */
+    s7_pointer path2 = s7_eval_c_string(s7,
+                       "'(:>>)");
+    s7_pointer targets2 = s7_apply_function(s7, ast, path2);
+
+    /* check type, tid */
+    TEST_ASSERT( !s7_is_c_object(targets2) );
+    TEST_ASSERT( s7_is_list(s7, targets2) );
+    TEST_ASSERT( s7_list_length(s7, targets2) == 6 );
 
     /* we can access a single target using a path expression, as in
        test_target below. but here, since targets is a Scheme list,
@@ -56,17 +65,21 @@ void test_targets(void) {
         target = s7_car(targets);
         TEST_ASSERT( s7_is_c_object(target) );
         TEST_ASSERT( s7_c_object_type(target) == AST_NODE_T );
+        /* (sunlark-node? target) => #t */
+        s7_pointer is_node = s7_apply_function(s7, is_sunlark_node_s7,
+                                               s7_cons(s7, target,
+                                                       s7_nil(s7)));
+        TEST_ASSERT( is_node == s7_t(s7) );
+        /* (list? target) => #f */
+        s7_pointer is_list = s7_apply_function(s7, is_list_s7,
+                                               s7_cons(s7, target,
+                                                       s7_nil(s7)));
+        TEST_ASSERT( is_list == s7_f(s7) );
+
         targets = s7_cdr(targets);
     }
 }
 
-/* :target 1:
-cc_binary(
-    name = "hello-world",
-    srcs = ["hello-world.cc"],
-    deps = [":hello-lib"],
-)
-*/
 void test_target(void) {
     s7_pointer path = s7_eval_c_string(s7,
                        "'(:targets 1)");
@@ -119,14 +132,16 @@ void test_target(void) {
         = s7_apply_function(s7, target,
                             s7_cons(s7, s7_make_keyword(s7,"bindings"),
                                     s7_nil(s7)));
-    TEST_ASSERT( !s7_is_c_object(bindings) );
-    TEST_ASSERT( s7_is_list(s7, bindings) );
-    TEST_ASSERT( s7_list_length(s7, bindings) == 3 );
+    TEST_ASSERT( s7_is_c_object(bindings) );
+    TEST_ASSERT( !s7_is_list(s7, bindings) );
+    /* s7_pointer len */
+    /*     = s7_apply_function(s7, s7_make_symbol(s7,"length"), */
+    /*                         s7_cons(s7, target, s7_nil(s7))); */
 }
 
 int main(void) {
     UNITY_BEGIN();
-    /* RUN_TEST(test_targets); */
+    RUN_TEST(test_forall_targets);
     RUN_TEST(test_target);
     return UNITY_END();
 }

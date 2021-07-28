@@ -244,7 +244,7 @@ char *sunlark_node_display_readably(s7_scheme *s7, void *value)
  */
 s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
 {
-#ifdef DEBUG_TRACE
+#if defined(DEBUG_SERIALIZERS)
     log_debug("sunlark_to_starlark");
 #endif
 
@@ -263,35 +263,39 @@ s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
             /* } */
 
     if ( s7_is_c_object(form) ) {
-        log_debug("printing c-object");
         struct node_s *n1 = s7_c_object_value(form);
         sealark_node_to_starlark(n1, buf);
     } else {
         if ( s7_is_list(s7, form) ) {
-            log_debug("printing s7 list");
+            /* log_debug("printing s7 list"); */
             s7_pointer _list = form;
             while (! s7_is_null(s7, _list)) {
                 struct node_s *t = s7_c_object_value(s7_car(_list));
-                log_debug("\titem tid: %d %s", t->tid, TIDNAME(t));
+                /* log_debug("\titem tid: %d %s", t->tid, TIDNAME(t)); */
                 sealark_node_to_starlark(t, buf);
                 _list = s7_cdr(_list);
             }
         } else {
-            if (s7_is_string(form)) {
-                utstring_printf(buf, "%s", s7_string(form));
+            if ( s7_is_vector(form) ) {
+                log_debug("printing s7 vector");
+                utstring_printf(buf, "%s", s7_object_to_c_string(s7, (form)));
             } else {
-                if (s7_is_character(form)) {
-                    utstring_printf(buf, "%c", s7_character(form));
+                if (s7_is_string(form)) {
+                    utstring_printf(buf, "%s", s7_string(form));
                 } else {
-                    if (s7_is_number(form)) {
-                        utstring_printf(buf, "%s", s7_number_to_string(s7,form,10));
+                    if (s7_is_character(form)) {
+                        utstring_printf(buf, "%c", s7_character(form));
                     } else {
-                        if (s7_is_keyword(form)) {
-                            s7_pointer sym = s7_keyword_to_symbol(s7,form);
-                            utstring_printf(buf, "%s",
-                                            s7_symbol_name(form));
+                        if (s7_is_number(form)) {
+                            utstring_printf(buf, "%s", s7_number_to_string(s7,form,10));
                         } else {
-                            log_error("Unexpected form for printing, should be c-object or list.");
+                            if (s7_is_keyword(form)) {
+                                s7_pointer sym = s7_keyword_to_symbol(s7,form);
+                                utstring_printf(buf, "%s",
+                                                s7_symbol_name(form));
+                            } else {
+                                log_error("Unexpected form for printing, should be c-object or list.");
+                            }
                         }
                     }
                 }
@@ -401,7 +405,7 @@ s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
 
 s7_pointer sunlark_node_to_string(s7_scheme *s7, s7_pointer args)
 {
-#ifdef DEBUG_TRACE
+#ifdef DEBUG_SERIALIZERS
     log_debug("sunlark_node_to_string");
     /* debug_print_s7(s7, "to_string cdr: ", s7_cdr(args)); */
 #endif

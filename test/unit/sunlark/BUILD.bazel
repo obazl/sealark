@@ -3,7 +3,7 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 test_suite(
     name = "sunlark",
     tests = [
-        ":binding_val_strings",
+        ":strings",
         ":binding_val_vectors",
         ":bindings",
         ":definitions",
@@ -40,6 +40,7 @@ COPTS = select({
 ]
 
 DEPS = [
+    ":common",
     "//sealark",
     "//bindings/scheme:sunlark",
     "//vendored/logc",
@@ -50,8 +51,8 @@ DEPS = [
 
 cc_test(
     name = "bindings",
-    srcs = ["bindings.c", "bindings.h"],
-    data = [":BUILD.test1"],
+    srcs = ["test_bindings.c", "test_bindings.h"],
+    data = [":BUILD.bindings"],
     copts = COPTS,
     deps = DEPS,
     linkstatic = 1
@@ -77,16 +78,16 @@ cc_test(
 
 cc_test(
     name = "targets",
-    srcs = ["targets.c", "targets.h"],
-    data = [":BUILD.test1"],
+    srcs = ["test_targets.c", "test_targets.h"],
+    data = [":BUILD.targets"],
     copts = COPTS,
     deps = DEPS,
     linkstatic = 1
 )
 
 cc_test(
-    name = "binding_val_strings",
-    srcs = ["binding_val_strings.c", "binding_val_strings.h"],
+    name = "strings",
+    srcs = ["test_strings.c", "test_strings.h"],
     data = [":BUILD.strings"],
     copts = COPTS,
     deps = DEPS,
@@ -120,28 +121,45 @@ cc_test(
     linkstatic = 1
 )
 
+cc_library(
+    name = "common",
+    srcs = ["common.c"],
+    hdrs = ["common.h"],
+    copts = COPTS,
+    deps = [
+        "//vendored/s7",
+        "//vendored/unity",
+        "//vendored/uthash",
+        "//vendored/logc",
+        "//sealark",
+        "//bindings/scheme:sunlark",
+    ]
+)
+
 ################################################################
 genrule(
     name = "mkhdrs",
     srcs = [
         "//sealark:debug.c",
-        "bindings.c",
+        "test_bindings.c",
         "definitions.c",
         "loads.c",
         "paths_tetradic.c",
-        "binding_val_strings.c",
+        "test_strings.c",
         "binding_val_vectors.c",
-        "targets.c",
+        "common.c",
+        "test_targets.c",
         "vectors.c"
     ],
     outs = [
-        "bindings.h",
+        "test_bindings.h",
         "definitions.h",
         "loads.h",
         "paths_tetradic.h",
-        "binding_val_strings.h",
+        "test_strings.h",
         "binding_val_vectors.h",
-        "targets.h",
+        "common.h",
+        "test_targets.h",
         "vectors.h"
     ],
     cmd = "\n".join([
@@ -149,13 +167,14 @@ genrule(
         "SRCDIR1=`dirname $$SRC1`",
         "$(location //vendored/makeheaders) \\",
         "    $(location //sealark:debug.c) \\",
-        "    $(location bindings.c) \\",
+        "    $(location test_bindings.c) \\",
+        "    $(location common.c) \\",
         "    $(location definitions.c) \\",
         "    $(location loads.c) \\",
         "    $(location paths_tetradic.c) \\",
-        "    $(location binding_val_strings.c) \\",
+        "    $(location test_strings.c) \\",
         "    $(location binding_val_vectors.c) \\",
-        "    $(location targets.c) \\",
+        "    $(location test_targets.c) \\",
         "    $(location vectors.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),

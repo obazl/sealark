@@ -43,7 +43,7 @@ void tearDown(void) {
 /* **************** singleton quotation **************** */
 void test_binding_value_string_plain_dq(void) {
     s7_pointer path = s7_eval_c_string(s7,
-                       "'(:targets 0 :bindings plaindq :value)");
+                       "'(:> 0 :@ plaindq :value)");
     s7_pointer bvalue = s7_apply_function(s7, ast, path);
 
     log_debug("bvalue:\n%s", s7_object_to_c_string(s7, bvalue));
@@ -72,7 +72,7 @@ void test_binding_value_string_plain_dq(void) {
 
 void test_binding_value_string_plain_sq(void) {
     s7_pointer path = s7_eval_c_string(s7,
-                       "'(:targets 0 :bindings plainsq :value)");
+                       "'(:> 0 :@ plainsq :value)");
     s7_pointer bvalue = s7_apply_function(s7, ast, path);
 
     log_debug("bvalue:\n%s", s7_object_to_c_string(s7, bvalue));
@@ -101,7 +101,7 @@ void test_binding_value_string_plain_sq(void) {
 
 void test_binding_value_string_raw_dq(void) {
     s7_pointer path = s7_eval_c_string(s7,
-                       "'(:targets 0 :bindings rawdq :value)");
+                       "'(:> 0 :@ rawdq :value)");
     s7_pointer bvalue = s7_apply_function(s7, ast, path);
 
     log_debug("bvalue:\n%s", s7_object_to_c_string(s7, bvalue));
@@ -130,7 +130,7 @@ void test_binding_value_string_raw_dq(void) {
 
 void test_binding_value_string_raw_sq(void) {
     s7_pointer path = s7_eval_c_string(s7,
-                       "'(:targets 0 :bindings rawsq :value)");
+                       "'(:> 0 :@ rawsq :value)");
     s7_pointer bvalue = s7_apply_function(s7, ast, path);
 
     log_debug("bvalue:\n%s", s7_object_to_c_string(s7, bvalue));
@@ -159,7 +159,7 @@ void test_binding_value_string_raw_sq(void) {
 
 void test_binding_value_string_bin_dq(void) {
     s7_pointer path = s7_eval_c_string(s7,
-                       "'(:targets 0 :bindings bindq :value)");
+                       "'(:> 0 :@ bindq :value)");
     s7_pointer bvalue = s7_apply_function(s7, ast, path);
 
     log_debug("bvalue:\n%s", s7_object_to_c_string(s7, bvalue));
@@ -188,7 +188,7 @@ void test_binding_value_string_bin_dq(void) {
 
 void test_binding_value_string_bin_sq(void) {
     s7_pointer path = s7_eval_c_string(s7,
-                       "'(:targets 0 :bindings binsq :value)");
+                       "'(:> 0 :@ binsq :value)");
     s7_pointer bvalue = s7_apply_function(s7, ast, path);
 
     log_debug("bvalue:\n%s", s7_object_to_c_string(s7, bvalue));
@@ -218,7 +218,7 @@ void test_binding_value_string_bin_sq(void) {
 /* **************** triple quotation **************** */
 void test_binding_value_string_plain_dq3(void) {
     s7_pointer path = s7_eval_c_string(s7,
-                       "'(:targets 1 :bindings plaindq3 :value)");
+                       "'(:> 1 :@ plaindq3 :value)");
     s7_pointer bvalue = s7_apply_function(s7, ast, path);
 
     log_debug("bvalue:\n%s", s7_object_to_c_string(s7, bvalue));
@@ -247,7 +247,7 @@ void test_binding_value_string_plain_dq3(void) {
 
 void test_binding_value_string_plain_sq3(void) {
     s7_pointer path = s7_eval_c_string(s7,
-                       "'(:targets 1 :bindings plainsq3 :value)");
+                       "'(:> 1 :@ plainsq3 :value)");
     s7_pointer bvalue = s7_apply_function(s7, ast, path);
 
     log_debug("bvalue:\n%s", s7_object_to_c_string(s7, bvalue));
@@ -276,7 +276,7 @@ void test_binding_value_string_plain_sq3(void) {
 
 void test_binding_value_string_raw_dq3(void) {
     s7_pointer path = s7_eval_c_string(s7,
-                       "'(:targets 1 :bindings rawdq3 :value)");
+                       "'(:> 1 :@ rawdq3 :value)");
     s7_pointer bvalue = s7_apply_function(s7, ast, path);
 
     log_debug("bvalue:\n%s", s7_object_to_c_string(s7, bvalue));
@@ -305,7 +305,7 @@ void test_binding_value_string_raw_dq3(void) {
 
 void test_binding_value_string_raw_sq3(void) {
     s7_pointer path = s7_eval_c_string(s7,
-                       "'(:targets 1 :bindings rawsq3 :value)");
+                       "'(:> 1 :@ rawsq3 :value)");
     s7_pointer bvalue = s7_apply_function(s7, ast, path);
 
     log_debug("bvalue:\n%s", s7_object_to_c_string(s7, bvalue));
@@ -334,7 +334,7 @@ void test_binding_value_string_raw_sq3(void) {
 
 void test_binding_value_string_bin_dq3(void) {
     s7_pointer path = s7_eval_c_string(s7,
-                       "'(:targets 1 :bindings bindq3 :value)");
+                       "'(:> 1 :@ bindq3 :value)");
     s7_pointer bvalue = s7_apply_function(s7, ast, path);
 
     log_debug("bvalue:\n%s", s7_object_to_c_string(s7, bvalue));
@@ -363,7 +363,7 @@ void test_binding_value_string_bin_dq3(void) {
 
 void test_binding_value_string_bin_sq3(void) {
     s7_pointer path = s7_eval_c_string(s7,
-                       "'(:targets 1 :bindings binsq3 :value)");
+                       "'(:> 1 :@ binsq3 :value)");
     s7_pointer bvalue = s7_apply_function(s7, ast, path);
 
     log_debug("bvalue:\n%s", s7_object_to_c_string(s7, bvalue));

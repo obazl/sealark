@@ -61,9 +61,22 @@ s7_pointer sunlark_parse_bzl_file(s7_scheme *s7,
 EXPORT s7_pointer sunlark_parse_string(s7_scheme *s7,
                                        s7_pointer args)
 {
-    log_debug("is_string? %d", s7_is_string(args));
-    char *str = (char*)s7_string(args);
-
+    const char *str;
+    if (s7_is_list(s7, args)) {
+        if(s7_list_length(s7, args) > 1) {
+            log_warn("Expected 1 arg, got %d: %s",
+                     s7_list_length(s7, args),
+                     s7_object_to_c_string(s7, args));
+            return s7_unspecified(s7);
+        } else {
+            str = s7_string(s7_car(args));
+        }
+    } else {
+        if (s7_is_string(args)) {
+            log_debug("is_string? %d", s7_is_string(args));
+            str = (char*)s7_string(args);
+        }
+    }
 #if defined (DEBUG_TRACE) || defined(DEBUG_PROPERTIES)
     log_debug("sunlark_parse_string: %s", str);
 #endif

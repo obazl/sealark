@@ -21,7 +21,7 @@ UT_array *sunlark_targets_from_filterlist(s7_scheme *s7,
                                              s7_pointer filter_list)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_FILTERS)
-    log_debug("sunlark_bf_targets_for_list: %s",
+    log_debug("sunlark_targets_from_filterlist: %s",
               s7_object_to_c_string(s7, filter_list));
 #endif
 
@@ -78,7 +78,7 @@ struct node_s *sunlark_target_for_index_from_filterlist(s7_scheme *s7,
                                                            int index)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_FILTERS)
-    log_debug("sunlark_bf_targets_for_list: %s",
+    log_debug("sunlark_target_for_index_from_filterlist: %s",
               s7_object_to_c_string(s7, filter_list));
 #endif
 

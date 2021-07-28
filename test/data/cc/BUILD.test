@@ -22,7 +22,7 @@ cc_library(
 cc_binary(
     name = "hello-world",
     srcs = ["hello-world.cc"],
-    deps = [":hello-lib"],
+    deps = [":hello-lib-a"],
 )
 
 cc_test(
@@ -30,13 +30,13 @@ cc_test(
 
 
     srcs = ["hello-world.cc"],
-    deps = [":hello-lib"],
+    deps = [":hello-lib-b"],
 )
 
 cc_test(
     name = "hello-fail_test",
     srcs = ["hello-fail.cc"],
-    deps = [":hello-lib"],
+    deps = [":hello-lib-c"],
 )
 
 a,b = "foo", "bar"  # multiple assignment

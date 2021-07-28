@@ -9,7 +9,7 @@
 
 EXPORT bool sealark_is_printable(struct node_s *ast_node)
 {
-    log_debug("tid %d printable?", ast_node->tid);
+    /* log_debug("tid %d printable?", ast_node->tid); */
     for (int i = 0; printable_tokens[i] != 0; i++) {
         if (ast_node->tid == printable_tokens[i])
             return true;
@@ -46,8 +46,8 @@ EXPORT struct node_s *sealark_target_has_binding(struct node_s *call_expr,
                                                  const char *key,
                                                  const char *val)
 {
-#ifdef DEBUG_QUERY
-    log_debug("sealark_target_has_binding");
+#if defined(DEBUG_PREDICATORS)
+    log_debug("sealark_target_has_binding: %s = %s", key, val);
 #endif
     /* :call-expr[1] > :call-sfx[1] > :arg-list */
     /* then search arg-list children for arg-named/name=str */
@@ -57,12 +57,12 @@ EXPORT struct node_s *sealark_target_has_binding(struct node_s *call_expr,
     struct node_s *arg_list = utarray_eltptr(call_sfx->subnodes, 1);
 
     /* struct node_s *node, *binding; */
-
+#if defined(DEBUG_UTARRAYS)
     log_debug("SEARCHING arg_list %d %s, child ct: %d",
               arg_list->tid,
               token_name[arg_list->tid][0],
               utarray_len(arg_list->subnodes));
-
+#endif
     struct node_s *key_node, *val_node;
     int key_len = strlen(key);
     int val_len = strlen(val);
@@ -72,27 +72,28 @@ EXPORT struct node_s *sealark_target_has_binding(struct node_s *call_expr,
 
     while((binding_node=(struct node_s*)utarray_next(arg_list->subnodes,
                                                   binding_node))) {
+#if defined(DEBUG_UTARRAYS)
         log_debug(" LOOP arg_list[%d] tid: %d %s", i++, binding_node->tid,
                   token_name[binding_node->tid][0]);
-
+#endif
         if (binding_node->tid == TK_Binding) { // skip TK_COMMA nodes
             key_node = utarray_eltptr(binding_node->subnodes, 0);
+#if defined(DEBUG_UTARRAYS)
             log_debug("testing key_node[%d]: %d %s", i, key_node->tid, key_node->s);
+#endif
 
             if ((strncmp(key_node->s, key, key_len) == 0)
                 && strlen(key_node->s) == key_len ){
-
+#if defined(DEBUG_UTARRAYS)
                 log_debug("MATCHED KEY %s", key);
-
+#endif
                 /* key matches, now test value */
                 val_node = utarray_eltptr(binding_node->subnodes, 2);
                 if (val_node->tid == TK_STRING) {
-                    log_debug("\tbinding: %s = %s", key_node->s, val_node->s);
+                    /* log_debug("\tbinding: %s = %s", key_node->s, val_node->s); */
 
                     if ( (strncmp(val_node->s, val, val_len) == 0)
                          && strlen(val_node->s) == val_len ) {
-                        /* log_debug("3 xxxxxxxxxxxxxxxx MATCH %d %s == %s", */
-                        /*           val_len, val->s, val); */
                         return binding_node;
                     }
                 } else {
@@ -112,7 +113,7 @@ EXPORT bool sealark_target_has_binding_key(struct node_s *call_expr,
                                            const char *key)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
-    log_debug("_sealark_target_has_binding %s", key);
+    log_debug("_sealark_target_has_binding_key: %s", key);
 #endif
 
     /* :call-expr[1] > :call-sfx[1] > :arg-list[0] */
@@ -130,7 +131,7 @@ EXPORT bool sealark_target_has_binding_key(struct node_s *call_expr,
 
     //FIXME: call _get_binding_for_name_unique
 
-#if defined(DEBUG_QUERY)
+#if defined(DEBUG_UTARRAYS)
     log_debug("SEARCHING arg_list %d %s, child ct: %d",
               arg_list->tid,
               token_name[arg_list->tid][0],
@@ -141,7 +142,7 @@ EXPORT bool sealark_target_has_binding_key(struct node_s *call_expr,
     int i = 0;
     while((arg_node=(struct node_s*)utarray_next(arg_list->subnodes,
                                                   arg_node))) {
-#if defined(DEBUG_QUERY)
+#if defined(DEBUG_UTARRAYS)
         log_debug(" LOOP arg_list[%d] tid: %d %s", i++, arg_node->tid,
                   token_name[arg_node->tid][0]);
 #endif

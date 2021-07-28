@@ -215,8 +215,7 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
 
     if (kw == KW(subnodes)) {
         if (ast_node->subnodes) {
-            //FIXME
-            return s7_unspecified(s7);
+            return nodelist_to_s7_list(s7, ast_node->subnodes);
         } else {
             return s7_nil(s7);
         }
@@ -229,17 +228,17 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
     }
 
     /* type predicate */
-    s7_pointer sym = s7_keyword_to_symbol(s7, kw);
-    char *key = (char*)s7_symbol_name(sym);
-    if (strrchr(key, '?') - key == strlen(key)-1 ) {
-        s7_pointer is = sunlark_is_kw(s7, key, ast_node);
-        log_debug("is? %d", s7_object_to_c_string(s7, is));
-        return is;
-        /* if (is_p == s7_f(s7)) { */
-        /*     return is_p; */
-        /* } else { */
-        /*     return s7_unspecified(s7); */
-        /* } */
+    if (s7_is_keyword(kw)) {
+        if (sunlark_op_is_predicate(s7, kw)) {
+            s7_pointer is = sunlark_node_is_kw_pred(s7, kw, ast_node);
+            log_debug("is? %d", s7_object_to_c_string(s7, is));
+            return is;
+            /* if (is_p == s7_f(s7)) { */
+            /*     return is_p; */
+            /* } else { */
+            /*     return s7_unspecified(s7); */
+            /* } */
+        }
     }
 
     return s7_unspecified(s7);

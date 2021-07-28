@@ -168,7 +168,7 @@ EXPORT UT_array *sealark_lex_file(char *fname)
 }
 
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
-EXPORT struct node_s *sealark_parse_string(char *buffer)
+EXPORT struct node_s *sealark_parse_string(const char *buffer)
 {
     log_set_quiet(false);
 
@@ -243,7 +243,7 @@ EXPORT struct parse_state_s *sealark_parse_file(const char *fname)
     log_set_quiet(false);
 
     log_info("sealark_parse_file: %s", fname);
-    FILE *f;
+    FILE *f, *ftrace;
 
     log_debug("CWD: %s", getcwd(NULL, 0));
 
@@ -287,8 +287,21 @@ EXPORT struct parse_state_s *sealark_parse_file(const char *fname)
     struct node_s *root = NULL;
 
     void* pParser = ParseAlloc (malloc);
-
     struct parse_state_s *parse_state = parser_init(lexer, root);
+
+    /* tracing */
+    char *trace_file = "lemontrace.log";
+    ftrace = fopen(trace_file, "w");
+    if (ftrace == NULL) {
+        log_error("fopen failure for %s", trace_file);
+        perror(trace_file);
+        /* log_error("Value of errno: %d", errnum); */
+        /* log_error("fopen error %s", strerror( errnum )); */
+        /* exit(EXIT_FAILURE); */
+        return NULL;
+    }
+
+    ParseTrace(ftrace, "debug");
 
     /* parser_init(fname, &ast); */
     /* log_debug("parsing %s", ast->fname); */

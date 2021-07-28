@@ -1,43 +1,14 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
-load("@bazel_skylib//rules:common_settings.bzl", "string_list_flag")
+load("//:BUILD.bzl", DEFINES="debug_defs")
 load(":BUILD.bzl", "gensyntax")
 
 exports_files(glob(["*.c"]))
 
 ## to enable debugging pass --//sealark:debug=bindings,vectors,...
 
-string_list_flag(name = "debug", build_setting_default = [])
-config_setting(name = "debug-bindings", flag_values = {":debug": "bindings"})
-config_setting(name = "debug-load", flag_values = {":debug": "load"})
-config_setting(name = "debug-mem", flag_values = {":debug": "mem"})
-config_setting(name = "debug-preds", flag_values = {":debug": "predicates"})
-config_setting(name = "debug-queries", flag_values = {":debug": "queries"})
-config_setting(name = "debug-vectors", flag_values = {":debug": "vectors"})
+pubic_header = "sealark.h"
 
-DEFINES = select({
-        ":debug-bindings": ["DEBUG_BINDINGS"],
-        "//conditions:default":   []
-    }) + select({
-        ":debug-load": ["DEBUG_LOAD"],
-        "//conditions:default":   []
-    }) + select({
-        ":debug-mem": ["DEBUG_MEM"],
-        "//conditions:default":   []
-    }) + select({
-        ":debug-preds": ["DEBUG_PREDICATES"],
-        "//conditions:default":   []
-    }) + select({
-        ":debug-queries": ["DEBUG_QUERY"],
-        "//conditions:default":   []
-    }) + select({
-        ":debug-vectors": ["DEBUG_VECTORS"],
-        "//conditions:default":   []
-    }) + select({
-        "//bzl/host:debug": ["DEBUG_TRACE"],
-        "//conditions:default":   []
-    })
-
-##########
+###########
 cc_library(
     name  = "sealark",
     alwayslink = True,
@@ -57,15 +28,17 @@ cc_library(
         "parse.h",
         "predicators.c",
         "predicators.h",
-        "serializers.c",
-        "serializers.h",
+        "sealark_bindings.c",
+        "sealark_bindings.h",
+        "sealark_targets.c",
+        "sealark_targets.h",
+        "sealark_serializers.c",
+        "sealark_serializers.h",
         "vectors.c",
         "vectors.h",
         "//vendored/logc:log.h"
    ],
-    hdrs = [
-        "sealark.h",           # api hdr
-    ],
+    hdrs = [pubic_header],
     defines = DEFINES,
     copts = select({
         # strdup is non-standard, not supported on linux in strict c11 mode
@@ -129,10 +102,7 @@ cc_library(
 
         "-U", "NDEBUG"
     ],
-    defines = select({
-        "//bzl/host:debug": ["DEBUG_TRACE"],
-        "//conditions:default":   []
-    }),
+    defines = DEFINES,
     deps = [
         "//vendored/logc",
         "//vendored/uthash"
@@ -181,7 +151,7 @@ cc_library(
         "-I", "external/moonlark/vendored/logc",
     ],
     defines = select({
-        "//bzl/host:debug": ["DEBUG_TRACE"],
+        "//bzl/host:debug": [],
         "//conditions:default":   []
     }),
     deps = [
@@ -230,7 +200,9 @@ genrule(
         "parse.c",
         "predicators.c",
         "syntaxis.c",
-        "serializers.c",
+        "sealark_bindings.c",
+        "sealark_targets.c",
+        "sealark_serializers.c",
         "vectors.c",
         "debug.c",
         # "//vendored/uthash",
@@ -245,7 +217,9 @@ genrule(
         "parse.h",
         "predicators.h",
         "syntaxis.h",
-        "serializers.h",
+        "sealark_bindings.h",
+        "sealark_targets.h",
+        "sealark_serializers.h",
         "vectors.h",
         "debug.h",
     ],
@@ -265,7 +239,9 @@ genrule(
         "    $(location parse.c) \\",
         "    $(location predicators.c) \\",
         "    $(location syntaxis.c) \\",
-        "    $(location serializers.c) \\",
+        "    $(location sealark_bindings.c) \\",
+        "    $(location sealark_targets.c) \\",
+        "    $(location sealark_serializers.c) \\",
         "    $(location vectors.c) \\",
         "    $(location debug.c) ",
         "cp $${SRCDIR1}/*.h $(@D)",
@@ -286,7 +262,9 @@ genrule(
         "parse.c",
         "predicators.c",
         "syntaxis.h",
-        "serializers.c",
+        "sealark_bindings.c",
+        "sealark_targets.c",
+        "sealark_serializers.c",
         "vectors.c",
         "debug.c",
         # "test_lex.c",
@@ -309,7 +287,9 @@ genrule(
         "    $(location nodes.c) \\",
         "    $(location parse.c) \\",
         "    $(location predicators.c) \\",
-        "    $(location serializers.c) \\",
+        "    $(location sealark_bindings.c) \\",
+        "    $(location sealark_targets.c) \\",
+        "    $(location sealark_serializers.c) \\",
         "    $(location vectors.c) \\",
         "    $(location syntaxis.h) \\",
         "    $(location debug.c) \\",

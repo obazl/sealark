@@ -73,15 +73,17 @@ void debug_print_s7(s7_scheme *s7, char *label, s7_pointer obj);
 /* arg may be a node or a nodelist */
 EXPORT int sunlark_node_tid(s7_scheme *s7, s7_pointer node_s7)
 {
-    if (s7_is_c_object(node_s7))
-#ifdef DEBUG_TID
-    log_debug("sunlark_node_tid %d",
-              ((struct node_s*)s7_c_object_value(node_s7))->tid);
+    if (s7_is_c_object(node_s7)) {
+#ifdef DEBUG_TRACE
+        /* struct node_s *n = s7_c_object_value(node_s7); */
+        /* log_debug("sunlark_node_tid %d %s", */
+        /*           n->tid, TIDNAME(n)); */
               /* s7_object_to_c_string(s7, node_s7)); */
 #endif
-
+    }
     if (s7_is_c_object(node_s7)) {
-        if (c_is_sunlark_node(s7, s7_list(s7, 1, node_s7))) {
+        /* if (c_is_sunlark_node(s7, s7_list(s7, 1, node_s7))) { */
+        if (c_is_sunlark_node(s7, node_s7)) {
             struct node_s *n = s7_c_object_value(node_s7);
             return n->tid;
         /* } else { */
@@ -279,6 +281,49 @@ static s7_pointer sunlark_nodes_are_equivalent(s7_scheme *s7, s7_pointer args)
 }
 /* /section: equality */
 
+/* **************** */
+/* 'length' implementation */
+/* IMPORTANT: this count may be used by iterators (for-each, map), so
+   do not count meta data (delims, punctuation) */
+s7_pointer sunlark_node_subnode_count(s7_scheme *s7, s7_pointer args)
+{
+#ifdef DEBUG_S7_API
+    log_debug(">>>>>>>>>>>>>>> sunlark_node_subnode_count <<<<<<<<<<<<<<<");
+#endif
+    /* called by Scheme, so args is a list */
+    struct node_s *node = s7_c_object_value(s7_car(args));
+    //FIXME: count depends on node type
+    if (node->subnodes) {
+        int ct = 0;
+        struct node_s *subnode = NULL;
+        while( (subnode=(struct node_s*)utarray_next(node->subnodes, subnode)) ) {
+            if (subnode->tid == TK_COMMA) continue;
+            if (subnode->tid == TK_LBRACK) continue;
+            if (subnode->tid == TK_RBRACK) continue;
+            ct++;
+        }
+        return s7_make_integer(s7, ct);
+    } else
+        return s7_make_integer(s7, 0);
+}
+
+/* **************** */
+s7_pointer sunlark_node_to_list(s7_scheme *s7, s7_pointer args)
+{
+#ifdef DEBUG_S7_API
+    /* log_debug(">>>>>>>>>>>>>>>> sunlark_node_to_list <<<<<<<<<<<<<<<<"); */
+#endif
+    /* called by Scheme, so args is a list */
+    struct node_s *node = s7_c_object_value(s7_car(args));
+    /* log_debug("tid: %d %s", node->tid, TIDNAME(node)); */
+
+    if (node->subnodes)
+        return nodelist_to_s7_list(s7, node->subnodes);
+    else
+        return s7_nil(s7);
+}
+
+
 /* **************************************************************** */
 /* section: getters and setters */
 /* get and set are special, since there are two ways to do each:
@@ -293,6 +338,9 @@ static s7_pointer sunlark_nodes_are_equivalent(s7_scheme *s7, s7_pointer args)
     takes two args, a ast_node object and a keyword to look up in the object.
  */
 #define SUNLARK_NODE_REF_SPECIALIZED_HELP "(ast-node-ref nd k) returns the value for property k (a keyword) of ast-node nd."
+
+/* sig: takes a node (satisfies node?) and an in (satisfies integer?),
+   returns ... what does s7_t mean here? "something"? i.e not void? */
 #define SUNLARK_NODE_REF_SPECIALIZED_SIG s7_make_signature(s7, 3, s7_t(s7), s7_make_symbol(s7, "node?"), s7_make_symbol(s7, "integer?"))
 
 /** sunlark_node_ref_specialized
@@ -375,7 +423,7 @@ static s7_pointer sunlark_node_ref_specialized(s7_scheme *s7, s7_pointer args)
 /* arg1 is the "self" node, arg 2 is first path op */
 s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
 {
-#ifdef DEBUG_TRACE
+#if defined(DEBUG_S7_API)
     log_debug(">>>>>>>>>>>>>>>> sunlark_node_object_applicator <<<<<<<<<<<<<<<<");
     log_debug("\tSELF tid: %d %s",
               sunlark_node_tid(s7, s7_car(args)),
@@ -383,7 +431,7 @@ s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
     /* debug_print_s7(s7, "\tAPPLICATOR ARGS: ", s7_cdr(args)); */
     log_debug("\targs: %s",
               s7_object_to_c_string(s7, s7_cdr(args)));
-    sealark_debug_print_ast_outline(s7_c_object_value(s7_car(args)), 0);
+    /* sealark_debug_print_ast_outline(s7_c_object_value(s7_car(args)), 0); */
 #endif
 
     s7_pointer rest = s7_cdr(args);
@@ -413,11 +461,17 @@ s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
     /*               sunlark_node_tid(s7, resolved_path)); */
     /* } */
 
-#ifdef DEBUG_TRACE
-    log_debug("<<<< sunlark_node_object_applicator, return type: %s",
+#ifdef DEBUG_S7_API
+    if (s7_is_c_object(resolved_path)) {
+        struct node_s *node = s7_c_object_value(resolved_path);
+        log_debug("<<<< sunlark_node_object_applicator, returning %d %s",
+                  node->tid, TIDNAME(node));
+    } else {
+        log_debug("<<<< sunlark_node_object_applicator, return type: %s",
               s7_is_c_object(resolved_path) ? "c-object"
               : s7_is_list(s7, resolved_path) ? "s7 list"
               : "other");
+    }
 #endif
     return resolved_path;
 
@@ -479,7 +533,8 @@ s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
  */
 #define SUNLARK_NODE_SET_SPECIALIZED_HELP "(ast-node-set! b i x) sets the ast_node value at index i to x."
 
-#define SUNLARK_NODE_SET_SPECIALIZED_SIG s7_make_signature(s7, 4, s7_make_symbol(s7, "float?"), s7_make_symbol(s7, "ast-node?"), s7_make_symbol(s7, "integer?"), s7_make_symbol(s7, "float?"))
+/* sig: returns node */
+#define SUNLARK_NODE_SET_SPECIALIZED_SIG s7_make_signature(s7, 4, s7_make_symbol(s7, "node?"), s7_make_symbol(s7, "node?"), s7_make_symbol(s7, "integer?"), s7_t(s7))
 
 static s7_pointer _update_ast_node_property(s7_scheme *s7,
                                   struct node_s *ast_node,
@@ -841,7 +896,7 @@ static s7_pointer sunlark_make_ast_node(s7_scheme *s7, s7_pointer args)
 
 EXPORT s7_pointer sunlark_node_new(s7_scheme *s7, struct node_s *node)
 {
-#ifdef DEBUG_TRACE
+#if defined(DEBUG_MEM)
     log_debug("sunlark_node_new");
 #endif
 
@@ -890,10 +945,9 @@ static s7_pointer sunlark_destroy_ast_node(s7_scheme *s7, s7_pointer obj)
 
 #define OBJECT_METHODS \
     "'float-vector? (lambda (p) (display \"foo \") #t) " \
-    "'signature (lambda (p) (list '#t 'node? 'integer?)) " \
-    "'type node? " \
     "'foo (lambda (self) \"hello from foo method!\") " \
     "'memq (lambda (self arg) \"hello from perverse memq method!\") " \
+    "'cdr (lambda (self) \"hello from perverse cdr method!\") " \
     "'arity (lambda (p) (cons 1 1)) " \
     "'aritable? (lambda (p args) (= args 1)) " \
     "'vector-dimensions (lambda (p) (list (length p))) " \
@@ -904,6 +958,9 @@ static s7_pointer sunlark_destroy_ast_node(s7_scheme *s7, s7_pointer obj)
     /* "'reverse! ast-node-reverse! " \ */
     /* "'subsequence subast_node " \ */
     /* "'append ast-node-append " */
+    /* "'signature (lambda (p) (list '#t 'node? 'integer?)) " \ */
+    /* "'type nodex? " \ */
+
 
 /* object methods: registered on each object, not type */
 static void _register_c_object_methods(s7_scheme *s7, s7_pointer ast_node)
@@ -937,12 +994,13 @@ static void _register_c_type_methods(s7_scheme *s7, s7_int ast_node_t)
     s7_c_type_set_copy(s7, ast_node_t, sunlark_node_copy);
 
     /* nodes are not sequences - nodelists are */
-    /* s7_c_type_set_length(s7, ast_node_t, sunlark_node_length); */
+    s7_c_type_set_length(s7, ast_node_t, sunlark_node_subnode_count);
     /* s7_c_type_set_reverse(s7, ast_node_t, sunlark_node_reverse); */
     /* s7_c_type_set_fill(s7, ast_node_t, sunlark_node_fill); */
 
     s7_c_type_set_to_string(s7, ast_node_t, sunlark_node_to_string);
 
+    s7_c_type_set_to_list(s7, ast_node_t, sunlark_node_to_list);
 }
 
 /* /section: extension methods */
@@ -962,7 +1020,7 @@ static void _register_ast_node_fns(s7_scheme *s7)
                                  SUNLARK_MAKE_AST_NODE_FORMAL_PARAMS,
                                  SUNLARK_MAKE_AST_NODE_HELP);
 
-    s7_define_typed_function(s7, "node?", sunlark_is_node,
+    s7_define_typed_function(s7, "sunlark-node?", sunlark_is_node,
                              1, 0, false,
                              SUNLARK_IS_NODE_HELP,
                              SUNLARK_IS_NODE_SIG);
@@ -993,19 +1051,19 @@ static void _register_ast_node_fns(s7_scheme *s7)
 
     /* parsing */
     s7_define_safe_function(s7,
-                            "parse-build-file",
+                            "sunlark-parse-build-file",
                             sunlark_parse_build_file,
                             1, 0, false,
                             SUNLARK_PARSE_BUILD_FILE_HELP);
 
     s7_define_safe_function(s7,
-                            "parse-bzl-file",
+                            "sunlark-parse-bzl-file",
                             sunlark_parse_bzl_file,
                             1, 0, false,
                             SUNLARK_PARSE_BZL_FILE_HELP);
 
     s7_define_safe_function(s7,
-                            "parse-string",
+                            "sunlark-parse-string",
                             sunlark_parse_string,
                             1, 0, false,
                             SUNLARK_PARSE_STRING_HELP);

@@ -40,11 +40,6 @@ s7_pointer buildfile_handle_triadic_path(s7_scheme *s7,
     /* ******************************** */
     if (op == KW(targets)) {
         if (s7_is_symbol(op2)) {
-            if (op3 == KW(count)) {
-                /* e.g. :targets 'cc_test :count */
-                log_debug("count_of_targets_from_filtersym");
-                return NULL;
-            }
             if (s7_is_integer(op3)) {
                 log_debug("target_for_index_from_filtersym");
                 struct node_s *tgt = sunlark_target_for_index_from_filtersym
@@ -85,10 +80,12 @@ s7_pointer buildfile_handle_triadic_path(s7_scheme *s7,
             if (op3 == KW(bindings)) { /* plurual */
                 log_debug("bindings_for_target_for_index");
                 errno = 0;
-                UT_array *bindings = sealark_bindings_for_target_for_index
+                /* UT_array *bindings = sealark_bindings_for_target_for_index */
+                /*     (bf_node, s7_integer(op2)); */
+                /* result_list = nodelist_to_s7_list(s7, bindings); */
+                struct node_s *bindings = sealark_bindings_for_target_for_index
                     (bf_node, s7_integer(op2));
-                result_list = nodelist_to_s7_list(s7, bindings);
-                return result_list;
+                return sunlark_node_new(s7, bindings);
             }
             if (op3 == KW(binding)) { /* singular */
                 log_error("Not yet supported: %s",
@@ -137,10 +134,13 @@ s7_pointer buildfile_handle_triadic_path(s7_scheme *s7,
             if (op3 == KW(bindings)) {
                 log_debug("bindings_for_target_for_name");
                 errno = 0;
-                UT_array *bindings = sealark_bindings_for_target_for_name
+                /* UT_array *bindings = sealark_bindings_for_target_for_name */
+                /*     (bf_node, s7_string(op2)); */
+                /* result_list = nodelist_to_s7_list(s7, bindings); */
+                /* return result_list; */
+                struct node_s *bindings = sealark_bindings_for_target_for_name
                     (bf_node, s7_string(op2));
-                result_list = nodelist_to_s7_list(s7, bindings);
-                return result_list;
+                return sunlark_node_new(s7, bindings);
             }
             if (op3 == KW(arg-list)) {
                 log_debug("arglist_for_target_for_name");

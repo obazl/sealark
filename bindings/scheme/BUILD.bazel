@@ -1,12 +1,8 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@bazel_skylib//rules:common_settings.bzl", "string_list_flag")
+load("//:BUILD.bzl", DEFINES="debug_defs")
 
 exports_files(["libsunlark.c"])
-
-#DEFINES = ["DEBUG", "DEBUG_PROPERTIES"]
-DEFINES = ["DEBUG", "DEBUG_TRACE"]
-#DEFINES = ["DEBUG_ATTR"]
-#DEFINES = ["DEBUG"]
-#DEFINES = []
 
 cc_library(
     name  = "sunlark",
@@ -46,6 +42,10 @@ cc_library(
         "sunlark_properties.h",
         "sunlark_serializers.c",
         "sunlark_serializers.h",
+        "sunlark_targets.c",
+        "sunlark_targets.h",
+        "sunlark_vectors.c",
+        "sunlark_vectors.h",
     ],
     hdrs = ["sunlark.h"],
     defines = DEFINES,
@@ -101,6 +101,8 @@ genrule(
         "sunlark_predicators.c",
         "sunlark_properties.c",
         "sunlark_serializers.c",
+        "sunlark_targets.c",
+        "sunlark_vectors.c",
         "//bazel:bazel_config.c",
         "//sealark:mkhdrs-export",
         "//vendored/uthash:utarray.h",
@@ -123,6 +125,8 @@ genrule(
         "sunlark_predicators.h",
         "sunlark_properties.h",
         "sunlark_serializers.h",
+        "sunlark_targets.h",
+        "sunlark_vectors.h",
     ],
     cmd = "\n".join([
         "SRC1=$(location libsunlark.c)",
@@ -147,7 +151,9 @@ genrule(
         "    $(location sunlark_parsers.c) \\",
         "    $(location sunlark_predicators.c) \\",
         "    $(location sunlark_properties.c) \\",
-        "    $(location sunlark_serializers.c)",
+        "    $(location sunlark_serializers.c) \\",
+        "    $(location sunlark_targets.c) \\",
+        "    $(location sunlark_vectors.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),
     tools = ["//vendored/makeheaders"],
@@ -174,6 +180,8 @@ genrule(
         "sunlark_predicators.c",
         "sunlark_properties.c",
         "sunlark_serializers.c",
+        "sunlark_targets.c",
+        "sunlark_vectors.c",
         "//bazel:bazel_config.c",
         # "//sealark:sealark.h", ## mkhdrs-export",
         "//vendored/uthash:utarray.h",
@@ -204,6 +212,8 @@ genrule(
         "    $(location sunlark_predicators.c) \\",
         "    $(location sunlark_properties.c) \\",
         "    $(location sunlark_serializers.c) \\",
+        "    $(location sunlark_targets.c) \\",
+        "    $(location sunlark_vectors.c) \\",
         "    > $@",
     ]),
     tools = ["//vendored/makeheaders"],

@@ -32,9 +32,13 @@ s7_pointer sunlark_targets_for_buildfile(s7_scheme *s7,
 
 /* **************************************************************** */
 /* **************************************************************** */
-
+/* when am I called? */
 s7_pointer nodelist_to_s7_list(s7_scheme *s7, UT_array *target_list)
 {
+#if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
+    /* log_debug("nodelist_to_s7_list"); */
+#endif
+
     s7_pointer node_list = s7_make_list(s7,
                                         utarray_len(target_list),
                                         s7_nil(s7));
@@ -44,13 +48,13 @@ s7_pointer nodelist_to_s7_list(s7_scheme *s7, UT_array *target_list)
     struct node_s *nd=NULL;
     int i = 0;
     while( (nd=(struct node_s*)utarray_next(target_list, nd)) ) {
-        log_debug("wrapping TID: %d", nd->tid);
+        /* log_debug("wrapping TID: %d %s", nd->tid, TIDNAME(nd)); */
         item = sunlark_node_new(s7, nd);
         s7_list_set(s7, node_list, i, item);
         /* node_list = s7_cons(s7, item, node_list); */
         i++;
     }
-    log_debug("new list len: %d", s7_list_length(s7, node_list));
+    /* log_debug("new list len: %d", s7_list_length(s7, node_list)); */
 
     return node_list;
 }

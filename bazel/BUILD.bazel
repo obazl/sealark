@@ -1,4 +1,5 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//:BUILD.bzl", DEFINES="debug_defs")
 
 exports_files(["bazel_config.c"])
 
@@ -11,10 +12,7 @@ cc_library(
         "bazel_config.h",
         "//vendored/logc:log.h"
    ],
-    defines = select({
-        "//bzl/host:debug": ["DEBUG_TRACE"],
-        "//conditions:default":   []
-    }),
+    defines = DEFINES,
     copts = select({
         "//bzl/host:macos": ["-std=c11"],
         "//bzl/host:linux": ["-std=gnu11"],

@@ -16,7 +16,7 @@ s7_pointer buildfile_handle_pentadic_path(s7_scheme *s7,
                                          struct node_s *bf_node,
                                          s7_pointer path_args)
 {
-#if defined (DEBUG_TRACE) || defined(DEBUG_PROPERTIES)
+#if defined (DEBUG_TRACE) || defined(DEBUG_PATHS)
     log_debug("buildfile_handle_pentadic_path: %s",
               s7_object_to_c_string(s7, path_args));
 #endif
@@ -190,12 +190,14 @@ s7_pointer buildfile_handle_pentadic_path(s7_scheme *s7,
     }
 
     /* ******************************** */
-    if (op == KW(target)) {
+    if (op == KW(>) || op == KW(target)) {
         if (s7_is_string(op2)) {
-            if (op3 == KW(bindings)) {
+            if (op3 == KW(@)||op3 == KW(binding)||op3 == KW(bindings)) {
                 if (s7_is_symbol(op4)) {
                     if (op5 == KW(key)) {
+#if defined(DEBUG_PATHS)
                         log_debug("pentad_key_sym_bindings_string_target");
+#endif
                         struct node_s *target
                             = sealark_target_for_name(bf_node, s7_string(op2));
                         struct node_s *binding
@@ -206,13 +208,18 @@ s7_pointer buildfile_handle_pentadic_path(s7_scheme *s7,
                         return sunlark_node_new(s7, key);
                     }
                     if (op5 == KW(value)) {
+#if defined(DEBUG_PATHS)
                         log_debug("pentad_val_sym_bindings_string_target");
+#endif
                         struct node_s *target
                             = sealark_target_for_name(bf_node, s7_string(op2));
                         struct node_s *binding
                             = sealark_target_binding_for_key(target,
                                                              s7_symbol_name(op4));
-                        return sunlark_value_for_binding(s7, binding);
+                        struct node_s *v = sealark_value_for_binding(binding);
+                        log_debug("path resolution:");
+                        sealark_debug_print_ast_outline(v, 0);
+                        return sunlark_node_new(s7, v);
                     }
                     log_error("Fifth path op %s not supported here.",
                               s7_object_to_c_string(s7, op5));
@@ -220,7 +227,9 @@ s7_pointer buildfile_handle_pentadic_path(s7_scheme *s7,
                 }
                 if (s7_is_integer(op4)) {
                     if (op5 == KW(key)) {
+#if defined(DEBUG_PATHS)
                         log_debug("pentad_key_int_bindings_string_target");
+#endif
                         struct node_s *target
                             = sealark_target_for_name(bf_node, s7_string(op2));
                         struct node_s *binding
@@ -231,7 +240,9 @@ s7_pointer buildfile_handle_pentadic_path(s7_scheme *s7,
                         return sunlark_node_new(s7, key);
                     }
                     if (op5 == KW(value)) {
+#if defined(DEBUG_PATHS)
                         log_debug("pentad_val_int_bindings_string_target");
+#endif
                         struct node_s *target
                             = sealark_target_for_name(bf_node, s7_string(op2));
                         struct node_s *binding
@@ -253,14 +264,18 @@ s7_pointer buildfile_handle_pentadic_path(s7_scheme *s7,
                 // same options as for :binding
                 if (s7_is_symbol(op4)) {
                     if (op5 == KW(key)) {
+#if defined(DEBUG_PATHS)
                         log_debug("pentad_key_sym_arglist_string_target");
+#endif
                         /* struct node_s *binding */
                         /*     = sealark_key_sym_bindings_string_target(bf_node, s7_string(op2), s7_symbol_name(op4)); */
                         /* return sunlark_node_new(s7, binding); */
                         return NULL;
                     }
                     if (op5 == KW(value)) {
+#if defined(DEBUG_PATHS)
                         log_debug("pentad_val_sym_arglist_string_target");
+#endif
                         /* struct node_s *binding */
                         /*     = sealark_val_sym_bindings_string_target(bf_node, s7_string(op2), s7_symbol_name(op4)); */
                         /* return sunlark_node_new(s7, binding); */
@@ -272,14 +287,18 @@ s7_pointer buildfile_handle_pentadic_path(s7_scheme *s7,
                 }
                 if (s7_is_integer(op4)) {
                     if (op5 == KW(key)) {
+#if defined(DEBUG_PATHS)
                         log_debug("pentad_key_int_arglist_string_target");
+#endif
                         /* struct node_s *binding */
                         /*     = sealark_key_sym_bindings_string_target(bf_node, s7_string(op2), s7_symbol_name(op4)); */
                         /* return sunlark_node_new(s7, binding); */
                         return NULL;
                     }
                     if (op5 == KW(value)) {
+#if defined(DEBUG_PATHS)
                         log_debug("pentad_val_int_arglist_string_target");
+#endif
                         /* struct node_s *binding */
                         /*     = sealark_val_sym_bindings_string_target(bf_node, s7_string(op2), s7_symbol_name(op4)); */
                         /* return sunlark_node_new(s7, binding); */
@@ -309,7 +328,9 @@ s7_pointer buildfile_handle_pentadic_path(s7_scheme *s7,
                 if (s7_is_symbol(op4)) {
                     if (op5 == KW(key)) {
                         // (:loads 0 :bindings mysym :key)
+#if defined(DEBUG_PATHS)
                         log_debug("pentad_key_sym_bindings_int_loads");
+#endif
                         struct node_s *load
                             = sealark_loadstmt_for_index(bf_node, s7_integer(op2));
                         UT_array *bindings
@@ -321,8 +342,9 @@ s7_pointer buildfile_handle_pentadic_path(s7_scheme *s7,
                         return sunlark_node_new(s7, key);
                     }
                     if (op5 == KW(value)) {
-                        // (:loads 0 :bindings mysym :value)
+#if defined(DEBUG_PATHS)
                         log_debug("pentad_val_sym_bindings_int_loads");
+#endif
                         struct node_s *load
                             = sealark_loadstmt_for_index(bf_node, s7_integer(op2));
                         UT_array *bindings
@@ -339,8 +361,9 @@ s7_pointer buildfile_handle_pentadic_path(s7_scheme *s7,
                 }
                 if (s7_is_integer(op4)) {
                     if (op5 == KW(key)) {
-                        // (:loads 0 :bindings 0 :key)
+#if defined(DEBUG_PATHS)
                         log_debug("pentad_key_int_bindings_int_load");
+#endif
                         struct node_s *load
                             = sealark_loadstmt_for_index(bf_node, s7_integer(op2));
                         UT_array *bindings
@@ -352,7 +375,9 @@ s7_pointer buildfile_handle_pentadic_path(s7_scheme *s7,
                     }
                     if (op5 == KW(value)) {
                         // (:loads 0 :bindings 0 :value)
+#if defined(DEBUG_PATHS)
                         log_debug("pentad_val_int_bindings_int_load");
+#endif
                         struct node_s *load
                             = sealark_loadstmt_for_index(bf_node, s7_integer(op2));
                         struct node_s *binding
@@ -389,11 +414,15 @@ s7_pointer buildfile_handle_pentadic_path(s7_scheme *s7,
             if (op3 == KW(bindings)) {
                 if (s7_is_symbol(op4)) {
                     if (op5 == KW(key)) {
+#if defined(DEBUG_PATHS)
                         log_debug("pentad_key_sym_bindings_string_load");
+#endif
                         return NULL;
                     }
                     if (op5 == KW(value)) {
+#if defined(DEBUG_PATHS)
                         log_debug("pentad_val_sym_bindings_string_load");
+#endif
                         struct node_s *load
                             = sealark_loadstmt_for_name(bf_node, s7_string(op2));
                         UT_array *bindings
@@ -411,7 +440,9 @@ s7_pointer buildfile_handle_pentadic_path(s7_scheme *s7,
                 }
                 if (s7_is_integer(op4)) {
                     if (op5 == KW(key)) {
+#if defined(DEBUG_PATHS)
                         log_debug("pentad_key_int_bindings_string_load");
+#endif
                         struct node_s *load
                             = sealark_loadstmt_for_name(bf_node, s7_string(op2));
                         UT_array *bindings
@@ -422,7 +453,9 @@ s7_pointer buildfile_handle_pentadic_path(s7_scheme *s7,
                         return sunlark_node_new(s7, key);
                     }
                     if (op5 == KW(value)) {
+#if defined(DEBUG_PATHS)
                         log_debug("pentad_val_int_bindings_string_load");
+#endif
                         struct node_s *load
                             = sealark_loadstmt_for_name(bf_node, s7_string(op2));
                         UT_array *bindings
@@ -446,14 +479,18 @@ s7_pointer buildfile_handle_pentadic_path(s7_scheme *s7,
                 log_debug("arglist_for_load_for_name");
                 if (s7_is_integer(op4)) {
                     if (op5 == KW(key)) {
+#if defined(DEBUG_PATHS)
                         log_debug("pentad_key_int_arglist_string_load");
+#endif
                         /* struct node_s *binding */
                         /*     = sealark_key_sym_bindings_string_target(bf_node, s7_string(op2), s7_symbol_name(op4)); */
                         /* return sunlark_node_new(s7, binding); */
                         return NULL;
                     }
                     if (op5 == KW(value)) {
+#if defined(DEBUG_PATHS)
                         log_debug("pentad_val_int_arglist_string_target");
+#endif
                         /* struct node_s *binding */
                         /*     = sealark_val_sym_bindings_string_target(bf_node, s7_string(op2), s7_symbol_name(op4)); */
                         /* return sunlark_node_new(s7, binding); */

@@ -42,20 +42,31 @@ void tearDown(void) {
 
 void test_int_vector(void) {
     s7_pointer vec = sunlark_parse_string(s7,
-                                          s7_make_string(s7, "[1, 2, 3]\n"));
+                                          s7_make_string(s7, "[1, 2,\n\
+ 3\n\
+]\n"));
 
     s7_pointer path = s7_eval_c_string(s7,
                        "'(0)");
     s7_pointer item = s7_apply_function(s7, vec, path);
 
-    /* log_debug("item:\n%s", s7_object_to_c_string(s7, item)); */
+    log_debug("item:\n%s", s7_object_to_c_string(s7, item));
 
     /* check type, tid */
-    /* TEST_ASSERT( s7_is_c_object(item) ); */
-    /* TEST_ASSERT( sunlark_node_tid(s7, item) == TK_List_Expr ); */
+    TEST_ASSERT( s7_is_c_object(item) );
+    TEST_ASSERT( sunlark_node_tid(s7, item) == TK_INT );
 
-    /* struct node_s *item_node = s7_c_object_value(item); */
-    /* TEST_ASSERT( item_node->tid == TK_List_Expr ); */
+    struct node_s *item_node = s7_c_object_value(item);
+    TEST_ASSERT( item_node->tid == TK_INT );
+    TEST_ASSERT( strncmp(item_node->s, "1", 1) == 0 );
+    TEST_ASSERT( strlen(item_node->s) == 1 );
+
+    /* (eq? item 1) => #f, but (eq? (item :val) 1) => #t */
+    s7_pointer eq_1 = s7_apply_function(s7, is_eq_s7,
+                                        s7_list(s7, 2,
+                                                item,
+                                                s7_make_integer(s7, 1)));
+    TEST_ASSERT( eq_1 == s7_t(s7) );
 }
 
 /* labels are syntactically same strings, but just in case we add

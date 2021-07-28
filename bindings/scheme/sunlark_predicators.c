@@ -25,30 +25,34 @@
 /* called by Scheme 'node?'; internally, use c_is_sunlark_node (bool) */
 s7_pointer sunlark_is_node(s7_scheme *s7, s7_pointer args)
 {
-#ifdef DEBUG_TRACE
-    log_debug("sunlark_is_node");
+#if defined(DEBUG_S7_API)
+    log_debug(">>>>>>>>>>>>>>>> sunlark_is_node <<<<<<<<<<<<<<<<");
 #endif
-    log_debug("obj t %d, node t %d",
-              s7_c_object_type(args), ast_node_t);
+    /* log_debug("obj t %d, node t %d", */
+    /*           s7_c_object_type(args), ast_node_t); */
 
-    log_debug("car obj t %d, node t %d",
-              s7_c_object_type(args), ast_node_t);
+    /* log_debug("car obj t %d, node t %d", */
+    /*           s7_c_object_type(args), ast_node_t); */
 
-    return s7_make_boolean(s7, c_is_sunlark_node(s7, args));
+    //NB: args is always a list
+
+    return s7_make_boolean(s7, c_is_sunlark_node(s7, s7_car(args)));
 }
 
 /* for internal C use (returns bool); Scheme 'node?' calls sunlark_is_node */
 bool c_is_sunlark_node(s7_scheme *s7, s7_pointer node_s7)
 {
-#if defined(DEBUG_SEALARK_PREDICATES)
-    log_debug("c_is_sunlark_node X");
+#if defined(DEBUG_PREDICATES)
+    log_debug("c_is_sunlark_node");
+    /* %s", */
+    /*           s7_object_to_c_string(s7, node_s7)); */
 #endif
 
     if (s7_is_c_object(node_s7)) {
-        bool eq = s7_c_object_type(node_s7) == ast_node_t;
+        bool eq = (s7_c_object_type(node_s7) == ast_node_t);
         return eq;
     } else {
-        return s7_f(s7);
+        return false;
     }
 }
 
@@ -59,33 +63,37 @@ bool c_is_sunlark_node(s7_scheme *s7, s7_pointer node_s7)
 #endif
 
 /* **************************************************************** */
-s7_pointer sunlark_is_kw(s7_scheme *s7, char *kw, struct node_s *self)
+s7_pointer sunlark_node_is_kw_pred(s7_scheme *s7, s7_pointer kw, struct node_s *self)
 {
 #ifdef DEBUG_TRACE
-    log_debug("sunlark_is_kw: %s", kw);
+    log_debug("sunlark_node_is_kw_pred: %s", kw);
 #endif
 
-    char buf[128];
-    strncpy(buf, kw, strlen(kw) + 1);
+    s7_pointer sym = s7_keyword_to_symbol(s7, kw);
+    const char *pred = s7_symbol_name(sym);
 
-    buf[strlen(buf) - 1] = '\0'; /* remove final ?  */
-
-    if ( (strncmp("node?", kw, 5) == 0) && (strlen(kw) == 5) ) {
+    if ( (strncmp("node?", pred, 5) == 0) && (strlen(pred) == 5) ) {
         s7_pointer n = sunlark_node_new(s7, self);
         return sunlark_is_node(s7,
                                s7_list(s7, 1, n));
     }
 
-    if ( (strncmp("printable?", kw, 10) == 0) && (strlen(kw) == 10) ) {
+    if ( (strncmp("printable?", pred, 10) == 0) && (strlen(pred) == 10) ) {
         bool is_printable = sunlark_node_new(s7, self);
         return s7_make_boolean(s7, is_printable);
     }
 
-    if ( (strncmp("target?", kw, 7) == 0) && (strlen(kw) == 7) ) {
+    if ( (strncmp("target?", pred, 7) == 0) && (strlen(pred) == 7) ) {
         /* until we get TK_Target implemented */
         bool is_target =  sealark_is_target(self);
         return s7_make_boolean(s7, is_target);
     }
+
+    /* token type predication */
+    char buf[128];
+    strncpy(buf, pred, strlen(pred) + 1);
+
+    buf[strlen(buf) - 1] = '\0'; /* remove final ?  */
 
     int tokid = sealark_kw_to_tid(buf);
     log_debug("kw to tid: %d", tokid);
@@ -97,5 +105,24 @@ s7_pointer sunlark_is_kw(s7_scheme *s7, char *kw, struct node_s *self)
     log_debug("self tid: %d %s, tokid %d %s",
               self->tid, TIDNAME(self),
               tokid, token_name[tokid][0]);
+
     return s7_make_boolean(s7, self->tid == tokid);
+}
+
+/* **************************************************************** */
+bool sunlark_op_is_predicate(s7_scheme *s7, s7_pointer op)
+{
+#ifdef DEBUG_PREDICATORS
+    log_debug("sunlark_op_is_predicate: %s",
+              s7_object_to_c_string(s7, op));
+#endif
+
+    if (s7_is_keyword(op)) {
+        s7_pointer sym = s7_keyword_to_symbol(s7, op);
+        const char *kw = s7_symbol_name(sym);
+        return kw[strlen(kw) - 1] == '?';
+    } else {
+        return false;
+    }
+
 }

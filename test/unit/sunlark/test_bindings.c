@@ -114,7 +114,7 @@ void test_map_over_bindings(void) {
     }
 }
 
-void test_binding_list(void) {
+void test_binding_lists(void) {
     s7_pointer path1 = s7_eval_c_string(s7, "'(:target 1 :bindings)");
     s7_pointer bindings1 = s7_apply_function(s7, ast, path1);
 
@@ -151,53 +151,37 @@ void test_binding_list(void) {
     equality = s7_apply_function(s7, s7_eval_c_string(s7, "equal?"),
                                  s7_list(s7, 2, bindings1, bindings2));
     TEST_ASSERT( equality == s7_t(s7) );
+}
 
+void test_bindings_foreach(void) {
     /* binding (arg) lists are not Scheme lists nor vectors, but they
        are s7-iterable; (for-each (lambda (binding) ...) bindings1) */
     /* s7_pointer binding1, binding2; */
-    /* struct node_s *binding1_o; */
-    /* struct node_s *binding2_o; */
-    s7_pointer iter1 = s7_make_iterator(s7, bindings1);
-    s7_pointer iter2 = s7_make_iterator(s7, bindings2);
-    s7_pointer binding1 = s7_iterate(s7, iter1);
-    s7_pointer binding2 = s7_iterate(s7, iter2);
-    while ( ! s7_iterator_is_at_end(s7, iter1) ) {
-        TEST_ASSERT( s7_is_c_object(binding1) );
-        TEST_ASSERT( !s7_is_list(s7, binding1) );
+
+    s7_pointer path = s7_eval_c_string(s7, "'(:target 1 :bindings)");
+    s7_pointer bindings = s7_apply_function(s7, ast, path);
+
+    s7_pointer pred;
+    s7_pointer iter = s7_make_iterator(s7, bindings);
+    s7_pointer binding = s7_iterate(s7, iter);
+    while ( ! s7_iterator_is_at_end(s7, iter) ) {
+        TEST_ASSERT( s7_is_c_object(binding) );
+        TEST_ASSERT( !s7_is_list(s7, binding) );
         pred = s7_apply_function(s7,
-                                 binding1,
+                                 binding,
                                  s7_eval_c_string(s7, "'(:binding?)"));
         TEST_ASSERT( pred == s7_t(s7) );
 
-        equality = s7_apply_function(s7, s7_eval_c_string(s7, "eq?"),
-                                     s7_list(s7, 2, binding1, binding2));
-        TEST_ASSERT( equality == s7_f(s7) ); /* not eq? */
-        equality = s7_f(s7);
-        equality = s7_apply_function(s7, s7_eval_c_string(s7, "equal?"),
-                                 s7_list(s7, 2, binding1, binding2));
-        TEST_ASSERT( equality == s7_t(s7) ); /* but equal? */
-
-        binding1 = s7_iterate(s7, iter1);
-        binding2 = s7_iterate(s7, iter2);
+        binding = s7_iterate(s7, iter);
     }
 }
 
-/* :target 1:
-cc_binary(
-    name = "hello-world",
-    srcs = ["hello-world.cc"],
-    deps = [":hello-lib"],
-)
-*/
-void test_binding(void) {
-    s7_pointer path = s7_eval_c_string(s7,
-                       "'(:targets 1 :bindings srcs)");
+void test_binding_srcs(void) {
+    s7_pointer path = s7_eval_c_string(s7, "'(:> 1 :@ srcs)");
     s7_pointer binding = s7_apply_function(s7, ast, path);
 
-    /* check type, tid */
     TEST_ASSERT( s7_is_c_object(binding) );
     TEST_ASSERT( sunlark_node_tid(s7, binding) == TK_Binding );
-
     struct node_s *binding_node = s7_c_object_value(binding);
     TEST_ASSERT( binding_node->tid == TK_Binding );
 
@@ -207,10 +191,15 @@ void test_binding(void) {
         = s7_apply_function(s7, binding,
                             s7_cons(s7, s7_make_keyword(s7,"key"),
                                     s7_nil(s7)));
-    log_debug("key: %s", s7_object_to_c_string(s7, key));
     TEST_ASSERT( s7_is_c_object(key) );
     TEST_ASSERT( sunlark_node_tid(s7, key) == TK_ID );
+    s7_pointer str = s7_apply_function(s7,
+                                       key,
+                            s7_cons(s7, s7_make_keyword(s7,"print"),
+                                    s7_nil(s7)));
+    TEST_ASSERT_EQUAL_STRING( s7_string(str), "srcs" );
 
+    /* check underlying c object */
     struct node_s *id_node = utarray_eltptr(binding_node->subnodes, 0);
     TEST_ASSERT( id_node->tid == TK_ID );
     TEST_ASSERT( strncmp(id_node->s, "srcs", 4) == 0);
@@ -221,16 +210,13 @@ void test_binding(void) {
         = s7_apply_function(s7, binding,
                             s7_cons(s7, s7_make_keyword(s7,"value"),
                                     s7_nil(s7)));
-    log_debug("val: %s", s7_object_to_c_string(s7, val));
     TEST_ASSERT( s7_is_c_object(val) );
     TEST_ASSERT( sunlark_node_tid(s7, val) == TK_List_Expr );
 
     /* in this case val is a vector; index into it */
     s7_pointer item
-        = s7_apply_function(s7, val,
-                            s7_cons(s7, s7_make_integer(s7, 0),
-                                    s7_nil(s7)));
-    log_debug("item: %s", s7_object_to_c_string(s7, item));
+        = s7_apply_function(s7, val, s7_cons(s7, s7_make_integer(s7, 0),
+                                     s7_nil(s7)));
     TEST_ASSERT( s7_is_c_object(item) );
     TEST_ASSERT( sunlark_node_tid(s7, item) == TK_STRING );
 
@@ -239,14 +225,28 @@ void test_binding(void) {
         = s7_apply_function(s7, item,
                             s7_cons(s7, s7_make_keyword(s7, "print"),
                                     s7_nil(s7)));
-    log_debug("sval: %s", s7_object_to_c_string(s7, sval));
     TEST_ASSERT( !s7_is_c_object(sval) );
     TEST_ASSERT( s7_is_string(sval) );
+    TEST_ASSERT_EQUAL_STRING( "\"hello-world.cc\"", s7_string(sval) );
+
+    /* second item uses single quotes */
+    item = s7_apply_function(s7, val, s7_cons(s7, s7_make_integer(s7, 1),
+                                     s7_nil(s7)));
+    TEST_ASSERT( s7_is_c_object(item) );
+    TEST_ASSERT( sunlark_node_tid(s7, item) == TK_STRING );
+
+    /* use :print to get a string value */
+    sval = s7_apply_function(s7, item,
+                            s7_cons(s7, s7_make_keyword(s7, "print"),
+                                    s7_nil(s7)));
+    TEST_ASSERT( !s7_is_c_object(sval) );
+    TEST_ASSERT( s7_is_string(sval) );
+    /* single-quotes */
+    TEST_ASSERT_EQUAL_STRING( "'hello-singlequotes.cc'", s7_string(sval) );
 }
 
 void test_binding_key(void) {
-    s7_pointer path = s7_eval_c_string(s7,
-                       "'(:targets 1 :bindings srcs :key)");
+    s7_pointer path = s7_eval_c_string(s7, "'(:> 1 :@ srcs :key)");
     s7_pointer bkey = s7_apply_function(s7, ast, path);
 
     /* check type, tid */
@@ -261,96 +261,9 @@ void test_binding_key(void) {
 
 }
 
-void test_binding_value_string_plain_dq(void) {
-    s7_pointer path = s7_eval_c_string(s7,
-                       "'(:targets 2 :bindings plaindq :value)");
-    s7_pointer bvalue = s7_apply_function(s7, ast, path);
-
-    log_debug("bvalue:\n%s", s7_object_to_c_string(s7, bvalue));
-
-    /* check type, tid */
-    TEST_ASSERT( s7_is_c_object(bvalue) );
-    TEST_ASSERT( sunlark_node_tid(s7, bvalue) == TK_STRING );
-
-    struct node_s *bvalue_node = s7_c_object_value(bvalue);
-    TEST_ASSERT( bvalue_node->tid == TK_STRING );
-
-    /* verify qtype: single quote plain */
-    TEST_ASSERT( bvalue_node->qtype & DQUOTE );
-
-    /* use :print to get a string value */
-    s7_pointer bvalue_str
-        = s7_apply_function(s7, bvalue,
-                            s7_cons(s7, s7_make_keyword(s7, "print"),
-                                    s7_nil(s7)));
-    log_debug("bvalue_s: %s", s7_object_to_c_string(s7, bvalue_str));
-    TEST_ASSERT( !s7_is_c_object(bvalue_str) );
-    TEST_ASSERT( s7_is_string(bvalue_str) );
-    TEST_ASSERT_EQUAL_STRING( "\"I am a plain double-quoted string\"",
-                              s7_string(bvalue_str) );
-}
-
-void test_binding_value_string_raw_dq(void) {
-    s7_pointer path = s7_eval_c_string(s7,
-                       "'(:targets 2 :bindings plaindq :value)");
-    s7_pointer bvalue = s7_apply_function(s7, ast, path);
-
-    log_debug("bvalue:\n%s", s7_object_to_c_string(s7, bvalue));
-
-    /* check type, tid */
-    TEST_ASSERT( s7_is_c_object(bvalue) );
-    TEST_ASSERT( sunlark_node_tid(s7, bvalue) == TK_STRING );
-
-    struct node_s *bvalue_node = s7_c_object_value(bvalue);
-    TEST_ASSERT( bvalue_node->tid == TK_STRING );
-
-    /* verify qtype: single quote plain */
-    TEST_ASSERT( bvalue_node->qtype & DQUOTE );
-
-    /* use :print to get a string value */
-    s7_pointer bvalue_str
-        = s7_apply_function(s7, bvalue,
-                            s7_cons(s7, s7_make_keyword(s7, "print"),
-                                    s7_nil(s7)));
-    log_debug("bvalue_s: %s", s7_object_to_c_string(s7, bvalue_str));
-    TEST_ASSERT( !s7_is_c_object(bvalue_str) );
-    TEST_ASSERT( s7_is_string(bvalue_str) );
-    TEST_ASSERT_EQUAL_STRING( "\"I am a plain double-quoted string\"",
-                              s7_string(bvalue_str) );
-}
-
-void test_binding_value_string_plain_sq(void) {
-    s7_pointer path = s7_eval_c_string(s7,
-                       "'(:targets 2 :bindings plainsq :value)");
-    s7_pointer bvalue = s7_apply_function(s7, ast, path);
-
-    log_debug("bvalue:\n%s", s7_object_to_c_string(s7, bvalue));
-
-    /* check type, tid */
-    TEST_ASSERT( s7_is_c_object(bvalue) );
-    TEST_ASSERT( sunlark_node_tid(s7, bvalue) == TK_STRING );
-
-    struct node_s *bvalue_node = s7_c_object_value(bvalue);
-    TEST_ASSERT( bvalue_node->tid == TK_STRING );
-
-    /* verify qtype: single quote plain */
-    TEST_ASSERT( bvalue_node->qtype & SQUOTE );
-
-    /* use :print to get a string value */
-    s7_pointer bvalue_str
-        = s7_apply_function(s7, bvalue,
-                            s7_cons(s7, s7_make_keyword(s7, "print"),
-                                    s7_nil(s7)));
-    log_debug("bvalue_s: %s", s7_object_to_c_string(s7, bvalue_str));
-    TEST_ASSERT( !s7_is_c_object(bvalue_str) );
-    TEST_ASSERT( s7_is_string(bvalue_str) );
-    TEST_ASSERT_EQUAL_STRING( "'I am a plain single-quoted string'",
-                              s7_string(bvalue_str) );
-}
-
 void test_binding_value_vector(void) {
     s7_pointer path = s7_eval_c_string(s7,
-                       "'(:targets 1 :bindings srcs :value)");
+                       "'(:> 1 :@ srcs :value)");
     s7_pointer bvalue = s7_apply_function(s7, ast, path);
 
     log_debug("bvalue:\n%s", s7_object_to_c_string(s7, bvalue));
@@ -363,29 +276,29 @@ void test_binding_value_vector(void) {
     TEST_ASSERT( bvalue_node->tid == TK_List_Expr );
 }
 
+/* (v (ast :target 1 :@ 'srcs :value 0)) */
 void test_binding_predicate(void) {
     s7_pointer path = s7_eval_c_string(s7,
-                       "'(:> \"hello-lib\" :@ srcs 0)");
-    s7_pointer binding = s7_apply_function(s7, ast, path);
-    log_debug("binding: %s", s7_object_to_c_string(s7, binding));
+                       "'(:> \"hello-lib\" :@ srcs :value 0)");
+    s7_pointer item = s7_apply_function(s7, ast, path);
+    log_debug("item: %s", s7_object_to_c_string(s7, item));
     /* check type, tid */
-    TEST_ASSERT( s7_is_c_object(binding) );
-    log_debug("binding tid: %s", s7_object_to_c_string(s7, binding));
-    TEST_ASSERT( sunlark_node_tid(s7, binding) == TK_Binding );
+    TEST_ASSERT( s7_is_c_object(item) );
+    log_debug("item tid: %s", s7_object_to_c_string(s7, item));
+    TEST_ASSERT( sunlark_node_tid(s7, item) == TK_STRING );
 
-    struct node_s *binding_node = s7_c_object_value(binding);
-    TEST_ASSERT( binding_node->tid == TK_List_Expr );
+    struct node_s *item_node = s7_c_object_value(item);
+    TEST_ASSERT( item_node->tid == TK_STRING );
 }
 
 int main(void) {
     UNITY_BEGIN();
-    /* RUN_TEST(test_forall_targets_forall_bindings); */
-    RUN_TEST(test_binding_list);
-    /* RUN_TEST(test_binding); */
-    /* RUN_TEST(test_binding_key); */
-    /* RUN_TEST(test_binding_value_string_plain_dq); */
-    /* RUN_TEST(test_binding_value_string_plain_sq); */
-    /* RUN_TEST(test_binding_value_vector); */
-    /* RUN_TEST(test_binding_predicate); */
+    RUN_TEST(test_forall_targets_forall_bindings);
+    RUN_TEST(test_binding_lists);
+    RUN_TEST(test_bindings_foreach);
+    RUN_TEST(test_binding_srcs);
+    RUN_TEST(test_binding_key);
+    RUN_TEST(test_binding_value_vector);
+    RUN_TEST(test_binding_predicate);
     return UNITY_END();
 }

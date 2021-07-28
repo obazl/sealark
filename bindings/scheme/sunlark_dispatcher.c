@@ -36,7 +36,8 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
               data_tid,
               token_name[data_tid][0]);
 
-    /* s7_pointer op = s7_car(path_args); */
+    s7_pointer op = s7_car(path_args);
+    struct node_s *result_node;
 
     switch( data_tid ) {
 
@@ -50,11 +51,22 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
         return sunlark_dispatch_on_target(s7, data, path_args);
         break;
 
+    case TK_Arg_List: /* bindings list */
+        log_debug("dispatching on TK_Arg_List");
+        s7_pointer x = sunlark_dispatch_on_bindings_list(s7, data, path_args);
+        return x;
+        break;
+
     case TK_Binding:
         log_debug("dispatching on TK_Binding");
-        struct node_s *result =sunlark_dispatch_on_binding(s7, data, path_args);
+        bool p = sunlark_op_is_predicate(s7, op);
+        if (p) {
+            return sunlark_node_is_kw_pred(s7, op, s7_c_object_value(data));
+        } else {
+            result_node =sunlark_resolve_binding_path(s7, data, path_args);
+        }
         /* FIXME: type of result? */
-        return sunlark_node_new(s7, result);
+        return sunlark_node_new(s7, result_node);
         break;
 
     case TK_ID:
@@ -67,7 +79,7 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
         return sunlark_dispatch_on_string(s7, data, path_args);
         break;
 
-    case TK_List_Expr:          /* e.g. as binding value */
+    case TK_List_Expr: /* vector, e.g. as binding value */
         log_debug("dispatching on TK_List_Expr");
         return sunlark_dispatch_on_vector(s7, data, path_args);
         break;
@@ -85,7 +97,7 @@ s7_pointer sunlark_dispatch_on_buildfile(s7_scheme *s7,
                                          s7_pointer data,
                                          s7_pointer path_args)
 {
-#if defined (DEBUG_TRACE) || defined(DEBUG_PROPERTIES)
+#if defined (DEBUG_TRACE) || defined(DEBUG_PATHS)
     log_debug("sunlark_dispatch_on_buildfile: %s",
               s7_object_to_c_string(s7, path_args));
 #endif
@@ -97,7 +109,7 @@ s7_pointer sunlark_dispatch_on_buildfile(s7_scheme *s7,
     }
 
     int op_count = s7_list_length(s7, path_args);
-    log_debug("op count: %d", op_count);
+    /* log_debug("op count: %d", op_count); */
 
     s7_pointer op = s7_car(path_args);
     //s7_pointer op2, op3, op4, op5;
@@ -109,9 +121,22 @@ s7_pointer sunlark_dispatch_on_buildfile(s7_scheme *s7,
 
     s7_pointer result_list;
 
+    if (op == KW(>>) || op == KW(targets)) {
+        s7_pointer r
+            = sunlark_forall_targets(s7, bf_node, s7_cdr(path_args));
+        return r;
+    }
+
+    if (op == KW(>) || op == KW(target)) {
+        result_list //= sunlark_targets_for_buildfile(s7, bf_node);
+            = sunlark_target_select(s7, bf_node, s7_cdr(path_args));
+            return result_list;
+    }
+
+
     switch(op_count) {
     case 1:
-        if (op == KW(targets)) {
+        if (op == KW(>>) || op == KW(>) || op == KW(targets)) {
             result_list = sunlark_targets_for_buildfile(s7, bf_node);
             //FIXME: switch to:
             /* UT_array *loads = sealark_procs_for_id(bf_node, */
@@ -206,94 +231,6 @@ s7_pointer sunlark_dispatch_on_buildfile(s7_scheme *s7,
     /* } */
 }
 
-/** sunlark_dispatch_on_target
-
-    datum: node of tid :call-expr
-
-  switch(op count) {
-  case 1:
-      :bindings -- returns s7_list
-      :rulename
-      // common properties: :tid, :line, :col, etc.
-      break;
-  case 2:
-      :bindings 'sym -- returns node for binding with name sym
-      :bindings :count
- */
-//FIXME: LOCAL
-s7_pointer sunlark_dispatch_on_target(s7_scheme *s7,
-                                      s7_pointer data,
-                                      s7_pointer path_args)
-{
-#if defined (DEBUG_TRACE) || defined(DEBUG_PROPERTIES)
-    log_debug("sunlark_dispatch_on_target: %s",
-              s7_object_to_c_string(s7, path_args));
-#endif
-
-    struct node_s *target = s7_c_object_value(data);
-
-    if (target->tid != TK_Call_Expr) {
-        log_error("Expected node tid %d, got %d %s", TK_Call_Expr,
-                  target->tid, TIDNAME(target));
-        exit(EXIT_FAILURE);     /* FIXME */
-    }
-
-    int op_count = s7_list_length(s7, path_args);
-    s7_pointer op = s7_car(path_args);
-
-    s7_pointer result_list;
-
-    switch(op_count) {
-    case 0:
-        log_error("not enough path steps");
-        exit(EXIT_FAILURE);     /* FIXME */
-    case 1:
-        if (KW(arg-list) == op) {
-            struct node_s *arg_list=sealark_arglist_for_target(target);
-            return nodelist_to_s7_list(s7, arg_list->subnodes);
-        }
-        if (KW(bindings) == op) {
-            UT_array *bindings = sealark_target_bindings(target);
-            return nodelist_to_s7_list(s7, bindings);
-        }
-        if (KW(rule) == op) {
-            struct node_s *id=sealark_ruleid_for_target(target);
-            return sunlark_node_new(s7, id);
-        }
-        if (KW(name) == op) {
-            struct node_s *id=sealark_target_name(target);
-            return sunlark_node_new(s7, id);
-        }
-        /* common properties */
-        s7_pointer result = sunlark_common_property_lookup(s7, target, op);
-        if (result) return result;
-
-        log_error("dispatch on %s for target not yet implemented",
-                  s7_object_to_c_string(s7, op));
-        break;
-    case 2:
-        // :bindings 'sym -- returns node for binding with name sym
-        // :bindings :count
-        break;
-    default:
-        log_error("too many path steps");
-        exit(EXIT_FAILURE);     /* FIXME */
-    }
-
-
-    // obsol
-    /* tmp = sunlark_target_property_lookup(s7, */
-    /*                                      s7_c_object_value(self), */
-    /*                                      path_arg); */
-    /* if (s7_is_c_object(tmp)) { */
-    /*     self = tmp; */
-    /*     self_tid = sunlark_node_tid(s7, tmp); */
-    /* } else { */
-    /*     return tmp; */
-    /* } */
-
-}
-
 /* **************** */
 LOCAL s7_pointer sunlark_dispatch_on_string(s7_scheme *s7,
                                          s7_pointer node,
@@ -305,7 +242,7 @@ LOCAL s7_pointer sunlark_dispatch_on_string(s7_scheme *s7,
 #endif
 
     int op_count = s7_list_length(s7, path_args);
-    log_debug("op count: %d", op_count);
+    /* log_debug("op count: %d", op_count); */
 
     if (op_count > 1) {
         //error, :s, :tid etc. allowed

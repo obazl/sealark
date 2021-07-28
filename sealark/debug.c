@@ -1,16 +1,12 @@
 #include "log.h"
 #include "utarray.h"
+#include "utstring.h"
 #include "debug.h"
 
 /* ******************************** */
 /* recursively print outline */
 EXPORT void sealark_debug_print_ast_outline(struct node_s *node, int level)
 {
-#ifdef DEBUG_QUERY
-    /* log_debug("sealark_print_ast_outline level %d, node %d %s", */
-    /*           level, node->tid, TIDNAME(node)); */
-#endif
-
     if (node->s)
         log_debug("%*.s node%d %d %s: %s",
                   2*level, " ", level, node->tid, TIDNAME(node), node->s);
@@ -27,7 +23,23 @@ EXPORT void sealark_debug_print_ast_outline(struct node_s *node, int level)
      }
 }
 
-EXPORT void dump_node(struct node_s *node)
+EXPORT void sealark_debug_print_node_starlark(struct node_s *node,
+                                              bool crush)
+{
+    UT_string *buf;
+    char *str;
+    utstring_new(buf);
+    sealark_node_to_starlark(node, buf);
+    if (crush)
+        str = sealark_crush_string(buf);
+    else
+        str = utstring_body(buf);
+    log_debug("%s", str);
+    if (crush) free(str);
+    utstring_free(buf);
+}
+
+EXPORT void sealark_dump_node(struct node_s *node)
 {
     log_debug("dump_node: %p", node);
     log_debug("%s[%d] %c (%d:%d)",

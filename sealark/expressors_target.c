@@ -7,12 +7,9 @@
 #include "log.h"
 #include "utarray.h"
 
-#include "expressors.h"
+#include "expressors_target.h"
 
-/* ******************************** */
-/* returns only bindings (TK_Named_Arg) in a new UT_array */
-/* **************************************************************** */
-EXPORT UT_array *sealark_target_bindings(struct node_s *target)
+EXPORT UT_array *sealark_target_bindings_to_utarray(struct node_s *target)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
     log_debug("sealark_target_bindings");
@@ -23,6 +20,8 @@ EXPORT UT_array *sealark_target_bindings(struct node_s *target)
     /* :call-expr[1] => :call-sfx[1] => :arg-list */
     struct node_s *call_sfx = utarray_eltptr(target->subnodes, 1);
     struct node_s *arg_list = utarray_eltptr(call_sfx->subnodes, 1);
+
+    sealark_debug_print_ast_outline(arg_list, 0);
 
     UT_array *attribs;
     utarray_new(attribs, &node_icd);
@@ -42,10 +41,13 @@ EXPORT int sealark_target_bindings_count(struct node_s *target)
     log_debug("sealark_target_bindings_count");
 #endif
 
-    UT_array *bindings = sealark_target_bindings(target);
-    return utarray_len(bindings);
+    UT_array *bindings = sealark_target_bindings_to_utarray(target);
+    int ct = utarray_len(bindings);
+    utarray_free(bindings);
+    return ct;
 }
 
+/* **************** */
 EXPORT struct node_s *sealark_target_name(struct node_s *target)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)

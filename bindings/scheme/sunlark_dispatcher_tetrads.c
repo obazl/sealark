@@ -52,8 +52,10 @@ s7_pointer buildfile_handle_tetradic_path(s7_scheme *s7,
                     log_debug("bindings_for_target_for_index_from_filtersym");
                     struct node_s *tgt = sunlark_target_for_index_from_filtersym
                         (s7, bf_node, s7_symbol_name(op2), s7_integer(op3));
-                    UT_array *bindings = sealark_target_bindings(tgt);
-                    return nodelist_to_s7_list(s7, bindings);
+                    /* UT_array *bindings = sealark_bindings_for_target(tgt); */
+                    /* return nodelist_to_s7_list(s7, bindings); */
+                    struct node_s *bindings = sealark_bindings_for_target(tgt);
+                    return sunlark_node_new(s7, bindings);
                 }
                 log_error("Path op %s not supported following :targets sym int",
                           s7_object_to_c_string(s7, op3));
@@ -73,8 +75,10 @@ s7_pointer buildfile_handle_tetradic_path(s7_scheme *s7,
                     struct node_s *tgt = sunlark_target_for_index_from_filterlist
                         (s7, bf_node, op2, s7_integer(op3));
                     /* s7_pointer select_list); */
-                    UT_array *bindings = sealark_target_bindings(tgt);
-                    return nodelist_to_s7_list(s7, bindings);
+                    /* UT_array *bindings = sealark_bindings_for_target(tgt); */
+                    /* return nodelist_to_s7_list(s7, bindings); */
+                    struct node_s *bindings = sealark_bindings_for_target(tgt);
+                    return sunlark_node_new(s7, bindings);
                 }
             }
             /* if (op3 == KW(count)) { */

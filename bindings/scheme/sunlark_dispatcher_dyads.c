@@ -38,61 +38,14 @@ s7_pointer buildfile_handle_dyadic_path(s7_scheme *s7,
 
     s7_pointer op2;
     op2 = s7_cadr(path_args);
-    if (op == KW(targets)) {
-        if (s7_is_symbol(op2)) {
-            s7_pointer filter_list = s7_list(s7, 1,
-                                             op2, s7_nil(s7));
-            UT_array *l = sunlark_targets_from_filterlist(s7,
-                                                            bf_node,
-                                                            filter_list);
-            return nodelist_to_s7_list(s7, l);
-        }
-        if (s7_is_integer(op2)) {
-            log_debug("target_for_index %d", s7_integer(op2));
-            /* struct node_s *n = utarray_eltptr(bf_node->subnodes, */
-            /*                                   s7_integer(op)); */
-            errno = 0;
-            struct node_s *n = sealark_target_for_index(bf_node,
-                                                       s7_integer(op2));
-            if (n == NULL) {
-                switch(errno) {
-                case 2:
-                    return(s7_error(s7,
-                                    s7_make_symbol(s7, "invalid_index"),
-                                    s7_list(s7, 2, s7_make_string(s7, "index ~D > target count"),
-                                            op2)));
-                    break;
-                case 3:
-                    return(s7_error(s7,
-                                    s7_make_symbol(s7, "invalid_index"),
-                                    s7_list(s7, 2,
-                                            s7_make_string(s7,
-                                                           "abs(~D) > target count"),
-                                            op2)));
-                }
-            }
-            result_list = sunlark_node_new(s7, n);
-            return result_list;
-        }
-        if (s7_is_list(s7, op2)) {
-            log_debug("filtering targets by list %s",
-                      s7_object_to_c_string(s7, op2));
-            UT_array *tgts = sunlark_targets_from_filterlist(s7,
-                                                               bf_node,
-                                                               op2);
-            return nodelist_to_s7_list(s7, tgts);
-        }
-        if (s7_is_string(op2)) {
-            log_error("String arg after :targets not supported; did you mean ':target'?");
-            return(s7_error(s7,
-                            s7_make_symbol(s7, "invalid_argument"),
-                            s7_list(s7, 2, s7_make_string(s7,
-                                                          "String arg \"~A\" after :targets not supported; did you mean ':target'?"),
-                                    op2)));
-        }
+
+    if (op == KW(>>) || op == KW(targets)) {
+        s7_pointer r
+            = sunlark_forall_targets(s7, bf_node, s7_cdr(path_args));
+        return r;
     }
     /* **************** */
-    if (op == KW(target)) {
+    if (op == KW(>) || op == KW(target)) {
         if (s7_is_string(op2)) {
             struct node_s *n = sealark_target_for_name(bf_node,
                                                        s7_string(op2));
