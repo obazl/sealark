@@ -80,29 +80,29 @@ EXPORT void moonlark_node2lua(lua_State *L, struct node_s *node, int level)
     lua_newtable(L);            /* one table per node  */
 
     /* log_debug("pushing type %d %s", */
-    /*           node->type, token_name[node->type][0]); */
+    /*           node->tid, token_name[node->tid][0]); */
     lua_pushstring(L, "type");  /* key */
-    lua_pushinteger(L, node->type);
+    lua_pushinteger(L, node->tid);
     lua_settable(L, -3);
 
     /* debugging only: */
     lua_pushstring(L, "t");  /* key */
-    if (token_name[node->type][0] != NULL) {
+    if (token_name[node->tid][0] != NULL) {
         /* log_debug("pushing typestring %s", */
-        /*           token_name[node->type][0]); */
-        lua_pushstring(L, token_name[node->type][0]);
+        /*           token_name[node->tid][0]); */
+        lua_pushstring(L, token_name[node->tid][0]);
     } else {
         lua_pushstring(L, "FOOBAR");
     }
     lua_settable(L, -3);
 
     if (node->s != NULL) {
-        /* log_debug("pushing string[%d] %s", node->type, node->s); */
+        /* log_debug("pushing string[%d] %s", node->tid, node->s); */
         lua_pushstring(L, "s");  /* key */
         lua_pushstring(L, node->s);
         lua_settable(L, -3);
     }
-    if (node->type == TK_STRING) {
+    if (node->tid == TK_STRING) {
         /* which kind of quote? */
         lua_pushstring(L, "q");
         if (node->qtype & SQUOTE)
@@ -177,14 +177,14 @@ EXPORT void moonlark_ast2lua(lua_State *L, struct parse_state_s *parse)
     lua_setfield(L, -2, "build_file");
 
     lua_pushstring(L, "type");  /* key */
-    lua_pushinteger(L, parse->root->type); // token_name[parse->root->type][0]);
+    lua_pushinteger(L, parse->root->tid); // token_name[parse->root->tid][0]);
     lua_settable(L, -3);
 
     lua_pushstring(L, "t");  /* key */
-    if (token_name[parse->root->type][0] != NULL) {
+    if (token_name[parse->root->tid][0] != NULL) {
         /* log_debug("pushing type string %s", */
-        /*           token_name[parse->root->type][0]); */
-        lua_pushstring(L, token_name[parse->root->type][0]);
+        /*           token_name[parse->root->tid][0]); */
+        lua_pushstring(L, token_name[parse->root->tid][0]);
     } else {
         /* lua_pushstring(L, "FOOBAR"); */
     }
@@ -229,7 +229,7 @@ EXPORT void moonlark_ast2lua(lua_State *L, struct parse_state_s *parse)
 /*
   Top of Stack: parsed lAST
  */
-EXPORT void moonlark_lua_call_user_handler(lua_State *L, char *handler)
+EXPORT void moonlark_call_user_handler(lua_State *L, char *handler)
 {
     /* log_debug("moonlark_lua_call_user_handler"); */
 
@@ -313,41 +313,22 @@ EXPORT void moonlark_augment_load_path(lua_State *L, char *path)
 /*
   called by //moonlark:edit, but not //moonlark:repl
  */
-EXPORT void moonlark_lua_load_file(lua_State *L, char *lua_file)
+EXPORT void moonlark_load_script_file(lua_State *L, char *lua_file)
 {
     // log_debug("starlark_lua_load_handlers");
 
-    /* log_debug("loading lua file: %s", default_handler_file_name); */
-    /* if (luaL_dostring(L, "require'handler'")) { */
-    /*     lerror(L, "luaL_dostring fail for: %s\n", */
-    /*            lua_tostring(L, -1)); */
-    /* } */
-    /* log_debug("loaded"); */
+    UT_string * require;
+    utstring_new(require);
+    utstring_printf(require, "require '%s'", lua_file);
+    /* remove .lua to get pkg name for require */
+    int end = utstring_findR(require, -1, ".lua'", 5);
+    utstring_body(require)[end] = '\'';
+    utstring_body(require)[end+1] = '\0';
 
-    if (lua_file == NULL) {
-        if (luaL_dostring(L, "require'edit'")) {
-            lerror(L, "luaL_dostring fail for: %s\n",
-                   lua_tostring(L, -1));
-        }
-        // log_debug("loaded default lua handler");
-    } else {
-        if (luaL_loadfile(L, lua_file) || lua_pcall(L, 0, 0, 0))
-            lerror(L, "cannot run configuration file: %s\n",
-                   lua_tostring(L, -1));
+    if (luaL_dostring(L, utstring_body(require))) {
+        lerror(L, "luaL_dostring fail for: %s\n",
+               lua_tostring(L, -1));
     }
-    /* utstring_clear(user_lua_file); */
-    /* utstring_printf(user_lua_file, "%s/%s", utstring_body(obazl_d), utstring_body(default_lua_file)); */
-    /* int rc = access(utstring_body(user_lua_file), R_OK); */
-    /* if (!rc) { /\* found *\/ */
-    /*     log_debug("loading user lua_file: %s", utstring_body(user_lua_file)); */
-    /*     if (luaL_loadfile(L, utstring_body(user_lua_file)) || lua_pcall(L, 0, 0, 0)) */
-    /*         lerror(L, "cannot run configuration file: %s\n", */
-    /*                lua_tostring(L, -1)); */
-    /*     log_debug("loaded lua file: %s", utstring_body(user_lua_file)); */
-    /* } else { */
-    /*     log_debug("no user lua file found: %s", utstring_body(user_lua_file)); */
-    /*     utstring_clear(user_lua_file); */
-    /* } */
 }
 
 EXPORT void moonlark_create_token_enums(lua_State *L)

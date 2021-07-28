@@ -3,7 +3,6 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")  # buildifi
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")  # buildifier: disable=load
 
 all_content = """filegroup(name = "all", srcs = glob(["**"]), visibility = ["//visibility:public"])"""
-lua_src = """filegroup(name = "src", srcs = glob(["src/**"]), visibility = ["//visibility:public"])"""
 
 def cc_fetch_repos():
 
@@ -65,19 +64,6 @@ filegroup(name = "hdrs", srcs = ["ini.h"], visibility = ["//visibility:public"])
 
     maybe(
         http_archive,
-        name = "lua",
-        build_file_content = "exports_files(glob([\"**\"]))",
-        # build_file_content = lua_src,
-        # build_file = "@//external/lua:BUILD.bazel",
-        urls = [
-            "https://www.lua.org/ftp/lua-5.4.3.tar.gz",
-        ],
-        strip_prefix = "lua-5.4.3",
-        sha256 = "f8612276169e3bfcbcfb8f226195bfc6e466fe13042f1076cbde92b7ec96bbfb"
-    )
-
-    maybe(
-        http_archive,
         name = "fswatch",
         urls = [
             "https://github.com/emcrisostomo/fswatch/archive/refs/tags/1.15.0.tar.gz",
@@ -100,6 +86,21 @@ filegroup(name = "hdrs", srcs = ["ini.h"], visibility = ["//visibility:public"])
         build_file_content = all_content,
         workspace_file_content = "workspace( name = \"unity\" )"
     )
+
+    ## for s7
+    maybe(
+        http_archive,
+        name = "libffi",
+        url = "https://github.com/libffi/libffi/archive/refs/tags/v3.4.2.zip",
+        strip_prefix = "libffi-3.4.2",
+        build_file_content = all_content,
+        # sha256 = "72fba7922703ddfa7a028d513ac15a85c8d54c8d67f55fa5a4802885dc652056",
+        # build_file = "@//bzl/external:libffi.BUILD",
+        ## the zip version requires use of autogen
+        #url = "https://github.com/libffi/libffi/archive/v3.3.zip",
+        # type = "zip",
+        # sha256 = "60b64c656520f986ec7bd2a6dc61e800848c97872f8f5132c5f753d9c205c358",
+)
 
 ####################
 def fetch_stardoc():

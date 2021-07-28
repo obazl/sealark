@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
     /* starlark_lua_load_handlers(L, "test/lua/lua_file.lua"); */
 
     /* now parse the file using libstarlark */
-    struct parse_state_s *parse_state = starlark_parse_file(build_file);
+    struct parse_state_s *parse_state = sealark_parse_file(build_file);
     /* log_debug("parsed file %s", parse_state->lexer->fname); */
 
     /* convert build file to Lua AST table */

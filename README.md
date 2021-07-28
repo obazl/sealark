@@ -1,9 +1,13 @@
-# moonlark/libstarlark
-Starlark parser in C11 and Lua module - 'lua' is Portugese for 'moon', hence `moonlark`.
+# Sealark - tools for Starlark parsing and editing
+Sealark is a collection of tools for working with Starlark code,
+written in C (get it, C-lark?). `libsealark` is a Starlark parser;
+Moonlark is a Lua binding; Sunlark is a Scheme binding.
+
+[List of lark species](https://en.wikipedia.org/wiki/List_of_lark_species). Sunlark is actually a [species](https://en.wikipedia.org/wiki/Sun_lark).
 
 **STATUS** Alpha-ish. The parser works, the Lua code works; i.e. it
   can parse a BUILD.bazel file and expose the AST as a Lua table. The
-  moonlark repl works too. The Lua library includes code to serialize
+  moonlark and sunlark bindings work too. They include code  to serialize
   the AST, but not much else (much more is planned). **No windows
   support**. Sorry about that, but I don't have a Windows machine.
   It's been tested on MacOS Big Sur and Linux (Debian Stretch).
@@ -12,10 +16,10 @@ Starlark parser in C11 and Lua module - 'lua' is Portugese for 'moon', hence `mo
   development occurs on the dev branch, which is what you should use
   if you want to monitor progress or contribute.
 
-**ROADMAP:** the immediate task is to finish the moonlark Lua library,
-  which will support programmatic editing of the AST. First up: given
-  a source file name and list of dependencies, update the BUILD.bazel
-  file. Specifically supporting OCaml projects using
+**ROADMAP:** the immediate task is to finish the script libraries (Lua
+  and Scheme), which will support programmatic editing of the AST.
+  First up: given a source file name and list of dependencies, update
+  the BUILD.bazel file. Specifically supporting OCaml projects using
   [OBazl](https://obazl.github.io/docs_obazl/); this is the use case
   that motivated development of moonlark. Also on the to-do list: more
   detailed documentation. A long-term goal is to support editing
@@ -24,9 +28,9 @@ Starlark parser in C11 and Lua module - 'lua' is Portugese for 'moon', hence `mo
 
 ## quickstart
 
-**WARNING** the first time you run moonlark it may take a while to build everything (e.g. re2c).
+**WARNING** the first time you run one of the tools it may take a while to build everything (e.g. re2c takes a while to compile).
 
-Sysdeps: libstarlark builds re2c, which depends on make, autogen,
+Sysdeps: libsealark builds re2c, which depends on make, autogen,
 autoconf, and autogen.
 
 Add the following to `WORKSPACE.bazel`:
@@ -35,11 +39,11 @@ Add the following to `WORKSPACE.bazel`:
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 git_repository(
-    name = "moonlark",
-    remote = "https://github.com/obazl/moonlark",
+    name = "sealark",
+    remote = "https://github.com/obazl/sealark",
     branch = "dev",
 )
-http_archive(  ## needed to build re2c, which moonlark needs
+http_archive(  ## needed to build re2c, which libsealark needs
     name = "rules_foreign_cc",
     sha256 = "e14a159c452a68a97a7c59fa458033cc91edb8224516295b047a95555140af5f",
     strip_prefix = "rules_foreign_cc-0.4.0",
@@ -52,11 +56,13 @@ rules_foreign_cc_dependencies(register_built_tools=False)
 
 ### parse a build file
 
-The lua code responsible for serializing the AST is in `@moonlark//moonlark/lua`.
+**NOTE**: The sample code below uses `moonlark`; the UI for `sunlark` is the same, just substitute the former for the latter in the code. It also assumes that you are using Sealark as an external repo. If you have cloned the Sealark repo and are running from its root directory, just drop `@sealark`, e.g. instead of `$ bazel run @sealark//moonlark:edit`, run `$bazel run moonlark:edit`.
+
+The system Lua code for moonlark is in `moonlark/lua`; user code goes in `.moonlark.d`. For sunlark, the system Scheme code is in `sunlark/scm`, and user code goes in `./sunlark.d`.
 
 ```
 $ mkdir tmp  # for now, this is where serialized output is written
-$ bazel run @moonlark//moonlark:edit -- -f lib/BUILD.bazel
+$ bazel run @sealark//moonlark:edit -- -f lib/BUILD.bazel
 INFO: Analyzed target //moonlark:edit (0 packages loaded, 0 targets configured).
 INFO: Found 1 target...
 Target //moonlark:edit up-to-date:
@@ -67,7 +73,7 @@ INFO: Build completed successfully, 1 total action
 INFO: Build completed successfully, 1 total action
 08:59:10 WARN  bindings/lua/lbazel.c:28: WARNING: no user luadir specified; using default: .moonlark.d
 08:59:10 INFO  bindings/lua/libmoonlark.c:405: Lua table 'moonlark' not found; creating
-@moonlark//moonlark/lua/edit.lua: moonlark_handler emitting starlark to tmp/test.BUILD
+@sealark//moonlark/lua/edit.lua: moonlark_handler emitting starlark to tmp/test.BUILD
 $ diff tmp/test.BUILD `pwd`/test/data/strings/BUILD.test
 $
 ```
@@ -78,15 +84,15 @@ table, loads file `edit.lua`, and calls function `moonlark_handler`,
 passing it the Lua AST table.
 
 If `.moonlark.d/edit.lua` exists it will override the default
-`@moonlark//moonlark/lua/edit.lua`.
+`@sealark//moonlark/lua/edit.lua`.
 
 You can also pass a lua file to use on the command line with `-l`:
 
 ```
-$ bazel run @moonlark//moonlark:edit -- -f lib/BUILD.bazel -l foo.lua
+$ bazel run @sealark//moonlark:edit -- -f lib/BUILD.bazel -l foo.lua
 ```
 
-The moonlark Lua library (at `@moonlark//moonlark/lua`) will still be
+The moonlark Lua library (at `@sealark//moonlark/lua`) will still be
 on the load path. It contains various Lua files you can use, e.g.
 `serialize.lua` and `pprint.lua`.  Load them with e.g. `require "serialize"`.
 
@@ -95,7 +101,7 @@ on the load path. It contains various Lua files you can use, e.g.
 ### repl
 
 ```
-$ bazel run @moonlark//moonlark:repl
+$ bazel run @sealark//moonlark:repl
 ... build output ...
 Lua 5.4.3  Copyright (C) 1994-2021 Lua.org, PUC-Rio
 > for k,v in pairs(moonlark) do
@@ -146,8 +152,8 @@ config_bazel	function: 0x1063d3b80
 ### run tests
 
 ```
-$ bazel test @moonlark//test/unit  ## runs all test suites
-$ bazel test @moonlark//test/unit:statements  ## runs a single test suite
+$ bazel test @sealark//test/unit  ## runs all test suites
+$ bazel test @sealark//test/unit:statements  ## runs a single test suite
 ```
 
 ## motivation
@@ -173,12 +179,12 @@ every language can integrate a C library with reasonable effort.
 [TODO: more detailed comparison with Gazelle. Gazelle is a powerful
 tool, why do we need another one? Short answer: The Unix Way - small,
 well-defined, single-purpose tools. Gazelle does a whole bunch of
-stuff. libstarlark does one thing, and the design intention is that it
+stuff. libsealark does one thing, and the design intention is that it
 should be easy to combine it with other small, well-defined,
 single-purpose tools (e.g.
 [codept](https://github.com/Octachron/codept), which analyzes OCaml
 dependencies) to build composite tools. Actually `moonlark` is an
-example: it combines libstarlark with a Lua tool for analyzing the
+example: it combines libsealark with a Lua tool for analyzing the
 AST, and another tool for serializing the AST to a build file. All can
 be swapped out for alternative implementations.]
 
@@ -197,32 +203,39 @@ list.
 
 Docs are a WiP; see also [devguide](doc/devguide.md).
 
-### libstarlark
+### libsealark
 
 Target: `//src:starlark`
 
-`libstarlark` is a C11 library that contains routines to parse files
+`libsealark` is a C11 library that contains routines to parse files
 and strings of Starlark code, producing a simple AST. It also contains
 some serialization routines to write the AST to a string. The result
 can be compared to the original input. (The goal is a 100% match,
 including whitespace and comments).
 
-`libstarlark` uses [re2c](https://re2c.org/) for lexing,
+`libsealark` uses [re2c](https://re2c.org/) for lexing,
 [lemon](https://www.sqlite.org/cgi/src/doc/trunk/doc/lemon.html) for
 parsing, and [uthash](https://troydhanson.github.io/uthash/) for C
-data structures.
+data structures. Experienced C programmers will notice there are no
+header (.h) files in the source tree. That's because it uses
+[Makeheaders](https://fossil-scm.org/home/doc/trunk/src/makeheaders.html#H0009),
+which automatically generates one header for each source file,
+containing everything it needs (and nothing more). Each BUILD.bazel
+file contains a `:mkhdrs` target that runs `makeheaders`. In addition
+`sealark/BUILD.bazel` has a `:mkhdrs-export` that generates the
+`sealark.h` public API.
 
-Currently `libstarlark` does not contain a public API for manipulating
+Currently `libsealark` does not contain a public API for manipulating
 the AST. A developer could easily implement such routines, however,
 since the AST is pretty simple, and it uses `utarray` and `utstring`
 from the [UTHash](https://troydhanson.github.io/uthash/) library.
 
-Instead, the parsing routines of `libstarlark` are exposed in
+Instead, the parsing routines of `libsealark` are exposed in
 `moonlark`, a Lua module, which also exposes the parsed AST as a Lua
 table. AST manipulation and serialization can then be implemented in
 Lua code. The idea is that this will make customization much easier
 (since Lua is much simpler than C), thus enabling tool makers to build
-a variety of tools on top of moonlark/libstarlark. Default
+a variety of tools on top of moonlark/libsealark. Default
 implementations are provided, but the user can easily supply
 alternatives.
 
@@ -230,14 +243,14 @@ alternatives.
 
 #### lua bindings
 
-`moonlark` packages libstarlark as a lua module, allowing the parser
+`moonlark` packages libsealark as a lua module, allowing the parser
 to be run from a lua program. I.e. it extends Lua.
 
 Target `//moonlark:repl` is the lua application augmented by moonlark.
 Running `$ bazel run moonlark:repl` will launch a lua repl with
 moonlark preloaded.
 
-Target `//moonlark:edit` is a C application that runs the `libstarlark`
+Target `//moonlark:edit` is a C application that runs the `libsealark`
 routine `starlark_parse_file`, converts the resulting AST to a Lua
 table, and invokes a user-supplied Lua function named `handler`.
 
@@ -271,7 +284,7 @@ At the repl you can parse a file and serialize the result.
 
 #### callback
 
-To have libstarlark parse a file using `moonlark:edit` and invoke your
+To have libsealark parse a file using `moonlark:edit` and invoke your
 own lua code (a callback) on the AST:
 
 * your lua code goes in `<projroot>/.moonlark.d/edit.lua` (use the code here as an example)
@@ -282,7 +295,7 @@ own lua code (a callback) on the AST:
 $ bazel run moonlark:edit -- -f path/to/BUILD.bazel
 ```
 
-Moonlark will parse the file (using the C libstarlark library) and
+Moonlark will parse the file (using the C libsealark library) and
 convert the AST to a Lua table.
 
 The following lua modules are available for working with the AST:

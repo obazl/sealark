@@ -20,7 +20,7 @@ UT_string *buffer;
 void setUp(void) {
     utstring_new(build_file);
     utstring_new(buffer);
-    /* struct parse_state_s *parse_state = starlark_parse_file("test/data/cpp/BUILD.test"); */
+    /* struct parse_state_s *parse_state = sealark_parse_file("test/data/cpp/BUILD.test"); */
     /* log_debug("parsed file %s", parse_state->lexer->fname); */
     /* moonlark_roundtrip("test/data/cpp/BUILD.test", */
     /*                    "test/lua/serialize.lua"); */

@@ -1,0 +1,10 @@
+load("Aloader.bzl", "a", "b")
+
+load("Bloader.bzl", "c", "d")
+
+load("Cloader.bzl", "e", "f")
+
+cc_library(
+    name = "hello-lib",
+    srcs = ["hello-lib.cc"]
+)

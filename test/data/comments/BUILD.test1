@@ -1,0 +1,4 @@
+# comment1
+cc_library(
+    name = "hello-lib"
+)

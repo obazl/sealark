@@ -58,7 +58,7 @@ int roundtrip(char *_file)
 
     utstring_printf(build_file, "%s", _file);
 
-    struct parse_state_s *parse = starlark_parse_file(utstring_body(build_file));
+    struct parse_state_s *parse = sealark_parse_file(utstring_body(build_file));
     log_debug("parsed file %s", utstring_body(build_file));
     /* dump_node(root); */
 

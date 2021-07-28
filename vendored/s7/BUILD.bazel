@@ -1,0 +1,58 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+###########
+cc_library(
+    name  = "s7",
+    linkstatic = 0,
+    srcs  = ["s7.c", "mus-config.h"],
+    hdrs  = ["s7.h"],
+    copts = select({
+        "//bzl/host:macos": ["-std=c11", "-Wextra"],
+        "//bzl/host:linux": ["-std=gnu11", "-W,extra"],
+        "//conditions:default": ["-std=c11"],
+    }) + [
+        "-Wno-unused-parameter",
+        # "-pedantic-errors",
+        "-Ivendored/linenoise",
+        "-Ivendored/s7"
+    ],
+    deps = [
+    ],
+    visibility = ["//visibility:public"]
+)
+
+##########
+cc_binary(
+    name  = "repl",
+    srcs  = ["s7.c", "mus-config.h"],
+    copts = select({
+        # strdup is non-standard, not supported on linux in strict c11 mode
+        "//bzl/host:macos": ["-std=c11"],
+        "//bzl/host:linux": ["-std=gnu11"],
+        "//conditions:default": ["-std=c11"],
+    }) + [
+        "-W,extra",
+        # "-Ivendored/linenoise",
+        "-O2", "-g"
+    ],
+    defines = ["WITH_MAIN"],
+    linkopts = select({
+        "//bzl/host:macos": [],
+        "//bzl/host:linux": ["-ldl", "-Wl,-export-dynamic"],
+        "//conditions:default": []
+    }) + [
+        "-lm"
+    ],
+    visibility = ["//visibility:public"]
+)
+
+##########
+## nrepl depends on notcurses, which is yet another big hairy lib
+# cc_binary(
+#     name  = "nrepl",
+#     srcs  = ["nrepl.c", "notcurses_s7.c", "s7.h"],
+#     deps = [
+#         ":s7"
+#     ],
+#     visibility = ["//visibility:public"]
+# )

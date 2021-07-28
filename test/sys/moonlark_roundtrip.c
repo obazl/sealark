@@ -106,7 +106,7 @@ int moonlark_roundtrip(char *build_file, char *_lua_file)
     /* /\* moonlark_lua_load_file(L, lua_file); *\/ */
 
     /* now parse the file using libstarlark */
-    struct parse_state_s *parse_state = starlark_parse_file(build_file);
+    struct parse_state_s *parse_state = sealark_parse_file(build_file);
     log_debug("parsed file %s", parse_state->lexer->fname);
 
     /* convert build file to Lua AST table */

@@ -1,0 +1,306 @@
+.Dd July 10, 2021
+.Dt S7 3
+.Os
+.Sh NAME
+.Nm s7_is_c_object,
+.Nm s7_c_object_*...,
+.Nm s7_make_c_object_*...,
+.Nm s7_c_type_*...
+.Nd C object functions
+.Sh LIBRARY
+.Lb libs7
+.Sh SYNOPSIS
+.In s7.h
+.Ft bool
+.Fn s7_is_c_object "s7_pointer p"
+.Ft s7_int
+.Fn s7_c_object_type "s7_pointer obj"
+.Ft void
+.Fn *s7_c_object_value "s7_pointer obj"
+.Ft void
+.Fn *s7_c_object_value_checked "s7_pointer obj" "s7_int type"
+.Ft s7_pointer
+.Fn s7_make_c_object "s7_scheme *sc, s7_int type, void *value"
+.Ft s7_pointer
+.Fn s7_make_c_object_with_let "s7_scheme *sc, s7_int type, void *value, s7_pointer let"
+.Ft s7_pointer
+.Fn s7_make_c_object_without_gc "s7_scheme *sc, s7_int type, void *value"
+.Ft s7_pointer
+.Fn s7_c_object_let "s7_pointer obj"
+.Ft s7_pointer
+.Fn s7_c_object_set_let "s7_scheme *sc, s7_pointer obj, s7_pointer e"
+.Ft s7_int
+.Fn s7_make_c_type "s7_scheme *sc, const char *name"
+.Ft void
+.Fn s7_c_type_set_free "s7_scheme *sc, s7_int tag, void (*gc_free)(void *value)"
+.Ft void
+.Fn s7_c_type_set_mark "s7_scheme *sc, s7_int tag, void (*mark)(void *value)"
+.Ft void
+.Fn s7_c_type_set_equal "s7_scheme *sc, s7_int tag, bool (*equal)(void *value1, void *value2)"
+.Ft void
+.Fn s7_c_type_set_gc_free "s7_scheme *sc, s7_int tag, s7_pointer (*gc_free)   (s7_scheme *sc, s7_pointer obj)"
+.Ft void
+.Fn s7_c_type_set_gc_mark "s7_scheme *sc, s7_int tag, s7_pointer (*mark)      (s7_scheme *sc, s7_pointer obj)"
+.Ft void
+.Fn s7_c_type_set_is_equal "s7_scheme *sc, s7_int tag, s7_pointer (*is_equal)  (s7_scheme *sc, s7_pointer args)"
+.Ft void
+.Fn s7_c_type_set_is_equivalent "s7_scheme *sc, s7_int tag, s7_pointer (*is_equivalent)(s7_scheme *sc, s7_pointer args)"
+.Ft void
+.Fn s7_c_type_set_ref "s7_scheme *sc, s7_int tag, s7_pointer (*ref)       (s7_scheme *sc, s7_pointer args)"
+.Ft void
+.Fn s7_c_type_set_set "s7_scheme *sc, s7_int tag, s7_pointer (*set)       (s7_scheme *sc, s7_pointer args)"
+.Ft void
+.Fn s7_c_type_set_length "s7_scheme *sc, s7_int tag, s7_pointer (*length)    (s7_scheme *sc, s7_pointer args)"
+.Ft void
+.Fn s7_c_type_set_copy "s7_scheme *sc, s7_int tag, s7_pointer (*copy)      (s7_scheme *sc, s7_pointer args)"
+.Ft void
+.Fn s7_c_type_set_fill "s7_scheme *sc, s7_int tag, s7_pointer (*fill)      (s7_scheme *sc, s7_pointer args)"
+.Ft void
+.Fn s7_c_type_set_reverse "s7_scheme *sc, s7_int tag, s7_pointer (*reverse)   (s7_scheme *sc, s7_pointer args)"
+.Ft void
+.Fn s7_c_type_set_to_list "s7_scheme *sc, s7_int tag, s7_pointer (*to_list)   (s7_scheme *sc, s7_pointer args)"
+.Ft void
+.Fn s7_c_type_set_to_string "s7_scheme *sc, s7_int tag, s7_pointer (*to_string) (s7_scheme *sc, s7_pointer args)"
+.Ft void
+.Fn s7_c_type_set_getter "s7_scheme *sc, s7_int tag, s7_pointer getter"
+.Ft void
+.Fn s7_c_type_set_setter "s7_scheme *sc, s7_int tag, s7_pointer setter"
+
+.Sh DESCRIPTION
+These functions create and configure new Scheme types and objects.
+.Pp
+.Fn s7_is_c_object "s7_pointer p"
+Returns true if
+.Em p
+is a c_object
+.Pp
+.Fn s7_c_object_type
+Returns the c_object's
+.Em type
+(the
+.Em s7_int
+passed to
+.Sm off
+.Fn s7_make_c_object
+)
+.Sm on
+.Pp
+.Fn s7_c_object_value
+Returns the value bound to that c_object (the void*
+.Em value
+of
+.Sm off
+.Fn s7_make_c_object
+)
+.Sm on
+.Pp
+.Fn *s7_c_object_value_checked
+.Pp
+.Fn s7_make_c_object "s7_scheme *sc, s7_int type, void *value"
+Creates a new Scheme entity of the given
+.Em type
+with the given (uninterpreted)
+.Em value
+.Pp
+.Fn s7_make_c_object_with_let "s7_scheme *sc, s7_int type, void *value, s7_pointer let"
+.Pp
+.Fn s7_make_c_object_without_gc
+.Pp
+.Fn s7_make_c_type "s7_scheme *sc, const char *name"
+Creates a new C-based type
+.Em name
+for Scheme.
+It returns an
+.Em s7_int
+"tag" used to indentify this type elsewhere.
+.Pp
+Old style free/mark/equal:
+.Bl -inset -offset indent
+.It
+.Fn s7_c_type_set_free
+The function called when an object of this type is about to be garbage collected
+.It
+.Fn s7_c_type_set_mark
+Called during the GC mark pass -- you should call
+.Fn s7_mark
+on any embedded
+.Em s7_pointer
+associated with the object (including its
+.Em let
+) to protect if from the GC.
+.It
+.Fn s7_c_type_set_equal
+Compare two objects of this type;
+.Em (equal? obj1 obj2)
+.El
+.Pp
+New style free/mark/equal and equivalent:
+.Bl -inset -offset indent
+.It
+.Fn s7_c_type_set_gc_free
+.It
+.Fn s7_c_type_set_gc_mark
+.It
+.Fn s7_c_type_set_is_equal
+Compare objects as in equal?
+.It
+.Fn s7_c_type_set_is_equivalent
+Compare objects as in equivalent?
+.El
+.Pp
+.Fn s7_c_type_set_ref "s7_scheme *sc, s7_int tag, s7_pointer (*ref)(s7_scheme *sc, s7_pointer args)"
+.Em ref
+is a function that is called whenever an object of this type occurs in the function position (at the car of a list; the rest of the list is passed to the ref function as the arguments: (obj ...))
+.Pp
+.Fn s7_c_type_set_set
+A function that is called whenever an object of this type occurs as the target of a generalized set! (set! (obj ...) val)
+.Pp
+.Fn s7_c_type_set_length
+The function called when the object is asked what its length is.
+.Pp
+.Fn s7_c_type_set_copy
+The function called when a copy of the object is needed.
+.Pp
+.Fn s7_c_type_set_fill
+The function called to fill the object with some value.
+.Pp
+.Fn s7_c_type_set_reverse
+Similarly...
+.Pp
+.Fn s7_c_type_set_to_list
+.Pp
+.Fn s7_c_type_set_to_string
+object->string for an object of this type
+.Pp
+.Fn s7_c_type_set_getter
+.Pp
+.Fn s7_c_type_set_setter
+.Pp
+.Fn s7_mark
+Marks any Scheme c_object as in-use (use this in the mark function to mark any embedded s7_pointer variables).
+.Pp
+The
+.Fn s7_c_type_set_getter
+and
+.Fn s7_c_type_set_setter
+functions help the optimizer handle applicable c-objects.
+The
+.Em let
+in
+.Fn s7_make_c_object_with_let
+and
+.Fn s7_c_object_set_let
+needs to be GC protected by marking it in the c_object's mark function.
+.Sh RETURN VALUES
+Upon successful completion
+.Fn fopen ,
+.Fn fdopen ,
+.Fn freopen
+and
+.Fn fmemopen
+return a
+.Tn FILE
+pointer.
+Otherwise,
+.Dv NULL
+is returned and the global variable
+.Va errno
+is set to indicate the error.
+.Sh ERRORS
+.Bl -tag -width Er
+.It Bq Er EINVAL
+The
+.Fa mode
+argument
+to
+.Fn fopen ,
+.Fn fdopen ,
+.Fn freopen ,
+or
+.Fn fmemopen
+was invalid.
+.El
+.Pp
+The
+.Fn fopen ,
+.Fn fdopen ,
+.Fn freopen
+and
+.Fn fmemopen
+functions
+may also fail and set
+.Va errno
+for any of the errors specified for the routine
+.Xr malloc 3 .
+.Pp
+The
+.Fn fopen
+function
+may also fail and set
+.Va errno
+for any of the errors specified for the routine
+.Xr open 2 .
+.Pp
+The
+.Fn fdopen
+function
+may also fail and set
+.Va errno
+for any of the errors specified for the routine
+.Xr fcntl 2 .
+.Pp
+The
+.Fn freopen
+function
+may also fail and set
+.Va errno
+for any of the errors specified for the routines
+.Xr open 2 ,
+.Xr fclose 3
+and
+.Xr fflush 3 .
+.Pp
+The
+.Fn fmemopen
+function
+may also fail and set
+.Va errno
+if the
+.Fa size
+argument is 0.
+.Sh SEE ALSO
+.Xr open 2 ,
+.Xr fclose 3 ,
+.Xr fileno 3 ,
+.Xr fseek 3 ,
+.Xr funopen 3
+.Sh STANDARDS
+The
+.Fn fopen
+and
+.Fn freopen
+functions
+conform to
+.St -isoC ,
+with the exception of the
+.Dq Li x
+mode option which conforms to
+.St -isoC-2011 .
+The
+.Fn fdopen
+function
+conforms to
+.St -p1003.1-88 .
+The
+.Dq Li e
+mode option does not conform to any standard
+but is also supported by glibc.
+The
+.Fn fmemopen
+function
+conforms to
+.St -p1003.1-2008 .
+The
+.Dq Li b
+mode does not conform to any standard
+but is also supported by glibc.

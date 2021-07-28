@@ -1,0 +1,183 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+test_suite(
+    name = "sunlark",
+    tests = [
+        ":strings",
+        ":binding_val_vectors",
+        ":bindings",
+        ":definitions",
+        ":loads",
+        ":targets",
+        ":tetrads",
+        ":vectors",
+    ])
+
+COPTS = select({
+    "//bzl/host:macos": ["-std=c11"],
+    "//bzl/host:linux": ["-std=gnu11"],
+    "//conditions:default": ["-std=c11"],
+}) + [
+    "-pedantic-errors",
+
+        "-I$(GENDIR)/test/unit/sunlark",
+    "-I$(GENDIR)/external/sealark/test/unit/sunlark",
+
+        "-I$(GENDIR)/bindings/scheme",
+    "-I$(GENDIR)/external/sealark/bindings/scheme",
+
+        "-I$(GENDIR)/sealark",
+    "-I$(GENDIR)/external/sealark/sealark",
+
+        "-Ivendored/logc",
+    "-Iexternal/sealark/vendored/logc",
+    "-Ivendored/s7",
+    "-Iexternal/sealark/vendored/s7",
+    "-Ivendored/unity",
+    "-Iexternal/sealark/vendored/unity",
+    "-Ivendored/uthash",
+    "-Iexternal/sealark/vendored/uthash",
+]
+
+DEPS = [
+    ":common",
+    "//sealark",
+    "//bindings/scheme:sunlark",
+    "//vendored/logc",
+    "//vendored/s7",
+    "//vendored/unity",
+    "//vendored/uthash",
+]
+
+cc_test(
+    name = "bindings",
+    srcs = ["test_bindings.c", "test_bindings.h"],
+    data = [":BUILD.bindings"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
+    name = "definitions",
+    srcs = ["definitions.c", "definitions.h"],
+    data = [":BUILD.test1"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
+    name = "loads",
+    srcs = ["loads.c", "loads.h"],
+    data = [":BUILD.test1"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
+    name = "targets",
+    srcs = ["test_targets.c", "test_targets.h"],
+    data = [":BUILD.targets"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
+    name = "strings",
+    srcs = ["test_strings.c", "test_strings.h"],
+    data = [":BUILD.strings"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
+    name = "binding_val_vectors",
+    srcs = ["binding_val_vectors.c", "binding_val_vectors.h"],
+    data = [":BUILD.vectors"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
+    name = "tetrads",
+    srcs = ["paths_tetradic.c", "paths_tetradic.h"],
+    data = [":BUILD.test1"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
+    name = "vectors",
+    srcs = ["vectors.c", "vectors.h"],
+    data = [":BUILD.vectors"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_library(
+    name = "common",
+    srcs = ["common.c"],
+    hdrs = ["common.h"],
+    copts = COPTS,
+    deps = [
+        "//vendored/s7",
+        "//vendored/unity",
+        "//vendored/uthash",
+        "//vendored/logc",
+        "//sealark",
+        "//bindings/scheme:sunlark",
+    ]
+)
+
+################################################################
+genrule(
+    name = "mkhdrs",
+    srcs = [
+        "//sealark:debug.c",
+        "test_bindings.c",
+        "definitions.c",
+        "loads.c",
+        "paths_tetradic.c",
+        "test_strings.c",
+        "binding_val_vectors.c",
+        "common.c",
+        "test_targets.c",
+        "vectors.c"
+    ],
+    outs = [
+        "test_bindings.h",
+        "definitions.h",
+        "loads.h",
+        "paths_tetradic.h",
+        "test_strings.h",
+        "binding_val_vectors.h",
+        "common.h",
+        "test_targets.h",
+        "vectors.h"
+    ],
+    cmd = "\n".join([
+        "SRC1=$(location paths_tetradic.c)",
+        "SRCDIR1=`dirname $$SRC1`",
+        "$(location //vendored/makeheaders) \\",
+        "    $(location //sealark:debug.c) \\",
+        "    $(location test_bindings.c) \\",
+        "    $(location common.c) \\",
+        "    $(location definitions.c) \\",
+        "    $(location loads.c) \\",
+        "    $(location paths_tetradic.c) \\",
+        "    $(location test_strings.c) \\",
+        "    $(location binding_val_vectors.c) \\",
+        "    $(location test_targets.c) \\",
+        "    $(location vectors.c)",
+        "cp $${SRCDIR1}/*.h $(@D)",
+    ]),
+    tools = ["//vendored/makeheaders"],
+    visibility = ["//visibility:public"]
+)
