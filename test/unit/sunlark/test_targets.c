@@ -81,67 +81,130 @@ void test_forall_targets(void) {
 }
 
 void test_target(void) {
-    s7_pointer path = s7_eval_c_string(s7,
-                       "'(:targets 1)");
+    s7_pointer path = s7_eval_c_string(s7, "'(:> 1)");
     s7_pointer target = s7_apply_function(s7, ast, path);
+    /* to see the structure of target_node: */
+    /* sealark_debug_print_ast_outline(target_node, 0); */
 
     /* check type, tid. We use :target, but in the ast TK_Call_Expr */
     TEST_ASSERT( s7_is_c_object(target) );
     TEST_ASSERT( sunlark_node_tid(s7, target) == TK_Call_Expr );
+    s7_pointer is_target = s7_apply_function(s7, target,
+                                             s7_eval_c_string(s7, "'(:target?)"));
+    TEST_ASSERT( is_target == s7_t(s7) );
 
-    struct node_s *target_node = s7_c_object_value(target);
-    TEST_ASSERT( target_node->tid == TK_Call_Expr );
-
-    /* now check rule == "cc_binary" */
-      s7_pointer rule
-        = s7_apply_function(s7, target,
-                            s7_cons(s7, s7_make_keyword(s7,"rule"),
-                                    s7_nil(s7)));
-    log_debug("rule: %s", s7_object_to_c_string(s7, rule));
+    /* (target :rule) => cc_binary */
+    s7_pointer rule = s7_apply_function(s7, target, s7_eval_c_string(s7, "'(:rule)"));
+    s7_pointer is_id = s7_apply_function(s7, rule, s7_eval_c_string(s7, "'(:id?)"));
+    TEST_ASSERT( s7_t(s7) == is_id );
     TEST_ASSERT( s7_is_c_object(rule) );
     TEST_ASSERT( !s7_is_string(rule) );
     TEST_ASSERT( sunlark_node_tid(s7, rule) == TK_ID );
 
-    s7_pointer rule_str
-        = s7_apply_function(s7, rule,
-                            s7_cons(s7, s7_make_keyword(s7,"print"),
-                                    s7_nil(s7)));
-    log_debug("rule_str: %s", s7_object_to_c_string(s7, rule_str));
-    log_debug("rule_strx: %s", s7_string(rule_str));
+    s7_pointer rule_sym = s7_apply_function(s7, rule, s7_eval_c_string(s7, "'(:$)"));
+    log_debug("rule_sym: %s", s7_object_to_c_string(s7, rule_sym));
+    TEST_ASSERT( !s7_is_c_object(rule_sym) );
+    TEST_ASSERT( s7_is_symbol(rule_sym) );
+    TEST_ASSERT_EQUAL_STRING( "cc_binary", s7_symbol_name(rule_sym) );
 
-    TEST_ASSERT( !s7_is_c_object(rule_str) );
-    TEST_ASSERT( s7_is_string(rule_str) );
-    TEST_ASSERT_EQUAL_STRING( "cc_binary", s7_string(rule_str) );
-
+    /* check underlying c structure */
+    struct node_s *target_node = s7_c_object_value(target);
+    TEST_ASSERT( target_node->tid == TK_Call_Expr );
     struct node_s *id_node = utarray_eltptr(target_node->subnodes, 0);
     TEST_ASSERT( id_node->tid == TK_ID );
     TEST_ASSERT( strncmp(id_node->s, "cc_binary", 9) == 0);
     TEST_ASSERT( strlen(id_node->s) == 9);
 
     /* check target name == "hello-world" */
-    s7_pointer name
-        = s7_apply_function(s7, target,
-                            s7_cons(s7, s7_make_keyword(s7,"name"),
-                                    s7_nil(s7)));
+    s7_pointer name = s7_apply_function(s7, target, s7_eval_c_string(s7, "'(:name)"));
     log_debug("name: %s", s7_object_to_c_string(s7, name));
     TEST_ASSERT( s7_is_c_object(name) );
     TEST_ASSERT( sunlark_node_tid(s7, name) == TK_STRING );
 
+    s7_pointer name_str = s7_apply_function(s7, name, s7_eval_c_string(s7, "'(:$)"));
+    TEST_ASSERT( !s7_is_c_object(name_str) );
+    TEST_ASSERT( s7_is_string(name_str) );
+    s7_pointer is_string = s7_apply_function(s7, s7_name_to_value(s7, "string?"),
+                                             s7_list(s7, 1, name_str));
+    TEST_ASSERT( s7_t(s7) == is_string );
+    TEST_ASSERT_EQUAL_STRING( "hello-world", s7_string(name_str) );
+
     /* bindings */
-    s7_pointer bindings
-        = s7_apply_function(s7, target,
-                            s7_cons(s7, s7_make_keyword(s7,"bindings"),
-                                    s7_nil(s7)));
+    s7_pointer bindings = s7_apply_function(s7, target, s7_eval_c_string(s7, "'(:bindings)"));
     TEST_ASSERT( s7_is_c_object(bindings) );
     TEST_ASSERT( !s7_is_list(s7, bindings) );
-    /* s7_pointer len */
-    /*     = s7_apply_function(s7, s7_make_symbol(s7,"length"), */
-    /*                         s7_cons(s7, target, s7_nil(s7))); */
+    s7_pointer bindings_ct = s7_apply_function(s7, s7_name_to_value(s7,"length"),
+                                               s7_list(s7, 1, bindings));
+    TEST_ASSERT_EQUAL_INT( 3, s7_integer(bindings_ct) );
+}
+
+void test_target_string_parse(void) {
+    char *s = "foo_library(\n\
+    name = 'foo-lib',\n\
+    srcs = ['foo-lib.cc', 'howdy.cc', 'howdy.h'],\n\
+    hdrs = ['foo-lib.h'],\n\
+    defines = DEFINES\n\
+)";
+    s7_pointer target = sunlark_parse_string(s7, s7_make_string(s7, s));
+    /* to see the structure of target_node: */
+    struct node_s *target_node = s7_c_object_value(target);
+    sealark_debug_print_ast_outline(target_node, 0);
+
+    /* check type, tid. We use :target, but in the ast TK_Call_Expr */
+    TEST_ASSERT( s7_is_c_object(target) );
+    TEST_ASSERT( sunlark_node_tid(s7, target) == TK_Call_Expr );
+    s7_pointer is_target = s7_apply_function(s7, target,
+                                             s7_eval_c_string(s7, "'(:target?)"));
+    TEST_ASSERT( is_target == s7_t(s7) );
+
+    /* (target :rule) => cc_binary */
+    s7_pointer rule = s7_apply_function(s7, target, s7_eval_c_string(s7, "'(:rule)"));
+    s7_pointer is_id = s7_apply_function(s7, rule, s7_eval_c_string(s7, "'(:id?)"));
+    TEST_ASSERT( s7_t(s7) == is_id );
+    TEST_ASSERT( s7_is_c_object(rule) );
+    TEST_ASSERT( !s7_is_string(rule) );
+    TEST_ASSERT( sunlark_node_tid(s7, rule) == TK_ID );
+
+    s7_pointer rule_sym = s7_apply_function(s7, rule, s7_eval_c_string(s7, "'(:$)"));
+    log_debug("rule_sym: %s", s7_object_to_c_string(s7, rule_sym));
+    TEST_ASSERT( !s7_is_c_object(rule_sym) );
+    TEST_ASSERT( s7_is_symbol(rule_sym) );
+    TEST_ASSERT_EQUAL_STRING( "foo_library", s7_symbol_name(rule_sym) );
+
+    /* check underlying c structure */
+    TEST_ASSERT( target_node->tid == TK_Call_Expr );
+    struct node_s *id_node = utarray_eltptr(target_node->subnodes, 0);
+    TEST_ASSERT( id_node->tid == TK_ID );
+    TEST_ASSERT( strncmp(id_node->s, "foo_library", 11) == 0);
+    TEST_ASSERT( strlen(id_node->s) == 11);
+
+    /* check target name == "foo-lib" */
+    s7_pointer name = s7_apply_function(s7, target, s7_eval_c_string(s7, "'(:name)"));
+    log_debug("name: %s", s7_object_to_c_string(s7, name));
+    TEST_ASSERT( s7_is_c_object(name) );
+    TEST_ASSERT( sunlark_node_tid(s7, name) == TK_STRING );
+
+    s7_pointer name_str = s7_apply_function(s7, name, s7_eval_c_string(s7, "'(:$)"));
+    TEST_ASSERT( !s7_is_c_object(name_str) );
+    TEST_ASSERT( s7_is_string(name_str) );
+    s7_pointer is_string = s7_apply_function(s7, s7_name_to_value(s7, "string?"),
+                                             s7_list(s7, 1, name_str));
+    TEST_ASSERT( s7_t(s7) == is_string );
+    TEST_ASSERT_EQUAL_STRING( "foo-lib", s7_string(name_str) );
+
+    /* bindings */
+    s7_pointer bindings = s7_apply_function(s7, target, s7_eval_c_string(s7, "'(:bindings)"));
+    TEST_ASSERT( s7_is_c_object(bindings) );
+    TEST_ASSERT( !s7_is_list(s7, bindings) );
+    s7_pointer bindings_ct = s7_apply_function(s7, s7_name_to_value(s7,"length"),
+                                               s7_list(s7, 1, bindings));
+    TEST_ASSERT_EQUAL_INT( 4, s7_integer(bindings_ct) );
 }
 
 int main(void) {
     UNITY_BEGIN();
-    RUN_TEST(test_forall_targets);
-    RUN_TEST(test_target);
+    /* RUN_TEST(test_forall_targets); */
+    /* RUN_TEST(test_target); */
+    RUN_TEST(test_target_string_parse);
     return UNITY_END();
 }

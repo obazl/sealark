@@ -8,11 +8,11 @@
 EXPORT void sealark_debug_print_ast_outline(struct node_s *node, int level)
 {
     if (node->s)
-        log_debug("%*.s node%d %d %s: %s",
-                  2*level, " ", level, node->tid, TIDNAME(node), node->s);
+        log_debug("%*.s%d: %s %d: %s",
+                  2*level, " ", level, TIDNAME(node), node->tid, node->s);
     else
-        log_debug("%*.s node%d %d %s",
-                  2*level, " ", level, node->tid, TIDNAME(node));
+        log_debug("%*.s%d: %s %d",
+                  2*level, " ", level, TIDNAME(node), node->tid);
 
     if (node->subnodes) {
         struct node_s *subnode = NULL;

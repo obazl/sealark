@@ -450,7 +450,7 @@ EXPORT struct node_s *sealark_node_new()
 
 EXPORT void sealark_node_free(void *_elt) {
 #if defined(DEBUG_MEM)
-    log_debug("NODE_DTOR: %s (%d)",
+    log_debug("sealark_node_free: %s (%d)",
               token_name[((struct node_s*)_elt)->tid][0],
               ((struct node_s*)_elt)->tid);
 #endif
@@ -461,8 +461,18 @@ EXPORT void sealark_node_free(void *_elt) {
 #endif
         free(elt->s);
     }
+#if defined(DEBUG_MEM)
+    log_debug("freeing comments");
+#endif
     if (elt->comments) utarray_free(elt->comments);
+#if defined(DEBUG_MEM)
+    log_debug("freeing subnodes");
+#endif
     if (elt->subnodes) utarray_free(elt->subnodes);
+    elt->subnodes = NULL;
+#if defined(DEBUG_MEM)
+    log_debug("done freeing subnodes");
+#endif
 
     /* DO NOT FREE: utarray copies elements into a buffer, so its
        pointers are not malloced */
@@ -521,6 +531,9 @@ EXPORT char  *sealark_node_printable_string(struct node_s *node)
         return _print_string_node(node);
         break;
     case TK_ID:
+        return node->s;
+        break;
+    case TK_INT:
         return node->s;
         break;
     default:

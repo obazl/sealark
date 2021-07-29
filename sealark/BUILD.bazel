@@ -1,10 +1,16 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@bazel_skylib//rules:common_settings.bzl", "string_list_flag")
+
 load("//:BUILD.bzl", DEFINES="debug_defs")
 load(":BUILD.bzl", "gensyntax")
 
 exports_files(glob(["*.c"]))
 
-## to enable debugging pass --//sealark:debug=bindings,vectors,...
+## to enable parser/lexer debugging pass --//sealark:debug=bindings,vectors,...
+string_list_flag(name = "yydebug", build_setting_default = [])
+config_setting(name = "yydebug-targets", flag_values = {":yydebug": "targets"})
+config_setting(name = "yydebug-loads", flag_values = {":yydebug": "loads"})
+config_setting(name = "yydebug-vectors", flag_values = {":yydebug": "vectors"})
 
 pubic_header = "sealark.h"
 
@@ -102,7 +108,6 @@ cc_library(
 
         "-U", "NDEBUG"
     ],
-    defines = DEFINES,
     deps = [
         "//vendored/logc",
         "//vendored/uthash"
@@ -113,7 +118,16 @@ cc_library(
 gensyntax(
     name = "gensyntaxis",
     outs = ["syntaxis.c","syntaxis.out"],
-    defines = DEFINES
+    defines = select({
+        ":yydebug-vectors": ["YYDEBUG_VECTORS"],
+        "//conditions:default":   []
+    }) + select({
+        ":yydebug-targets": ["YYDEBUG_TARGETS"],
+        "//conditions:default":   []
+    }) + select({
+        ":yydebug-loads": ["YYDEBUG_LOAD_STMTS"],
+        "//conditions:default":   []
+    })
 )
 
 ###########

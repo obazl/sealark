@@ -60,13 +60,13 @@ void test_binding_value_string_plain_dq(void) {
 
     /* use :print to get a string value */
     s7_pointer bvalue_str
-        = s7_apply_function(s7, bvalue,
-                            s7_cons(s7, s7_make_keyword(s7, "print"),
-                                    s7_nil(s7)));
+        = s7_apply_function(s7, bvalue, s7_eval_c_string(s7, "'(:$)"));
+                            /* s7_cons(s7, s7_make_keyword(s7, "'(:$)"), */
+                            /*         s7_nil(s7))); */
     log_debug("bvalue_s: %s", s7_object_to_c_string(s7, bvalue_str));
     TEST_ASSERT( !s7_is_c_object(bvalue_str) );
     TEST_ASSERT( s7_is_string(bvalue_str) );
-    TEST_ASSERT_EQUAL_STRING( "\"I am a plain double-quoted string\"",
+    TEST_ASSERT_EQUAL_STRING( "I am a plain double-quoted string",
                               s7_string(bvalue_str) );
 }
 
@@ -89,14 +89,14 @@ void test_binding_value_string_plain_sq(void) {
 
     /* use :print to get a string value */
     s7_pointer bvalue_str
-        = s7_apply_function(s7, bvalue,
-                            s7_cons(s7, s7_make_keyword(s7, "print"),
-                                    s7_nil(s7)));
+        = s7_apply_function(s7, bvalue, s7_eval_c_string(s7, "'(:$)"));
     log_debug("bvalue_s: %s", s7_object_to_c_string(s7, bvalue_str));
     TEST_ASSERT( !s7_is_c_object(bvalue_str) );
     TEST_ASSERT( s7_is_string(bvalue_str) );
-    TEST_ASSERT_EQUAL_STRING( "'I am a plain single-quoted string'",
+    //NB: string test compares only string content, not quote mark types
+    TEST_ASSERT_EQUAL_STRING( "I am a plain single-quoted string",
                               s7_string(bvalue_str) );
+    //FIXME: deal with qmarks
 }
 
 void test_binding_value_string_raw_dq(void) {
@@ -117,10 +117,7 @@ void test_binding_value_string_raw_dq(void) {
     TEST_ASSERT( bvalue_node->qtype & DQUOTE );
 
     /* use :print to get a string value */
-    s7_pointer bvalue_str
-        = s7_apply_function(s7, bvalue,
-                            s7_cons(s7, s7_make_keyword(s7, "print"),
-                                    s7_nil(s7)));
+    s7_pointer bvalue_str = s7_apply_function(s7, bvalue, s7_eval_c_string(s7, "'(:$)"));
     log_debug("bvalue_s: %s", s7_object_to_c_string(s7, bvalue_str));
     TEST_ASSERT( !s7_is_c_object(bvalue_str) );
     TEST_ASSERT( s7_is_string(bvalue_str) );
@@ -147,9 +144,7 @@ void test_binding_value_string_raw_sq(void) {
 
     /* use :print to get a string value */
     s7_pointer bvalue_str
-        = s7_apply_function(s7, bvalue,
-                            s7_cons(s7, s7_make_keyword(s7, "print"),
-                                    s7_nil(s7)));
+        = s7_apply_function(s7, bvalue, s7_eval_c_string(s7, "'(:$)"));
     log_debug("bvalue_s: %s", s7_object_to_c_string(s7, bvalue_str));
     TEST_ASSERT( !s7_is_c_object(bvalue_str) );
     TEST_ASSERT( s7_is_string(bvalue_str) );
@@ -176,9 +171,7 @@ void test_binding_value_string_bin_dq(void) {
 
     /* use :print to get a string value */
     s7_pointer bvalue_str
-        = s7_apply_function(s7, bvalue,
-                            s7_cons(s7, s7_make_keyword(s7, "print"),
-                                    s7_nil(s7)));
+        = s7_apply_function(s7, bvalue, s7_eval_c_string(s7, "'(:$)"));
     log_debug("bvalue_s: %s", s7_object_to_c_string(s7, bvalue_str));
     TEST_ASSERT( !s7_is_c_object(bvalue_str) );
     TEST_ASSERT( s7_is_string(bvalue_str) );
@@ -205,9 +198,7 @@ void test_binding_value_string_bin_sq(void) {
 
     /* use :print to get a string value */
     s7_pointer bvalue_str
-        = s7_apply_function(s7, bvalue,
-                            s7_cons(s7, s7_make_keyword(s7, "print"),
-                                    s7_nil(s7)));
+        = s7_apply_function(s7, bvalue, s7_eval_c_string(s7, "'(:$)"));
     log_debug("bvalue_s: %s", s7_object_to_c_string(s7, bvalue_str));
     TEST_ASSERT( !s7_is_c_object(bvalue_str) );
     TEST_ASSERT( s7_is_string(bvalue_str) );
@@ -235,9 +226,7 @@ void test_binding_value_string_plain_dq3(void) {
 
     /* use :print to get a string value */
     s7_pointer bvalue_str
-        = s7_apply_function(s7, bvalue,
-                            s7_cons(s7, s7_make_keyword(s7, "print"),
-                                    s7_nil(s7)));
+        = s7_apply_function(s7, bvalue, s7_eval_c_string(s7, "'(:$)"));
     log_debug("bvalue_s: %s", s7_object_to_c_string(s7, bvalue_str));
     TEST_ASSERT( !s7_is_c_object(bvalue_str) );
     TEST_ASSERT( s7_is_string(bvalue_str) );
@@ -264,9 +253,7 @@ void test_binding_value_string_plain_sq3(void) {
 
     /* use :print to get a string value */
     s7_pointer bvalue_str
-        = s7_apply_function(s7, bvalue,
-                            s7_cons(s7, s7_make_keyword(s7, "print"),
-                                    s7_nil(s7)));
+        = s7_apply_function(s7, bvalue, s7_eval_c_string(s7, "'(:$)"));
     log_debug("bvalue_s: %s", s7_object_to_c_string(s7, bvalue_str));
     TEST_ASSERT( !s7_is_c_object(bvalue_str) );
     TEST_ASSERT( s7_is_string(bvalue_str) );
@@ -293,9 +280,7 @@ void test_binding_value_string_raw_dq3(void) {
 
     /* use :print to get a string value */
     s7_pointer bvalue_str
-        = s7_apply_function(s7, bvalue,
-                            s7_cons(s7, s7_make_keyword(s7, "print"),
-                                    s7_nil(s7)));
+        = s7_apply_function(s7, bvalue, s7_eval_c_string(s7, "'(:$)"));
     log_debug("bvalue_s: %s", s7_object_to_c_string(s7, bvalue_str));
     TEST_ASSERT( !s7_is_c_object(bvalue_str) );
     TEST_ASSERT( s7_is_string(bvalue_str) );
@@ -322,9 +307,7 @@ void test_binding_value_string_raw_sq3(void) {
 
     /* use :print to get a string value */
     s7_pointer bvalue_str
-        = s7_apply_function(s7, bvalue,
-                            s7_cons(s7, s7_make_keyword(s7, "print"),
-                                    s7_nil(s7)));
+        = s7_apply_function(s7, bvalue, s7_eval_c_string(s7, "'(:$)"));
     log_debug("bvalue_s: %s", s7_object_to_c_string(s7, bvalue_str));
     TEST_ASSERT( !s7_is_c_object(bvalue_str) );
     TEST_ASSERT( s7_is_string(bvalue_str) );
@@ -351,9 +334,7 @@ void test_binding_value_string_bin_dq3(void) {
 
     /* use :print to get a string value */
     s7_pointer bvalue_str
-        = s7_apply_function(s7, bvalue,
-                            s7_cons(s7, s7_make_keyword(s7, "print"),
-                                    s7_nil(s7)));
+        = s7_apply_function(s7, bvalue, s7_eval_c_string(s7, "'(:$)"));
     log_debug("bvalue_s: %s", s7_object_to_c_string(s7, bvalue_str));
     TEST_ASSERT( !s7_is_c_object(bvalue_str) );
     TEST_ASSERT( s7_is_string(bvalue_str) );
@@ -380,9 +361,7 @@ void test_binding_value_string_bin_sq3(void) {
 
     /* use :print to get a string value */
     s7_pointer bvalue_str
-        = s7_apply_function(s7, bvalue,
-                            s7_cons(s7, s7_make_keyword(s7, "print"),
-                                    s7_nil(s7)));
+        = s7_apply_function(s7, bvalue, s7_eval_c_string(s7, "'(:$)"));
     log_debug("bvalue_s: %s", s7_object_to_c_string(s7, bvalue_str));
     TEST_ASSERT( !s7_is_c_object(bvalue_str) );
     TEST_ASSERT( s7_is_string(bvalue_str) );

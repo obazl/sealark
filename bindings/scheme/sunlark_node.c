@@ -431,7 +431,9 @@ s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
     /* debug_print_s7(s7, "\tAPPLICATOR ARGS: ", s7_cdr(args)); */
     log_debug("\targs: %s",
               s7_object_to_c_string(s7, s7_cdr(args)));
-    /* sealark_debug_print_ast_outline(s7_c_object_value(s7_car(args)), 0); */
+#endif
+#if defined(DEBUG_AST)
+    sealark_debug_print_ast_outline(s7_c_object_value(s7_car(args)), 0);
 #endif
 
     s7_pointer rest = s7_cdr(args);
@@ -1042,7 +1044,7 @@ static void _register_ast_node_fns(s7_scheme *s7)
                             sunlark_to_starlark,
                             1, 1, false,
                             SUNLARK_TO_STARLARK_HELP);
-    
+
     // ast_node-let => s7_c_object_let, a let for the instance not the type
     /* s7_define_safe_function(s7, "ast-node-let", */
     /*                         sunlark_node_let, */

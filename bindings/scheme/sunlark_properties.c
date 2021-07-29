@@ -156,8 +156,8 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
                                             s7_pointer kw)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_PROPERTIES)
-    log_debug("sunlark_common_property_lookup: %s",
-              s7_object_to_c_string(s7, kw));
+    log_debug("sunlark_common_property_lookup: %s for %d %s",
+              s7_object_to_c_string(s7, kw), ast_node->tid, TIDNAME(ast_node));
 #endif
 
     /* pseudo-bindings */
@@ -167,10 +167,22 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
         return str;
     }
 
-    if (kw == KW(print)) {
-        char *s = sealark_node_printable_string(ast_node);
-        s7_pointer str =  s7_make_string(s7, s);
-        return str;
+    if (kw == s7_make_keyword(s7, "$")) {
+        if (sealark_is_printable(ast_node)) {
+            s7_pointer val;
+            switch(ast_node->tid) {
+            case TK_STRING:
+                val =  s7_make_string(s7, ast_node->s);
+                break;
+            case TK_ID:
+                val =  s7_make_symbol(s7, ast_node->s);
+                break;
+            case TK_INT:
+                val =  s7_make_integer(s7, atoi(ast_node->s));
+                break;
+            }
+            return val;
+        }
     }
 
     /* "real" bindings, corresponding to fields in the struct */

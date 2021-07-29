@@ -23,7 +23,7 @@ node1 116 TK_List_Expr    <==== vector
     node3 79 TK_STRING: b3
   node2 69 TK_RBRACK
 */
-EXPORT struct node_s *sealark_vector_index(struct node_s *list_expr,
+EXPORT struct node_s *sealark_vector_item_for_index(struct node_s *list_expr,
                                            int index)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_VECTORS)

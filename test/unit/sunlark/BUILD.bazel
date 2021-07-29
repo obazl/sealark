@@ -9,7 +9,7 @@ test_suite(
         ":definitions",
         ":loads",
         ":targets",
-        ":tetrads",
+        # ":tetrads",
         ":vectors",
     ])
 
@@ -114,7 +114,7 @@ cc_test(
 
 cc_test(
     name = "vectors",
-    srcs = ["vectors.c", "vectors.h"],
+    srcs = ["test_vectors.c", "test_vectors.h"],
     data = [":BUILD.vectors"],
     copts = COPTS,
     deps = DEPS,
@@ -149,7 +149,7 @@ genrule(
         "binding_val_vectors.c",
         "common.c",
         "test_targets.c",
-        "vectors.c"
+        "test_vectors.c"
     ],
     outs = [
         "test_bindings.h",
@@ -160,7 +160,7 @@ genrule(
         "binding_val_vectors.h",
         "common.h",
         "test_targets.h",
-        "vectors.h"
+        "test_vectors.h"
     ],
     cmd = "\n".join([
         "SRC1=$(location paths_tetradic.c)",
@@ -175,7 +175,7 @@ genrule(
         "    $(location test_strings.c) \\",
         "    $(location binding_val_vectors.c) \\",
         "    $(location test_targets.c) \\",
-        "    $(location vectors.c)",
+        "    $(location test_vectors.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),
     tools = ["//vendored/makeheaders"],

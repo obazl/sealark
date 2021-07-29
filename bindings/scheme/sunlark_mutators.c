@@ -34,28 +34,74 @@ s7_pointer sunlark_node_set_specialized(s7_scheme *s7, s7_pointer args)
     return sunlark_set_bang(s7, args);
 }
 
-s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer set_args)
+s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
 {
-#ifdef DEBUG_TRACE
+#if defined(DEBUG_TRACE)
     log_debug("sunlark_set_bang");
+    log_debug("\targs: %s", s7_object_to_c_string(s7, s7_cdr(args)));
 #endif
 
-    s7_pointer self = s7_car(set_args);
+    s7_pointer self = s7_car(args);
     struct node_s *self_node = s7_c_object_value(self);
 
 #ifdef DEBUG_AST
-    sealark_debug_print_ast_outline(self_node, 0);
+    /* sealark_debug_print_ast_outline(self_node, 0); */
+    /* sealark_debug_print_node_starlark(self_node, true); */
+    sunlark_debug_print_node(s7, self_node);
 #endif
 
-    /* last arg: new value */
-    s7_pointer args = s7_reverse(s7, s7_cdr(set_args));
-    s7_pointer update_val = s7_car(args);
-    args = s7_reverse(s7, s7_cdr(args));
+    /*
+      set! path expression (the get part): the subpath up to but not
+      including the penultimate step resolves to the _context_. The
+      penultimate element identifies the lvalue in the context. The
+      ultimate element is the newval. examples:
 
-    log_debug("set! self: %d %s; args: %s; new val: %s",
+      1. (set! (ast :> 1 :@ 'srcs) newval) ;; replaces entire srcs attrib
+      2. (set! (ast :> 1 :@ 'srcs :key) "foo") ;; replaces key node
+      3. (set! (ast :> 1 :@ 'srcs :value 1 "bar") ;; replaces second item in srcs string list
+
+      The newval must have the correct type. In example 2 it must be a
+      TK_ID node to replace the :key node; in example 1 it must be a
+      complete TK_Binding node. However, in some cases Sunlark can
+      infer the node. In example 2, newval could be a string, since
+      the :key node is always a TK_STRING, so Sunlark can just replace
+      the string field.
+
+      obsolete (we do not need :$ for set?):
+
+      if last elt of ref list is $, e.g. (set! (b :value 1 :$) "foo"),
+      then we cannot use the ref applicator to turn it into an lval,
+      since it may return a string, int, etc. IOW, :$ behaves
+      differently in the ref and set! contexts. So in the set!
+      context, we remove :$ from the path, which we then resolve as
+      for ref, since we know that :$ denotes a property of the
+      resolved expression, usually (always?) the 's' string prop. So
+      the path expression without the final :$ will produce the
+      desired lval (a node, not a field in a node struct).
+
+      same goes for all struct node_s field properties? e.g. :line, :col,
+      :qtype, etc. e.g. for (set! (n foo bar baz :line) 27), :line
+      will be a field in the lval expressed by the path (n foo bar baz).
+     */
+
+    /* assumption: path has at least 2 elements? */
+    s7_pointer get_path = s7_reverse(s7, s7_cdr(args));
+    s7_pointer update_val = s7_car(get_path);
+    s7_pointer lval       = s7_cadr(get_path);
+    get_path = s7_reverse(s7, s7_cddr(get_path));
+    log_debug("get_path: %s", s7_object_to_c_string(s7, get_path));
+
+    /* bool dollar = false; // FIXME: name */
+    /* if (s7_make_keyword(s7,"$") == s7_car(get_path)) { */
+    /*     dollar = true; */
+    /*     get_path = s7_cdr(get_path); */
+    /* } */
+
+    log_debug("set! self: %d %s; get_path: %s; lval: %s; new val: %s",
               sunlark_node_tid(s7, self),
               token_name[sunlark_node_tid(s7, self)][0],
-              s7_object_to_c_string(s7, args),
+              s7_object_to_c_string(s7, get_path),
+              s7_object_to_c_string(s7, lval),
               s7_object_to_c_string(s7, update_val));
 
     struct node_s *node;
@@ -70,39 +116,74 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer set_args)
     if (s7_is_immutable(self))
         return(s7_wrong_type_arg_error(s7, "ast-node-set!", 1, self, "a mutable ast_node"));
 
-    if (s7_list_length(s7, args) > 1) {
-        log_error("Too many args? %s", s7_object_to_c_string(s7, args));
+    if (s7_list_length(s7, get_path) > 1) {
+        log_error("Too many get_path? %s", s7_object_to_c_string(s7, get_path));
         /* exit(EXIT_FAILURE); */
     }
 
     log_debug("self_node %d %s", self_node->tid, TIDNAME(self_node));
 
-    switch(self_node->tid) {
+    s7_pointer context = sunlark_node_object_applicator(s7, s7_cons(s7, self, get_path));
+    log_debug("RESOLVED context:");
+    struct node_s *context_node = s7_c_object_value(context);
+    /* sunlark_debug_print_node(s7, context_node); */
+    /* sealark_debug_print_node_starlark(context_node, true); // crush */
+    sealark_debug_print_ast_outline(context_node, true); // crush
+
+    /* switch(self_node->tid) { */
+    switch(context_node->tid) {
     case TK_STRING:
-        log_debug("case set! string");
-         if (s7_is_null(s7, args)) {
+        log_debug("case set! on context TK_STRING");
+         /* if (s7_is_null(s7, get_path)) { */
+        if (lval) { //FIXME
             /* update s field */
             /* FIXME: update_val could be string, number, or ? */
             int len;
             const char *new_s;
+log_debug("0 xxxxxxxxxxxxxxxx");
             if (s7_is_string(update_val)) {
+log_debug("2 xxxxxxxxxxxxxxxx");
                 new_s = s7_string(update_val);
                 len = strlen(new_s);
             }
-            free(self_node->s);
-            self_node->s = calloc(len, sizeof(char));
-            strncpy(self_node->s, new_s, len);
+            free(context_node->s);
+            context_node->s = calloc(len, sizeof(char));
+            strncpy(context_node->s, new_s, len);
+            log_debug("1 xxxxxxxxxxxxxxxx %s", context_node->s);
             return self;
         }
+         log_error("wtf????????????????");
         break;
     case TK_Binding:
-        log_debug("case set! Binding");
+        log_debug("set! context: TK_Binding");
 
-        struct node_s *result = sunlark_resolve_binding_path(s7, self, args);
-        /* FIXME: resolved_path may be: string; :list-expr (binding), dict */
+        if (lval == KW(key)) {
+            log_debug("replacing lval: key");
+            if (s7_is_symbol(update_val)) {
+                const char *newstring = s7_symbol_name(update_val);
+                int len = strlen(newstring);
+                log_debug("updating -> %s", newstring);
+                struct node_s *key_node = utarray_eltptr(context_node->subnodes, 0);
+                free(key_node->s);
+                key_node->s = calloc(len, sizeof(char));
+                strncpy(key_node->s, newstring, len);
+                return s7_unspecified(s7); // r7rs: value of set! is unspecified; meaning???
+            } else {
+                log_error("Invalid arg: replacement for :key must be symbol; got: %s",
+                          s7_object_to_c_string(s7, s7_cdr(args)));
+                exit(EXIT_FAILURE); //FIXME
+            }
+        }
+        if (lval == KW(value)) {
+            log_debug("replacing lval: value");
+            struct node_s *newb =  sunlark_replace_binding_value(s7, context_node, update_val);
+            log_debug("after replacement:");
+            sealark_debug_print_ast_outline(newb, true); // crush
 
-        log_debug("RESOLVED PATH:");
-        sealark_debug_print_node_starlark(result, true); // crush
+            return sunlark_node_new(s7, newb);
+        }
+
+        struct node_s *result = s7_c_object_value(context);
 
         if (result->tid == TK_Binding) {
             log_debug("REPLACING BINDING");
@@ -128,8 +209,15 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer set_args)
         }
         break;
     case TK_List_Expr:          /* vector */
-        log_debug("case set! list-expr");
-        struct node_s *r = sunlark_vector_resolve_path(s7, self, args);
+        log_debug("set! context: list-expr");
+        if (s7_is_integer(lval)) {
+            log_debug("indexing by int");
+            return sunlark_replace_list_item(s7, context, lval, update_val);
+        }
+        if (s7_is_string(lval)) {
+            log_debug("indexing by string");
+        }
+        struct node_s *r = sunlark_vector_resolve_path(s7, context, lval);
         struct node_s *updated;
         if (r) {
             switch(r->tid) {
@@ -166,7 +254,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer set_args)
         ;
     }
 
-    /* s7_pointer resolved_path = sunlark_dispatch(s7, self, args); */
+    /* s7_pointer resolved_path = sunlark_dispatch(s7, self, get_path); */
     /* log_debug("resoved path: %s", s7_object_to_c_string(s7, resolved_path)); */
     /* return resolved_path; */
 
@@ -178,9 +266,9 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer set_args)
     /* return sunlark_update_binding_name(s7, node_s7, key, val); */
     /* return sunlark_update_binding_value(s7, node_s7, key, val); */
 
-    /* _update_ast_node_property(s7, node, key, s7_caddr(args)); */
+    /* _update_ast_node_property(s7, node, key, s7_caddr(get_path)); */
 
-    /* _update_starlark(s7, self, s7_symbol_name(key), s7_caddr(args)); */
+    /* _update_starlark(s7, self, s7_symbol_name(key), s7_caddr(get_path)); */
 
     //FIXME: r7rs says result of set! is unspecified. does that mean
     //implementation-specified?

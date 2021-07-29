@@ -20,6 +20,7 @@ int   display_bufsz;
 char *display_ptr;
 
 //FIXME: handle large files. use dynamic alloc
+//FIXME: rename: sunlark_debug_print_node
 void sunlark_node_display(s7_scheme *s7, void *value, UT_string *buffer)
 {
 #ifdef DEBUG_TRACE

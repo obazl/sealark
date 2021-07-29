@@ -11,8 +11,10 @@ EXPORT bool sealark_is_printable(struct node_s *ast_node)
 {
     /* log_debug("tid %d printable?", ast_node->tid); */
     for (int i = 0; printable_tokens[i] != 0; i++) {
-        if (ast_node->tid == printable_tokens[i])
+        /* log_debug("tok %d,  printable? %d", i, printable_tokens[i]); */
+        if (ast_node->tid == printable_tokens[i]) {
             return true;
+        }
     }
     return false;
 }

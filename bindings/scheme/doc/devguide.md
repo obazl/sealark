@@ -1,5 +1,17 @@
 # sunlark developer's guide
 
+## Datatypes
+
+All data are stored as strings in the AST.
+
+To project the value of a printable AST node, use the `:$` operator,
+which will return a typed Scheme value:
+
+* strings return a Scheme string with quotes (?)
+  ** TODO: deal with binary/raw, single/double quotes, singlet/triple quotation
+* identifiers return a Scheme symbol
+* ints return a Scheme integer
+
 ## BUILD file path expression DSL
 
 Top level productions:

@@ -273,29 +273,21 @@ program ::= stmt_list(SS) .
     parse_state->root = root;
 }
 
-program(File) ::= error(E) . [FOR] {
-    log_trace(">>program(File) ::= error(E) .");
+program ::= error(E) . [FOR] {
+    log_trace(">>program ::= error(E) .");
     /* parse_state->root = E; */
 }
 
-%ifdef DEBUG_VECTORS
-program(File) ::= list_expr(VEC) . [FOR] {
-    log_trace(">>program(File) ::= list_expr(X) .");
-    /* log_debug("START dump"); */
-    /* dump_node(X); */
-    /* log_debug("/START dump"); */
-    parse_state->root = VEC;
-}
+%ifdef YYDEBUG_TARGETS
+program ::= call_expr(TARGET) . [FOR] { parse_state->root = TARGET; }
 %endif
 
-%ifdef DEBUG_LOAD
-program(File) ::= load_stmt(LOAD) . [FOR] {
-    log_trace(">>program(File) ::= load_stmt(X) .");
-    /* log_debug("START dump"); */
-    /* dump_node(X); */
-    /* log_debug("/START dump"); */
-    parse_state->root = LOAD;
-}
+%ifdef YYDEBUG_LOAD_STMTS
+program ::= load_stmt(LOAD) . [FOR] { parse_state->root = LOAD; }
+%endif
+
+%ifdef YYDEBUG_VECTORS
+program ::= list_expr(VEC) . [FOR] { parse_state->root = VEC; }
 %endif
 
 
@@ -322,22 +314,15 @@ program(File) ::= load_stmt(LOAD) . [FOR] {
     /* parse_state->root = X; */
 /* } */
 
-/* program(File) ::= binary_expr(X) . { */
-/*     log_trace(">>program(File) ::= binary_expr(X) ."); */
-/*     /\* log_debug("START dump"); *\/ */
-/*     /\* dump_node(X); *\/ */
-/*     /\* log_debug("/START dump"); *\/ */
-    /* parse_state->root = X; */
-/* } */
-
-/* %ifdef STRINGS || ALL */
-/* %type string_list { UT_array* } */
-/* %destructor string_list { */
-/*     log_trace("freeing string_list"); */
-/*     /\* utarray_free($$->list); *\/ */
-/* } */
-
-/* %endif */
+%ifdef YYDEBUG_BINEXPRS
+program(File) ::= binary_expr(X) . {
+    log_trace(">>program(File) ::= binary_expr(X) .");
+    /* log_debug("START dump"); */
+    /* dump_node(X); */
+    /* log_debug("/START dump"); */
+    parse_state->root = X;
+}
+%endif
 
 /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 /* str_assign is for load stmts */
@@ -1029,6 +1014,20 @@ expr(X) ::= primary_expr(X_rhs) . [LAMBDA]
     X = X_rhs;
 }
 
+/* we break out call_expr from primary_expr */
+expr(X) ::= call_expr(X_rhs) . [LAMBDA]
+{
+    /* log_trace(">>expr(X) ::= primary_expr(X_rhs)"); */
+    /* X = calloc(sizeof(struct node_s), 1); */
+    /* X->tid  = TK_Expr; */
+    /* X->line  = X_rhs->line; */
+    /* X->col   = X_rhs->col; */
+    /* X->trailing_newline = X_rhs->trailing_newline; */
+    /* utarray_new(X->subnodes, &node_icd); */
+    /* utarray_push_back(X->subnodes, X_rhs); */
+    X = X_rhs;
+}
+
 expr(X) ::= binary_expr(X_rhs) . [FOR]
 {
     // log_trace(">>expr(X) ::= binary_expr(X_rhs)");
@@ -1184,7 +1183,8 @@ dot_suffix(DotSfx) ::= DOT(Dot) ID(Id) .
 }
 
 /* %%%% CallSuffix primary expr - type TK_Call_Expr */
-primary_expr(PrimX) ::= primary_expr(PrimX_rhs) call_suffix(CallSfx) .
+/* primary_expr(PrimX) ::= primary_expr(PrimX_rhs) call_suffix(CallSfx) . */
+call_expr(PrimX) ::= primary_expr(PrimX_rhs) call_suffix(CallSfx) .
 {
     // log_trace(">>primary_expr ::= primary_expr call_suffix");
     PrimX = calloc(sizeof(struct node_s), 1);

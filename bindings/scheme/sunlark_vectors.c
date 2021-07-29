@@ -43,10 +43,10 @@ struct node_s *sunlark_vector_resolve_path(s7_scheme *s7,
 }
 
 /* **************** */
-int infer_vector_type(s7_scheme *s7, s7_pointer new_vec)
+LOCAL int _infer_vector_type_from_list(s7_scheme *s7, s7_pointer new_vec)
 {
 #if defined(DEBUG_TRACE) || defined(DEBUG_MUTATE)
-    log_debug("_infer_vector_type");
+    log_debug("_infer_vector_type_from_list");
 #endif
 
     s7_pointer proto = s7_car(new_vec);
@@ -59,7 +59,7 @@ int infer_vector_type(s7_scheme *s7, s7_pointer new_vec)
             return TK_INT;
         } else {
             if (s7_is_symbol(proto)) {
-                return infer_vector_type(s7, s7_cdr(new_vec));
+                return _infer_vector_type_from_list(s7, s7_cdr(new_vec));
             } else {
                 log_error("Bad value for vector item: %s. Allowed types: int, string, symbol",
                           s7_object_to_c_string(s7, proto));
@@ -69,9 +69,26 @@ int infer_vector_type(s7_scheme *s7, s7_pointer new_vec)
     }
 
 }
+/* **************** */
+LOCAL int _infer_expr_list_type(struct node_s *expr_list)
+{
+#if defined(DEBUG_TRACE) || defined(DEBUG_MUTATE)
+    log_debug("_infer_expr_list_type");
+#endif
+
+    /* first item that is not an ID determines type */
+    struct node_s *subnode = NULL;
+    while( (subnode=(struct node_s*)utarray_next(expr_list->subnodes, subnode)) ) {
+
+        if (subnode->tid == TK_STRING) return TK_STRING;
+        if (subnode->tid == TK_INT) return TK_INT;
+    }
+    return -1;
+}
 
 /* **************** */
 //FIXME: also update rbrack position?
+/*  replace content of list_expr, not the whole expr */
 struct node_s *sunlark_set_vector(s7_scheme *s7,
                                         struct node_s *old_vec,
                                         s7_pointer new_vec)
@@ -80,8 +97,9 @@ struct node_s *sunlark_set_vector(s7_scheme *s7,
     log_debug("sunlark_set_vector => %s",
               s7_object_to_c_string(s7, new_vec));
 #endif
+#if defined(DEBUG_AST)
     sealark_debug_print_ast_outline(old_vec, 4);
-
+#endif
     int new_ct = s7_list_length(s7, new_vec);
 
     /* :list_expr > :lbrack, :expr_list, :rbrack */
@@ -109,7 +127,7 @@ struct node_s *sunlark_set_vector(s7_scheme *s7,
 
     /* first element sets element type */
     /* BUT: what if first elt is sym? e.g. (myvar 8 9) */
-    new_vec_type = infer_vector_type(s7, new_vec);
+    new_vec_type = _infer_vector_type_from_list(s7, new_vec);
     if (new_vec_type < 0) {
         //FIXME: throw s7 error
         log_error("bad vec type");
@@ -229,3 +247,68 @@ struct node_s *sunlark_set_vector(s7_scheme *s7,
     return old_vec;
 }
 
+/* **************** */
+s7_pointer sunlark_replace_list_item(s7_scheme *s7,
+                                        s7_pointer _list_expr, /* i.e. vector */
+                                        s7_pointer selector,      /* selects item in list */
+                                        s7_pointer newval)
+{
+#if defined(DEBUG_TRACE) || defined(DEBUG_MUTATORS)
+    log_debug("sunlark_set_vector => %s",
+              s7_object_to_c_string(s7, newval));
+#endif
+
+    struct node_s *list_expr = s7_c_object_value(_list_expr);
+#if defined(DEBUG_AST)
+    sealark_debug_print_ast_outline(list_expr, 0);
+#endif
+
+    struct node_s *vector = utarray_eltptr(list_expr->subnodes, 1);
+
+    if (s7_is_integer(selector)) { /* index by int */
+        int vec_type = _infer_expr_list_type(vector);
+        log_debug("vec_type %d %s", vec_type, token_name[vec_type][0]);
+        if (s7_is_string(newval)) {
+            if (vec_type != TK_STRING) {
+                log_debug("Trying to insert string item into list of %d %s",
+                          TK_STRING, token_name[TK_STRING][0]);
+                return NULL;
+            }
+            log_debug("replacing item in string list");
+            struct node_s *item = utarray_eltptr(vector->subnodes, 2 * s7_integer(selector));
+            free(item->s);
+            const char *newstring = s7_string(newval);
+            int len = strlen(newstring);
+            item->s = calloc(len, sizeof(char));
+            strncpy(item->s, newstring, len);
+            return _list_expr;
+        }
+        if (s7_is_integer(newval)) {
+            if (vec_type != TK_INT) {
+                log_debug("Trying to insert string item into list of %d %s",
+                          TK_STRING, token_name[TK_STRING][0]);
+                return NULL;
+            }
+            log_debug("replacing item in int list");
+            return NULL;
+        }
+        if (s7_is_symbol(newval)) {
+            log_debug("replacing with symbol");
+            return NULL;
+        }
+        log_error("Type mismatch: newval %s, list type %d %s",
+                  s7_c_object_value(newval),
+                  TK_STRING, token_name[TK_STRING][0]);
+        return NULL;
+    }
+
+    if (s7_is_string(selector)) { /* find string value in list */
+        log_debug("selecting by string value");
+        return NULL;
+    }
+
+    if (s7_is_symbol(selector)) { /* find symbol value in list */
+        log_debug("selecting by symbol value");
+        return NULL;
+    }
+}

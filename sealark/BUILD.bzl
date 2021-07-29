@@ -6,7 +6,10 @@ def _gensyntax_impl(ctx):
 
     print(ctx.attr.defines)
 
-    defs = "-D" + " -D".join(ctx.attr.defines)
+    if (len(ctx.attr.defines) > 0):
+        defs = "-D" + " -D".join(ctx.attr.defines)
+    else:
+        defs = ""
 
     cmd = "{lemon} -m {yy} {defines} -T{template} -d{outdir}".format(
         lemon=exe, yy=ctx.file.yy.path,
