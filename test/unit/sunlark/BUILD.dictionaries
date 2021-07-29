@@ -1,0 +1,32 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+
+dict_library(
+    name = "stringdict",
+
+    adict = {"akey1": "aval1", "akey2": "aval2"},
+    bdict = {
+        "bkey1": "bval1", "bkey2": "bval2"
+    },
+    cdict = {
+        "ckey1": "cval1",
+        "ckey2": "cval2",
+        "ckey3": "cval3"
+    }
+)
+
+## comment line
+dict_binary(
+    name = "intdict",
+
+    adict = {1: 1, 2: 2, 3: 3},
+    bdict = {
+        10: "a", 20: "b", 30: "c"
+    },
+    cdict = {
+        "a": 100,
+        "b": 200,
+        "c": 300
+    }
+)

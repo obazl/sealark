@@ -68,6 +68,15 @@ cc_test(
 )
 
 cc_test(
+    name = "dictionaries",
+    srcs = ["test_dictionaries.c", "test_dictionaries.h"],
+    data = [":BUILD.dictionaries"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
     name = "loads",
     srcs = ["loads.c", "loads.h"],
     data = [":BUILD.test1"],
@@ -143,6 +152,7 @@ genrule(
         "//sealark:debug.c",
         "test_bindings.c",
         "definitions.c",
+        "test_dictionaries.c",
         "loads.c",
         "paths_tetradic.c",
         "test_strings.c",
@@ -154,6 +164,7 @@ genrule(
     outs = [
         "test_bindings.h",
         "definitions.h",
+        "test_dictionaries.h",
         "loads.h",
         "paths_tetradic.h",
         "test_strings.h",
@@ -167,13 +178,14 @@ genrule(
         "SRCDIR1=`dirname $$SRC1`",
         "$(location //vendored/makeheaders) \\",
         "    $(location //sealark:debug.c) \\",
-        "    $(location test_bindings.c) \\",
+        "    $(location binding_val_vectors.c) \\",
         "    $(location common.c) \\",
         "    $(location definitions.c) \\",
         "    $(location loads.c) \\",
         "    $(location paths_tetradic.c) \\",
+        "    $(location test_bindings.c) \\",
         "    $(location test_strings.c) \\",
-        "    $(location binding_val_vectors.c) \\",
+        "    $(location test_dictionaries.c) \\",
         "    $(location test_targets.c) \\",
         "    $(location test_vectors.c)",
         "cp $${SRCDIR1}/*.h $(@D)",

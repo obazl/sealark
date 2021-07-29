@@ -278,6 +278,10 @@ program ::= error(E) . [FOR] {
     /* parse_state->root = E; */
 }
 
+%ifdef YYDEBUG_DICTS
+program ::= dict_expr(TARGET) . [FOR] { parse_state->root = TARGET; }
+%endif
+
 %ifdef YYDEBUG_TARGETS
 program ::= call_expr(TARGET) . [FOR] { parse_state->root = TARGET; }
 %endif

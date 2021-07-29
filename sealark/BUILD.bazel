@@ -8,6 +8,7 @@ exports_files(glob(["*.c"]))
 
 ## to enable parser/lexer debugging pass --//sealark:debug=bindings,vectors,...
 string_list_flag(name = "yydebug", build_setting_default = [])
+config_setting(name = "yydebug-dicts", flag_values = {":yydebug": "dicts"})
 config_setting(name = "yydebug-targets", flag_values = {":yydebug": "targets"})
 config_setting(name = "yydebug-loads", flag_values = {":yydebug": "loads"})
 config_setting(name = "yydebug-vectors", flag_values = {":yydebug": "vectors"})
@@ -120,6 +121,9 @@ gensyntax(
     outs = ["syntaxis.c","syntaxis.out"],
     defines = select({
         ":yydebug-vectors": ["YYDEBUG_VECTORS"],
+        "//conditions:default":   []
+    }) + select({
+        ":yydebug-dicts": ["YYDEBUG_DICTS"],
         "//conditions:default":   []
     }) + select({
         ":yydebug-targets": ["YYDEBUG_TARGETS"],
