@@ -294,7 +294,11 @@ s7_pointer sunlark_node_length(s7_scheme *s7, s7_pointer _node)
     struct node_s *node = s7_c_object_value(s7_car(_node));
     log_debug("tid: %d %s", node->tid, TIDNAME(node));
 
-    int ct = sealark_node_subnode_count(node, false); // do not exclude meta
+    int ct = sealark_subnode_count(node,
+                                   true, // exclude meta
+                                   false, // not printables_only
+                                   false); // non-recursive
+    ct--; // exclude self from count
     return s7_make_integer(s7, ct);
 }
 

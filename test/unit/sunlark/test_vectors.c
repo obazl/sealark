@@ -51,9 +51,14 @@ void test_vector_properties(void) {
                                         s7_list(s7, 1, vec));
     TEST_ASSERT( pred == s7_t(s7) );
 
-    /* length is 3 */
-    s7_pointer count = s7_apply_function(s7, length_s7,
-                                         s7_list(s7, 1, vec));
+    /* two equivalent length ops: (length v) and (v :length)
+       both count only "semantic" subnodes */
+    s7_pointer count = s7_apply_function(s7, vec,
+                             s7_list(s7, 1, s7_make_symbol(s7, ":length")));
+    TEST_ASSERT( 3 == s7_integer(count) );
+    /* (vec :length) */
+    count = NULL;
+    count = s7_apply_function(s7, length_s7, s7_list(s7, 1, vec));
     TEST_ASSERT( 3 == s7_integer(count) );
 
     /* first item */
@@ -100,6 +105,48 @@ void test_vector_properties(void) {
                                                 ival, /* from above, (item :$) */
                                                 s7_make_integer(s7, 1)));
     TEST_ASSERT( eq_1 == s7_t(s7) );
+}
+
+void test_vector_meta_properties(void) {
+    char *bf = "test/unit/sunlark/BUILD.vectors";
+    s7_pointer ast = sunlark_parse_build_file(s7,
+                                   s7_list(s7, 1, s7_make_string(s7, bf)));
+
+    s7_pointer path = s7_eval_c_string(s7, "'(:> 1 :@ 1)");
+    s7_pointer bnode = s7_apply_function(s7, ast, path);
+
+    s7_pointer is_sunlark_node = s7_name_to_value(s7, "sunlark-node?");
+    s7_pointer pred = s7_apply_function(s7, is_sunlark_node,
+                                        s7_list(s7, 1, bnode));
+    TEST_ASSERT( pred == s7_t(s7) );
+
+    /* binding expr "int_veca = [1, 2, 3]" starts at posn 17:4 */
+    s7_pointer posn = NULL;
+    posn = s7_apply_function(s7, bnode, s7_list(s7, 1,
+                              s7_make_symbol(s7, ":line")));
+    TEST_ASSERT_EQUAL_INT( 17, s7_integer(posn) );
+
+    posn = NULL;
+    posn = s7_apply_function(s7, bnode, s7_list(s7, 1,
+                              s7_make_symbol(s7, ":col")));
+    TEST_ASSERT_EQUAL_INT( 4, s7_integer(posn) );
+
+    /* ast counting */
+    s7_pointer count = NULL;
+    count = s7_apply_function(s7, bnode, s7_list(s7, 1,
+                              s7_make_symbol(s7, ":subnode-count")));
+    TEST_ASSERT( 3 == s7_integer(count) );
+
+    count = NULL;
+    count = s7_apply_function(s7, bnode, s7_list(s7, 1,
+                          s7_make_symbol(s7, ":subnode-count-recursive")));
+    TEST_ASSERT( 11 == s7_integer(count) );
+
+    count = NULL;
+    count = s7_apply_function(s7, bnode, s7_list(s7, 1,
+                          s7_make_symbol(s7, ":printable-subnode-count-recursive")));
+    TEST_ASSERT( 9 == s7_integer(count) );
+
 }
 
 void test_int_vector(void) {
@@ -248,7 +295,8 @@ void test_set_vector(void) {
 
 int main(void) {
     UNITY_BEGIN();
-    RUN_TEST(test_vector_properties);
+    /* RUN_TEST(test_vector_properties); */
+    RUN_TEST(test_vector_meta_properties);
     /* RUN_TEST(test_int_vector); */
     /* RUN_TEST(test_string_vector); */
     /* RUN_TEST(test_symbol_vector); */

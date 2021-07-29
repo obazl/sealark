@@ -29,6 +29,21 @@ Some nodes have a list of subnodes; for example, the Starlark list
    1: TK_RBRACK 69
 ```
 
+We have multiple ways of counting subnodes:
+
+* `(length nd)` counts the semantic subnodes like strings and ints,
+  excluding nodes that carry no semantic weight, like commas and
+  brackets.
+
+* `(nd :length)` - same as `(length nd)`
+
+* `(nd :subnode-count)` counts all direct subnodes in the ast, including punctuation, delims, etc.
+
+* `(nd :subnode-count-recursive)` - counts all descendant nodes
+
+* `(nd :printable-subnode-count-recursive)` - counts all `printable?` descendants, giving the count of symbols in the print expression of the node. For example, the printable count for `[1, 2, 3]` is 7.
+
+
 ## return values
 
 Failed lookups by name (e.g. target or binding not found) return #f,

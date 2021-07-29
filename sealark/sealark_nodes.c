@@ -442,17 +442,16 @@ EXPORT void sealark_node_free(void *_elt) {
     /* free(_elt); */
 }
 
-/* count "data nodes": string, int, etc.
-   do not count metadata: puncutation, delims, etc. */
-EXPORT int sealark_node_subnode_count(struct node_s *node,
-                                      bool exclude_meta)
+/* count subnodes. a little overloaded */
+EXPORT int sealark_subnode_count(struct node_s *node,
+                                 bool exclude_meta,
+                                 bool printables_only,
+                                 bool recursive)
 {
-#if defined(DEBUG_AST)
-    /* sealark_debug_print_ast_outline(node, 0); */
-    /* UT_string *buf; */
-    /* utstring_new(buf); */
-    /* sealark_node_display(s7, nd, buf, 0); */
-    /* utstring_free(buf); */
+    int ct = 0;
+
+#if defined(DEBUG_TRACE)
+    /* log_debug("sealark_subnode_count"); */
 #endif
 
     struct node_s *count_node = NULL;  /* we'll iterate over this */
@@ -460,35 +459,69 @@ EXPORT int sealark_node_subnode_count(struct node_s *node,
     switch(node->tid) {
     case TK_List_Expr:
         if (node->subnodes)
-            count_node = utarray_eltptr(node->subnodes, 1);
+            if ( !printables_only ) {
+                if (exclude_meta)
+                    count_node = utarray_eltptr(node->subnodes, 1);
+                else
+                    count_node = node;
+            } else {
+                ct--; // self is non-printable
+                count_node = node;
+            }
         else
-            return 0;
+            return 1;
+        break;
+    case TK_Binding:
+        if (printables_only)
+            ct--; // self is non-printable
+        count_node = node;
+        break;
+    case TK_Expr_List:
+        if (printables_only)
+            ct--; // self is non-printable
+        count_node = node;
         break;
     default:
-        log_error("length not yet implemented for %d %s",
-                  node->tid, TIDNAME(node));
-        exit(EXIT_FAILURE);
+        if (node->subnodes) {
+            log_error("length not yet implemented for %d %s",
+                      node->tid, TIDNAME(node));
+            exit(EXIT_FAILURE);
+        }
+        count_node=node;
     }
 
     if (count_node->subnodes) {
-        int ct = 0;
+        ct++; // count count_node?
         struct node_s *subnode = NULL;
         while( (subnode=(struct node_s*)utarray_next(count_node->subnodes, subnode)) ) {
-            if (exclude_meta) {
-                if (subnode->tid == TK_COMMA) continue;
-                if (subnode->tid == TK_COLON) continue;
-                if (subnode->tid == TK_LBRACK) continue;
-                if (subnode->tid == TK_RBRACK) continue;
-                if (subnode->tid == TK_LBRACE) continue;
-                if (subnode->tid == TK_RBRACE) continue;
-                if (subnode->tid == TK_LPAREN) continue;
-                if (subnode->tid == TK_RPAREN) continue;
+            if ( !printables_only ) {
+                if (exclude_meta) {
+                    if (subnode->tid == TK_COMMA) continue;
+                    if (subnode->tid == TK_COLON) continue;
+                    if (subnode->tid == TK_LBRACK) continue;
+                    if (subnode->tid == TK_RBRACK) continue;
+                    if (subnode->tid == TK_LBRACE) continue;
+                    if (subnode->tid == TK_RBRACE) continue;
+                    if (subnode->tid == TK_LPAREN) continue;
+                    if (subnode->tid == TK_RPAREN) continue;
+                }
             }
-            ct++;
+            if (recursive)
+                ct=ct+sealark_subnode_count(subnode, exclude_meta, printables_only, recursive);
+            else
+                if (printables_only) {
+                    if (sealark_is_printable(subnode)) {
+                        log_debug("is printable: %d, %s",
+                                  subnode->tid, TIDNAME(subnode));
+                        ct++;
+                    }
+                } else {
+                    ct++;
+                }
         }
         return ct;
     } else
-        return 0;
+        return 1;
 }
 
 /* FIXME: rename? to_string? */

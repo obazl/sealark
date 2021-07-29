@@ -225,8 +225,26 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
         return s7_make_string(s7, ast_node->s);
     }
 
+    if (kw == KW(subnode-count)) {
+        int ct = sealark_subnode_count(ast_node, false, false, false);
+        ct--; // do not count self;
+        return s7_make_integer(s7, ct);
+    }
+
+    if (kw == KW(subnode-count-recursive)) {
+        int ct = sealark_subnode_count(ast_node, false, false, true);
+        ct--; // exclude self
+        return s7_make_integer(s7, ct);
+    }
+
+    if (kw == KW(printable-subnode-count-recursive)) {
+        int ct = sealark_subnode_count(ast_node, false, true, true);
+        return s7_make_integer(s7, ct);
+    }
+
     if (kw == KW(length)) {
-        int ct = sealark_node_subnode_count(ast_node, true);
+        int ct = sealark_subnode_count(ast_node, true, false, false);
+        ct--; // exclude self
         return s7_make_integer(s7, ct);
     }
 
