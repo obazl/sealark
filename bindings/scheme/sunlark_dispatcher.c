@@ -409,6 +409,6 @@ LOCAL s7_pointer sunlark_dispatch_on_any(s7_scheme *s7,
     /* should be only one path arg? */
     s7_pointer result = sunlark_common_property_lookup(s7,
                                                        s7_c_object_value(node),
-                                                       path_args);
+                                                       s7_car(path_args));
     return result;
 }
