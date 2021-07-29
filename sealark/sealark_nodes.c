@@ -1,7 +1,7 @@
 #include <ctype.h>
 
 #include "log.h"
-#include "nodes.h"
+#include "sealark_nodes.h"
 
 EXPORT const int printable_tokens[] =
     {
@@ -367,12 +367,16 @@ EXPORT int sealark_kw_to_tid(char *kw)
         if (strcmp(kw, "id") == 0 && strlen(kw) == 2) {
             sprintf(tag, "TK-ID");
         } else {
-            int len = strlen(tag);
-            tag[3] = toupper(tag[3]);
-            /* to camel_case */
-            for (int j = 0; j < len; j++) {
-                if (tag[j-1] == '-')
-                    tag[j] = toupper(tag[j]);
+            if (strcmp(kw, "int") == 0 && strlen(kw) == 3) {
+                sprintf(tag, "TK-INT");
+            } else {
+                int len = strlen(tag);
+                tag[3] = toupper(tag[3]);
+                /* to camel_case */
+                for (int j = 0; j < len; j++) {
+                    if (tag[j-1] == '-')
+                        tag[j] = toupper(tag[j]);
+                }
             }
         }
     }
@@ -396,47 +400,6 @@ EXPORT int sealark_kw_to_tid(char *kw)
     }
     return -1;
 }
-
-/* **************************************************************** */
-//FIXME: move nodelist API to nodelist.c?
-/* EXPORT UT_array *sealark_nodelist_new() */
-/* { */
-/*     log_debug("sealark_nodelist_new"); */
-/*     UT_array *nl; */
-/*     utarray_new(nl, &node_icd); */
-/*     return nl; */
-/* } */
-
-/* EXPORT void sealark_nodelist_free(UT_array *nl) */
-/* { */
-/*     log_debug("sealark_nodelist_free"); */
-/*     utarray_free(nl); */
-/* } */
-
-/* EXPORT int sealark_nodelist_len(UT_array *nl) */
-/* { */
-/*     log_debug("sealark_nodelist_len"); */
-/*     return utarray_len(nl); */
-/* } */
-
-/* EXPORT int sealark_nodelist_copy(UT_array *_dst, UT_array *_src) */
-/* { */
-/*     log_debug("node_copy: %p <- %p", _dst, _src); */
-/*     if (utarray_len(_dst) > 0) { */
-/*         log_error("dest nodelist of copy is non-empty"); */
-/*         return -1; */
-/*     } */
-/*     utarray_concat(_dst, _src); */
-/*     return 0; */
-/* } */
-
-/* EXPORT int sealark_nodelist_copy_destructively(UT_array *_dst, UT_array *_src) */
-/* { */
-/*     log_debug("node_copy_destructively: %p <- %p", _dst, _src); */
-/*     utarray_clear(_dst); */
-/*     utarray_concat(_dst, _src); */
-/*     return 0; */
-/* } */
 
 /* **************************************************************** */
 EXPORT struct node_s *sealark_node_new()
@@ -477,6 +440,55 @@ EXPORT void sealark_node_free(void *_elt) {
     /* DO NOT FREE: utarray copies elements into a buffer, so its
        pointers are not malloced */
     /* free(_elt); */
+}
+
+/* count "data nodes": string, int, etc.
+   do not count metadata: puncutation, delims, etc. */
+EXPORT int sealark_node_subnode_count(struct node_s *node,
+                                      bool exclude_meta)
+{
+#if defined(DEBUG_AST)
+    /* sealark_debug_print_ast_outline(node, 0); */
+    /* UT_string *buf; */
+    /* utstring_new(buf); */
+    /* sealark_node_display(s7, nd, buf, 0); */
+    /* utstring_free(buf); */
+#endif
+
+    struct node_s *count_node = NULL;  /* we'll iterate over this */
+
+    switch(node->tid) {
+    case TK_List_Expr:
+        if (node->subnodes)
+            count_node = utarray_eltptr(node->subnodes, 1);
+        else
+            return 0;
+        break;
+    default:
+        log_error("length not yet implemented for %d %s",
+                  node->tid, TIDNAME(node));
+        exit(EXIT_FAILURE);
+    }
+
+    if (count_node->subnodes) {
+        int ct = 0;
+        struct node_s *subnode = NULL;
+        while( (subnode=(struct node_s*)utarray_next(count_node->subnodes, subnode)) ) {
+            if (exclude_meta) {
+                if (subnode->tid == TK_COMMA) continue;
+                if (subnode->tid == TK_COLON) continue;
+                if (subnode->tid == TK_LBRACK) continue;
+                if (subnode->tid == TK_RBRACK) continue;
+                if (subnode->tid == TK_LBRACE) continue;
+                if (subnode->tid == TK_RBRACE) continue;
+                if (subnode->tid == TK_LPAREN) continue;
+                if (subnode->tid == TK_RPAREN) continue;
+            }
+            ct++;
+        }
+        return ct;
+    } else
+        return 0;
 }
 
 /* FIXME: rename? to_string? */

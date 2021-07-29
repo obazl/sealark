@@ -149,7 +149,6 @@ cc_library(
 genrule(
     name = "mkhdrs",
     srcs = [
-        "//sealark:debug.c",
         "test_bindings.c",
         "definitions.c",
         "test_dictionaries.c",
@@ -177,7 +176,6 @@ genrule(
         "SRC1=$(location paths_tetradic.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "$(location //vendored/makeheaders) \\",
-        "    $(location //sealark:debug.c) \\",
         "    $(location binding_val_vectors.c) \\",
         "    $(location common.c) \\",
         "    $(location definitions.c) \\",

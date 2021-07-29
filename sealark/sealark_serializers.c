@@ -239,3 +239,132 @@ LOCAL void comments2string(UT_array *nodes, UT_string *buffer)
         _node2string(node, buffer);
     }
 }
+
+/* **************************************************************** */
+//FIXME: handle large files. use dynamic alloc
+//FIXME: rename: sunlark_debug_print_node
+EXPORT void sealark_node_display(// s7_scheme *s7,
+                          struct node_s *nd,
+                          UT_string *buffer, int level)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug("sealark_node_display");
+    log_debug("tid: %d %s", nd->tid, TIDNAME(nd));
+#endif
+
+    // check display_buf size, expand if needed
+
+    /* char buf[128]; */
+    /* UT_string *buf; */
+    /* utstring_new(buf); */
+    int len;
+
+    if (level == 0) utstring_printf(buffer, "\n");
+
+    utstring_printf(buffer, "%*.s#<node ",
+                    (level==0)? 0 : (level+1)*2+level+1, ".");
+    /* sprintf(buf, "#ast_node<\n"); */
+    /* len = strlen(buf); */
+    /* snprintf(display_ptr, len+1, "%s", buf); */
+    /* display_ptr += len; */
+
+    utstring_printf(buffer, "tid=%d", nd->tid);
+    /* sprintf(buf, " tid  = %d,\n", nd->tid); */
+    /* len = strlen(buf); */
+    /* snprintf(display_ptr, len+1, "%s", buf); */
+    /* display_ptr += len; */
+
+    utstring_printf(buffer, " tnm=%s", token_name[nd->tid][0]);
+    /* sprintf(buf, " tnm  = %s,\n", token_name[nd->tid][0]); */
+    /* len = strlen(buf); */
+    /* snprintf(display_ptr, len+1, "%s", buf); */
+    /* display_ptr += len; */
+
+    utstring_printf(buffer, " line=%d", nd->line);
+    /* sprintf(buf, " line  = %d,\n", nd->line); */
+    /* len = strlen(buf); */
+    /* snprintf(display_ptr, len+1, "%s", buf); */
+    /* display_ptr += len; */
+
+    utstring_printf(buffer, " col=%d", nd->col);
+    /* sprintf(buf, " col   = %d,\n", nd->col); */
+    /* len = strlen(buf); */
+    /* snprintf(display_ptr, len+1, "%s", buf); */
+    /* display_ptr += len; */
+
+    utstring_printf(buffer, " trailing_newline=%d", nd->trailing_newline);
+    /* sprintf(buf, " trailing_newline = %d,\n", nd->trailing_newline); */
+    /* len = strlen(buf); */
+    /* snprintf(display_ptr, len+1, "%s", buf); */
+    /* display_ptr += len; */
+
+    if (nd->tid == TK_STRING) {
+        utstring_printf(buffer, " qtype=#x%#X", nd->qtype);
+        /* sprintf(buf, " qtype = #x%#X,\n", nd->qtype); */
+        /* len = strlen(buf); */
+        /* snprintf(display_ptr, len+1, "%s", buf); */
+        /* display_ptr += len; */
+    }
+
+    if (nd->s) {
+        char *br = SEALARK_STRTYPE(nd->qtype);
+        char *q = sealark_quote_type(nd);
+
+        utstring_printf(buffer, " s=%s%s%s%s",
+                        br, q, nd->s, q);
+
+        /* sprintf(buf, " s     = %s,\n", nd->s); */
+        /* len = strlen(buf); */
+        /* snprintf(display_ptr, len+1, "%s", buf); */
+        /* display_ptr += len; */
+    }
+
+    if (nd->comments) {
+        utstring_printf(buffer, " comments= ");
+        /* sprintf(buf, " comments = "); */
+        /* len = strlen(buf); */
+        /* snprintf(display_ptr, len+1, "%s", buf); */
+        /* display_ptr += len; */
+
+        /* updates global display_buf */
+        //FIXME sunlark_nodelist_display(s7, (UT_array*)nd->comments);
+
+        utstring_printf(buffer, ",");
+        /* sprintf(buf, ",\n"); */
+        /* len = strlen(buf); */
+        /* snprintf(display_ptr, len+1, "%s", buf); */
+        /* display_ptr += len; */
+    }
+
+    if (nd->subnodes) {
+        utstring_printf(buffer, "\n%*.ssubnodes=[\n",
+                        (level==0)? 2 : (level+2)*2+level+1, ".");
+                        /* (level==0)? level+2 :  level+2, " "); */
+        /* sprintf(buf, " subnodes =\n\t"); */
+        /* len = strlen(buf); */
+        /* snprintf(display_ptr, len+1, "%s", buf); */
+        /* display_ptr += len; */
+
+        //FIXME sunlark_nodelist_display(s7, (UT_array*)nd->subnodes);
+        struct node_s *subn = NULL;
+        int lvl = ++level;
+        while((subn=(struct node_s*)utarray_next(nd->subnodes,
+                                                 subn))) {
+            sealark_node_display(subn, buffer, lvl);
+        }
+
+        utstring_printf(buffer, "%*.s]", (level+1)*2+1, " ");
+        /* sprintf(buf, ",\n"); */
+        /* len = strlen(buf); */
+        /* snprintf(display_ptr, len+1, "%s", buf); */
+        /* display_ptr += len; */
+    }
+
+    utstring_printf(buffer, ">\n");
+    /* sprintf(display_ptr - 2, ">,\n"); */
+    /* len = strlen(buf); */
+    /* snprintf(display_ptr, len+1, "%s", buf); */
+    /* display_ptr++; // -= 1; */
+
+    /* return display_buf; */
+}

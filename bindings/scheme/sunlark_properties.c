@@ -225,6 +225,11 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
         return s7_make_string(s7, ast_node->s);
     }
 
+    if (kw == KW(length)) {
+        int ct = sealark_node_subnode_count(ast_node, true);
+        return s7_make_integer(s7, ct);
+    }
+
     if (kw == KW(subnodes)) {
         if (ast_node->subnodes) {
             return nodelist_to_s7_list(s7, ast_node->subnodes);

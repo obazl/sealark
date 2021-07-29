@@ -12,6 +12,81 @@ which will return a typed Scheme value:
 * identifiers return a Scheme symbol
 * ints return a Scheme integer
 
+### subnodes
+
+Some nodes have a list of subnodes; for example, the Starlark list
+"[1, 2, 3]" parses to:
+
+```
+ 0: TK_List_Expr 116
+   1: TK_LBRACK 49
+   1: TK_Expr_List 109
+     2: TK_INT 40: 1
+     2: TK_COMMA 15
+     2: TK_INT 40: 2
+     2: TK_COMMA 15
+     2: TK_INT 40: 3
+   1: TK_RBRACK 69
+```
+
+## return values
+
+Failed lookups by name (e.g. target or binding not found) return #f,
+to match the way s7 treats hash-table-ref.
+
+## debugging
+
+Printing nodes:
+
+```
+sealark_debug_print_ast_outline(struct node_s *node, int level)
+
+
+ 0: TK_List_Expr 116
+   1: TK_LBRACK 49
+   1: TK_Expr_List 109
+     2: TK_INT 40: 1
+     2: TK_COMMA 15
+     2: TK_INT 40: 2
+     2: TK_COMMA 15
+     2: TK_INT 40: 3
+   1: TK_RBRACK 69
+
+```
+
+```
+sunlark_debug_print_node(s7_scheme *s7, struct node_s *node)
+
+#<node tid=116 tnm=TK_List_Expr line=0 col=0 trailing_newline=0
+  subnodes=[
+      #<node tid=49 tnm=TK_LBRACK line=0 col=0 trailing_newline=0>
+      ...
+```
+
+```
+sealark_debug_print_node_starlark(struct node_s *node, bool crush)
+ // crush : remove blank lines; squeeze: collapse consecutve blank lines
+... prints starlark syntax ...
+```
+
+Deprecated:
+
+```
+sealark_dump_node(struct node_s *node)
+
+
+13:37:25 DEBUG sealark/sealark_debug.c:45: dump_node: 0x7fea3bd12fe0
+13:37:25 DEBUG sealark/sealark_debug.c:53: TK_List_Expr[116]   (0:0)
+13:37:25 DEBUG sealark/sealark_debug.c:73: dump_nodes: 0x7fea3bd13010, ct: 3
+13:37:25 DEBUG sealark/sealark_debug.c:110: TK_LBRACK[49]   (0:0)
+13:37:25 DEBUG sealark/sealark_debug.c:110: TK_Expr_List[109]   (0:1)
+13:37:25 DEBUG sealark/sealark_debug.c:130:   subnodes:
+...
+
+```
+
+
+
 ## BUILD file path expression DSL
 
 Top level productions:

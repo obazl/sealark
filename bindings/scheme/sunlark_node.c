@@ -283,28 +283,19 @@ static s7_pointer sunlark_nodes_are_equivalent(s7_scheme *s7, s7_pointer args)
 
 /* **************** */
 /* 'length' implementation */
-/* IMPORTANT: this count may be used by iterators (for-each, map), so
-   do not count meta data (delims, punctuation) */
-s7_pointer sunlark_node_subnode_count(s7_scheme *s7, s7_pointer args)
+/* IMPORTANT: counts only the "payload" nodes - string, int, etc;
+   does not count meta data (delims, punctuation) */
+s7_pointer sunlark_node_length(s7_scheme *s7, s7_pointer _node)
 {
 #ifdef DEBUG_S7_API
-    log_debug(">>>>>>>>>>>>>>> sunlark_node_subnode_count <<<<<<<<<<<<<<<");
+    log_debug(">>>>>>>>>>>>>>> sunlark_node_length <<<<<<<<<<<<<<<");
 #endif
-    /* called by Scheme, so args is a list */
-    struct node_s *node = s7_c_object_value(s7_car(args));
-    //FIXME: count depends on node type
-    if (node->subnodes) {
-        int ct = 0;
-        struct node_s *subnode = NULL;
-        while( (subnode=(struct node_s*)utarray_next(node->subnodes, subnode)) ) {
-            if (subnode->tid == TK_COMMA) continue;
-            if (subnode->tid == TK_LBRACK) continue;
-            if (subnode->tid == TK_RBRACK) continue;
-            ct++;
-        }
-        return s7_make_integer(s7, ct);
-    } else
-        return s7_make_integer(s7, 0);
+
+    struct node_s *node = s7_c_object_value(s7_car(_node));
+    log_debug("tid: %d %s", node->tid, TIDNAME(node));
+
+    int ct = sealark_node_subnode_count(node, false); // do not exclude meta
+    return s7_make_integer(s7, ct);
 }
 
 /* **************** */
@@ -479,10 +470,11 @@ s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
                 if (s7_is_null(s7, resolved_path)) {
                     log_debug("<<<< sunlark_node_object_applicator: returning nil");
                 } else {
-                    log_debug("<<<< sunlark_node_object_applicator: return type: %s",
-                              s7_is_c_object(resolved_path) ? "c-object"
-                              : s7_is_list(s7, resolved_path) ? "s7 list"
-                              : "other");
+                    if (s7_is_boolean(resolved_path)) {
+                        log_debug("<<<< sunlark_node_object_applicator: returning boolean");
+                    } else {
+                        log_debug("<<<< sunlark_node_object_applicator: return type: other");
+                    }
                 }
             }
         }
@@ -1009,7 +1001,7 @@ static void _register_c_type_methods(s7_scheme *s7, s7_int ast_node_t)
     s7_c_type_set_copy(s7, ast_node_t, sunlark_node_copy);
 
     /* nodes are not sequences - nodelists are */
-    s7_c_type_set_length(s7, ast_node_t, sunlark_node_subnode_count);
+    s7_c_type_set_length(s7, ast_node_t, sunlark_node_length);
     /* s7_c_type_set_reverse(s7, ast_node_t, sunlark_node_reverse); */
     /* s7_c_type_set_fill(s7, ast_node_t, sunlark_node_fill); */
 

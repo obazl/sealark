@@ -47,7 +47,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
 #ifdef DEBUG_AST
     /* sealark_debug_print_ast_outline(self_node, 0); */
     /* sealark_debug_print_node_starlark(self_node, true); */
-    sunlark_debug_print_node(s7, self_node);
+    sunlark_debug_print_node(s7, self);
 #endif
 
     /*

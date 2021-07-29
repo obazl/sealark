@@ -1,7 +1,8 @@
 #include "log.h"
 #include "utarray.h"
 #include "utstring.h"
-#include "debug.h"
+
+#include "sealark_debug.h"
 
 /* ******************************** */
 /* recursively print outline */

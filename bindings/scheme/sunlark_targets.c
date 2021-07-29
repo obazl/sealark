@@ -260,9 +260,8 @@ EXPORT s7_pointer sunlark_target_select(s7_scheme *s7,
             return sunlark_node_new(s7, tgt_node);
         } else {
             /* e.g. (:> "mylib" :@ ...), (:> "mylib" :rule), etc. */
-            result = sunlark_target_1(s7, tgt_node,
+            return sunlark_target_1(s7, tgt_node,
                                       s7_cdr(path_args));
-            return result;
         }
 
     }
@@ -331,9 +330,9 @@ EXPORT s7_pointer sunlark_target_1(s7_scheme *s7,
                 if (binding)
                     return sunlark_node_new(s7, binding);
                 else {
-                    log_warn("Binding %s not found",
-                             s7_object_to_c_string(s7, path_args));
-                    return NULL; //s7_nil(s7);
+                    /* log_warn("Binding %s not found", */
+                    /*          s7_object_to_c_string(s7, path_args)); */
+                    return s7_f(s7);
                 }
             } else {
                 return sunlark_target_binding_for_path(s7,
@@ -346,7 +345,11 @@ EXPORT s7_pointer sunlark_target_1(s7_scheme *s7,
                 struct node_s *binding
                     = sealark_target_binding_for_index(tgt_node,
                                                        s7_integer(op2));
-                return sunlark_node_new(s7, binding);
+                if (binding)
+                    return sunlark_node_new(s7, binding);
+                else
+                    /* r7rs: error */
+                    return s7_f(s7); /* same as binding_for_name  */
             } else {
                 return sunlark_target_binding_for_path(s7,
                                                        tgt_node,

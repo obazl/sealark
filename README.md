@@ -315,6 +315,12 @@ See moonlark/lua for examples.
 
 ## testing
 
+For some of the unit tests debug flags must be set. For example,
+`test/unit/sunlark:vectors` will fail unless flag
+`--//sealark:yydebug=vectors` is passed. The flags are defined in
+`//:BUILD.bzl`, `//:BUILD.bazel`, and `//sealark/BUILD.bazel`; see
+`bzl/user.bazelrc` for use example.
+
 ### Unit tests
 
 ```
