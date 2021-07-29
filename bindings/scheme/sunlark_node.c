@@ -464,67 +464,72 @@ s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
     /* } */
 
 #ifdef DEBUG_S7_API
-    if (s7_is_c_object(resolved_path)) {
-        struct node_s *node = s7_c_object_value(resolved_path);
-        log_debug("<<<< sunlark_node_object_applicator: returning %d %s",
-                  node->tid, TIDNAME(node));
+    if (resolved_path == NULL) {
+        log_debug("<<<< sunlark_node_object_applicator: returning nil");
+        return s7_nil(s7);
     } else {
-        if (s7_is_unspecified(s7, resolved_path)) {
-            log_debug("<<<< sunlark_node_object_applicator: returning #<unspecified>");
+        if (s7_is_c_object(resolved_path)) {
+            struct node_s *node = s7_c_object_value(resolved_path);
+            log_debug("<<<< sunlark_node_object_applicator: returning %d %s",
+                      node->tid, TIDNAME(node));
         } else {
-            if (s7_is_null(s7, resolved_path)) {
-                log_debug("<<<< sunlark_node_object_applicator: returning nil");
+            if (s7_is_unspecified(s7, resolved_path)) {
+                log_debug("<<<< sunlark_node_object_applicator: returning #<unspecified>");
             } else {
-                log_debug("<<<< sunlark_node_object_applicator: return type: %s",
-                          s7_is_c_object(resolved_path) ? "c-object"
-                          : s7_is_list(s7, resolved_path) ? "s7 list"
-                          : "other");
+                if (s7_is_null(s7, resolved_path)) {
+                    log_debug("<<<< sunlark_node_object_applicator: returning nil");
+                } else {
+                    log_debug("<<<< sunlark_node_object_applicator: return type: %s",
+                              s7_is_c_object(resolved_path) ? "c-object"
+                              : s7_is_list(s7, resolved_path) ? "s7 list"
+                              : "other");
+                }
             }
         }
-    }
 #endif
-    return resolved_path;
+        return resolved_path;
 
-    /* s7_pointer op = s7_car(rest); */
-    /* if (s7_is_keyword(op)) { */
-    /*     s7_pointer sym = s7_keyword_to_symbol(s7, op); */
-    /*     char *kw = (char*)s7_symbol_name(sym); */
-    /*     if (strrchr(kw, '?')) { */
-    /*         log_debug("KW PREDICATE %s", kw); */
-    /*         if (strncmp(kw, "printable?", 10) == 0) { */
-    /*             s7_pointer node = s7_car(args); */
-    /*             struct node_s *ast_node = s7_c_object_value(node); */
-    /*             if (sealark_node_is_printable(ast_node)) */
-    /*                 return s7_t(s7); */
-    /*             else return s7_f(s7); */
-    /*         } else { */
-    /*             return sunlark_predication(s7, kw, args); */
-    /*         } */
-    /*     } else { */
-    /*         s7_pointer s7_tmp = sunlark_node_ref_specialized(s7, args); */
-    /*         return s7_tmp; */
-    /*     } */
-    /* } else { */
-    /*     if (s7_is_integer(op)) { */
-    /*         log_debug("0 xxxxxxxxxxxxxxxx"); */
-    /*         s7_pointer node = s7_car(args); */
-    /*         struct node_s *ast_node = s7_c_object_value(node); */
-    /*         s7_pointer tmp = sunlark_nodelist_lookup(s7, */
-    /*                                                  ast_node->subnodes, */
-    /*                                                  op); */
-    /*         return tmp; */
-    /*         /\* if (s7_is_c_object(tmp)) { *\/ */
-    /*         /\*     self = tmp; *\/ */
-    /*         /\*     self_tid = sunlark_node_tid(s7, tmp); *\/ */
-    /*         /\* } else { *\/ */
-    /*         /\*     return tmp; *\/ */
-    /*         /\* } *\/ */
-    /*    } else { */
-    /*         //FIXME: do we have any symbol ops? */
-    /*         return(s7_wrong_type_arg_error(s7, "ast-node-ref", */
-    /*                                        2, op, "a keyword or symbol")); */
-    /*     } */
-    /* } */
+        /* s7_pointer op = s7_car(rest); */
+        /* if (s7_is_keyword(op)) { */
+        /*     s7_pointer sym = s7_keyword_to_symbol(s7, op); */
+        /*     char *kw = (char*)s7_symbol_name(sym); */
+        /*     if (strrchr(kw, '?')) { */
+        /*         log_debug("KW PREDICATE %s", kw); */
+        /*         if (strncmp(kw, "printable?", 10) == 0) { */
+        /*             s7_pointer node = s7_car(args); */
+        /*             struct node_s *ast_node = s7_c_object_value(node); */
+        /*             if (sealark_node_is_printable(ast_node)) */
+        /*                 return s7_t(s7); */
+        /*             else return s7_f(s7); */
+        /*         } else { */
+        /*             return sunlark_predication(s7, kw, args); */
+        /*         } */
+        /*     } else { */
+        /*         s7_pointer s7_tmp = sunlark_node_ref_specialized(s7, args); */
+        /*         return s7_tmp; */
+        /*     } */
+        /* } else { */
+        /*     if (s7_is_integer(op)) { */
+        /*         log_debug("0 xxxxxxxxxxxxxxxx"); */
+        /*         s7_pointer node = s7_car(args); */
+        /*         struct node_s *ast_node = s7_c_object_value(node); */
+        /*         s7_pointer tmp = sunlark_nodelist_lookup(s7, */
+        /*                                                  ast_node->subnodes, */
+        /*                                                  op); */
+        /*         return tmp; */
+        /*         /\* if (s7_is_c_object(tmp)) { *\/ */
+        /*         /\*     self = tmp; *\/ */
+        /*         /\*     self_tid = sunlark_node_tid(s7, tmp); *\/ */
+        /*         /\* } else { *\/ */
+        /*         /\*     return tmp; *\/ */
+        /*         /\* } *\/ */
+        /*    } else { */
+        /*         //FIXME: do we have any symbol ops? */
+        /*         return(s7_wrong_type_arg_error(s7, "ast-node-ref", */
+        /*                                        2, op, "a keyword or symbol")); */
+        /*     } */
+        /* } */
+    }
 }
 
 /* **************** */

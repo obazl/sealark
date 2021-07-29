@@ -11,28 +11,6 @@
 
 #include "sunlark_targets.h"
 
-s7_pointer sunlark_forall_targets();    /* (:>> ...) */
-
-
-s7_pointer sunlark_target_select(); /* string or int */
-/* s7_pointer sunlark_target_str(); /\* (:> "hello") *\/ */
-/* s7_pointer sunlark_target_int(); /\* (:> 1) *\/ */
-
-/* args: :@ ..., :rule, ? */
-s7_pointer sunlark_target_1(s7_scheme *s7,
-                            struct node_s *target,
-                            s7_pointer args);
-s7_pointer sunlark_target_1_bindings(); /* (:> <sel> :@@) */
-s7_pointer sunlark_target_1_bindings_sym(); /* (:> <sel> :@ 'srcs) */
-s7_pointer sunlark_target_1_bindings_int(); /* (:> <sel> :@ 0) */
-s7_pointer sunlark_target_1_bindings_1_sym(); /* (:> <sel> :@ 0 :key/:val) */
-s7_pointer sunlark_target_1_bindings_1_sym_int(); /* (:> <sel> :@ 0 :val 1) */
-
-s7_pointer sunlark_target_sym(); /* (:> 'cc_library) */
-s7_pointer sunlark_target_list(); /* (:> '(cc_library cc_test)) */
-
-
-
 /** sunlark_dispatch_on_target
 
     datum: node of tid :call-expr
@@ -282,8 +260,9 @@ EXPORT s7_pointer sunlark_target_select(s7_scheme *s7,
             return sunlark_node_new(s7, tgt_node);
         } else {
             /* e.g. (:> "mylib" :@ ...), (:> "mylib" :rule), etc. */
-            return sunlark_target_1(s7, tgt_node,
+            result = sunlark_target_1(s7, tgt_node,
                                       s7_cdr(path_args));
+            return result;
         }
 
     }
@@ -336,43 +315,50 @@ EXPORT s7_pointer sunlark_target_1(s7_scheme *s7,
     /* allowed path op: :@, :@@, :rule, :name */
     if (op==KW(@)||op==KW(binding)||op==KW(attr)) {
         if ( s7_is_null(s7, rest) ) { /* e.g. (:> "mylib" :@) */
-            log_error("kw :@ (or :binding, :attr) must be followed by a symbol or integer.");
+            log_error("Missing arg: %s must be followed by a binding selector expression (or use :@@ to select all bindings).", s7_object_to_c_string(s7, op));
             return(s7_error(s7,
-                            s7_make_symbol(s7, "invalid_argument"),
-                            s7_list(s7, 1, s7_make_string(s7,
-                 "kw :@ (or :binding, :attr) must be followed by a symbol or integer."))));
-        } else {
-            if (s7_is_symbol(op2)) {
-                if (op_count == 2) {
-                    struct node_s *binding
-                        = sealark_target_binding_for_key(tgt_node,
-                                                  s7_symbol_name(op2));
-                    return sunlark_node_new(s7, binding);
-                } else {
-                    return sunlark_target_binding_for_path(s7,
-                                                           tgt_node,
-                                                           rest);
-                }
-            }
-            if (s7_is_integer(op2)) {
-                if (op_count == 2) {
-                    struct node_s *binding
-                        = sealark_target_binding_for_index(tgt_node,
-                                                     s7_integer(op2));
-                    return sunlark_node_new(s7, binding);
-                } else {
-                    return sunlark_target_binding_for_path(s7,
-                                                           tgt_node,
-                                                           rest);
-                }
-            }
-            /* error: only sym or int may follow :@ */
-            return(s7_error(s7,
-                            s7_make_symbol(s7, "invalid_argument"),
-                            s7_list(s7, 1, s7_make_string(s7,
-                                                          "Only sym or int allowed here, to select attribute"))));
-
+                            s7_make_symbol(s7, "missing_argument"),
+                            s7_list(s7, 2, s7_make_string(s7,
+                                                          "Missing arg: ~S must be followed by a binding selector expression (or: use :@@ to select all bindings)."),
+                                    op)));
         }
+        if (s7_is_symbol(op2)) {
+            if (op_count == 2) { // FIXME: eliminate
+                errno = 0;
+                struct node_s *binding
+                    = sealark_target_binding_for_key(tgt_node,
+                                                     s7_symbol_name(op2));
+                if (binding)
+                    return sunlark_node_new(s7, binding);
+                else {
+                    log_warn("Binding %s not found",
+                             s7_object_to_c_string(s7, path_args));
+                    return NULL; //s7_nil(s7);
+                }
+            } else {
+                return sunlark_target_binding_for_path(s7,
+                                                       tgt_node,
+                                                       rest);
+            }
+        }
+        if (s7_is_integer(op2)) {
+            if (op_count == 2) {
+                struct node_s *binding
+                    = sealark_target_binding_for_index(tgt_node,
+                                                       s7_integer(op2));
+                return sunlark_node_new(s7, binding);
+            } else {
+                return sunlark_target_binding_for_path(s7,
+                                                       tgt_node,
+                                                       rest);
+            }
+        }
+        /* error: only sym or int may follow :@ */
+        return(s7_error(s7,
+                        s7_make_symbol(s7, "invalid_argument"),
+                        s7_list(s7, 1, s7_make_string(s7,
+                                                      "Only sym or int allowed here, to select attribute"))));
+
     }
     if (op==KW(@@)||op==KW(bindings)||op==KW(attrs)) {
         if ( s7_is_null(s7, rest) ) { /* e.g. (:> "mylib" :@@) */
