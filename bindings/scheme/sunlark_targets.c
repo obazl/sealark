@@ -258,16 +258,27 @@ EXPORT s7_pointer sunlark_target_select(s7_scheme *s7,
     /* log_debug("op count: %d", op_count); */
 
     s7_pointer op = s7_car(path_args);
-    s7_pointer op2 = s7_cadr(path_args);
+    /* s7_pointer op2 = s7_cadr(path_args); */
 
     s7_pointer result;
 
     /* resolved so far: :> */
     if (s7_is_string(op)) {
+        errno = 0;
         struct node_s *tgt_node = sealark_target_for_name(bf_node,
                                                           s7_string(op));
 
-        if ( s7_is_null(s7, op2) ) { /* e.g. (:> "mylib") */
+        if (tgt_node == NULL) {
+            return s7_nil(s7);
+            /* if (errno == -1) */
+            /*     return(s7_error(s7, */
+            /*                     s7_make_symbol(s7, "not_found"), */
+            /*                 s7_list(s7, 2, s7_make_string(s7, */
+            /*         "Target ~S not found"), */
+            /*                         op))); */
+        }
+
+        if ( s7_is_null(s7, s7_cdr(path_args)) ) { /* e.g. (:> "mylib") */
             return sunlark_node_new(s7, tgt_node);
         } else {
             /* e.g. (:> "mylib" :@ ...), (:> "mylib" :rule), etc. */
@@ -279,7 +290,7 @@ EXPORT s7_pointer sunlark_target_select(s7_scheme *s7,
     if (s7_is_integer(op)) {
         struct node_s *tgt_node = sealark_target_for_index(bf_node,
                                                          s7_integer(op));
-        if ( s7_is_null(s7, op2) ) { /* e.g. (:> 0) */
+        if ( s7_is_null(s7, s7_cdr(path_args)) ) { /* e.g. (:> 0) */
             return sunlark_node_new(s7, tgt_node);
         } else {
             /* e.g. (:> 1 :@ ...), (:> 1 :rule) */
@@ -288,14 +299,12 @@ EXPORT s7_pointer sunlark_target_select(s7_scheme *s7,
         }
 
     }
-        // only strings after :target
-        log_error("Only string arg after :target");
-        return(s7_error(s7,
-                        s7_make_symbol(s7, "invalid_argument"),
-                            s7_list(s7, 2, s7_make_string(s7,
-                      "Only string arg allowed after :target; got ~A"),
-                                    op2)));
-
+    log_error("Bad arg: %s after :target", s7_object_to_c_string(s7, op));
+    return(s7_error(s7,
+                    s7_make_symbol(s7, "invalid_argument"),
+                    s7_list(s7, 2, s7_make_string(s7,
+                     "Bad arg ~S after target (only string or int allowed)"),
+                            op)));
 }
 
 /*

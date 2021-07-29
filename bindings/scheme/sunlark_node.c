@@ -466,13 +466,21 @@ s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
 #ifdef DEBUG_S7_API
     if (s7_is_c_object(resolved_path)) {
         struct node_s *node = s7_c_object_value(resolved_path);
-        log_debug("<<<< sunlark_node_object_applicator, returning %d %s",
+        log_debug("<<<< sunlark_node_object_applicator: returning %d %s",
                   node->tid, TIDNAME(node));
     } else {
-        log_debug("<<<< sunlark_node_object_applicator, return type: %s",
-              s7_is_c_object(resolved_path) ? "c-object"
-              : s7_is_list(s7, resolved_path) ? "s7 list"
-              : "other");
+        if (s7_is_unspecified(s7, resolved_path)) {
+            log_debug("<<<< sunlark_node_object_applicator: returning #<unspecified>");
+        } else {
+            if (s7_is_null(s7, resolved_path)) {
+                log_debug("<<<< sunlark_node_object_applicator: returning nil");
+            } else {
+                log_debug("<<<< sunlark_node_object_applicator: return type: %s",
+                          s7_is_c_object(resolved_path) ? "c-object"
+                          : s7_is_list(s7, resolved_path) ? "s7 list"
+                          : "other");
+            }
+        }
     }
 #endif
     return resolved_path;

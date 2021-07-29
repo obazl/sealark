@@ -266,8 +266,9 @@ s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
     if ( s7_is_c_object(form) ) {
         struct node_s *n1 = s7_c_object_value(form);
         sealark_node_to_starlark(n1, buf);
-    } else {
-        if ( s7_is_list(s7, form) ) {
+        goto resume;
+    }
+    if ( s7_is_list(s7, form) ) {
             /* log_debug("printing s7 list"); */
             s7_pointer _list = form;
             while (! s7_is_null(s7, _list)) {
@@ -276,33 +277,40 @@ s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
                 sealark_node_to_starlark(t, buf);
                 _list = s7_cdr(_list);
             }
-        } else {
-            if ( s7_is_vector(form) ) {
-                log_debug("printing s7 vector");
-                utstring_printf(buf, "%s", s7_object_to_c_string(s7, (form)));
-            } else {
-                if (s7_is_string(form)) {
-                    utstring_printf(buf, "%s", s7_string(form));
-                } else {
-                    if (s7_is_character(form)) {
-                        utstring_printf(buf, "%c", s7_character(form));
-                    } else {
-                        if (s7_is_number(form)) {
-                            utstring_printf(buf, "%s", s7_number_to_string(s7,form,10));
-                        } else {
-                            if (s7_is_keyword(form)) {
-                                s7_pointer sym = s7_keyword_to_symbol(s7,form);
-                                utstring_printf(buf, "%s",
-                                                s7_symbol_name(form));
-                            } else {
-                                log_error("Unexpected form for printing, should be c-object or list.");
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        goto resume;
     }
+    if ( s7_is_vector(form) ) {
+        log_debug("printing s7 vector");
+        utstring_printf(buf, "%s", s7_object_to_c_string(s7, (form)));
+        goto resume;
+    }
+    if (s7_is_string(form)) {
+        utstring_printf(buf, "%s", s7_string(form));
+        goto resume;
+    }
+    if (s7_is_character(form)) {
+        utstring_printf(buf, "%c", s7_character(form));
+        goto resume;
+    }
+    if (s7_is_number(form)) {
+        utstring_printf(buf, "%s", s7_number_to_string(s7,form,10));
+        goto resume;
+    }
+    if (s7_is_keyword(form)) {
+        s7_pointer sym = s7_keyword_to_symbol(s7,form);
+        utstring_printf(buf, "%s",
+                        s7_symbol_name(form));
+        goto resume;
+    }
+    if (s7_is_unspecified(s7, form)) {
+        /* FIXME: return null? */
+        utstring_printf(buf, "%s",s7_object_to_c_string(s7, form));
+        goto resume;
+    }
+
+    log_error("Unexpected form for printing, should be c-object or list.");
+
+ resume: ;
 
     char *output;
     if (style == kw_squeeze) {
