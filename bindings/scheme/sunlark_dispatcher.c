@@ -15,7 +15,7 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
                             s7_pointer data,
                             s7_pointer path_args)
 {
-#ifdef DEBUG_TRACE
+#if defined(DEBUG_TRACE)
     log_debug("sunlark_dispatch: %s",
               s7_object_to_c_string(s7, path_args));
 #endif
@@ -32,9 +32,11 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
 
     data_tid = sunlark_node_tid(s7, data);
 
+#if defined(DEBUG_TRACE)
     log_debug("\tdata tid: %d %s",
               data_tid,
               token_name[data_tid][0]);
+#endif
 
     s7_pointer op = s7_car(path_args);
     struct node_s *result_node;
@@ -42,23 +44,32 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
     switch( data_tid ) {
 
     case TK_Build_File: /* build_target */
+#if defined(DEBUG_TRACE)
         log_debug("dispatching on TK_Build_File");
+#endif
         return sunlark_dispatch_on_buildfile(s7, data, path_args);
         break;
 
     case TK_Call_Expr: /* build_target */
+#if defined(DEBUG_TRACE)
         log_debug("dispatching on TK_Call_Expr");
+#endif
         return sunlark_dispatch_on_target(s7, data, path_args);
         break;
 
-    case TK_Arg_List: /* bindings list */
+    case TK_Arg_List: { /* bindings list */
+#if defined(DEBUG_TRACE)
         log_debug("dispatching on TK_Arg_List");
+#endif
         s7_pointer x = sunlark_dispatch_on_bindings_list(s7, data, path_args);
         return x;
+    }
         break;
 
-    case TK_Binding:
+    case TK_Binding: {
+#if defined(DEBUG_TRACE)
         log_debug("dispatching on TK_Binding");
+#endif
         bool p = sunlark_op_is_predicate(s7, op);
         if (p) {
             return sunlark_node_is_kw_pred(s7, op, s7_c_object_value(data));
@@ -67,25 +78,34 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
         }
         /* FIXME: type of result? */
         return sunlark_node_new(s7, result_node);
+    }
         break;
 
     case TK_ID:
+#if defined(DEBUG_TRACE)
         log_debug("dispatching on TK_ID");
+#endif
         return _dispatch_on_id(s7, data, path_args);
         break;
 
     case TK_STRING:
+#if defined(DEBUG_TRACE)
         log_debug("dispatching on TK_STRING");
+#endif
         return _dispatch_on_string(s7, data, path_args);
         break;
 
     case TK_INT:
+#if defined(DEBUG_TRACE)
         log_debug("dispatching on TK_INT");
+#endif
         return _dispatch_on_int(s7, data, path_args);
         break;
 
     case TK_List_Expr: /* vector, e.g. as binding value */
+#if defined(DEBUG_TRACE)
         log_debug("dispatching on TK_List_Expr");
+#endif
         return sunlark_dispatch_on_list_expr(s7, data, path_args);
         break;
 

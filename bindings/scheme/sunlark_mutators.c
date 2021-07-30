@@ -118,6 +118,8 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
         lval = s7_cadr(get_path);
         get_path = s7_reverse(s7, s7_cddr(get_path));
     }
+
+#if defined (DEBUG_SET)
     log_debug("get_path: %s", s7_object_to_c_string(s7, get_path));
 
     /* bool dollar = false; // FIXME: name */
@@ -132,6 +134,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
               s7_object_to_c_string(s7, get_path),
               s7_object_to_c_string(s7, lval),
               s7_object_to_c_string(s7, update_val));
+#endif
 
     struct node_s *node;
     s7_int typ;
@@ -150,19 +153,23 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
         /* exit(EXIT_FAILURE); */
     }
 
-    log_debug("self_node %d %s", self_node->tid, TIDNAME(self_node));
-
     s7_pointer context = sunlark_node_object_applicator(s7, s7_cons(s7, self, get_path));
-    log_debug("RESOLVED context:");
     struct node_s *context_node = s7_c_object_value(context);
+
+#if defined(DEBUG_SET)
+    log_debug("self_node %d %s", self_node->tid, TIDNAME(self_node));
+    log_debug("RESOLVED context:");
     /* sunlark_debug_print_node(s7, context_node); */
     /* sealark_debug_print_node_starlark(context_node, true); // crush */
     sealark_debug_print_ast_outline(context_node, true); // crush
+#endif
 
     /* switch(self_node->tid) { */
     switch(context_node->tid) {
     case TK_STRING:
+#if defined(DEBUG_SET)
         log_debug("case set! on context TK_STRING");
+#endif
         /* NB: in this case lval should be '() - nothing to select */
         if ( s7_is_null(s7, lval) ) { //FIXME
             if (s7_is_c_object(update_val)) {
@@ -182,14 +189,15 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
         }
         break;
     case TK_Binding:
+#if defined(DEBUG_SET)
         log_debug("set! context: TK_Binding");
-
+#endif
         if (lval == KW(key)) {
-            log_debug("replacing lval: key");
+            /* log_debug("replacing lval: key"); */
             if (s7_is_symbol(update_val)) {
                 const char *newstring = s7_symbol_name(update_val);
                 int len = strlen(newstring);
-                log_debug("updating -> %s", newstring);
+                /* log_debug("updating -> %s", newstring); */
                 struct node_s *key_node = utarray_eltptr(context_node->subnodes, 0);
                 free(key_node->s);
                 key_node->s = calloc(len, sizeof(char));
@@ -202,7 +210,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
             }
         }
         if (lval == KW(value)) {
-            log_debug("replacing lval: value");
+            /* log_debug("replacing lval: value"); */
             struct node_s *newb =  sunlark_replace_binding_value(s7, context_node, update_val);
             log_debug("after replacement:");
             sealark_debug_print_ast_outline(newb, true); // crush
@@ -213,7 +221,9 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
         struct node_s *result = s7_c_object_value(context);
 
         if (result->tid == TK_Binding) {
+#if defined(DEBUG_SET)
             log_debug("REPLACING BINDING");
+#endif
             struct node_s *r = _mutate_binding(s7, result, update_val);
             if (r)
                 return s7_unspecified(s7);
@@ -225,8 +235,10 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
                 return sunlark_node_new(s7, result);
             } else {
                 if (result->tid == TK_List_Expr) {
+#if defined(DEBUG_SET)
                     log_debug("REPLACING LIST_EXPR with %s",
                               s7_object_to_c_string(s7, update_val));
+#endif
                     struct node_s *updated;
                     updated =sunlark_set_vector(s7, result, update_val);
                     /* sealark_debug_print_ast_outline(result, 4); */
@@ -236,7 +248,9 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
         }
         break;
     case TK_List_Expr:          /* vector */
+#if defined(DEBUG_SET)
         log_debug("set! context: list-expr");
+#endif
         if (s7_is_integer(lval)) {
             log_debug("lval: int");
             return sunlark_vector_replace_item(s7, context, lval, update_val);
@@ -250,7 +264,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
             switch(r->tid) {
             case TK_List_Expr:  /* (myvec) */
                 updated =sunlark_set_vector(s7, r, update_val);
-                sealark_debug_print_ast_outline(r, 4);
+                /* sealark_debug_print_ast_outline(r, 4); */
                 break;
             /* path indexed into vector */
             case TK_STRING:
@@ -280,22 +294,6 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
         exit(EXIT_FAILURE);
         ;
     }
-
-    /* s7_pointer resolved_path = sunlark_dispatch(s7, self, get_path); */
-    /* log_debug("resoved path: %s", s7_object_to_c_string(s7, resolved_path)); */
-    /* return resolved_path; */
-
-    /* log_debug("set_target: %s", s7_object_to_c_string(s7, set_target)); */
-    /* log_debug("update_val: %s", s7_object_to_c_string(s7, update_val)); */
-
-    // now update set_target
-
-    /* return sunlark_update_binding_name(s7, node_s7, key, val); */
-    /* return sunlark_update_binding_value(s7, node_s7, key, val); */
-
-    /* _update_ast_node_property(s7, node, key, s7_caddr(get_path)); */
-
-    /* _update_starlark(s7, self, s7_symbol_name(key), s7_caddr(get_path)); */
 
     //FIXME: r7rs says result of set! is unspecified. does that mean
     //implementation-specified?

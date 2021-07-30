@@ -21,8 +21,9 @@ EXPORT UT_array *sealark_target_bindings_to_utarray(struct node_s *target)
     struct node_s *call_sfx = utarray_eltptr(target->subnodes, 1);
     struct node_s *arg_list = utarray_eltptr(call_sfx->subnodes, 1);
 
+#if defined(DEBUG_AST)
     sealark_debug_print_ast_outline(arg_list, 0);
-
+#endif
     UT_array *attribs;
     utarray_new(attribs, &node_icd);
 

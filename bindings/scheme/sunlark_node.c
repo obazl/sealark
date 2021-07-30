@@ -407,8 +407,9 @@ s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
                 }
             }
         }
+    }
 #endif
-        return resolved_path;
+    return resolved_path;
 
         /* s7_pointer op = s7_car(rest); */
         /* if (s7_is_keyword(op)) { */
@@ -450,8 +451,8 @@ s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
         /*                                        2, op, "a keyword or symbol")); */
         /*     } */
         /* } */
-    }
 }
+
 
 static s7_pointer _update_ast_node_property(s7_scheme *s7,
                                   struct node_s *ast_node,

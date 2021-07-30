@@ -99,7 +99,9 @@ s7_pointer sunlark_dispatch_on_binding(s7_scheme *s7,
               s7_object_to_c_string(s7, path_args));
 #endif
 
+#if defined(DEBUG_AST)
     sealark_debug_print_ast_outline(s7_c_object_value(_binding), 0);
+#endif
 
     struct node_s *binding = s7_c_object_value(_binding);
 
