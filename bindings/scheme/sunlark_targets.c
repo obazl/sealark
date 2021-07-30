@@ -64,7 +64,7 @@ EXPORT s7_pointer sunlark_dispatch_on_target(s7_scheme *s7,
             return sunlark_node_new(s7, bindings);
             /* return nodelist_to_s7_list(s7, bindings); */
         } else {
-           return sunlark_resolve_path_on_target(s7, target, rest);
+           return sunlark_resolve_binding_path_on_target(s7, target, rest);
         }
     }
     if (KW(name) == op) {   /* i.e. target "name" attr val */
@@ -337,18 +337,20 @@ EXPORT s7_pointer sunlark_target_1(s7_scheme *s7,
                         return(s7_error(s7,
                                         s7_make_symbol(s7, "not_found"),
                                         s7_list(s7, 2, s7_make_string(s7,
-                                                "Binding not found for key: ~A"), op2)));
+                                                                      "Binding not found for key: ~A"), op2)));
+                    } else {
+                        log_error("wtf 1 ????????????????");
                     }
                 }
             } else {
-                return sunlark_resolve_path_on_target(s7,
+                return sunlark_resolve_binding_path_on_target(s7,
                                                        tgt_node,
                                                        rest);
             }
         }
         if (s7_is_integer(op2)) {
             log_debug("1 xxxxxxxxxxxxxxxx");
-            s7_pointer binding = sunlark_resolve_path_on_target(s7, tgt_node, rest);
+            s7_pointer binding = sunlark_resolve_binding_path_on_target(s7, tgt_node, rest);
             return binding;
                 /* = sealark_target_binding_for_index(tgt_node, s7_integer(op2)); */
 
@@ -359,7 +361,7 @@ EXPORT s7_pointer sunlark_target_1(s7_scheme *s7,
             /*         /\* r7rs: error *\/ */
             /*         return s7_f(s7); /\* same as binding_for_name  *\/ */
             /* } else { */
-            /*     return sunlark_resolve_path_on_target(s7, */
+            /*     return sunlark_resolve_binding_path_on_target(s7, */
             /*                                            tgt_node, */
             /*                                            rest); */
             /* } */

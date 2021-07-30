@@ -19,6 +19,58 @@ char *display_buf;
 int   display_bufsz;
 char *display_ptr;
 
+/* Scheme entry point for object->string */
+s7_pointer sunlark_node_to_string(s7_scheme *s7, s7_pointer args)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug(">>>>>>>>>>>>>>>> sunlark_node_to_string <<<<<<<<<<<<<<<<");
+    /* debug_print_s7(s7, "to_string cdr: ", s7_cdr(args)); */
+#endif
+
+    /* if (sunlark_node_tid(s7,s7_car(args)) == TK_Build_File) { */
+    /*     return s7_nil(s7); */
+    /* } */
+
+    UT_string *buffer;
+    utstring_new(buffer);
+
+    display_buf = calloc(1, SZDISPLAY_BUF);
+    if (display_buf == NULL) {
+        log_error("ERROR on calloc");
+        //FIXME cleanup
+        exit(EXIT_FAILURE);
+    } else {
+        display_bufsz = SZDISPLAY_BUF;
+    }
+    display_ptr = display_buf;
+
+    s7_pointer obj, choice;
+    char *descr;
+    obj = s7_car(args);
+    if (s7_is_pair(s7_cdr(args)))
+        choice = s7_cadr(args);
+    else choice = s7_t(s7);
+
+    if (choice == s7_make_keyword(s7, "readable")) {
+        memset(display_buf, '\0', SZDISPLAY_BUF);
+        display_ptr = (char*)display_buf;
+        descr = sunlark_node_display_readably(s7, s7_c_object_value(obj));
+    }
+    else {
+        /* descr = sunlark_node_display(s7, s7_c_object_value(obj)); */
+        sealark_node_display(/* s7, */ s7_c_object_value(obj), buffer, 0);
+    }
+
+    /* log_debug("TO_STRING LEN: %d", strlen(descr)); */
+    obj = s7_make_string(s7, utstring_body(buffer));
+    /* obj = s7_make_string(s7, descr); */
+
+    /* free(descr); // frees display_buf? */
+    /* display_bufsz = 0; */
+    utstring_free(buffer);
+    return(obj);
+}
+
 /** sunlark_node_display_readably
 
     produces a "roundtrippable" string, one that when read by the reader
@@ -296,57 +348,6 @@ s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
     /* utstring_free(buf); */
     /* utstring_free(output); */
     /* return out; */
-}
-
-s7_pointer sunlark_node_to_string(s7_scheme *s7, s7_pointer args)
-{
-#ifdef DEBUG_SERIALIZERS
-    log_debug(">>>>>>>>>>>>>>>> sunlark_node_to_string <<<<<<<<<<<<<<<<");
-    /* debug_print_s7(s7, "to_string cdr: ", s7_cdr(args)); */
-#endif
-
-    if (sunlark_node_tid(s7,s7_car(args)) == TK_Build_File) {
-        return s7_nil(s7);
-    }
-
-    UT_string *buffer;
-    utstring_new(buffer);
-
-    display_buf = calloc(1, SZDISPLAY_BUF);
-    if (display_buf == NULL) {
-        log_error("ERROR on calloc");
-        //FIXME cleanup
-        exit(EXIT_FAILURE);
-    } else {
-        display_bufsz = SZDISPLAY_BUF;
-    }
-    display_ptr = display_buf;
-
-    s7_pointer obj, choice;
-    char *descr;
-    obj = s7_car(args);
-    if (s7_is_pair(s7_cdr(args)))
-        choice = s7_cadr(args);
-    else choice = s7_t(s7);
-
-    if (choice == s7_make_keyword(s7, "readable")) {
-        memset(display_buf, '\0', SZDISPLAY_BUF);
-        display_ptr = (char*)display_buf;
-        descr = sunlark_node_display_readably(s7, s7_c_object_value(obj));
-    }
-    else {
-        /* descr = sunlark_node_display(s7, s7_c_object_value(obj)); */
-        sealark_node_display(/* s7, */ s7_c_object_value(obj), buffer, 0);
-    }
-
-    /* log_debug("TO_STRING LEN: %d", strlen(descr)); */
-    obj = s7_make_string(s7, utstring_body(buffer));
-    /* obj = s7_make_string(s7, descr); */
-
-    /* free(descr); // frees display_buf? */
-    /* display_bufsz = 0; */
-    utstring_free(buffer);
-    return(obj);
 }
 
 /* **************************************************************** */
