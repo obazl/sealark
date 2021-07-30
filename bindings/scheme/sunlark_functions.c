@@ -109,7 +109,7 @@ LOCAL s7_pointer sunlark_make_ast_node(s7_scheme *s7, s7_pointer args)
 #define SUNLARK_MAKE_STRING_HELP "(sunlark-make-string) returns a new :string node"
 
 /* NB: we need to escape #\" in C... */
-#define SUNLARK_MAKE_STRING_FORMAL_PARAMS "s (type :plain) (q #\\\") (qqq #f)"
+#define SUNLARK_MAKE_STRING_FORMAL_PARAMS "s (t :plain) (q #\\\") (qqq #f)"
 #endif
 
 s7_pointer sunlark_make_string(s7_scheme *s7, s7_pointer args)
@@ -139,17 +139,17 @@ s7_pointer sunlark_make_string(s7_scheme *s7, s7_pointer args)
     if (type == KW(plain)) {
         nd->qtype = 0;
     } else {
-        if (type == KW(raw)) {
+        if (type == KW(r)) {
             nd->qtype = RAW_STR;
         } else {
-            if (type == KW(binary)) {
+            if (type == KW(b)) {
                 nd->qtype = BINARY_STR;
             } else {
-                if (type == KW(rawbin)) {
+                if (type == KW(br)) {
                     nd->qtype = (BINARY_STR | RAW_STR);
                 } else {
-                    if (type == KW(binraw)) {
-                    nd->qtype = (BINARY_STR | RAW_STR);
+                    if (type == KW(rb)) {
+                        nd->qtype = (BINARY_STR | RAW_STR);
                     } else {
                         return(s7_error(s7,
                                         s7_make_symbol(s7, "invalid_argument"),

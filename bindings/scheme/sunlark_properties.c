@@ -288,10 +288,6 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
         }
     }
 
-    return s7_unspecified(s7);
-    /* return(s7_error(s7, s7_make_symbol(s7, */
-    /*                                    "invalid_argument"), */
-    /*                 s7_list(s7, 2, s7_make_string(s7, */
-    /*                  "ast-node-ref common-property arg must be one of :tid, :line, :col, :qtype, :s, :subnodes, :comments, :attrs, :print, :trailing_newline; got ~A"), */
-    /*                         kw))); */
+    /* s7 hash-table-ref returns #f if key not found */
+    return s7_f(s7);
 }

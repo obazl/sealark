@@ -256,6 +256,37 @@ LOCAL s7_pointer _dispatch_on_string(s7_scheme *s7,
 
     s7_pointer kw = s7_car(path_args);
 
+    if (kw == KW(q)) {
+        struct node_s *s = s7_c_object_value(node);
+        if (s->qtype & SQUOTE)
+            return s7_make_character(s7, '\'');
+        else
+            return s7_make_character(s7, '"');
+    } else {
+        if (kw == KW(qqq)) {
+            struct node_s *s = s7_c_object_value(node);
+            if (s->qtype & TRIPLE)
+                return s7_t(s7);
+            else
+                return s7_f(s7);
+        } else {
+            if (kw == KW(t)) {
+                struct node_s *s = s7_c_object_value(node);
+                log_debug("qtype: %#4x", s->qtype);
+                if (s->qtype & (BINARY_STR & RAW_STR))
+                    return s7_make_keyword(s7, "br");
+                else
+                    if (s->qtype & RAW_STR)
+                        return s7_make_keyword(s7, "r");
+                    else
+                        if (s->qtype & BINARY_STR)
+                            return s7_make_keyword(s7, "b");
+                        else {
+                            return s7_make_keyword(s7, "plain");
+                        }
+            }
+        }
+    }
     s7_pointer result = sunlark_common_property_lookup(s7,
                                                        s7_c_object_value(node),
                                                        kw);
