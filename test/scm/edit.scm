@@ -789,6 +789,79 @@
     )
  )
 
+(define (test-set-vector ast)
+  (display "test-set-vector")
+  (newline)
+  (let* (
+         ;;(v (sunlark-parse-string "[1, 2, 3]"))
+         (v (sunlark-parse-string "['a', 'b', 'c']"))
+         ;; (x (set! (v 1) 'x))
+
+         (s (sunlark-make-string "foo" :qtype :rawbin :qqq 3))
+
+         (x (set! (v 1) s))
+
+         ;; (bf "test/unit/sunlark/BUILD.vectors")
+         ;; (ast (sunlark-parse-build-file bf))
+         ;; (path '(:> 1 :@ 1)) ;; int_veca = [1, 2, 3]
+         ;; (v (apply ast path))
+
+         ;;(v (length v)) ;; 3
+         ;; (v (v :subnodes))
+         ;; (result (set! (vec) '(31 32 33 34)))
+
+         ;; (result (set! (vec 1) "foo"))
+        )
+    ;; (for-each (lambda (x)
+    ;;                     (display (format #f "~A" x))
+    ;;                     (newline)
+    ;;                ;;(set! (x :value) '("foo" "bar" "baz" "asfdasdf"))
+    ;;                )
+    ;;              v)
+    ;; (set! (vec) '())
+    ;; (display (sunlark-debug-print v)) (newline)
+    ;; (display ast) (newline)
+    (display (format #f "(sunlark->starlark ... )\n~A"
+                     ;s
+                     (sunlark->starlark v :crush)
+                     ;; (object->string (apply ast path))
+                     ;; (sunlark->starlark (apply ast path) :crush)
+                     ))
+    (newline)
+    )
+ )
+
+(define (test-strings ast)
+  (display "test-strings")
+  (newline)
+  (let* (
+         ;;(v (sunlark-parse-string "[1, 2, 3]"))
+         ;; (v (sunlark-parse-string "['a', r'b', 'c']"))
+         ;; (v (v 1))
+         ;; (x (set! (v 1) 'x))
+
+                                 ;; :qtype :rawbin :qqq 3))
+         (pdq1 (sunlark-make-string "I am a plain dq 1 string"))
+         ;; (psq1 (sunlark-make-string "I am a plain sq 1 string"
+         ;;                            :type :binary :q #\' :qqq #t))
+         (hi (sunlark-make-string "hello" :q #\' :type :raw :qqq #t))
+        )
+    ;; (set! (pdq1) "howdy")
+    (display pdq1) (newline)
+    (set! (pdq1) hi)
+    ;; (display (sunlark-debug-print v)) (newline)
+    (display pdq1) (newline)
+    (display (format #f "(sunlark->starlark ... )\n~A"
+                     ;;pdq1 ;; :$)
+                     ;; (psq1 :$)
+                     (sunlark->starlark pdq1 :crush)
+                     ;; (object->string (apply ast path))
+                     ;; (sunlark->starlark (apply ast path) :crush)
+                     ))
+    (newline)
+    )
+ )
+
 (define (test-directives ast)
   (display "test-directives")
   (newline)
@@ -893,39 +966,14 @@
          ;; (targlist (tnode3 :arg-list)) ;; bindings list, including comma
          ;; (tbindings (tnode3 :bindings)) ;; bindings only, w/o commas
 
-         (tbindings* (ast :targets 2)) ;; w/o intermediates
+         (v (ast :> "hello-world" :@ 'srcs))
          )
-    ;; (display (length tlist))
-    ;; (newline)
-
-    ;; (display (format #f "tcar tid ~D" (tcar :tid))) (newline)
-    ;; (display (format #f "(tcar :rule)  ~A" (tcar :rule))) (newline)
-    ;; (display (format #f "(tcar :rule) :printable?)  ~A"
-    ;;                  ((tcar :rule) :printable?))) (newline)
-    ;; (display (format #f "(tcar :rule) :print)  ~A"
-    ;;                  ((tcar :rule) :print))) (newline)
-    ;; (display (format #f "tlist tid: ~D, len: ~D"
-    ;;                  (tlist :tid)
-    ;;                  (length tlist)))
-
-    ;; (display (format #f "tnode3: ~A"
-    ;;                  (sunlark->starlark tnode3 :crush))) (newline)
-    ;; (display (format #f "tnode3 tid: ~A" (tnode3 :tid))) (newline)
-    ;; (display (format #f "tnode3 tid->kw: ~A" (tnode3 :tid->kw))) (newline)
-    ;; (display (format #f "tnode3 tid->string: ~A" (tnode3 :tid->string))) (newline)
-    ;; (display (format #f "tnode3 tid: ~A" (tnode3 :printable?))) (newline)
-
-    ;; (display (sunlark->starlark tlist :crush))
-    ;; (display (sunlark->starlark tnode :crush))
-
-    ;; (display (format #f "(sunlark->starlark tbindings) ~A"
-    ;;                  (sunlark->starlark tbindings :crush))) (newline)
-
-    ;; (display (format #f "(sunlark->starlark targlist) ~A"
-    ;;                  (sunlark->starlark targlist :crush))) (newline)
-
-    (display (format #f "(sunlark->starlark tbindings*) ~A"
-                     (sunlark->starlark tbindings* :crush))) (newline)
+    (display v)
+    (newline)
+    ;; (display (format #f "(sunlark->starlark tbindings*) ~A"
+    ;;                  (sunlark->starlark
+    ;;                   v
+    ;;                   :crush))) (newline)
 
     ;; (display (object->string tbindings :readable))
     ;; (display (sunlark->starlark (cddr tlist) :crush))
@@ -1259,6 +1307,30 @@
     (newline)
     ))
 
+(define (test-dicts ast)
+  ;; test file: test/unit/BUILD.dicts
+  (let* (
+         (d (ast :> "stringdict")); :@ 'adict)) ;;(apply ast path))
+         ;; (d (d :@ 'adict :value 0 :key))
+         ;; (d (d :@ 'adict :value 0 :value))
+
+         ;; (d (d :@ 'adict :value '(:key "akey1"))) ; => :dict-entry
+         ;; (d (d :@ 'adict :value '(:value "aval1"))) ; => :dict-entry
+
+         ;; (d (d :@ 'adict :value '(:key "akey1") :value))
+         (d (d :@ 'adict :value '(:value "aval1") :key))
+
+         ;(d (d :value "akey1"))
+         )
+
+    (display (format #f "(sunlark->starlark ... )\n~A"
+                     ;;d
+                     (sunlark->starlark d :crush)
+                     ;; (sunlark->starlark (binding :value) :crush)
+                     ))
+    (newline)
+    ))
+
 (define (test-targets ast)
   (let* (
          ;; (path '(:targets 0 :bindings srcs :value))
@@ -1329,7 +1401,7 @@
 
 (define ast-handler
   (lambda (ast)
-    (display (string-append "RUNNING ast-handler"))
+    (display (string-append "running ast-handler"))
     (newline)
 
     ;; (add-to-load-path "test/scm") ;; not supported
@@ -1355,11 +1427,17 @@
 
     ;; (test-int-vectors ast)
 
+    ;; (test-set-vector ast)
+
+    (test-strings ast)
+
     ;; (test-directives ast)
 
     ;; (test-rulesets ast)
 
     ;; (test-lists ast)
+
+    ;; (test-dicts ast)
 
     ;; (test-targets ast)
 
@@ -1373,7 +1451,7 @@
 
     ;; (test-apply ast)
 
-    (test-bindings ast)
+    ;; (test-bindings ast)
 
     ;; (test-fragments)
 
