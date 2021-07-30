@@ -143,7 +143,7 @@ s7_pointer sunlark_dispatch_on_binding(s7_scheme *s7,
                 int idx = s7_integer(s7_cadr(path_args));
                 /* implies: val is a vector */
                 if (bval->tid == TK_List_Expr) {
-                    return sunlark_node_new(s7, sealark_vector_item_for_index(bval, idx));
+                    return sunlark_node_new(s7, sealark_vector_item_for_int(bval, idx));
                     /* struct node_s *item = sealark_vector_index(bval, idx); */
                     /* return sunlark_node_new(s7, item); */
                 } else {
@@ -683,55 +683,4 @@ s7_pointer _binding_component(s7_scheme *s7, struct node_s *binding,
                     s7_list(s7, 2, s7_make_string(s7,
            "Bad arg \"~A\"; only :key or :value valid in this context"),
                             op)));
-}
-
-/* **************************************************************** */
-struct node_s *sunlark_replace_binding_value(s7_scheme *s7,
-                                         struct node_s *binding,
-                                         s7_pointer newval)
-{
-#ifdef DEBUG_TRACE
-    log_debug("sunlark_replace_binding_value: %s",
-              s7_object_to_c_string(s7, newval));
-#endif
-
-    struct node_s *val = utarray_eltptr(binding->subnodes, 2);
-    /* sealark_debug_print_ast_outline(binding, true); // crush */
-    utarray_free(val->subnodes);
-    utarray_clear(val->subnodes);
-
-    if (s7_is_string(newval)) {
-        const char *s = s7_string(newval);
-        log_debug("new val: %s", s);
-        int len = strlen(s);
-        val->tid = TK_STRING;
-        val->s = calloc(len, sizeof(char));
-        strncpy(val->s, s, len);
-        val->qtype = DQUOTE;
-        return binding;
-    }
-
-    if (s7_is_symbol(newval)) {
-        const char *s = s7_symbol_name(newval);
-        log_debug("new val: %s", s);
-        int len = strlen(s);
-        val->tid = TK_STRING;
-        val->s = calloc(len, sizeof(char));
-        strncpy(val->s, s, len);
-        return binding;
-    }
-
-    if (s7_is_integer(newval)) {
-        int d = s7_integer(newval);
-        char buf[128];
-        snprintf(buf, 128, "%d", d);
-        int len = strlen(buf);
-        log_debug("new val: %d", d);
-        val->tid = TK_INT;
-        val->s = calloc(len, sizeof(char));
-        strncpy(val->s, buf, len);
-        return binding;
-    }
-
-    return binding;
 }

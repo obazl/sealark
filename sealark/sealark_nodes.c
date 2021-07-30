@@ -186,10 +186,9 @@ enum quote_type_e
     {
      SQUOTE     = 1,  /* single quote */
      DQUOTE     = 2,  /* double quote */
-     TRIPLE     = 4, /* triple single quote */
-     BINARY_STR = 8,
-     RAW_STR    = 16
-     /* D3QUOTE    = 8, /\* triple double quote *\/ */
+     TRIPLE     = 4,  /* triple quote */
+     BINARY_STR = 16, /* PLAIN if both of these unset */
+     RAW_STR    = 32
     };
 
 struct node_s {

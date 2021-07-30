@@ -3,11 +3,11 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 test_suite(
     name = "sunlark",
     tests = [
-        ":strings",
         ":binding_val_vectors",
         ":bindings",
         ":definitions",
         ":loads",
+        ":strings",
         ":targets",
         # ":tetrads",
         ":vectors",

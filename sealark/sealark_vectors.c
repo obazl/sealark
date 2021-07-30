@@ -7,7 +7,7 @@
 #include "log.h"
 #include "utarray.h"
 
-#include "vectors.h"
+#include "sealark_vectors.h"
 
 /*
 node0 88 TK_Binding
@@ -23,11 +23,11 @@ node1 116 TK_List_Expr    <==== vector
     node3 79 TK_STRING: b3
   node2 69 TK_RBRACK
 */
-EXPORT struct node_s *sealark_vector_item_for_index(struct node_s *list_expr,
-                                           int index)
+EXPORT struct node_s *sealark_vector_item_for_int(struct node_s *list_expr,
+                                                  int index)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_VECTORS)
-    log_debug("sealark_vector_index: %d", index);
+    log_debug("sealark_vector_item_for_int: %d", index);
 #endif
 
     if (index < 0) {
@@ -42,20 +42,20 @@ EXPORT struct node_s *sealark_vector_item_for_index(struct node_s *list_expr,
         return NULL;
     }
 
+    //FIXME: support negative index
+
     return utarray_eltptr(expr_list->subnodes, index*2);
 
-    /* struct node_s *proto = utarray_eltptr(expr_list->subnodes, 0); */
-    /* int item_type = proto->tid; */
-    /* int count = 0; */
-
-    /* struct node_s *node = NULL; */
-    /* while((node=(struct node_s*)utarray_next(expr_list->subnodes, node))) { */
-    /*     if (node->tid = item_type) { */
-    /*         if (count == index) */
-    /*             return node; */
-    /*         count++; */
-    /*     } */
-    /* } */
     log_error("UNEXPECTED");
     exit(EXIT_FAILURE);
+}
+
+/* **************************************************************** */
+EXPORT struct node_s *sealark_vector_item_for_string(struct node_s *vector,
+                                                     const char *selector)
+{
+#if defined(DEBUG_TRACE)
+    log_debug("sunlark_vector_item_for_string: %s", selector);
+#endif
+
 }

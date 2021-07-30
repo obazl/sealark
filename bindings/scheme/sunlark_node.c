@@ -17,8 +17,6 @@ s7_int ast_node_t;
 #define AST_NODE_T ast_node_t
 #endif
 
-static s7_pointer sunlark_node_methods_let;
-
 /* forward decls */
 /* section: identity */
 /* section: equality */
@@ -35,8 +33,7 @@ static void _register_get_and_set(s7_scheme *s7);
 
 /* section: c-object construction */
 static s7_pointer sunlark_node_copy(s7_scheme *s7, s7_pointer args);
-static s7_pointer sunlark_node_init_from_s7(s7_scheme *s7, struct node_s *cs, s7_pointer args);
-static s7_pointer sunlark_make_ast_node(s7_scheme *s7, s7_pointer args);
+
 enum formals_e {
     FLD_TYPE = 0,
     FLD_LINE, FLD_COL,
@@ -52,10 +49,6 @@ static s7_pointer sunlark_destroy_ast_node(s7_scheme *s7, s7_pointer obj);
 
 /* section: extension methods */
 static void _register_c_type_methods(s7_scheme *s7, s7_int ast_node_t);
-static void _register_c_object_methods(s7_scheme *s7, s7_pointer ast_node);
-
-/* section: c-type configuration */
-static void   _register_ast_node_fns(s7_scheme *s7);
 
 /* this is the public API that clients call: */
 int configure_s7_ast_node_type(s7_scheme *s7); /* public */
@@ -326,69 +319,6 @@ s7_pointer sunlark_node_to_list(s7_scheme *s7, s7_pointer args)
    * 2. specialized ast-node-get and ast-node-set! (Scheme procedures)
  */
 
-/* **************** */
-/** sunlark_node_ref_specialized
-
-    (ast-node-ref obj key)
-    takes two args, a ast_node object and a keyword to look up in the object.
- */
-#define SUNLARK_NODE_REF_SPECIALIZED_HELP "(ast-node-ref nd k) returns the value for property k (a keyword) of ast-node nd."
-
-/* sig: takes a node (satisfies node?) and an in (satisfies integer?),
-   returns ... what does s7_t mean here? "something"? i.e not void? */
-#define SUNLARK_NODE_REF_SPECIALIZED_SIG s7_make_signature(s7, 3, s7_t(s7), s7_make_symbol(s7, "node?"), s7_make_symbol(s7, "integer?"))
-
-/** sunlark_node_ref_specialized
-
-    Looks up node properties, whose names are keywords. Each field in
-    the node_s struct has a property whose name is formed by prefixing
-    a colon: :tid, :line, :col, :trailing_newline, :qtype, :s,
-    :comments, :subnodes.
-
-    In addition the following pseudo-properties are supported:
-        :print - returns string for printable nodes, with correct quoting.
-
-        :@<attr> - only for nodes of type :call_expr. returns binding
-        (i.e. :binding node) whose :id is <attr>. E.g. (rulenode :deps)
-        would return the 'deps' binding of the rulenode.
-
- */
-static s7_pointer sunlark_node_ref_specialized(s7_scheme *s7, s7_pointer args)
-{
-#if defined (DEBUG_TRACE) || defined(DEBUG_ATTR)
-    log_debug("sunlark_node_ref_specialized");
-    debug_print_s7(s7, "sunlark_node_ref_specialized args: ", s7_cdr(args));
-#endif
-
-    struct node_s *self;
-    /* size_t index; */
-    s7_int typ;
-    s7_pointer self_s7;
-
-    if (s7_list_length(s7, s7_cdr(args)) < 1)
-        return(s7_wrong_number_of_args_error(s7, "ast-node-ref takes 1 or  more arguments: ~S", s7_cdr(args)));
-
-    self_s7 = s7_car(args);
-    typ = s7_c_object_type(self_s7);
-    if (typ != ast_node_t)
-        return(s7_wrong_type_arg_error(s7, "ast-node-ref", 1, self_s7, "a ast_node"));
-    self  = (struct node_s *)s7_c_object_value(self_s7);
-
-    if (s7_is_null(s7, s7_cdr(args)))
-        return(s7_wrong_type_arg_error(s7, "ast-node-ref", 1, self_s7, "missing ref arg"));
-        /* return(s7_make_integer(s7, 32)); */
-
-    s7_pointer params = s7_cdr(args);
-
-    log_debug("get_target");
-    /* may return c-objects (node, nodelist) or primitives (s7_integer) */
-    /* s7_pointer get_target = sunlark_resolve_path(s7, self_s7, params); */
-    /* if (s7_is_c_object(get_target)) { */
-    /*     log_debug("get_target tid: %d", sunlark_node_tid(s7, get_target)); */
-    /* } */
-    /* return get_target; */
-}
-
 /** sunlark_node_object_applicator
 
     (more accurate: object_applicator, not essentially tied to ref)
@@ -527,25 +457,6 @@ s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
         /* } */
     }
 }
-
-/* **************** */
-/** sunlark_node_set_specialized
-
-    registered twice: as a c-type generalize set! (s7_c_type_set_set()) and
-    as procedure "ast-node-set!" (s7_define_typed_function())
-
-    generalized set: (set! (c-obj :k) v)
-
-    in this case set! will call the set method registered with the
-    c-obj's c-type, passing the c-obj, key :k, and value v.
-
-    note that outside of this set! context, (c-obj :k) will lookup the
-    value bound to :k in c-obj (using g_struct_get).
- */
-#define SUNLARK_NODE_SET_SPECIALIZED_HELP "(ast-node-set! b i x) sets the ast_node value at index i to x."
-
-/* sig: returns node */
-#define SUNLARK_NODE_SET_SPECIALIZED_SIG s7_make_signature(s7, 4, s7_make_symbol(s7, "node?"), s7_make_symbol(s7, "node?"), s7_make_symbol(s7, "integer?"), s7_t(s7))
 
 static s7_pointer _update_ast_node_property(s7_scheme *s7,
                                   struct node_s *ast_node,
@@ -801,7 +712,7 @@ static s7_pointer sunlark_node_copy(s7_scheme *s7, s7_pointer args)
   initialize a C struct from s7-scheme arg-list (compare
   'ast_node_init', initialize a ast_node from C args)
  */
-static s7_pointer sunlark_node_init_from_s7(s7_scheme *s7, struct node_s *cs, s7_pointer args)
+s7_pointer sunlark_node_init_from_s7(s7_scheme *s7, struct node_s *cs, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
     log_debug("sunlark_node_init_from_s7");
@@ -874,37 +785,7 @@ static s7_pointer sunlark_node_init_from_s7(s7_scheme *s7, struct node_s *cs, s7
     return NULL;
 }
 
-/** sunlark_make_ast_node
- */
-/* docstring passed to the s7_define_.. used to register the fn in Scheme */
-#define SUNLARK_MAKE_AST_NODE_HELP "(make-ast-node) returns a new ast_node with randome data"
-
-#define SUNLARK_MAKE_AST_NODE_FORMAL_PARAMS "(type 0) (line 0) (col 0) (trailing_newline #f) (qtype 0) (s NULL) (comments NULL) (subnodes NULL)"
-
-static s7_pointer sunlark_make_ast_node(s7_scheme *s7, s7_pointer args)
-{
-#ifdef DEBUG_TRACE
-    log_debug("sunlark_make_ast_node");
-#endif
-
-    /* struct node_s *new_ast_node = (struct node_s *) */
-    /*     calloc(1, sizeof(struct node_s)); */
-    /* new_ast_node = ast_node_init_default(new_ast_node); */
-
-    struct node_s *n = sealark_node_new();
-
-    if (sunlark_node_init_from_s7(s7, n, args) != NULL) {
-        log_debug("OOPS");
-    }
-
-    s7_pointer new_ast_node_s7 = s7_make_c_object(s7, ast_node_t,
-                                                  (void *)n);
-
-    _register_c_object_methods(s7, new_ast_node_s7);
-
-    return(new_ast_node_s7);
-}
-
+/* **************************************************************** */
 EXPORT s7_pointer sunlark_node_new(s7_scheme *s7, struct node_s *node)
 {
 #if defined(DEBUG_MEM)
@@ -925,7 +806,7 @@ EXPORT s7_pointer sunlark_node_new(s7_scheme *s7, struct node_s *node)
     s7_pointer new_ast_node_s7 = s7_make_c_object(s7, ast_node_t,
                                                   (void *)node);
 
-    _register_c_object_methods(s7, new_ast_node_s7);
+    sunlark_register_c_object_methods(s7, new_ast_node_s7);
 
     return new_ast_node_s7;
 }
@@ -943,52 +824,6 @@ static s7_pointer sunlark_destroy_ast_node(s7_scheme *s7, s7_pointer obj)
     return NULL;
 }
 /* /section: c-object destruction */
-
-/* section: extension methods */
-/* extension methods extend standard Scheme procedures like 'length'
-   and 'equals' to support custom c-types.
-
-   unsupported methods return #f (?)
- */
-
-#define METHODS_PREFIX   "(openlet (immutable! (inlet "
-#define METHODS_POSTFIX  ")))"
-
-#define OBJECT_METHODS \
-    "'float-vector? (lambda (p) (display \"foo \") #t) " \
-    "'foo (lambda (self) \"hello from foo method!\") " \
-    "'memq (lambda (self arg) \"hello from perverse memq method!\") " \
-    "'cdr (lambda (self) \"hello from perverse cdr method!\") " \
-    "'arity (lambda (p) (cons 1 1)) " \
-    "'aritable? (lambda (p args) (= args 1)) " \
-    "'vector-dimensions (lambda (p) (list (length p))) " \
-    "'empty (lambda (p) (zero? (length p))) " \
-    "'ref ast-node-ref " \
-    "'vector-ref ast-node-ref " \
-    "'vector-set! ast-node-set! "
-    /* "'reverse! ast-node-reverse! " \ */
-    /* "'subsequence subast_node " \ */
-    /* "'append ast-node-append " */
-    /* "'signature (lambda (p) (list '#t 'node? 'integer?)) " \ */
-    /* "'type nodex? " \ */
-
-
-/* object methods: registered on each object, not type */
-static void _register_c_object_methods(s7_scheme *s7, s7_pointer ast_node)
-{
-/* #ifdef DEBUG_TRACE */
-/*     log_debug("_register_c_object_methods"); */
-/* #endif */
-    static bool initialized = false;
-    if (!initialized) {
-        sunlark_node_methods_let = s7_eval_c_string(s7, METHODS_PREFIX OBJECT_METHODS METHODS_POSTFIX);
-        s7_gc_protect(s7, sunlark_node_methods_let);
-        initialized = true;
-    }
-
-    s7_c_object_set_let(s7, ast_node, sunlark_node_methods_let);
-    s7_openlet(s7, ast_node);
-}
 
 static void _register_c_type_methods(s7_scheme *s7, s7_int ast_node_t)
 {
@@ -1020,68 +855,6 @@ static void _register_c_type_methods(s7_scheme *s7, s7_int ast_node_t)
 /* **************************************************************** */
 /* section: c-type configuration */
 
-static void _register_ast_node_fns(s7_scheme *s7)
-{
-#ifdef DEBUG_TRACE
-    log_debug("_register_ast_node_fns");
-#endif
-    /* s7_define_safe_function(s7, "ast-node", g_to_ast_node, 0, 0, true, sunlark_node_help); */
-    s7_define_safe_function_star(s7, "make-ast-node",
-                                 sunlark_make_ast_node,
-                                 SUNLARK_MAKE_AST_NODE_FORMAL_PARAMS,
-                                 SUNLARK_MAKE_AST_NODE_HELP);
-
-    s7_define_typed_function(s7, "sunlark-node?", sunlark_is_node,
-                             1, 0, false,
-                             SUNLARK_IS_NODE_HELP,
-                             SUNLARK_IS_NODE_SIG);
-
-    /* specialized get/set! */
-    s7_define_typed_function(s7, "ast-node-ref",
-                             sunlark_node_ref_specialized,
-                             2, 1, true,
-                             SUNLARK_NODE_REF_SPECIALIZED_HELP,
-                             SUNLARK_NODE_REF_SPECIALIZED_SIG);
-
-    s7_define_typed_function(s7, "ast-node-set!",
-                             sunlark_node_set_specialized,
-                             3, 0, true,
-                             SUNLARK_NODE_SET_SPECIALIZED_HELP,
-                             SUNLARK_NODE_SET_SPECIALIZED_SIG);
-
-    s7_define_safe_function(s7, "sunlark->starlark",
-                            sunlark_to_starlark,
-                            1, 1, false,
-                            SUNLARK_TO_STARLARK_HELP);
-
-    // ast_node-let => s7_c_object_let, a let for the instance not the type
-    /* s7_define_safe_function(s7, "ast-node-let", */
-    /*                         sunlark_node_let, */
-    /*                         1, 0, false, */
-    /*                         sunlark_node_let_help); */
-
-    /* parsing */
-    s7_define_safe_function(s7,
-                            "sunlark-parse-build-file",
-                            sunlark_parse_build_file,
-                            1, 0, false,
-                            SUNLARK_PARSE_BUILD_FILE_HELP);
-
-    s7_define_safe_function(s7,
-                            "sunlark-parse-bzl-file",
-                            sunlark_parse_bzl_file,
-                            1, 0, false,
-                            SUNLARK_PARSE_BZL_FILE_HELP);
-
-    s7_define_safe_function(s7,
-                            "sunlark-parse-string",
-                            sunlark_parse_string,
-                            1, 0, false,
-                            SUNLARK_PARSE_STRING_HELP);
-
-
-}
-
 /* **************** */
 /** configure_s7_ast_node_type(s7_scheme *s7)
 
@@ -1097,7 +870,7 @@ EXPORT int configure_s7_ast_node_type(s7_scheme *s7)
     ast_node_t = s7_make_c_type(s7, "<ast_node>");
     _register_c_type_methods(s7, ast_node_t);
     _register_get_and_set(s7);
-    _register_ast_node_fns(s7);
+    sunlark_register_ast_node_fns(s7);
     s7_provide(s7, "ast-node");
     return ast_node_t;
 }

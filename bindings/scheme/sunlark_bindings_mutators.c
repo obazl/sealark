@@ -13,464 +13,6 @@
 
 /* docs at bottom */
 
-#define ESUNLARK_INVALID_ARG -1
-#define ESUNLARK_ARG_TYPE_ERR -2
-#define ESUNLARK_LOCN_ARG_ERR -3
-
-struct node_s *_add_attr_list_item(s7_scheme *s7,
-                                   struct node_s *expr_list,
-                                   s7_pointer edits)
-{
-#if defined(DEBUG_TRACE) || defined(DEBUG_ATTR)
-    log_debug("_add_attr_list_item, tid: %d", expr_list->tid);
-#endif
-
-    int subnode_ct = utarray_len(expr_list->subnodes);
-    int attr_ct;
-    struct node_s *last_node;
-    s7_pointer additions;
-    s7_pointer locn_s7 = NULL;
-    char *locn_c;
-    int attr_locn = 0; /* attr posn ignoring commas */
-    int idx = 0;       /* subnode index corresponding to attr_locn */
-    bool push_back = false;
-
-    /* trailing comma? */
-    // trailing comma not part of expr_list
-    /* bool trailing_comma = false; */
-    /* last_node = utarray_eltptr(expr_list->subnodes, subnode_ct - 1); */
-    /* if (last_node->tid == TK_COMMA) { */
-    /*     trailing_comma = true; */
-    /* } */
-    /* if (trailing_comma) { */
-    /*     attr_ct = (subnode_ct - 1) / 2 + 1; */
-    /* } else { */
-    /*     attr_ct = subnode_ct / 2 + 1; /\* +1 for last node *\/ */
-    /* } */
-    /* log_debug("subnode_ct: %d, attr_ct: %d", subnode_ct, attr_ct); */
-
-    attr_ct = (subnode_ct - 1) / 2 + 1;
-
-    if ( s7_is_keyword(s7_cadr(edits)) ) {
-        locn_s7 = s7_cadr(edits); /* :n */
-
-        locn_c =  s7_object_to_c_string(s7, locn_s7);
-        log_debug("locn_c: %s, %c", locn_c, locn_c[1]);
-        s7_pointer sym = s7_keyword_to_symbol(s7, locn_s7);
-        log_debug("SYM: %s", s7_object_to_c_string(s7, sym));
-        attr_locn = atoi((char*)s7_symbol_name(sym));
-        log_debug("attr_locn: %d", attr_locn);
-
-        if (abs(attr_locn) > attr_ct) {
-            /* subnode_ct = (subnode_ct + 1)/2; */
-            log_error("ERROR: abs(edit location) %d > length %d of attr list value", abs(attr_locn), attr_ct);
-            errno = ESUNLARK_INVALID_ARG;
-            return NULL;
-        }
-
-        /* account for commas */
-        if (attr_locn == 0) {
-            if (locn_c[1] == '-') {
-                push_back = true;
-                additions = s7_cddr(edits);
-            } else {
-                /* push front */
-                additions = s7_reverse(s7, s7_cddr(edits));
-            }
-        } else {
-            if (attr_locn < 0) {
-                attr_locn = attr_ct + attr_locn;
-                if (attr_locn > 0)
-                    idx = (attr_locn  * 2) - 1; /* no trailing , in list */
-                additions = s7_reverse(s7, s7_cddr(edits));
-            } else {
-                if (attr_locn > 0) {
-                    idx = (attr_locn  * 2) - 1; /* no trailing , in list */
-                    additions = s7_reverse(s7, s7_cddr(edits));
-                }
-            }
-        }
-        log_debug("subnode_ct: %d, attr_ct %d, attr_locn: %d, idx: %d",
-                  subnode_ct, attr_ct, attr_locn, idx);
-
-    } else {
-        /* appending */
-        additions = s7_cdr(edits);
-        push_back = true;
-    }
-    log_debug("subnode_ct: %d, attr_locn: %d, idx: %d", subnode_ct, attr_locn, idx);
-    /* if (s7_list_length(s7, edits) == 2) { */
-    /* if (locn_s7 == NULL) { */
-    /* append */
-
-    while(!s7_is_null(s7, additions)) {
-        s7_pointer addition_s7 = s7_car(additions);
-        char *addition =  s7_object_to_c_string(s7, addition_s7);
-        int addition_len = strlen(addition);
-        log_debug("addition: %s", addition);
-        struct node_s *comma = calloc(1, sizeof(struct node_s));
-        comma->tid = TK_COMMA;
-
-        struct node_s *newnode = calloc(1, sizeof(struct node_s));
-        newnode->tid = TK_STRING;
-        newnode->s = calloc(addition_len + 1, sizeof(char));
-        strncpy(newnode->s, addition, addition_len);
-        log_debug("newnode->s: %s", newnode->s);
-        newnode->qtype = DQUOTE;
-
-        log_debug("attr_locn: %d, idx: %d", attr_locn, idx);
-        if (idx == 0) {
-            if (push_back) {
-                /* if (trailing_comma) { */
-                /*     log_debug("push back x"); */
-                /*     utarray_push_back(expr_list->subnodes, newnode); */
-                /*     trailing_comma = false; */
-                /* } else { */
-                log_debug("push back y");
-                utarray_push_back(expr_list->subnodes, comma);
-                utarray_push_back(expr_list->subnodes, newnode);
-                /* } */
-            } else {
-                log_debug("push front");
-                utarray_insert(expr_list->subnodes, comma, idx);
-                utarray_insert(expr_list->subnodes, newnode, idx);
-            }
-        } else {
-            log_debug("insert at %d", idx);
-            utarray_insert(expr_list->subnodes, newnode, idx);
-            utarray_insert(expr_list->subnodes, comma, idx);
-            /* locn += 1; */
-        }
-        /* utarray_insert(expr_list->subnodes, comma, subnode_ct); */
-        /* utarray_insert(expr_list->subnodes, newnode, subnode_ct+1); */
-
-        additions = s7_cdr(additions);
-    }
-    /* we're creating a new s7 node for an existing c node
-       - what about the existing s7 node? */
-    return expr_list;
-}
-
-struct node_s *_replace_attr_list_all(s7_scheme *s7,
-                                      struct node_s *expr_list,
-                                      char *replacement)
-{
-#if defined(DEBUG_TRACE) || defined(DEBUG_ATTR)
-    log_debug("_replace_attr_list_all, tid: %d", expr_list->tid);
-#endif
-
-    utarray_clear(expr_list->subnodes);
-    struct node_s *node = sealark_node_new();
-    node->tid = TK_STRING;
-    int len = strlen(replacement);
-    node->s = calloc(1, len + 1);
-    strncpy(node->s, replacement, len);
-    log_debug("node->s: %s", node->s);
-    node->qtype = DQUOTE;
-
-    utarray_push_back(expr_list->subnodes, node);
-    return expr_list;
-}
-
-struct node_s *_remove_attr_list_all(s7_scheme *s7,
-                                     struct node_s *expr_list)
-{
-#if defined(DEBUG_TRACE) || defined(DEBUG_ATTR)
-    log_debug("_remove_attr_list_all, tid: %d", expr_list->tid);
-#endif
-
-    utarray_clear(expr_list->subnodes);
-    /* struct node_s *node = sealark_node_new(); */
-    /* node->tid = TK_STRING; */
-    /* int len = strlen(replacement); */
-    /* node->s = calloc(1, len + 1); */
-    /* strncpy(node->s, replacement, len); */
-    /* log_debug("node->s: %s", node->s); */
-    /* node->qtype = DQUOTE; */
-
-    /* utarray_push_back(expr_list->subnodes, node); */
-    return expr_list;
-}
-
-struct node_s *_replace_attr_list_items(s7_scheme *s7,
-                                    struct node_s *expr_list,
-                                    s7_pointer edits)
-{
-#if defined(DEBUG_TRACE) || defined(DEBUG_ATTR)
-    log_debug("_replace_attr_list_items, tid: %d", expr_list->tid);
-#endif
-
-    log_debug("edits: %s", s7_object_to_c_string(s7, edits));
-
-    int subnode_ct = utarray_len(expr_list->subnodes);
-    int attr_ct;
-    struct node_s *last_node;
-    s7_pointer replacements;
-    s7_pointer locn_s7 = NULL;
-    char *locn_c;
-    int attr_locn = 0; /* attr posn ignoring commas */
-    int idx = 0;       /* subnode index corresponding to attr_locn */
-    bool push_back = false;
-
-    attr_ct = (subnode_ct - 1) / 2 + 1;
-    log_debug("subnode_ct: %d, attr_ct: %d", subnode_ct, attr_ct);
-
-    while(!s7_is_null(s7, edits)) {
-        s7_pointer replacement_s7 = s7_cadr(edits);
-        char *replacement =  s7_object_to_c_string(s7, replacement_s7);
-        int replacement_len = strlen(replacement);
-        if (s7_is_string(replacement_s7)) {
-            /* omit quote marks */
-            replacement_len -= 2;
-            replacement++;
-        } else {
-        }
-        log_debug("replacement: %s", replacement);
-
-        if ( s7_is_keyword(s7_car(edits)) ) {
-            locn_s7 = s7_car(edits); /* :n */
-            locn_c =  s7_object_to_c_string(s7, locn_s7);
-            log_debug("locn_c: %s, %c", locn_c, locn_c[1]);
-            s7_pointer sym = s7_keyword_to_symbol(s7, locn_s7);
-            log_debug("SYM: %s", s7_object_to_c_string(s7, sym));
-            if (strncmp("*", s7_object_to_c_string(s7, sym), 1) == 0) {
-                return _replace_attr_list_all(s7, expr_list, replacement);
-            } else {
-                attr_locn = atoi((char*)s7_symbol_name(sym));
-            }
-            log_debug("attr_locn: %d", attr_locn);
-
-            if (abs(attr_locn) > attr_ct) {
-                /* subnode_ct = (subnode_ct + 1)/2; */
-                log_error("ERROR: abs(edit location) %d > length %d of attr list value", abs(attr_locn), attr_ct);
-                errno = ESUNLARK_INVALID_ARG;
-                return NULL;
-            }
-
-            if (attr_locn < 0) {
-                    attr_locn = attr_ct + attr_locn;
-                    if (attr_locn > 0)
-                        idx = (attr_locn  * 2) - 1; /* no trailing , in list */
-            } else {
-                idx = (attr_locn  * 2);
-            }
-
-            log_debug("subnode_ct: %d, attr_ct %d, attr_locn: %d, idx: %d",
-                      subnode_ct, attr_ct, attr_locn, idx);
-        } else {
-            log_error("ERROR: invalid location node, should be :n, got %s",
-                      s7_object_to_c_string(s7, locn_s7));
-            errno = ESUNLARK_ARG_TYPE_ERR;
-            return NULL;
-        }
-
-        /* struct node_s *newnode = calloc(1, sizeof(struct node_s)); */
-        /* newnode->tid = TK_STRING; */
-        /* newnode->s = calloc(replacement_len + 1, sizeof(char)); */
-        /* strncpy(newnode->s, replacement, replacement_len); */
-        /* log_debug("newnode->s: %s", newnode->s); */
-        /* newnode->qtype = DQUOTE; */
-
-        struct node_s *target = utarray_eltptr(expr_list->subnodes, idx);
-        log_debug("target[%d] tid: %d, s: %s",
-                  idx, target->tid, target->s);
-        if (target->tid != TK_STRING) {
-            log_error("ERROR: replacement target wrong type: %d (should be %d, TK_STRING)", target->tid, TK_STRING);
-            errno = ESUNLARK_ARG_TYPE_ERR;
-        }
-
-        target->tid = TK_STRING;
-        target->s = calloc(replacement_len + 1, sizeof(char));
-        strncpy(target->s, replacement, replacement_len);
-        log_debug("target->s: %s", target->s);
-        target->qtype = DQUOTE;
-
-        edits = s7_cddr(edits);
-    }
-    /* we're creating a new s7 node for an existing c node
-       - what about the existing s7 node? */
-    return expr_list;
-}
-
-struct node_s *_remove_attr_list_items(s7_scheme *s7,
-                                    struct node_s *expr_list,
-                                    s7_pointer edits)
-{
-#if defined(DEBUG_TRACE) || defined(DEBUG_ATTR)
-    log_debug("_remove_attr_list_items, tid: %d", expr_list->tid);
-#endif
-
-    log_debug("edits: %s", s7_object_to_c_string(s7, edits));
-
-    int subnode_ct = utarray_len(expr_list->subnodes);
-    int attr_ct;
-    struct node_s *last_node;
-    s7_pointer removoids;
-    s7_pointer locn_s7 = NULL;
-    char *locn_c;
-    int attr_locn = 0; /* attr posn ignoring commas */
-    int idx = 0;       /* subnode index corresponding to attr_locn */
-    bool push_back = false;
-
-    attr_ct = (subnode_ct - 1) / 2 + 1;
-    log_debug("subnode_ct: %d, attr_ct: %d", subnode_ct, attr_ct);
-
-    /* for multiple removals, e.g. (:remove :0 :1), we need to account
-       for elements already removed as we iterate over the list. */
-    int remove_ct = 0;
-
-    while(!s7_is_null(s7, edits)) {
-        if ( s7_is_keyword(s7_car(edits)) ) {
-            locn_s7 = s7_car(edits); /* :n */
-            locn_c =  s7_object_to_c_string(s7, locn_s7);
-            log_debug("locn_c: %s, %c", locn_c, locn_c[1]);
-            s7_pointer sym = s7_keyword_to_symbol(s7, locn_s7);
-            log_debug("SYM: %s", s7_object_to_c_string(s7, sym));
-            if (strncmp("*", s7_object_to_c_string(s7, sym), 1) == 0) {
-                utarray_clear(expr_list->subnodes);
-                return expr_list;
-            } else {
-                attr_locn = atoi((char*)s7_symbol_name(sym));
-            }
-            log_debug("attr_locn: %d", attr_locn);
-
-            if (abs(attr_locn) > attr_ct) {
-                /* subnode_ct = (subnode_ct + 1)/2; */
-                log_error("ERROR: abs(edit location) %d > length %d of attr list value", abs(attr_locn), attr_ct);
-                errno = ESUNLARK_INVALID_ARG;
-                return NULL;
-            }
-
-            if (attr_locn < 0) {
-                    attr_locn = attr_ct + attr_locn;
-                    if (attr_locn > 0)
-                        idx = (attr_locn  * 2) - 1; /* no trailing , in list */
-            } else {
-                idx = (attr_locn  * 2);
-                if (attr_locn == attr_ct - 1) {
-                    /* last node: also remove preceding comma */
-                    idx--;
-                /* } else { */
-                /*     idx = (attr_locn  * 2); */
-                }
-            }
-            idx -= remove_ct;
-            log_debug("subnode_ct: %d, attr_ct %d, attr_locn: %d, idx: %d, remove_ct: %d",
-                      subnode_ct, attr_ct, attr_locn, idx, remove_ct);
-        } else {
-            log_error("ERROR: invalid location node, should be :n, got %s",
-                      s7_object_to_c_string(s7, s7_car(edits)));
-            errno = ESUNLARK_LOCN_ARG_ERR;
-            return NULL;
-        }
-
-        struct node_s *target = utarray_eltptr(expr_list->subnodes, idx);
-        log_debug("target[%d] tid: %d, s: %s",
-                  idx, target->tid, target->s);
-
-        /* last element: remove preceding comma too */
-        /* if (target->tid != TK_STRING) { */
-        /*     log_error("ERROR: removoid target wrong type: %d (should be %d, TK_STRING)", target->tid, TK_STRING); */
-        /*     errno = ESUNLARK_ARG_TYPE_ERR; */
-        /* } */
-
-        log_debug("erasing %d for len %d", idx, 2);
-                  /* (attr_locn == attr_ct)? 1 :2); */
-        // FIXME: handle end of list, never trailing comma
-        utarray_erase(expr_list->subnodes, idx, 2);
-                      /* (attr_locn == attr_ct - 1)? 1 :2); */
-        remove_ct += 2;
-
-        edits = s7_cdr(edits);
-    }
-    /* we're creating a new s7 node for an existing c node
-       - what about the existing s7 node? */
-    return expr_list;
-}
-
-struct node_s *_update_list_value(s7_scheme *s7,
-                              struct node_s *list_expr_node,
-                              const char *key,
-                              s7_pointer edits)
-{
-#if defined(DEBUG_TRACE) || defined(DEBUG_ATTR)
-    log_debug("_update_list_value, tid: %d, key: %s", list_expr_node->tid, key);
-#endif
-
-    if (list_expr_node->tid != TK_List_Expr) {
-        /* should not happen */
-        log_error("ERROR: got node that is not a list-expr");
-        exit(EXIT_FAILURE);
-    }
-
-    /* :binding structure: */
-    /*   child[0] = '[', child[1] = expr_list, child[2] = ']'*/
-    struct node_s *expr_list = utarray_eltptr(list_expr_node->subnodes, 1);
-
-    log_debug("edits: %s", s7_object_to_c_string(s7, edits));
-    s7_pointer action = s7_car(edits);
-    log_debug("action: %s", s7_object_to_c_string(s7, action));
-    if (!s7_is_keyword(action)) {
-        log_error("ERROR: action arg should be :add, :replace, or :remove; got %s", s7_object_to_c_string(s7, action));
-        errno = ESUNLARK_INVALID_ARG;
-        return NULL;
-    }
-    if (action == s7_make_keyword(s7, "add")) {
-        log_debug("ACTION ADD");
-        int editlen = s7_list_length(s7, edits);
-        if (editlen < 2) {
-            log_error("edit list for :add must at least two elements: %s",
-                      s7_object_to_c_string(s7, action));
-            errno = ESUNLARK_INVALID_ARG;
-            return NULL;
-        }
-        struct node_s *new_expr_list
-            = _add_attr_list_item(s7, expr_list, edits);
-        return new_expr_list;
-        /* return sunlark_node_new(s7, new_expr_list); */
-    }
-    if (action == s7_make_keyword(s7, "replace")) {
-        log_debug("ACTION REPLACE");
-        int editlen = s7_list_length(s7, s7_cdr(edits));
-        if ( (editlen % 2) != 0 ) {
-            log_error("ERROR: edit list for :add must have an even number of elements: %s", s7_object_to_c_string(s7, action));
-            errno = ESUNLARK_INVALID_ARG;
-            return NULL;
-        }
-        errno = 0;
-        struct node_s *new_expr_list
-            = _replace_attr_list_items(s7, expr_list, s7_cdr(edits));
-        if (new_expr_list == NULL) {
-            /* errno already set, msg printed */
-            return NULL;
-        }
-        /* return sunlark_node_new(s7, new_expr_list); */
-        return new_expr_list;
-   }
-    if (action == s7_make_keyword(s7, "remove")) {
-        log_debug("ACTION REMOVE");
-        int editlen = s7_list_length(s7, s7_cdr(edits));
-        if ( editlen == 0 ) {
-            log_error("ERROR: edit list for :remove must have at least one arg: %s", s7_object_to_c_string(s7, action));
-            errno = ESUNLARK_INVALID_ARG;
-            return NULL;
-        }
-        errno = 0;
-        struct node_s *new_expr_list
-            = _remove_attr_list_items(s7, expr_list, s7_cdr(edits));
-        if (new_expr_list == NULL) {
-            /* errno already set, msg printed */
-            return NULL;
-        }
-        /* return sunlark_node_new(s7, new_expr_list); */
-        return new_expr_list;
-    }
-    log_error("ERROR: action must be one of :add :replace :remove; got %s",
-              s7_object_to_c_string(s7, action));
-    errno = ESUNLARK_INVALID_ARG;
-    return NULL;
-}
-
 s7_pointer sunlark_update_binding_name(s7_scheme *s7,
                                          s7_pointer node_s7,
                                          const char *key,
@@ -565,7 +107,7 @@ s7_pointer sunlark_update_binding_value(s7_scheme *s7,
             log_debug("set! val is list: %s",
                       s7_object_to_c_string(s7, val));
             errno = 0;
-            struct node_s *result = _update_list_value(s7, target, key, val);
+            struct node_s *result = sunlark_update_list_value(s7, target, key, val);
             if (result == NULL) {
                 log_error("errno: %d", errno);
                 switch(errno) {
@@ -679,3 +221,53 @@ s7_pointer sunlark_update_binding_value(s7_scheme *s7,
           ;; (ast-node-replace! deps 'value 99) ;; ok
           ;; (set! (deps 'value) 99) ;; #(foo bar bazl))
 */
+
+/* **************************************************************** */
+struct node_s *sunlark_replace_binding_value(s7_scheme *s7,
+                                         struct node_s *binding,
+                                         s7_pointer newval)
+{
+#ifdef DEBUG_TRACE
+    log_debug("sunlark_replace_binding_value: %s",
+              s7_object_to_c_string(s7, newval));
+#endif
+
+    struct node_s *val = utarray_eltptr(binding->subnodes, 2);
+    /* sealark_debug_print_ast_outline(binding, true); // crush */
+    utarray_free(val->subnodes);
+    utarray_clear(val->subnodes);
+
+    if (s7_is_string(newval)) {
+        const char *s = s7_string(newval);
+        log_debug("new val: %s", s);
+        int len = strlen(s);
+        val->tid = TK_STRING;
+        val->s = calloc(len, sizeof(char));
+        strncpy(val->s, s, len);
+        val->qtype = DQUOTE;
+        return binding;
+    }
+
+    if (s7_is_symbol(newval)) {
+        const char *s = s7_symbol_name(newval);
+        log_debug("new val: %s", s);
+        int len = strlen(s);
+        val->tid = TK_STRING;
+        val->s = calloc(len, sizeof(char));
+        strncpy(val->s, s, len);
+        return binding;
+    }
+
+    if (s7_is_integer(newval)) {
+        int d = s7_integer(newval);
+        char buf[128];
+        snprintf(buf, 128, "%d", d);
+        int len = strlen(buf);
+        log_debug("new val: %d", d);
+        val->tid = TK_INT;
+        val->s = calloc(len, sizeof(char));
+        strncpy(val->s, buf, len);
+        return binding;
+    }
+    return binding;
+}

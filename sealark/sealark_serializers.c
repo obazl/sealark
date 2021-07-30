@@ -178,7 +178,7 @@ LOCAL void _node2string(struct node_s *node, UT_string *buffer)
         if (node->tid == TK_STRING) {
             //FIXME: call ast_node_printable_string?
 
-            char * br = SEALARK_STRTYPE(node->qtype);
+            char *br = SEALARK_STRTYPE(node->qtype);
             char *q = sealark_quote_type(node);
 
             utstring_printf(buffer,
@@ -299,7 +299,7 @@ EXPORT void sealark_node_display(// s7_scheme *s7,
     /* display_ptr += len; */
 
     if (nd->tid == TK_STRING) {
-        utstring_printf(buffer, " qtype=#x%#X", nd->qtype);
+        utstring_printf(buffer, " qtype=%#04x", nd->qtype);
         /* sprintf(buf, " qtype = #x%#X,\n", nd->qtype); */
         /* len = strlen(buf); */
         /* snprintf(display_ptr, len+1, "%s", buf); */
@@ -310,8 +310,11 @@ EXPORT void sealark_node_display(// s7_scheme *s7,
         char *br = SEALARK_STRTYPE(nd->qtype);
         char *q = sealark_quote_type(nd);
 
-        utstring_printf(buffer, " s=%s%s%s%s",
-                        br, q, nd->s, q);
+        /* for debugging, just print the string w/o qtype meta stuff */
+        /* i.e. print r'foo' as foo*/
+        /* utstring_printf(buffer, " s=%s%s%s%s", */
+        /*                 br, q, nd->s, q); */
+        utstring_printf(buffer, " s=%s", nd->s);
 
         /* sprintf(buf, " s     = %s,\n", nd->s); */
         /* len = strlen(buf); */

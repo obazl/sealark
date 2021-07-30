@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -25,6 +26,27 @@ s7_pointer sunlark_node_set_generic(s7_scheme *s7, s7_pointer args)
    implements (ast_node_set! sunlark-node key val)
 
  */
+/* **************************************************************** */
+/** sunlark_node_set_specialized
+
+    registered twice: as a c-type generalize set! (s7_c_type_set_set()) and
+    as procedure "ast-node-set!" (s7_define_typed_function())
+
+    generalized set: (set! (c-obj :k) v)
+
+    in this case set! will call the set method registered with the
+    c-obj's c-type, passing the c-obj, key :k, and value v.
+
+    note that outside of this set! context, (c-obj :k) will lookup the
+    value bound to :k in c-obj (using g_struct_get).
+ */
+#if INTERFACE
+#define SUNLARK_NODE_SET_SPECIALIZED_HELP "(ast-node-set! b i x) sets the ast_node value at index i to x."
+
+/* sig: returns node */
+#define SUNLARK_NODE_SET_SPECIALIZED_SIG s7_make_signature(s7, 4, s7_make_symbol(s7, "node?"), s7_make_symbol(s7, "node?"), s7_make_symbol(s7, "integer?"), s7_t(s7))
+#endif
+
 s7_pointer sunlark_node_set_specialized(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
@@ -211,8 +233,8 @@ log_debug("2 xxxxxxxxxxxxxxxx");
     case TK_List_Expr:          /* vector */
         log_debug("set! context: list-expr");
         if (s7_is_integer(lval)) {
-            log_debug("indexing by int");
-            return sunlark_replace_list_item(s7, context, lval, update_val);
+            log_debug("lval: int");
+            return sunlark_vector_replace_item(s7, context, lval, update_val);
         }
         if (s7_is_string(lval)) {
             log_debug("indexing by string");
@@ -233,7 +255,7 @@ log_debug("2 xxxxxxxxxxxxxxxx");
                 updated = sunlark_set_id(s7, r, update_val);
                 break;
             case TK_INT:
-                updated = sunlark_set_int(s7, r, update_val);
+                updated = sealark_set_int(r, s7_integer(update_val));
                 break;
             default:
                 ;
@@ -355,15 +377,3 @@ LOCAL struct node_s *sunlark_set_id(s7_scheme *s7,
 #endif
 
 }
-
-/* **************** */
-LOCAL struct node_s *sunlark_set_int(s7_scheme *s7,
-                                        struct node_s *old_vec,
-                                        s7_pointer new_vec)
-{
-#if defined(DEBUG_TRACE) || defined(DEBUG_MUTATE)
-    log_debug("sunlark_set_int");
-#endif
-
-}
-

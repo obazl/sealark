@@ -171,8 +171,20 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
         if (sealark_is_printable(ast_node)) {
             s7_pointer val;
             switch(ast_node->tid) {
-            case TK_STRING:
-                val =  s7_make_string(s7, ast_node->s);
+            case TK_STRING: {
+                UT_string *buf;
+                utstring_new(buf);
+                char *br = SEALARK_STRTYPE(ast_node->qtype);
+                char *q = sealark_quote_type(ast_node);
+                utstring_printf(buf,
+                                "%s%s%s%s",
+                                br,
+                                q,
+                                ast_node->s,
+                                q);
+                val =  s7_make_string(s7, utstring_body(buf));
+                utstring_free(buf);
+            }
                 break;
             case TK_ID:
                 val =  s7_make_symbol(s7, ast_node->s);
