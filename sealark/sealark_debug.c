@@ -1,13 +1,29 @@
+#include <execinfo.h>
+#include <stdio.h>
+
 #include "log.h"
 #include "utarray.h"
 #include "utstring.h"
 
 #include "sealark_debug.h"
 
+void print_stacktrace()
+{
+    void* callstack[128];
+    int i, frames = backtrace(callstack, 128);
+    char** strs = backtrace_symbols(callstack, frames);
+    for (i = 0; i < frames; ++i) {
+        printf("%s\n", strs[i]);
+    }
+    free(strs);
+}
+
 /* ******************************** */
 /* recursively print outline */
 EXPORT void sealark_debug_print_ast_outline(struct node_s *node, int level)
 {
+    /* print_stacktrace(); */
+
     if (node->s)
         log_debug("%*.s%d: %s %d: %s",
                   2*level, " ", level, TIDNAME(node), node->tid, node->s);
