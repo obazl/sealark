@@ -401,7 +401,8 @@ s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
                     if (s7_is_boolean(resolved_path)) {
                         log_debug("<<<< sunlark_node_object_applicator: returning boolean");
                     } else {
-                        log_debug("<<<< sunlark_node_object_applicator: return type: other");
+                        log_debug("<<<< sunlark_node_object_applicator returning val of type: %s",
+                                  s7_object_to_c_string(s7, (s7_type_of(s7, resolved_path))));
                     }
                 }
             }
@@ -821,7 +822,7 @@ static s7_pointer sunlark_destroy_ast_node(s7_scheme *s7, s7_pointer obj)
 
 static void _register_c_type_methods(s7_scheme *s7, s7_int ast_node_t)
 {
-#ifdef DEBUG_TRACE
+#ifdef DEBUG_CONFIG
     log_debug("_register_c_type_methods");
 #endif
     s7_c_type_set_gc_free(s7, ast_node_t, sunlark_destroy_ast_node);
@@ -857,7 +858,7 @@ static void _register_c_type_methods(s7_scheme *s7, s7_int ast_node_t)
 //FIXME: return int rc?
 EXPORT int configure_s7_ast_node_type(s7_scheme *s7)
 {
-#ifdef DEBUG_TRACE
+#ifdef DEBUG_CONFIG
     log_debug("configure_s7_ast_node_type");
 #endif
     /* s7_int t = _make_c_type(s7); */

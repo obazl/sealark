@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -24,18 +25,27 @@ EXPORT s7_pointer sunlark_parse_build_file(s7_scheme *s7,
 {
     char *fname = (char*)s7_string(s7_car(args));
 
-#if defined (DEBUG_TRACE) || defined(DEBUG_PROPERTIES)
+#if defined(DEBUG_PROPERTIES)
     log_debug("sunlark_parse_build_file: %s", fname);
 #endif
-    int r = access(fname, F_OK);
-    log_debug("access %s ? %d", fname, r);
 
+    /* int r = access(fname, F_OK); */
+    errno = 0;
     struct parse_state_s *parse_state
         = sealark_parse_file(fname);
+    if (parse_state == NULL) {
+        return(s7_error(s7, s7_make_symbol(s7,
+                                           "io_error"),
+                        s7_list(s7, 3, s7_make_string(s7,
+            "IO error on  fopen(~S): ~A"),
+                                s7_make_string(s7,fname),
+                                s7_make_string(s7,strerror(errno)))));
+    }
+#if defined(DEBUG_PARSERS)
     log_debug("parsed file %s", parse_state->lexer->fname);
-    /* dump_node(parse_state->root); */
-
     log_debug("converting ast");
+#endif
+
     s7_pointer ast = sunlark_ast2scm(s7, parse_state);
     return ast;
 }
@@ -45,7 +55,7 @@ s7_pointer sunlark_parse_bzl_file(s7_scheme *s7,
 {
     const char *fname = s7_string(s7_car(args));
 
-#if defined (DEBUG_TRACE) || defined(DEBUG_PARSE)
+#if defined(DEBUG_PARSERS)
     log_debug("sunlark_parse_bzl_file: %s", fname);
 #endif
 
@@ -61,6 +71,9 @@ s7_pointer sunlark_parse_bzl_file(s7_scheme *s7,
 EXPORT s7_pointer sunlark_parse_string(s7_scheme *s7,
                                        s7_pointer args)
 {
+#if defined(DEBUG_PARSERS)
+    log_debug("sunlark_parse_string: %s", fname);
+#endif
     const char *str;
     if (s7_is_list(s7, args)) {
         if(s7_list_length(s7, args) > 1) {
@@ -77,9 +90,6 @@ EXPORT s7_pointer sunlark_parse_string(s7_scheme *s7,
             str = (char*)s7_string(args);
         }
     }
-#if defined (DEBUG_TRACE) || defined(DEBUG_PROPERTIES)
-    log_debug("sunlark_parse_string: %s", str);
-#endif
 
     struct node_s *node = sealark_parse_string(str);
 /* "cc_library(a,b)\n"); */
@@ -88,7 +98,7 @@ EXPORT s7_pointer sunlark_parse_string(s7_scheme *s7,
 
 s7_pointer sunlark_node2scm(s7_scheme *s7, struct node_s *node)
 {
-#if defined (DEBUG_TRACE) || defined(DEBUG_PARSE)
+#if defined(DEBUG_PARSERS)
     log_debug("sunlark_node2scm");
 #endif
 
@@ -100,16 +110,16 @@ s7_pointer sunlark_node2scm(s7_scheme *s7, struct node_s *node)
 
 EXPORT s7_pointer sunlark_ast2scm(s7_scheme *s7, struct parse_state_s *parse)
 {
-#if defined (DEBUG_TRACE) || defined(DEBUG_PARSE)
+#if defined(DEBUG_PARSERS)
     log_debug("sunlark_ast2scm");
 #endif
 
     s7_pointer new_ast_node_s7 = s7_make_c_object(s7,
                                                   ast_node_t,
                                                   (void *)parse->root);
-    log_debug("new ast root tid: %d, is node? %d",
-              sunlark_node_tid(s7, new_ast_node_s7),
-              c_is_sunlark_node(s7, new_ast_node_s7));
+    /* log_debug("new ast root tid: %d, is node? %d", */
+    /*           sunlark_node_tid(s7, new_ast_node_s7), */
+    /*           c_is_sunlark_node(s7, new_ast_node_s7)); */
 
     return new_ast_node_s7;
 }

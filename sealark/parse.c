@@ -242,13 +242,15 @@ EXPORT struct parse_state_s *sealark_parse_file(const char *fname)
 {
     log_set_quiet(false);
 
+#if defined(DEBUG_PARSERS)
     log_info("sealark_parse_file: %s", fname);
+#endif
     FILE *f, *ftrace;
 
-    log_debug("CWD: %s", getcwd(NULL, 0));
+    /* log_debug("CWD: %s", getcwd(NULL, 0)); */
 
-    int r = access(fname, F_OK);
-    log_debug("access %s ? %d", fname, r);
+    /* int r = access(fname, F_OK); */
+    /* log_debug("access %s ? %d", fname, r); */
 
     f = fopen(fname, "r");
     if (f == NULL) {

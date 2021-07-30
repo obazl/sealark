@@ -193,11 +193,10 @@ void test_binding_srcs(void) {
                                     s7_nil(s7)));
     TEST_ASSERT( s7_is_c_object(key) );
     TEST_ASSERT( sunlark_node_tid(s7, key) == TK_ID );
-    s7_pointer str = s7_apply_function(s7,
-                                       key,
-                            s7_cons(s7, s7_make_keyword(s7,"print"),
-                                    s7_nil(s7)));
-    TEST_ASSERT_EQUAL_STRING( s7_string(str), "srcs" );
+    /* key is an identifier, hence :$ returns a Scheme symbol */
+    s7_pointer str = s7_apply_function(s7, key, s7_eval_c_string(s7, "'(:$)"));
+    TEST_ASSERT( s7_is_symbol(str) );
+    TEST_ASSERT_EQUAL_STRING( "srcs", s7_symbol_name(str) );
 
     /* check underlying c object */
     struct node_s *id_node = utarray_eltptr(binding_node->subnodes, 0);
@@ -214,31 +213,24 @@ void test_binding_srcs(void) {
     TEST_ASSERT( sunlark_node_tid(s7, val) == TK_List_Expr );
 
     /* in this case val is a vector; index into it */
-    s7_pointer item
-        = s7_apply_function(s7, val, s7_cons(s7, s7_make_integer(s7, 0),
-                                     s7_nil(s7)));
+    s7_pointer item = s7_apply_function(s7, val, s7_cons(s7, s7_make_integer(s7, 0),
+                                                         s7_nil(s7)));
     TEST_ASSERT( s7_is_c_object(item) );
     TEST_ASSERT( sunlark_node_tid(s7, item) == TK_STRING );
 
-    /* use :print to get a string value */
-    s7_pointer sval
-        = s7_apply_function(s7, item,
-                            s7_cons(s7, s7_make_keyword(s7, "print"),
-                                    s7_nil(s7)));
+    s7_pointer sval = s7_apply_function(s7, item, s7_eval_c_string(s7, "'(:$)"));
     TEST_ASSERT( !s7_is_c_object(sval) );
     TEST_ASSERT( s7_is_string(sval) );
     TEST_ASSERT_EQUAL_STRING( "\"hello-world.cc\"", s7_string(sval) );
 
     /* second item uses single quotes */
-    item = s7_apply_function(s7, val, s7_cons(s7, s7_make_integer(s7, 1),
-                                     s7_nil(s7)));
+    item = s7_apply_function(s7, val, s7_cons(s7, s7_make_integer(s7, 1), s7_nil(s7)));
     TEST_ASSERT( s7_is_c_object(item) );
     TEST_ASSERT( sunlark_node_tid(s7, item) == TK_STRING );
 
     /* use :print to get a string value */
-    sval = s7_apply_function(s7, item,
-                            s7_cons(s7, s7_make_keyword(s7, "print"),
-                                    s7_nil(s7)));
+    sval = NULL;
+    sval = s7_apply_function(s7, item, s7_eval_c_string(s7, "'(:$)"));
     TEST_ASSERT( !s7_is_c_object(sval) );
     TEST_ASSERT( s7_is_string(sval) );
     /* single-quotes */

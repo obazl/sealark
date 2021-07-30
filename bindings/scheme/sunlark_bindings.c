@@ -551,12 +551,12 @@ s7_pointer sunlark_forall_targets_forall_bindings(s7_scheme *s7,
 
 /* ******************************** */
 /* resolved path: (:> x :@) */
-EXPORT s7_pointer sunlark_target_binding_for_path(s7_scheme *s7,
+EXPORT s7_pointer sunlark_resolve_path_on_target(s7_scheme *s7,
                                                       struct node_s *target,
                                                       s7_pointer path_args)
 {
 #ifdef DEBUG_TRACE
-    log_debug("sunlark_target_binding_for_path: %s",
+    log_debug("sunlark_resolve_path_on_target: %s",
               s7_object_to_c_string(s7, path_args));
 #endif
 
@@ -573,7 +573,7 @@ EXPORT s7_pointer sunlark_target_binding_for_path(s7_scheme *s7,
     s7_pointer rest = s7_cdr(path_args);
     s7_pointer op2 = s7_car(rest);
 
-    /* expected args int or sym kw? idx? */
+    /* expected args: int or sym kw? idx? */
     struct node_s *binding;
     if (s7_is_keyword(op)) { /* kws are symbols, so we catch here */
         return(s7_error(s7,
@@ -582,9 +582,10 @@ EXPORT s7_pointer sunlark_target_binding_for_path(s7_scheme *s7,
                         "Bad arg: ~S in ~S; expected symbol or int"),
                                 op, path_args)));
     }
+
     if (s7_is_symbol(op)) {
         binding = sealark_target_binding_for_key(target,
-                                                     s7_symbol_name(op));
+                                                 s7_symbol_name(op));
         if (s7_is_null(s7, rest)) {
             return sunlark_node_new(s7, binding);
         } else {
@@ -603,6 +604,9 @@ EXPORT s7_pointer sunlark_target_binding_for_path(s7_scheme *s7,
         if (s7_is_integer(op)) {
             binding = sealark_target_binding_for_index(target,
                                                        s7_integer(op));
+
+
+
             if (s7_is_null(s7, rest)) {
                 return sunlark_node_new(s7, binding);
             } else {

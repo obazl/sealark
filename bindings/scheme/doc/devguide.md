@@ -12,6 +12,27 @@ which will return a typed Scheme value:
 * identifiers return a Scheme symbol
 * ints return a Scheme integer
 
+### printing
+
+(Scheme "print" means printable representation, not sending to a printer)
+
+The `:$` prints node content in a Scheme-appropriate way:
+
+* for strings, it prints the Starlark representation as a string,
+  including quote marks and type tag. So if x is plain string "hello",
+  then `(x :$)` will print "\"hello\"", not "hello". If x is, say
+  r"""howdy""", then `(x :$)` will print "r\"\"\"howdy\"\"\".
+
+  (I don't know if this is the wisest strategy, but it will do for now.)
+
+* for identifiers, returns a Scheme symbol, which prints accordingly.
+
+### strings
+
+The `:$` operator prints the Starlark string representation including
+quote marks and type tags (e.g. r'foo'). So if you use it to print
+plain "a", it will return "\"a\"", not "a".
+
 ### subnodes
 
 Some nodes have a list of subnodes; for example, the Starlark list
@@ -70,7 +91,7 @@ sealark_debug_print_ast_outline(struct node_s *node, int level)
 ```
 
 ```
-sunlark_debug_print_node(s7_scheme *s7, struct node_s *node)
+sunlark_debug_print_node(s7_scheme *s7, s7_pointer node)
 
 #<node tid=116 tnm=TK_List_Expr line=0 col=0 trailing_newline=0
   subnodes=[

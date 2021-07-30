@@ -5,9 +5,11 @@ test_suite(
     tests = [
         ":binding_val_vectors",
         ":bindings",
-        ":definitions",
+        # ":definitions",
         ":loads",
+        ":set_strings",
         ":strings",
+        ":string_props",
         ":targets",
         # ":tetrads",
         ":vectors",
@@ -78,8 +80,8 @@ cc_test(
 
 cc_test(
     name = "loads",
-    srcs = ["loads.c", "loads.h"],
-    data = [":BUILD.test1"],
+    srcs = ["test_loads.c", "test_loads.h"],
+    data = [":BUILD.loads"],
     copts = COPTS,
     deps = DEPS,
     linkstatic = 1
@@ -95,8 +97,26 @@ cc_test(
 )
 
 cc_test(
+    name = "set_strings",
+    srcs = ["test_set_strings.c", "test_set_strings.h"],
+    data = [":BUILD.strings"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
     name = "strings",
     srcs = ["test_strings.c", "test_strings.h"],
+    data = [":BUILD.strings"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
+    name = "string_props",
+    srcs = ["test_string_props.c", "test_string_props.h"],
     data = [":BUILD.strings"],
     copts = COPTS,
     deps = DEPS,
@@ -152,9 +172,11 @@ genrule(
         "test_bindings.c",
         "definitions.c",
         "test_dictionaries.c",
-        "loads.c",
+        "test_loads.c",
         "paths_tetradic.c",
+        "test_set_strings.c",
         "test_strings.c",
+        "test_string_props.c",
         "binding_val_vectors.c",
         "common.c",
         "test_targets.c",
@@ -164,9 +186,11 @@ genrule(
         "test_bindings.h",
         "definitions.h",
         "test_dictionaries.h",
-        "loads.h",
+        "test_loads.h",
         "paths_tetradic.h",
+        "test_set_strings.h",
         "test_strings.h",
+        "test_string_props.h",
         "binding_val_vectors.h",
         "common.h",
         "test_targets.h",
@@ -179,10 +203,12 @@ genrule(
         "    $(location binding_val_vectors.c) \\",
         "    $(location common.c) \\",
         "    $(location definitions.c) \\",
-        "    $(location loads.c) \\",
+        "    $(location test_loads.c) \\",
         "    $(location paths_tetradic.c) \\",
         "    $(location test_bindings.c) \\",
+        "    $(location test_set_strings.c) \\",
         "    $(location test_strings.c) \\",
+        "    $(location test_string_props.c) \\",
         "    $(location test_dictionaries.c) \\",
         "    $(location test_targets.c) \\",
         "    $(location test_vectors.c)",

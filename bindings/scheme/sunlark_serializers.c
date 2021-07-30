@@ -26,9 +26,9 @@ char *display_ptr;
  */
 char *sunlark_node_display_readably(s7_scheme *s7, void *value)
 {
-/* #ifdef DEBUG_TRACE */
-/*     log_debug("sunlark_node_display_readably"); */
-/* #endif */
+#ifdef DEBUG_SERIALIZERSs
+    log_debug("sunlark_node_display_readably");
+#endif
 
     struct node_s *nd = (struct node_s *)value;
 
@@ -301,9 +301,13 @@ s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
 s7_pointer sunlark_node_to_string(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_SERIALIZERS
-    log_debug("sunlark_node_to_string");
+    log_debug(">>>>>>>>>>>>>>>> sunlark_node_to_string <<<<<<<<<<<<<<<<");
     /* debug_print_s7(s7, "to_string cdr: ", s7_cdr(args)); */
 #endif
+
+    if (sunlark_node_tid(s7,s7_car(args)) == TK_Build_File) {
+        return s7_nil(s7);
+    }
 
     UT_string *buffer;
     utstring_new(buffer);

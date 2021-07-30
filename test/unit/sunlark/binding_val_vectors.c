@@ -75,14 +75,13 @@ void test_label_vector(void) {
 void test_string_vector(void) {
     /* access a string-vector value */
     s7_pointer path = s7_eval_c_string(s7,
-        "'(:target \"string-vectors\" :bindings string_veca :value)");
+        "'(:target \"string-vectors\" :binding string_veca :value)");
     s7_pointer svector = s7_apply_function(s7, ast, path);
 
     log_debug("svector:\n%s", s7_object_to_c_string(s7, svector));
 
-    /* result is a Scheme vector of sunlark string c-objects */
-    TEST_ASSERT( !s7_is_c_object(svector) );
-    TEST_ASSERT( s7_is_vector(svector) );
+    TEST_ASSERT( s7_is_c_object(svector) );
+    TEST_ASSERT( !s7_is_vector(svector) );
 
     /* vector-ref - returns sunlark :string, not Scheme string */
     /* (svector 1) => sunlark :string */

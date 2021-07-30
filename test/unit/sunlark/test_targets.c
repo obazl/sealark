@@ -178,7 +178,7 @@ void test_target_string_parse(void) {
     TEST_ASSERT( strncmp(id_node->s, "foo_library", 11) == 0);
     TEST_ASSERT( strlen(id_node->s) == 11);
 
-    /* check target name == "foo-lib" */
+    /* check target name: 'foo-lib'" */
     s7_pointer name = s7_apply_function(s7, target, s7_eval_c_string(s7, "'(:name)"));
     log_debug("name: %s", s7_object_to_c_string(s7, name));
     TEST_ASSERT( s7_is_c_object(name) );
@@ -190,7 +190,7 @@ void test_target_string_parse(void) {
     s7_pointer is_string = s7_apply_function(s7, s7_name_to_value(s7, "string?"),
                                              s7_list(s7, 1, name_str));
     TEST_ASSERT( s7_t(s7) == is_string );
-    TEST_ASSERT_EQUAL_STRING( "foo-lib", s7_string(name_str) );
+    TEST_ASSERT_EQUAL_STRING( "'foo-lib'", s7_string(name_str) );
 
     /* bindings */
     s7_pointer bindings = s7_apply_function(s7, target, s7_eval_c_string(s7, "'(:bindings)"));

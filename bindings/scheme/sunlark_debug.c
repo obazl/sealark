@@ -11,8 +11,8 @@
 
 #include "sunlark_debug.h"
 
-void sunlark_debug_print_node(s7_scheme *s7,
-                              s7_pointer node)
+EXPORT void sunlark_debug_print_node(s7_scheme *s7,
+                                     s7_pointer node)
 {
 #ifdef DEBUG_TRACE
     log_debug("sunlark_debug_print_node");

@@ -64,7 +64,7 @@ EXPORT s7_pointer sunlark_dispatch_on_target(s7_scheme *s7,
             return sunlark_node_new(s7, bindings);
             /* return nodelist_to_s7_list(s7, bindings); */
         } else {
-           return sunlark_target_binding_for_path(s7, target, rest);
+           return sunlark_resolve_path_on_target(s7, target, rest);
         }
     }
     if (KW(name) == op) {   /* i.e. target "name" attr val */
@@ -303,6 +303,16 @@ EXPORT s7_pointer sunlark_target_1(s7_scheme *s7,
 
     if (op_count == 0)
         return sunlark_node_new(s7, tgt_node);
+    if (op_count < 2) {
+        /* if ( s7_is_null(s7, rest) ) { /\* e.g. (:> "mylib" :@) *\/ */
+        log_error("Missing arg: %s must be followed by a binding selector expression (or use :@@ to select all bindings).", s7_object_to_c_string(s7, s7_car(path_args)));
+        return(s7_error(s7,
+                        s7_make_symbol(s7, "missing_argument"),
+                        s7_list(s7, 2, s7_make_string(s7,
+                        "Missing arg: ~S must be followed by a binding selector expression (or: use :@@ to select all bindings)."),
+                                s7_car(path_args))));
+        /* } */
+    }
 
     s7_pointer op = s7_car(path_args);
     s7_pointer rest = s7_cdr(path_args);
@@ -313,48 +323,46 @@ EXPORT s7_pointer sunlark_target_1(s7_scheme *s7,
     /* resolved so far: 1 target e.g. (:> "hello"...) */
     /* allowed path op: :@, :@@, :rule, :name */
     if (op==KW(@)||op==KW(binding)||op==KW(attr)) {
-        if ( s7_is_null(s7, rest) ) { /* e.g. (:> "mylib" :@) */
-            log_error("Missing arg: %s must be followed by a binding selector expression (or use :@@ to select all bindings).", s7_object_to_c_string(s7, op));
-            return(s7_error(s7,
-                            s7_make_symbol(s7, "missing_argument"),
-                            s7_list(s7, 2, s7_make_string(s7,
-                                                          "Missing arg: ~S must be followed by a binding selector expression (or: use :@@ to select all bindings)."),
-                                    op)));
-        }
         if (s7_is_symbol(op2)) {
             if (op_count == 2) { // FIXME: eliminate
                 errno = 0;
                 struct node_s *binding
                     = sealark_target_binding_for_key(tgt_node,
                                                      s7_symbol_name(op2));
-                if (binding)
+                if (binding) {
                     return sunlark_node_new(s7, binding);
-                else {
-                    /* log_warn("Binding %s not found", */
-                    /*          s7_object_to_c_string(s7, path_args)); */
-                    return s7_f(s7);
+                } else {
+                    if (errno = -1) {
+                        log_error("Binding not found for key: %s", s7_symbol_name(op2));
+                        return(s7_error(s7,
+                                        s7_make_symbol(s7, "not_found"),
+                                        s7_list(s7, 2, s7_make_string(s7,
+                                                "Binding not found for key: ~A"), op2)));
+                    }
                 }
             } else {
-                return sunlark_target_binding_for_path(s7,
+                return sunlark_resolve_path_on_target(s7,
                                                        tgt_node,
                                                        rest);
             }
         }
         if (s7_is_integer(op2)) {
-            if (op_count == 2) {
-                struct node_s *binding
-                    = sealark_target_binding_for_index(tgt_node,
-                                                       s7_integer(op2));
-                if (binding)
-                    return sunlark_node_new(s7, binding);
-                else
-                    /* r7rs: error */
-                    return s7_f(s7); /* same as binding_for_name  */
-            } else {
-                return sunlark_target_binding_for_path(s7,
-                                                       tgt_node,
-                                                       rest);
-            }
+            log_debug("1 xxxxxxxxxxxxxxxx");
+            s7_pointer binding = sunlark_resolve_path_on_target(s7, tgt_node, rest);
+            return binding;
+                /* = sealark_target_binding_for_index(tgt_node, s7_integer(op2)); */
+
+            /* if (op_count == 2) { */
+            /*     if (binding) */
+            /*         return sunlark_node_new(s7, binding); */
+            /*     else */
+            /*         /\* r7rs: error *\/ */
+            /*         return s7_f(s7); /\* same as binding_for_name  *\/ */
+            /* } else { */
+            /*     return sunlark_resolve_path_on_target(s7, */
+            /*                                            tgt_node, */
+            /*                                            rest); */
+            /* } */
         }
         /* error: only sym or int may follow :@ */
         return(s7_error(s7,
@@ -368,7 +376,7 @@ EXPORT s7_pointer sunlark_target_1(s7_scheme *s7,
             struct node_s *n = sealark_bindings_for_target(tgt_node);
             return sunlark_node_new(s7, n);
         } else {
-            log_error("kw %s must come last in path expression",
+            log_error("kw %s must come last in path expression; did you mean :binding ?",
                       s7_object_to_c_string(s7, op));
             return(s7_error(s7,
                             s7_make_symbol(s7, "invalid_argument"),

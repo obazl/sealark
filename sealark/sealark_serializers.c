@@ -247,10 +247,10 @@ EXPORT void sealark_node_display(// s7_scheme *s7,
                           struct node_s *nd,
                           UT_string *buffer, int level)
 {
-#ifdef DEBUG_SERIALIZERS
-    log_debug("sealark_node_display");
-    log_debug("tid: %d %s", nd->tid, TIDNAME(nd));
-#endif
+/* #ifdef DEBUG_SERIALIZERS */
+/*     log_debug("sealark_node_display"); */
+/*     log_debug("tid: %d %s", nd->tid, TIDNAME(nd)); */
+/* #endif */
 
     // check display_buf size, expand if needed
 

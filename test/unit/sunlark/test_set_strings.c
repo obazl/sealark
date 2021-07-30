@@ -8,7 +8,7 @@
 #include "sealark.h"
 #include "sunlark.h"
 
-#include "test_strings.h"
+#include "test_set_strings.h"
 
 UT_string *buf;
 UT_string *test_s;

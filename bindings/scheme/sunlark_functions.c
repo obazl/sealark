@@ -112,7 +112,7 @@ LOCAL s7_pointer sunlark_make_ast_node(s7_scheme *s7, s7_pointer args)
 #define SUNLARK_MAKE_STRING_FORMAL_PARAMS "s (t :plain) (q #\\\") (qqq #f)"
 #endif
 
-s7_pointer sunlark_make_string(s7_scheme *s7, s7_pointer args)
+EXPORT s7_pointer sunlark_make_string(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
     log_debug("sunlark_make_string");
@@ -154,7 +154,7 @@ s7_pointer sunlark_make_string(s7_scheme *s7, s7_pointer args)
                         return(s7_error(s7,
                                         s7_make_symbol(s7, "invalid_argument"),
                                         s7_list(s7, 2, s7_make_string(s7,
-                                                                      "val for key :type must be one of :plain (default), :raw, :binary, :binraw or :rawbin; got: ~A"),
+                                                                      "val for key :t must be one of :plain (default), :r, :b, :br or :rb; got: ~A"),
                                                 type)));
                     }
                 }
@@ -218,7 +218,7 @@ s7_pointer sunlark_make_string(s7_scheme *s7, s7_pointer args)
 /* **************************************************************** */
 void sunlark_register_ast_node_fns(s7_scheme *s7)
 {
-#ifdef DEBUG_TRACE
+#if defined(DEBUG_CONFIG)
     log_debug("_register_ast_node_fns");
 #endif
     /* s7_define_safe_function(s7, "ast-node", g_to_ast_node, 0, 0, true, sunlark_node_help); */

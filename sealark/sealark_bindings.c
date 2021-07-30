@@ -128,6 +128,9 @@ EXPORT struct node_s *sealark_target_binding_for_key(struct node_s *call_expr, c
         } else {
         }
     }
+#if defined(DEBUG_UTARRAYS)
+                log_debug("no match: %s", key);
+#endif
     errno = -1;
     return NULL;
 }
@@ -135,9 +138,8 @@ EXPORT struct node_s *sealark_target_binding_for_key(struct node_s *call_expr, c
 /* ******************************** */
 EXPORT struct node_s *sealark_target_binding_for_index(struct node_s *call_expr, int index)
 {
-#ifdef DEBUG_QUERY
-    log_debug("sealark_target_binding_for_index: %d",
-              index);
+#if defined(DEBUG_TRACE)
+    log_debug("sealark_target_binding_for_index: %d", index);
 #endif
     /* :call-expr[1] > :call-sfx[1] > :arg-list */
     /* then search arg-list children for arg-named/name=str */
@@ -148,10 +150,12 @@ EXPORT struct node_s *sealark_target_binding_for_index(struct node_s *call_expr,
 
     /* struct node_s *node, *binding; */
 
+#if defined(DEBUG_UTARRAYS)
     log_debug("SEARCHING arg_list %d %s, child ct: %d",
               arg_list->tid,
               token_name[arg_list->tid][0],
               utarray_len(arg_list->subnodes));
+#endif
 
     /* struct node_s *id; */
     struct node_s *arg_node = NULL;
@@ -162,13 +166,16 @@ EXPORT struct node_s *sealark_target_binding_for_index(struct node_s *call_expr,
     int binding_ct = 0;
     while((arg_node=(struct node_s*)utarray_next(arg_list->subnodes,
                                                   arg_node))) {
+#if defined(DEBUG_UTARRAYS)
         log_debug(" LOOP arg_list[%d] tid: %d %s",
                   binding_ct, arg_node->tid,
                   token_name[arg_node->tid][0]);
-
+#endif
         if (arg_node->tid == TK_Binding) { // skip TK_COMMA nodes
             if (binding_ct == index) {
+#if defined(DEBUG_UTARRAYS)
                 log_debug("MATCHED index: %d", binding_ct);
+#endif
                 return arg_node;
             }
             binding_ct++;

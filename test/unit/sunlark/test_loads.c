@@ -8,13 +8,13 @@
 #include "sealark.h"
 #include "sunlark.h"
 
-#include "loads.h"
+#include "test_loads.h"
 
 UT_string *buf;
 UT_string *test_s;
 UT_array  *result;
 
-char *build_file = "test/unit/sunlark/BUILD.test1";
+char *build_file = "test/unit/sunlark/BUILD.loads";
 
 s7_scheme *s7;
 
@@ -40,13 +40,12 @@ void tearDown(void) {
 
 void test_bindings(void) {
     s7_pointer path = s7_eval_c_string(s7,
-                       "'(:targets 1 :bindings)");
+                       "'(:> 1 :@@)");
     s7_pointer bindings = s7_apply_function(s7, ast, path);
 
-    /* check type, tid */
-    TEST_ASSERT( !s7_is_c_object(bindings) );
-    TEST_ASSERT( s7_is_list(s7, bindings) );
-    TEST_ASSERT( s7_list_length(s7, bindings) == 3 );
+    /* bindings for a single target is a node (of type TK_Arg_List) */
+    TEST_ASSERT( s7_is_c_object(bindings) );
+    TEST_ASSERT( !s7_is_list(s7, bindings) );
 
     /* we can access a binding using a path expression, as in
        test_binding below. but here, since bindings is a Scheme

@@ -211,12 +211,13 @@ void test_string_vector(void) {
     TEST_ASSERT( s7_is_c_object(item) );
     TEST_ASSERT( sunlark_node_tid(s7, item) == TK_STRING );
 
-    /* :$ returns typed value (all values stored as strings in AST) */
+    /* :$ returns the print value (all values stored as strings in AST) */
+    /* for strings, includes quote marks */
     s7_pointer str_val = s7_apply_function(s7, item, s7_eval_c_string(s7, "'(:$)"));
     TEST_ASSERT( s7_is_string(str_val) );
     const char *a = s7_string(str_val);
-    TEST_ASSERT( 1 == strlen(a) );
-    TEST_ASSERT_EQUAL_STRING( "a", a );
+    TEST_ASSERT( 3 == strlen(a) );
+    TEST_ASSERT_EQUAL_STRING( "\"a\"", a );
 
     struct node_s *item_node = s7_c_object_value(item);
     TEST_ASSERT( item_node->tid == TK_STRING );
@@ -224,18 +225,16 @@ void test_string_vector(void) {
     TEST_ASSERT( strlen(item_node->s) == 1 );
 
     /* (eq? item 1) => #f, but (eq? (item :val) 1) => #t */
-    s7_pointer is_eq = s7_apply_function(s7,
-                                        s7_eval_c_string(s7, "eq?"),
-                                        s7_list(s7, 2,
-                                                str_val, /* from above, (item :$) */
-                                                s7_make_string(s7, "a")));
+    s7_pointer is_eq = s7_apply_function(s7, s7_eval_c_string(s7, "eq?"),
+                                         s7_list(s7, 2,
+                                                 str_val, /* from above, (item :$) */
+                                                 s7_make_string(s7, "\"a\"")));
     TEST_ASSERT( is_eq == s7_f(s7) );
     is_eq = s7_f(s7);
-    is_eq = s7_apply_function(s7,
-                                        s7_eval_c_string(s7, "equal?"),
-                                        s7_list(s7, 2,
-                                                str_val, /* from above, (item :$) */
-                                                s7_make_string(s7, "a")));
+    is_eq = s7_apply_function(s7, s7_eval_c_string(s7, "equal?"),
+                              s7_list(s7, 2,
+                                      str_val, /* from above, (item :$) */
+                                      s7_make_string(s7, "\"a\"")));
     TEST_ASSERT( is_eq == s7_t(s7) );
 }
 

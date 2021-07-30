@@ -265,6 +265,8 @@ LOCAL s7_pointer _dispatch_on_string(s7_scheme *s7,
     } else {
         if (kw == KW(qqq)) {
             struct node_s *s = s7_c_object_value(node);
+            log_debug("qtype: %#04x", s->qtype);
+            log_debug("TRIPLE: %#04x", TRIPLE);
             if (s->qtype & TRIPLE)
                 return s7_t(s7);
             else
