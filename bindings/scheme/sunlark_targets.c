@@ -301,20 +301,23 @@ EXPORT s7_pointer sunlark_target_1(s7_scheme *s7,
     int op_count = s7_list_length(s7, path_args);
     log_debug("op count: %d", op_count);
 
+    s7_pointer op = s7_car(path_args);
+
     if (op_count == 0)
         return sunlark_node_new(s7, tgt_node);
-    if (op_count < 2) {
-        /* if ( s7_is_null(s7, rest) ) { /\* e.g. (:> "mylib" :@) *\/ */
-        log_error("Missing arg: %s must be followed by a binding selector expression (or use :@@ to select all bindings).", s7_object_to_c_string(s7, s7_car(path_args)));
-        return(s7_error(s7,
-                        s7_make_symbol(s7, "missing_argument"),
-                        s7_list(s7, 2, s7_make_string(s7,
-                        "Missing arg: ~S must be followed by a binding selector expression (or: use :@@ to select all bindings)."),
-                                s7_car(path_args))));
-        /* } */
-    }
 
-    s7_pointer op = s7_car(path_args);
+    if (op_count < 2)
+        if (op != KW(@@) && op != KW(bindings) && op != KW(attrs)) {
+            /* if ( s7_is_null(s7, rest) ) { /\* e.g. (:> "mylib" :@) *\/ */
+            log_error("Missing arg: %s must be followed by a binding selector expression (or use :@@ to select all bindings).", s7_object_to_c_string(s7, s7_car(path_args)));
+            return(s7_error(s7,
+                            s7_make_symbol(s7, "missing_argument"),
+                            s7_list(s7, 2, s7_make_string(s7,
+                                                          "Missing arg: ~S must be followed by a binding selector expression (or: use :@@ to select all bindings)."),
+                                    s7_car(path_args))));
+            /* } */
+        }
+
     s7_pointer rest = s7_cdr(path_args);
     s7_pointer op2 = s7_car(rest);
 
