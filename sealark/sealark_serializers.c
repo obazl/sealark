@@ -136,7 +136,7 @@ EXPORT char *sealark_quote_type(struct node_s *node)
             q = "'";
         }
     } else {
-        if (node->qtype & DQUOTE) {
+        if ( !(node->qtype & SQUOTE) ) {
             if (node->qtype & TRIPLE) {
                 q = "\"\"\"";
             } else {
@@ -314,7 +314,7 @@ EXPORT void sealark_node_display(// s7_scheme *s7,
         /* i.e. print r'foo' as foo*/
         /* utstring_printf(buffer, " s=%s%s%s%s", */
         /*                 br, q, nd->s, q); */
-        utstring_printf(buffer, " s=%s", nd->s);
+        utstring_printf(buffer, " s=\"%s\"", nd->s);
 
         /* sprintf(buf, " s     = %s,\n", nd->s); */
         /* len = strlen(buf); */

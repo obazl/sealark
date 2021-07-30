@@ -34,9 +34,6 @@ EXPORT struct node_s *sealark_set_int(struct node_s *node,
 /* string flags in sealark_nodes.c */
 EXPORT struct node_s *sealark_set_string(struct node_s *node,
                                          int qtype,
-                      /* int qmark, //DQUOTE | SQUOTE */
-                    /* int qqq, // 0 or TRIPLE */
-                  /* int qtype, // 0 | RAW_STR | BIN_STR */
                                          const char *newstr)
 {
 #if defined(DEBUG_TRACE) || defined(DEBUG_MUTATE)

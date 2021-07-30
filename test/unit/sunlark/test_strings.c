@@ -56,7 +56,7 @@ void test_binding_value_string_plain_dq(void) {
     TEST_ASSERT( bvalue_node->tid == TK_STRING );
 
     /* verify qtype: single quote plain */
-    TEST_ASSERT( bvalue_node->qtype & DQUOTE );
+    TEST_ASSERT( !(bvalue_node->qtype & SQUOTE) );
 
     /* use :print to get a string value */
     s7_pointer bvalue_str
@@ -114,7 +114,7 @@ void test_binding_value_string_raw_dq(void) {
     TEST_ASSERT( bvalue_node->tid == TK_STRING );
 
     /* verify qtype: single quote plain */
-    TEST_ASSERT( bvalue_node->qtype & DQUOTE );
+    TEST_ASSERT( !(bvalue_node->qtype & SQUOTE) );
     
     /* use :print to get a string value */
     s7_pointer bvalue_str = s7_apply_function(s7, bvalue, s7_eval_c_string(s7, "'(:$)"));
@@ -167,7 +167,7 @@ void test_binding_value_string_bin_dq(void) {
     TEST_ASSERT( bvalue_node->tid == TK_STRING );
 
     /* verify qtype: single quote bin */
-    TEST_ASSERT( bvalue_node->qtype & DQUOTE );
+    TEST_ASSERT( !(bvalue_node->qtype & SQUOTE) );
 
     /* use :print to get a string value */
     s7_pointer bvalue_str
@@ -222,7 +222,7 @@ void test_binding_value_string_plain_dq3(void) {
     TEST_ASSERT( bvalue_node->tid == TK_STRING );
 
     /* verify qtype: single quote plain */
-    TEST_ASSERT( bvalue_node->qtype & DQUOTE );
+    TEST_ASSERT( !(bvalue_node->qtype & SQUOTE) );
 
     /* use :print to get a string value */
     s7_pointer bvalue_str
@@ -276,7 +276,7 @@ void test_binding_value_string_raw_dq3(void) {
     TEST_ASSERT( bvalue_node->tid == TK_STRING );
 
     /* verify qtype: single quote plain */
-    TEST_ASSERT( bvalue_node->qtype & DQUOTE );
+    TEST_ASSERT( !(bvalue_node->qtype & SQUOTE) );
 
     /* use :print to get a string value */
     s7_pointer bvalue_str
@@ -330,7 +330,7 @@ void test_binding_value_string_bin_dq3(void) {
     TEST_ASSERT( bvalue_node->tid == TK_STRING );
 
     /* verify qtype: single quote bin */
-    TEST_ASSERT( bvalue_node->qtype & DQUOTE );
+    TEST_ASSERT( !(bvalue_node->qtype & SQUOTE) );
 
     /* use :print to get a string value */
     s7_pointer bvalue_str
@@ -378,15 +378,18 @@ void test_binding_value_string_bin_sq3(void) {
 
 /* **************** updates **************** */
 void test_set_string_plain_dq(void) {
-    char *starlark = "I am a plain dq string\n";
+    char *starlark = "I am a plain dq string";
     s7_pointer str = s7_apply_function(s7,
                             s7_name_to_value(s7, "sunlark-make-string"),
                             s7_list(s7, 1,
                                     s7_make_string(s7, starlark)));
-
-    /* s7_pointer str = sunlark_parse_string(s7, s7_make_string(s7, starlark)); */
-
-    log_debug(":\n%s", s7_object_to_c_string(s7, str));
+    /* log_debug(":\n%s", s7_object_to_c_string(s7, str)); */
+    s7_pointer str_str
+        = s7_apply_function(s7, str, s7_eval_c_string(s7, "'(:$)"));
+    TEST_ASSERT( !s7_is_c_object(str_str) );
+    TEST_ASSERT( s7_is_string(str_str) );
+    TEST_ASSERT_EQUAL_STRING( "\"I am a plain dq string\"",
+                              s7_string(str_str) );
 
     /* check type, tid */
     TEST_ASSERT( s7_is_c_object(str) );
@@ -396,9 +399,28 @@ void test_set_string_plain_dq(void) {
     TEST_ASSERT( str_node->tid == TK_STRING );
 
     /* verify qtype: single quote plain */
-    TEST_ASSERT( str_node->qtype & DQUOTE );
+    TEST_ASSERT( !(str_node->qtype & SQUOTE) );
 
-    /* use :print to get a string value */
+    /* (set! (str) "hello") */
+    s7_pointer newstr = s7_apply_function(s7,
+                          s7_name_to_value(s7, "set!"),
+                           s7_list(s7, 2,
+                                   s7_list(s7, 1, str),
+                                    s7_make_string(s7, "hello")));
+    /* log_debug(":\n%s", s7_object_to_c_string(s7, str)); */
+
+    s7_pointer newstr_str
+        = s7_apply_function(s7, str, s7_eval_c_string(s7, "'(:$)"));
+    TEST_ASSERT( !s7_is_c_object(newstr_str) );
+    TEST_ASSERT( s7_is_string(newstr_str) );
+    TEST_ASSERT_EQUAL_STRING( "\"hello\"",
+                              s7_string(newstr_str) );
+
+    s7_pointer same = s7_apply_function(s7,
+                          s7_name_to_value(s7, "equal?"),
+                                        s7_list(s7, 2, str, newstr));
+    TEST_ASSERT( same == s7_t(s7) );
+
     /* s7_pointer str_str */
     /*     = s7_apply_function(s7, str, s7_eval_c_string(s7, "'(:$)")); */
     /*                         /\* s7_cons(s7, s7_make_keyword(s7, "'(:$)"), *\/ */
@@ -410,27 +432,77 @@ void test_set_string_plain_dq(void) {
     /*                           s7_string(str_str) ); */
 }
 
+void test_set_string_raw_sq(void) {
+    char *starlark = "I am a plain dq string";
+    s7_pointer str = s7_apply_function(s7,
+                            s7_name_to_value(s7, "sunlark-make-string"),
+                            s7_list(s7, 1,
+                                    s7_make_string(s7, starlark)));
+    /* log_debug(":\n%s", s7_object_to_c_string(s7, str)); */
+    s7_pointer str_str
+        = s7_apply_function(s7, str, s7_eval_c_string(s7, "'(:$)"));
+    TEST_ASSERT( !s7_is_c_object(str_str) );
+    TEST_ASSERT( s7_is_string(str_str) );
+    TEST_ASSERT_EQUAL_STRING( "\"I am a plain dq string\"",
+                              s7_string(str_str) );
+
+    /* verify qtype: single quote plain */
+    /* TEST_ASSERT_EQUAL( str_str->qtype, 0 ); */
+
+    /* (set! (str) r'''hello''') */
+    s7_pointer rhello3 = s7_apply_function(s7,
+                          s7_name_to_value(s7, "sunlark-make-string"),
+                           s7_list(s7, 7,
+                                   s7_make_string(s7, "hello"),
+                                   s7_make_keyword(s7, "q"),
+                                   s7_make_character(s7, '\''),
+                                   s7_make_keyword(s7, "qqq"),
+                                   s7_t(s7),
+                                   s7_make_keyword(s7, "type"),
+                                   s7_make_keyword(s7, "raw")));
+
+    s7_pointer newstr = s7_apply_function(s7,
+                          s7_name_to_value(s7, "set!"),
+                           s7_list(s7, 2,
+                                   s7_list(s7, 1, str),
+                                   rhello3));
+    log_debug(":\n%s", s7_object_to_c_string(s7, str));
+
+    s7_pointer newstr_str
+        = s7_apply_function(s7, str, s7_eval_c_string(s7, "'(:$)"));
+    log_debug(":\n%s", s7_object_to_c_string(s7, newstr_str));
+    TEST_ASSERT( !s7_is_c_object(newstr_str) );
+    TEST_ASSERT( s7_is_string(newstr_str) );
+    TEST_ASSERT_EQUAL_STRING( "r'''hello'''",
+                              s7_string(newstr_str) );
+
+    s7_pointer same = s7_apply_function(s7,
+                          s7_name_to_value(s7, "equal?"),
+                                        s7_list(s7, 2, str, newstr));
+    TEST_ASSERT( same == s7_t(s7) );
+}
+
 
 int main(void) {
     UNITY_BEGIN();
-    /* RUN_TEST(test_binding_value_string_plain_dq); */
-    /* RUN_TEST(test_binding_value_string_plain_sq); */
-    /* RUN_TEST(test_binding_value_string_raw_dq); */
-    /* RUN_TEST(test_binding_value_string_raw_sq); */
-    /* RUN_TEST(test_binding_value_string_bin_dq); */
-    /* RUN_TEST(test_binding_value_string_bin_sq); */
+    RUN_TEST(test_binding_value_string_plain_dq);
+    RUN_TEST(test_binding_value_string_plain_sq);
+    RUN_TEST(test_binding_value_string_raw_dq);
+    RUN_TEST(test_binding_value_string_raw_sq);
+    RUN_TEST(test_binding_value_string_bin_dq);
+    RUN_TEST(test_binding_value_string_bin_sq);
 
-    /* RUN_TEST(test_binding_value_string_plain_dq3); */
-    /* RUN_TEST(test_binding_value_string_plain_sq3); */
-    /* RUN_TEST(test_binding_value_string_raw_dq3); */
-    /* RUN_TEST(test_binding_value_string_raw_sq3); */
-    /* RUN_TEST(test_binding_value_string_bin_dq3); */
-    /* RUN_TEST(test_binding_value_string_bin_sq3); */
+    RUN_TEST(test_binding_value_string_plain_dq3);
+    RUN_TEST(test_binding_value_string_plain_sq3);
+    RUN_TEST(test_binding_value_string_raw_dq3);
+    RUN_TEST(test_binding_value_string_raw_sq3);
+    RUN_TEST(test_binding_value_string_bin_dq3);
+    RUN_TEST(test_binding_value_string_bin_sq3);
 
     RUN_TEST(test_set_string_plain_dq);
     /* RUN_TEST(test_set_string_plain_sq); */
     /* RUN_TEST(test_set_string_raw_dq); */
-    /* RUN_TEST(test_set_string_raw_sq); */
+    RUN_TEST(test_set_string_raw_sq);
     /* RUN_TEST(test_set_string_bin_dq); */
     /* RUN_TEST(test_set_string_bin_sq); */
 

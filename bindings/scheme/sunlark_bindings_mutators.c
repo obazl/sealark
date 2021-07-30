@@ -244,7 +244,7 @@ struct node_s *sunlark_replace_binding_value(s7_scheme *s7,
         val->tid = TK_STRING;
         val->s = calloc(len, sizeof(char));
         strncpy(val->s, s, len);
-        val->qtype = DQUOTE;
+        /* val->qtype = DQUOTE; */
         return binding;
     }
 

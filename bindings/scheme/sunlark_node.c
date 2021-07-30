@@ -361,18 +361,12 @@ s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
     sealark_debug_print_ast_outline(s7_c_object_value(s7_car(args)), 0);
 #endif
 
-    s7_pointer rest = s7_cdr(args);
-    /* if (s7_is_null(s7, rest)) */
-    /*     //FIXME: err msg depends on data type of car */
-    /*     if (sunlark_node_tid(s7, s7_car(args)) == TK_Binding) { */
-    /*         return(s7_wrong_type_arg_error(s7, "node applicator", */
-    /*                                        1, rest, ":key or :value")); */
-    /*     } else { */
-    /*         return(s7_wrong_type_arg_error(s7, "node applicator", */
-    /*                                        1, rest, "non-nil")); */
-    /*     } */
-
     s7_pointer self_s7 = s7_car(args);
+    s7_pointer rest = s7_cdr(args);
+
+    if (s7_is_null(s7, rest))   /* (nd) returns nd */
+        return self_s7;
+
     s7_pointer params = s7_cdr(args);
     s7_pointer resolved_path;
 

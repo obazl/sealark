@@ -56,11 +56,12 @@ s7_pointer sunlark_node_set_specialized(s7_scheme *s7, s7_pointer args)
     return sunlark_set_bang(s7, args);
 }
 
+/* **************************************************************** */
 s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
 {
 #if defined(DEBUG_TRACE)
     log_debug("sunlark_set_bang");
-    log_debug("\targs: %s", s7_object_to_c_string(s7, s7_cdr(args)));
+    log_debug("\t(cdr args): %s", s7_object_to_c_string(s7, s7_cdr(args)));
 #endif
 
     s7_pointer self = s7_car(args);
@@ -109,8 +110,14 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
     /* assumption: path has at least 2 elements? */
     s7_pointer get_path = s7_reverse(s7, s7_cdr(args));
     s7_pointer update_val = s7_car(get_path);
-    s7_pointer lval       = s7_cadr(get_path);
-    get_path = s7_reverse(s7, s7_cddr(get_path));
+    s7_pointer lval;
+    if (s7_is_null(s7, s7_cdr(get_path))) {
+        lval = s7_nil(s7);
+        get_path = s7_nil(s7);
+    } else {
+        lval = s7_cadr(get_path);
+        get_path = s7_reverse(s7, s7_cddr(get_path));
+    }
     log_debug("get_path: %s", s7_object_to_c_string(s7, get_path));
 
     /* bool dollar = false; // FIXME: name */
@@ -156,25 +163,23 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
     switch(context_node->tid) {
     case TK_STRING:
         log_debug("case set! on context TK_STRING");
-         /* if (s7_is_null(s7, get_path)) { */
-        if (lval) { //FIXME
-            /* update s field */
-            /* FIXME: update_val could be string, number, or ? */
-            int len;
-            const char *new_s;
-log_debug("0 xxxxxxxxxxxxxxxx");
-            if (s7_is_string(update_val)) {
-log_debug("2 xxxxxxxxxxxxxxxx");
-                new_s = s7_string(update_val);
-                len = strlen(new_s);
+        /* NB: in this case lval should be '() - nothing to select */
+        if ( s7_is_null(s7, lval) ) { //FIXME
+            if (s7_is_c_object(update_val)) {
+                struct node_s *newitem
+                    = sealark_set_string_c_object(context_node,
+                                                  s7_c_object_value(update_val));
+                return sunlark_node_new(s7,newitem);
+            } else {
+                struct node_s *newitem
+                    = sealark_set_string(context_node, 0,
+                                         s7_string(update_val));
+                return self;
             }
-            free(context_node->s);
-            context_node->s = calloc(len, sizeof(char));
-            strncpy(context_node->s, new_s, len);
-            log_debug("1 xxxxxxxxxxxxxxxx %s", context_node->s);
-            return self;
+        } else {
+            /* should not happen, no futher selection possible */
+            log_error("wtf????????????????");
         }
-         log_error("wtf????????????????");
         break;
     case TK_Binding:
         log_debug("set! context: TK_Binding");

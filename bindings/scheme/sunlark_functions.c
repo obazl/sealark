@@ -108,7 +108,8 @@ LOCAL s7_pointer sunlark_make_ast_node(s7_scheme *s7, s7_pointer args)
 #if INTERFACE
 #define SUNLARK_MAKE_STRING_HELP "(sunlark-make-string) returns a new :string node"
 
-#define SUNLARK_MAKE_STRING_FORMAL_PARAMS "s (qtype :plain) (qmark :dquote) (qqq 1)"
+/* NB: we need to escape #\" in C... */
+#define SUNLARK_MAKE_STRING_FORMAL_PARAMS "s (type :plain) (q #\\\") (qqq #f)"
 #endif
 
 s7_pointer sunlark_make_string(s7_scheme *s7, s7_pointer args)
@@ -133,64 +134,75 @@ s7_pointer sunlark_make_string(s7_scheme *s7, s7_pointer args)
     }
 
     nd->tid = TK_STRING;
-    s7_pointer qtype = s7_cadr(args);
+    s7_pointer type = s7_cadr(args);
 
-    if (qtype == KW(plain)) {
+    if (type == KW(plain)) {
         nd->qtype = 0;
     } else {
-        if (qtype == KW(raw)) {
+        if (type == KW(raw)) {
             nd->qtype = RAW_STR;
         } else {
-            if (qtype == KW(binary)) {
+            if (type == KW(binary)) {
                 nd->qtype = BINARY_STR;
             } else {
-                if (qtype == KW(rawbin)) {
+                if (type == KW(rawbin)) {
                     nd->qtype = (BINARY_STR | RAW_STR);
                 } else {
-                    return(s7_error(s7,
-                                    s7_make_symbol(s7, "invalid_argument"),
-                                    s7_list(s7, 2, s7_make_string(s7,
-                          "val for key :qtype must be one of :plain (default), :raw, :binary, or :rawbin; got: ~A"),
-                                            qtype)));
-
+                    if (type == KW(binraw)) {
+                    nd->qtype = (BINARY_STR | RAW_STR);
+                    } else {
+                        return(s7_error(s7,
+                                        s7_make_symbol(s7, "invalid_argument"),
+                                        s7_list(s7, 2, s7_make_string(s7,
+                                                                      "val for key :type must be one of :plain (default), :raw, :binary, :binraw or :rawbin; got: ~A"),
+                                                type)));
+                    }
                 }
             }
         }
     }
 
-    s7_pointer qmark = s7_caddr(args);
-    if (qmark == KW(dquote)) {
-        nd->qtype |= DQUOTE;
+    s7_pointer qtype = s7_caddr(args);
+    if ( !s7_is_character(qtype) ) {
+        return(s7_error(s7,
+                        s7_make_symbol(s7, "invalid_argument"),
+                        s7_list(s7, 2, s7_make_string(s7,
+              "val for key :qtype must char literal #\\\" (default) or #\\', got: ~A"),
+                                qtype)));
+
+    }
+    if (qtype == s7_make_character(s7, '"')) {
+        ; /* nd->qtype |= DQUOTE; */
     } else {
-        if (qmark == KW(squote)) {
+        if (qtype == s7_make_character(s7, '\'')) {
             nd->qtype |= SQUOTE;
         } else {
             return(s7_error(s7,
                             s7_make_symbol(s7, "invalid_argument"),
                             s7_list(s7, 2, s7_make_string(s7,
-     "val for key :qmark must be :dquote (default) or :squote; got: ~A"),
-                                    qmark)));
+     "val for key :q must be :dquote (default) or :squote; got: ~A"),
+                                    qtype)));
         }
     }
 
     s7_pointer qqq   = s7_cadddr(args);
-    if (!s7_is_integer(qqq)) {
+    if (!s7_is_boolean(qqq)) {
         return(s7_error(s7,
                         s7_make_symbol(s7, "invalid_argument"),
                         s7_list(s7, 2, s7_make_string(s7,
-             "Val for arg :qqq must be 1 or 3; got ~A"),
+             "Val for arg :qqq must be #t or #f; got ~A"),
                                 qqq)));
     }
-    if (s7_integer(qqq) == 1) {
+    if (qqq == s7_f(s7) == 1) {
         ; // default
     } else {
-        if (s7_integer(qqq) == 3) {
+        if (qqq == s7_t(s7)) {
             nd->qtype |= TRIPLE;
         } else {
             return(s7_error(s7,
                         s7_make_symbol(s7, "invalid_argument"),
                         s7_list(s7, 2, s7_make_string(s7,
-     "val for key :qqq must be 1 (default) or 3; got: ~A"),
+     "val for key :qqq must be #t or #f (default); got: ~A"),
                                     qqq)));
         }
     }

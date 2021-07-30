@@ -47,9 +47,9 @@ EXPORT void sealark_dump_node(struct node_s *node)
               token_name[node->tid][0],
               node->tid,
               /* node->tid == TK_STRING? node->q: ' ', */
-              (node->qtype == SQUOTE)? '\''
-              : (node->qtype == DQUOTE)? '"'
-              : ' ',
+              (node->qtype && SQUOTE)? '\''
+              /* : (node->qtype == DQUOTE)? '"' */
+              : '"',
               node->line, node->col);
     switch (node->tid) {
     case TK_COMMENT: log_debug("\tstarttok: %s", node->s); break;
@@ -85,7 +85,7 @@ EXPORT void dump_nodes(UT_array *nodes)
                 q = "'";
             }
         } else {
-            if (node->qtype & DQUOTE) {
+            if ( !(node->qtype & SQUOTE) ) {
                 if (node->qtype & TRIPLE) {
                     q = "\"\"\"";
                 } else {

@@ -699,7 +699,7 @@ loop:
             }
             (*mtok)->col = get_column(lexer);
 
-            (*mtok)->qtype = DQUOTE;
+            (*mtok)->qtype = 0; //DQUOTE;
             if (strncmp(t1, "br", 2) == 0) {
                 (*mtok)->qtype |= (RAW_STR | BINARY_STR);
                 return TK_STRING;
@@ -742,7 +742,7 @@ loop:
     {
         (*mtok)->s = strndup(s1, (size_t)(s2 - s1));
 
-        (*mtok)->qtype = DQUOTE | TRIPLE;
+        (*mtok)->qtype = TRIPLE; // | DQUOTE
         if (strncmp(t1, "br", 2) == 0) {
             (*mtok)->qtype |= (RAW_STR | BINARY_STR);
             return TK_STRING;

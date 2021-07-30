@@ -106,7 +106,7 @@ struct node_s *sunlark_set_vector(s7_scheme *s7,
             newnode = sealark_node_new();
             newnode->tid = new_item_type;
             if (new_item_type == TK_STRING) {
-                newnode->qtype = DQUOTE;
+                ; //newnode->qtype = DQUOTE;
             }
             newnode->s = calloc(new_str_len, sizeof(char));
             strncpy(newnode->s, new_str, new_str_len);
@@ -272,7 +272,7 @@ LOCAL struct node_s *_add_attr_list_item(s7_scheme *s7,
         newnode->s = calloc(addition_len + 1, sizeof(char));
         strncpy(newnode->s, addition, addition_len);
         log_debug("newnode->s: %s", newnode->s);
-        newnode->qtype = DQUOTE;
+        /* newnode->qtype = DQUOTE; */
 
         log_debug("attr_locn: %d, idx: %d", attr_locn, idx);
         if (idx == 0) {
@@ -322,7 +322,7 @@ struct node_s *_replace_attr_list_all(s7_scheme *s7,
     node->s = calloc(1, len + 1);
     strncpy(node->s, replacement, len);
     log_debug("node->s: %s", node->s);
-    node->qtype = DQUOTE;
+    /* node->qtype = DQUOTE; */
 
     utarray_push_back(expr_list->subnodes, node);
     return expr_list;
@@ -439,7 +439,7 @@ struct node_s *_replace_attr_list_items(s7_scheme *s7,
         target->s = calloc(replacement_len + 1, sizeof(char));
         strncpy(target->s, replacement, replacement_len);
         log_debug("target->s: %s", target->s);
-        target->qtype = DQUOTE;
+        /* target->qtype = DQUOTE; */
 
         edits = s7_cddr(edits);
     }

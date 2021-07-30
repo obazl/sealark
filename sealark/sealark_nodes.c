@@ -185,10 +185,10 @@ EXPORT const char *token_name[136][2] =
 enum quote_type_e
     {
      SQUOTE     = 1,  /* single quote */
-     DQUOTE     = 2,  /* double quote */
-     TRIPLE     = 4,  /* triple quote */
-     BINARY_STR = 16, /* PLAIN if both of these unset */
-     RAW_STR    = 32
+     /* DQUOTE     = 2,  /\* double quote *\/ */
+     TRIPLE     = 2, //4,  /* triple quote */
+     BINARY_STR = 4, //16, /* PLAIN if both of these unset */
+     RAW_STR    = 16 //32
     };
 
 struct node_s {
@@ -546,7 +546,7 @@ char *_print_string_node(struct node_s *node)
             q = "'";
         }
     } else {
-        if (node->qtype & DQUOTE) {
+        if ( !(node->qtype & SQUOTE) ) {
             if (node->qtype & TRIPLE) {
                 q = "\"\"\"";
             } else {
