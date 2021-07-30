@@ -3,8 +3,6 @@
 
 (load "ast_walk.scm")
 
-(load "bunny-unit.scm")
-
 (define handlers ()
   )
 
