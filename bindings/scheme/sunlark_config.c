@@ -10,9 +10,9 @@
 char *def = "(define define "
    "(let ((o-define define)) "
      "(let ((sym (gensym))) "
-       "(macro (k v) "
+       "(macro (k v . rest) "
         "`(begin "
-            "(,o-define ,k ,v) "
+            "(,o-define ,k ,v ,@rest) "
             "(if (list? ',k) "
                 "(car ',k) "
                 "',k))))))";
