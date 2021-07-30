@@ -38,7 +38,7 @@ void tearDown(void) {
     s7_quit(s7);
 }
 
-void test_bindings(void) {
+void test_loads(void) {
     s7_pointer path = s7_eval_c_string(s7,
                        "'(:> 1 :@@)");
     s7_pointer bindings = s7_apply_function(s7, ast, path);
@@ -47,16 +47,26 @@ void test_bindings(void) {
     TEST_ASSERT( s7_is_c_object(bindings) );
     TEST_ASSERT( !s7_is_list(s7, bindings) );
 
-    /* we can access a binding using a path expression, as in
-       test_binding below. but here, since bindings is a Scheme
-       list, we must use Scheme list operations: */
-    s7_pointer binding;
-    while ( !s7_is_null(s7, bindings) ) {
-        binding = s7_car(bindings);
+    s7_pointer pred;
+    s7_pointer iter = s7_make_iterator(s7, bindings);
+    s7_pointer binding = s7_iterate(s7, iter);
+    while ( ! s7_iterator_is_at_end(s7, iter) ) {
         TEST_ASSERT( s7_is_c_object(binding) );
-        TEST_ASSERT( s7_c_object_type(binding) == AST_NODE_T );
-        bindings = s7_cdr(bindings);
+        TEST_ASSERT( !s7_is_list(s7, binding) );
+        pred = s7_apply_function(s7,
+                                 binding,
+                                 s7_eval_c_string(s7, "'(:binding?)"));
+        TEST_ASSERT( pred == s7_t(s7) );
+
+        binding = s7_iterate(s7, iter);
     }
+
+    /* while ( !s7_is_null(s7, bindings) ) { */
+    /*     binding = s7_car(bindings); */
+    /*     TEST_ASSERT( s7_is_c_object(binding) ); */
+    /*     TEST_ASSERT( s7_c_object_type(binding) == AST_NODE_T ); */
+    /*     bindings = s7_cdr(bindings); */
+    /* } */
 }
 
 /* :target 1:
@@ -123,7 +133,6 @@ void test_binding(void) {
 
 int main(void) {
     UNITY_BEGIN();
-    RUN_TEST(test_bindings);
-    /* RUN_TEST(test_binding); */
+    RUN_TEST(test_loads);
     return UNITY_END();
 }
