@@ -51,29 +51,6 @@ EXPORT s7_scheme *sunlark_init(void)
 
     _redefine_define(s7);
 
-    /* create commonly used keywords */
-    kw_targets = s7_make_keyword(s7, "targets");
-    kw_target = s7_make_keyword(s7, "target");
-    kw_attrs = s7_make_keyword(s7, "attrs");
-    kw_attr = s7_make_keyword(s7, "attr");
-
-    kw_tid = s7_make_keyword(s7, "tid");
-    kw_line = s7_make_keyword(s7, "line");
-    kw_col = s7_make_keyword(s7, "col");
-    kw_subnodes = s7_make_keyword(s7, "subnodes");
-    kw_comments = s7_make_keyword(s7, "comments");
-
-
-    kw_node_p = s7_make_keyword(s7, "node?");
-    kw_nodelist_p = s7_make_keyword(s7, "nodelist?");
-
-    kw_add = s7_make_keyword(s7, "add");
-    kw_replace = s7_make_keyword(s7, "replace");
-    kw_remove = s7_make_keyword(s7, "remove");
-    /* formatting */
-    kw_crush = s7_make_keyword(s7, "crush");
-    kw_squeeze = s7_make_keyword(s7, "squeeze");
-
     /* look for error messages */
     errmsg = s7_get_output_string(s7, s7_current_error_port(s7));
 
