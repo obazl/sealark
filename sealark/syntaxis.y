@@ -868,7 +868,7 @@ load_stmt(Stmt) ::= LOAD(Load) LPAREN(LParen) STRING(S) COMMA(Comma) load_list(L
 /*           . */
 /* # NOTE: '\n' optional at EOF */
 /* FIXME: must end in newline except at EOF */
-small_stmt_list(SmallList) ::= small_stmt(SmallStmt) . [FOR]
+small_stmt_list(SmallList) ::= small_stmt(SmallStmt) . [COMMA]
 {
     // log_trace(">>small_stmt_list ::= small_stmt");
     SmallList = calloc(sizeof(struct node_s), 1);
@@ -880,14 +880,14 @@ small_stmt_list(SmallList) ::= small_stmt(SmallStmt) . [FOR]
     utarray_push_back(SmallList->subnodes, SmallStmt);
 }
 
-small_stmt_list(SmallStmts) ::= small_stmt_list(SmallStmts_rhs) small_stmt(SmallStmt) . [FOR]
+small_stmt_list(SmallStmts) ::= small_stmt_list(SmallStmts_rhs) small_stmt(SmallStmt) . [COMMA]
 {
     // log_trace(">>small_stmt_list ::= small_stmt_list small_stmt");
     utarray_push_back(SmallStmts_rhs->subnodes, SmallStmt);
     SmallStmts = SmallStmts_rhs;
 }
 
-small_stmt_list(SmallStmts) ::= small_stmt_list(SmallStmts_rhs) SEMI(Semi) small_stmt(SmallStmt) . [FOR]
+small_stmt_list(SmallStmts) ::= small_stmt_list(SmallStmts_rhs) SEMI(Semi) small_stmt(SmallStmt) . [COMMA]
 {
     // log_trace(">>small_stmt_list ::= small_stmt_list small_stmt");
     utarray_push_back(SmallStmts_rhs->subnodes, Semi);
@@ -895,7 +895,7 @@ small_stmt_list(SmallStmts) ::= small_stmt_list(SmallStmts_rhs) SEMI(Semi) small
     SmallStmts = SmallStmts_rhs;
 }
 
-small_stmt(Stmt) ::= return_stmt(Return) .
+small_stmt(Stmt) ::= return_stmt(Return) . [COMMA]
 {
     // log_trace(">>small_stmt(Stmt) ::= return_stmt");
     Stmt = Return;
@@ -952,7 +952,7 @@ small_stmt(Stmt) ::= expr_list(Xs) .
     Stmt = Xs;
 }
 
-small_stmt(Stmt) ::= load_stmt(LoadStmt) .
+small_stmt(Stmt) ::= load_stmt(LoadStmt) . [COMMA]
 {
     // log_trace(">>small_stmt(Stmt) ::= load_stmt(LoadStmt)");
     Stmt = LoadStmt;
