@@ -621,12 +621,9 @@ EXPORT s7_pointer sunlark_resolve_binding_path_on_target(s7_scheme *s7,
         binding = sealark_target_binding_for_index(target, s7_integer(op));
 
         if (binding) {
-log_debug("0 xxxxxxxxxxxxxxxx");
             if (s7_is_null(s7, rest)) {
-log_debug("1 xxxxxxxxxxxxxxxx");
                 return sunlark_node_new(s7, binding);
             } else {
-                /* if (s7_list_length(s7, rest) == 1) */
                 return _binding_component(s7, binding, rest);
                 /* else { */
                 /*     log_error("Too many args: %s", */
@@ -706,6 +703,17 @@ s7_pointer _binding_component(s7_scheme *s7, struct node_s *binding,
         /* sealark_debug_print_ast_outline(val, 0); */
         if (op_count == 1)
             return sunlark_node_new(s7, val);
+
+        if (val->tid != TK_List_Expr) {
+            log_error("Trying to index into a non-list: %d %s s=%s",
+                      val->tid, TIDNAME(val), val->s);
+            return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
+                            s7_list(s7, 4, s7_make_string(s7,
+                          "Cannot index into non-list value ~A[~D]: ~A"),
+                                    s7_make_string(s7, TIDNAME(val)),
+                                    s7_make_integer(s7, val->tid),
+                                    s7_make_string(s7, val->s))));
+        }
 
         s7_pointer idx = s7_cadr(path_args);
         if (s7_is_integer(idx)) {

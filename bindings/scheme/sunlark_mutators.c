@@ -299,14 +299,23 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
     case TK_List_Expr:          /* vector */
 #if defined(DEBUG_SET)
         log_debug("set! context: list-expr");
+        log_debug("lval: %s", s7_object_to_c_string(s7, lval));
 #endif
         if (s7_is_integer(lval)) {
-            log_debug("lval: int");
             return sunlark_vector_replace_item(s7, context, lval, update_val);
         }
         if (s7_is_string(lval)) {
-            log_debug("indexing by string");
+            /* indexing by fld name */
+            struct node_s *entries     /* list of mapentries */
+                = sealark_vector_items_for_string(s7_c_object_value(context),
+                                                  s7_string(lval));
+            sealark_update_vector_mapentries(entries,
+                                             s7_string(update_val));
+            sealark_debug_print_ast_outline(entries, true); // crush
+            return sunlark_node_new(s7, entries);
         }
+
+        /* lval is compound expr */
         struct node_s *r = sunlark_vector_resolve_path(s7, context, lval);
         struct node_s *updated;
         if (r) {

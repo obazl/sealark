@@ -663,8 +663,7 @@ EXPORT struct node_s *sealark_get_binding_node(struct node_s *node, char *kw)
     return NULL;
 }
 
-/* FIXME: this does not really copy */
-EXPORT void sealark_node_copy(void *_dst, const void *_src)
+EXPORT void sealark_alias_node(void *_dst, const void *_src)
 {
     /* log_debug("node_copy"); // : %p <- %p", _dst, _src); */
     struct node_s *dst = (struct node_s*)_dst;
@@ -691,7 +690,7 @@ EXPORT void sealark_node_copy(void *_dst, const void *_src)
 }
 
 /* nodelist: UT_array of node_s */
-EXPORT UT_icd node_icd = {sizeof(struct node_s), NULL, sealark_node_copy, sealark_node_free};
+EXPORT UT_icd node_icd = {sizeof(struct node_s), NULL, sealark_alias_node, sealark_node_free};
 
 #if INTERFACE
 struct comma_s {

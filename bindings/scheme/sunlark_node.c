@@ -694,7 +694,7 @@ static s7_pointer sunlark_node_copy(s7_scheme *s7, s7_pointer args)
             if (s7_c_object_type(arg2) == ast_node_t) {
                 /* log_debug("copy ast_node to ast_node"); */
                 n2 = (struct node_s*)s7_c_object_value(arg2);
-                sealark_node_copy(n1, n2);
+                sealark_alias_node(n1, n2);
                 return arg2;
             } else {
                 return(s7_wrong_type_arg_error(s7, "ast-node-copy!",
@@ -707,7 +707,7 @@ static s7_pointer sunlark_node_copy(s7_scheme *s7, s7_pointer args)
             /*     calloc(1, sizeof(struct node_s)); */
             /* n2 = ast_node_init_default(n2); */
             /* n2 = sealark_new_node(n2->tid, ); */
-            sealark_node_copy(n2, n1);
+            sealark_alias_node(n2, n1);
             return s7_make_c_object(s7, ast_node_t,
                                     (void *)n2);
         }

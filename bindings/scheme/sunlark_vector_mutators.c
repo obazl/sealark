@@ -600,8 +600,12 @@ s7_pointer sunlark_vector_replace_item(s7_scheme *s7,
         item = sealark_vector_item_for_int(list_expr, s7_integer(selector));
         /* item=utarray_eltptr(vector->subnodes, 2*s7_integer(selector)); */
     } else {
+
+
         log_error("FIXME: update by string/sym not yet");
         exit(-0);
+
+
         if (s7_is_string(selector)) {
             //FIXME: returns list of matching items
             /* item = sealark_vector_items_for_string(vector, s7_string(selector)); */

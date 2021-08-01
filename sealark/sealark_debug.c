@@ -25,8 +25,10 @@ EXPORT void sealark_debug_print_ast_outline(struct node_s *node, int level)
     /* print_stacktrace(); */
 
     if (node->s)
-        log_debug("%*.s%d: %s %d: %s",
-                  2*level, " ", level, TIDNAME(node), node->tid, node->s);
+        log_debug("%*.s%d: %s %d: %s%s%d",
+                  2*level, " ", level, TIDNAME(node), node->tid, node->s,
+                  (node->index==0)? "" : " idx:",
+                  (node->index==0)? -1 : node->index);
     else
         log_debug("%*.s%d: %s %d",
                   2*level, " ", level, TIDNAME(node), node->tid);

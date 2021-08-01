@@ -59,6 +59,7 @@ EXPORT struct node_s *sealark_vector_items_for_string(struct node_s *vector,
 #if defined(DEBUG_TRACE)
     log_debug("sunlark_vector_items_for_string: %s", selector);
 #endif
+    log_debug("vector tid: %d %s", vector->tid, TIDNAME(vector));
     assert(vector->tid == TK_List_Expr);
 
     int selector_len = strlen(selector);
@@ -73,7 +74,7 @@ EXPORT struct node_s *sealark_vector_items_for_string(struct node_s *vector,
     int item_ct = utarray_len(expr_list->subnodes);
 
     struct node_s *sub = NULL;
-    int i;
+    int i = 0;
     while( (sub=(struct node_s*)utarray_next(expr_list->subnodes, sub)) ) {
         if (sub->tid == TK_ID) i++;
         if (sub->tid == TK_STRING) {
@@ -90,3 +91,32 @@ EXPORT struct node_s *sealark_vector_items_for_string(struct node_s *vector,
     }
     return new_list;
 }
+
+/* **************************************************************** */
+EXPORT struct node_s *sealark_update_vector_mapentries(struct node_s *vector,
+                                                       const char *newval)
+{
+#if defined(DEBUG_TRACE)
+    log_debug("sealark_update_vector_mapentries");
+    log_debug("vector tid: %d %s", vector->tid, TIDNAME(vector));
+#endif
+
+    assert(vector->tid == TK_List_Expr);
+
+    int newval_len = strlen(newval);
+
+    struct node_s *expr_list = utarray_eltptr(vector->subnodes, 1);
+    int item_ct = utarray_len(expr_list->subnodes);
+
+    struct node_s *sub = NULL;
+    int i = 0;
+    while( (sub=(struct node_s*)utarray_next(expr_list->subnodes, sub)) ) {
+        if (sub->tid == TK_ID) {
+        }
+        if (sub->tid == TK_STRING) {
+            strcpy(sub->s, newval);
+        }
+    }
+    return vector;
+}
+

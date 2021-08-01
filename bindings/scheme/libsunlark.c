@@ -26,32 +26,9 @@ UT_string *user_handlers_dir;
 char *default_handler_file_name = "handler.scm";
 UT_string *user_s7_file;
 
-/* commonly used keywords */
-
 #if INTERFACE
 #define KW(arg) s7_make_keyword(s7, #arg)
 #endif
-
-s7_pointer kw_targets;
-s7_pointer kw_target;
-s7_pointer kw_attrs;
-s7_pointer kw_attr;
-
-s7_pointer kw_tid;
-s7_pointer kw_line;
-s7_pointer kw_col;
-s7_pointer kw_subnodes;
-s7_pointer kw_comments;
-
-s7_pointer kw_node_p;
-s7_pointer kw_nodelist_p;
-
-s7_pointer kw_add;
-s7_pointer kw_replace;
-s7_pointer kw_remove;
-
-s7_pointer kw_crush;
-s7_pointer kw_squeeze;
 
 void export_token_tables(s7_scheme *s7)
 {

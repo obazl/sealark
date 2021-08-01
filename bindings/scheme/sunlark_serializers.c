@@ -56,7 +56,7 @@ LOCAL s7_pointer sunlark_display(s7_scheme *s7, s7_pointer args)
     char *descr;
     obj = s7_car(args);
     /* sealark_display_node(s7_c_object_value(obj), buffer, 0); */
-    sealark_debug_print_ast_outline(s7_c_object_value(obj), 0);
+    /* sealark_debug_print_ast_outline(s7_c_object_value(obj), 0); */
 
     if (s7_is_pair(s7_cdr(args)))
         choice = s7_cadr(args);
@@ -195,14 +195,7 @@ EXPORT s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
 
     s7_pointer form = s7_car(args); // what to print
     s7_pointer style = s7_cadr(args);
-            /* if (s7_list_length(s7, args) == 2) { */
-            /*     style = s7_cadr(args); */
-            /*     if (style != kw_crush) { */
-            /*         if (style != kw_squeeze) { */
-            /*             log_error("SQUEEZE/CRUSH missing"); */
-            /*         } */
-            /*     } */
-            /* } */
+    log_debug("style: %s", s7_object_to_c_string(s7, style));
 
     if ( s7_is_c_object(form) ) {
         struct node_s *n1 = s7_c_object_value(form);
@@ -261,10 +254,10 @@ EXPORT s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
  resume: ;
 
     char *output;
-    if (style == kw_squeeze) {
+    if (style == KW(squeeze)) {
         output = sealark_squeeze_string(buf);
     } else {
-        if (style == kw_crush) {
+        if (style == KW(crush)) {
             output = sealark_crush_string(buf);
         } else {
             output = utstring_body(buf);
