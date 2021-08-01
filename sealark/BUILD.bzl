@@ -4,7 +4,7 @@ def _gensyntax_impl(ctx):
 
     exe = ctx.file._tool.path
 
-    print(ctx.attr.defines)
+    # print(ctx.attr.defines)
 
     if (len(ctx.attr.defines) > 0):
         defs = "-D" + " -D".join(ctx.attr.defines)

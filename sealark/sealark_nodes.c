@@ -313,9 +313,9 @@ UT_array *split_iblock(struct node_s* iblock, int indent)
 /* **************************************************************** */
 EXPORT char *sealark_tid_to_string(int tid)
 {
-#ifdef DEBUG_TRACE
-    log_debug("token_id_to_kw %d", tid);
-#endif
+/* #ifdef DEBUG_TRACE */
+/*     log_debug("token_id_to_kw %d", tid); */
+/* #endif */
 
     char *tag = calloc(64, sizeof(char));
     int len = strlen(token_name[tid][0]);

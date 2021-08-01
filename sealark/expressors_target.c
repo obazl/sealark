@@ -53,9 +53,9 @@ EXPORT int sealark_target_bindings_count(struct node_s *target)
 /* **************** */
 EXPORT struct node_s *sealark_target_name(struct node_s *target)
 {
-#if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
-    log_debug("sealark_target_name");
-#endif
+/* #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY) */
+/*     log_debug("sealark_target_name"); */
+/* #endif */
 
     assert(target->tid == TK_Call_Expr);
 

@@ -12,6 +12,8 @@ load(
 
 DEFINES = ["DEBUG", "FOO"]
 
+a,b = "foo", "bar"  # multiple assignment
+
 cc_library(
     name = "hello-lib",
     srcs = ["hello-lib.cc", "howdy.cc", "howdy.h"],
@@ -28,6 +30,7 @@ cc_binary(
 sunlark_test(
     name = "vectors",
     string_vec = ["a", "b", "c"],
+    string_vec = ["a", long, list, including, "variables", "and", "strings", "for", testing],
     int_vec = [1, 2, 3]
 )
 
@@ -44,8 +47,6 @@ cc_test(
     srcs = ["hello-fail.cc"],
     deps = [":hello-lib"],
 )
-
-a,b = "foo", "bar"  # multiple assignment
 
 filegroup(
     name = "srcs",
