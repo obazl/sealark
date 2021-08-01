@@ -17,7 +17,9 @@ sunlark_test(
 
     string_list_pdq1 = ["a0", "a1", "a2"],
     string_list_bdq1 = [b"b0", b"b1", b"b2"],
-    string_list_rdq1 = [r"c0", r"c1", r"c2"]
+    string_list_rdq1 = [r"c0", r"c1", r"c2"],
+
+    string_list_dup = ["a", "b", "a"]
 )
 
 sunlark_test(

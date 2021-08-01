@@ -779,7 +779,7 @@ LOCAL void _display_vector(struct node_s *nd,
     int len = utarray_len(expr_list->subnodes);
     bool split = (len/2 > 4)? true : false;
 
-    utstring_printf(buffer, "[%s", split? "\n" : "");
+    utstring_printf(buffer, "#(%s", split? "\n" : "");
 
     struct node_s *sub = NULL;
     int i = 0;
@@ -798,7 +798,7 @@ LOCAL void _display_vector(struct node_s *nd,
         }
         i++;
     }
-    utstring_printf(buffer, "]");
+    utstring_printf(buffer, ")");
 }
 
 /* **************************************************************** */

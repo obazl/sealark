@@ -301,22 +301,6 @@ EXPORT struct node_s *sealark_binding_for_index_from_target_for_name(struct node
     return sealark_target_binding_for_index(tgt, index);
 }
 
-/* ******************************** */
-EXPORT struct node_s *sealark_list_item_for_index(struct node_s *list,
-                                                  int index)
-{
-#ifdef DEBUG_QUERY
-    log_debug("sealark_list_item_for_index: %d", index);
-#endif
-    // list_expr > lbrack, expr_list, rbrack
-    // expr_list > string, comma, ...
-
-    struct node_s *exprs = utarray_eltptr(list->subnodes, 1);
-    struct node_s *item = utarray_eltptr(exprs->subnodes, index*2);
-    //FIXME: validate result
-    return item;
-}
-
 /* **************************************************************** */
 /*         top-levels          */
 /* ******************************** */

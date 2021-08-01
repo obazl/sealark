@@ -484,7 +484,7 @@ struct node_s *sunlark_remove_attr_list_items(s7_scheme *s7,
     s7_pointer tmp = edits, editem;
     while( ! s7_is_null(s7, tmp) ) {
         editem = s7_car(tmp);
-        if (abs(s7_integer(editem)) >= attr_ct) {
+        if (abs((int)s7_integer(editem)) >= attr_ct) {
             log_error("ERROR: abs(%d) (edit locn) >= length %d of attr list value", s7_integer(editem), attr_ct);
             /* return(s7_error(s7, */
             /*                 s7_make_symbol(s7, "invalid_argument"), */
@@ -600,11 +600,14 @@ s7_pointer sunlark_vector_replace_item(s7_scheme *s7,
         item = sealark_vector_item_for_int(list_expr, s7_integer(selector));
         /* item=utarray_eltptr(vector->subnodes, 2*s7_integer(selector)); */
     } else {
+        log_error("FIXME: update by string/sym not yet");
+        exit(-0);
         if (s7_is_string(selector)) {
-            item = sealark_vector_item_for_string(vector, s7_string(selector));
+            //FIXME: returns list of matching items
+            /* item = sealark_vector_items_for_string(vector, s7_string(selector)); */
         } else {
             if (s7_is_symbol(selector)) {
-                item = sealark_vector_item_for_string(vector, s7_symbol_name(selector));
+                /* item = sealark_vector_items_for_string(vector, s7_symbol_name(selector)); */
             } else {
                 log_error("Bad selector, must be int, string, or symbol; got %s (%s)",
                           s7_object_to_c_string(s7, selector),
@@ -612,6 +615,8 @@ s7_pointer sunlark_vector_replace_item(s7_scheme *s7,
             }
         }
     }
+
+    /* we have the item, now update it */
 
     if (s7_is_integer(selector)) { /* index by int */
         if (s7_is_string(newval)) {

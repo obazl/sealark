@@ -621,7 +621,9 @@ EXPORT s7_pointer sunlark_resolve_binding_path_on_target(s7_scheme *s7,
         binding = sealark_target_binding_for_index(target, s7_integer(op));
 
         if (binding) {
+log_debug("0 xxxxxxxxxxxxxxxx");
             if (s7_is_null(s7, rest)) {
+log_debug("1 xxxxxxxxxxxxxxxx");
                 return sunlark_node_new(s7, binding);
             } else {
                 /* if (s7_list_length(s7, rest) == 1) */
@@ -671,7 +673,7 @@ EXPORT s7_pointer sunlark_resolve_binding_path_on_target(s7_scheme *s7,
                             op)));
 }
 
-/* component: :key or :val idx? */
+/* component: :key or :val (idx | fld)? */
 s7_pointer _binding_component(s7_scheme *s7, struct node_s *binding,
                               s7_pointer path_args)
 {
@@ -704,21 +706,29 @@ s7_pointer _binding_component(s7_scheme *s7, struct node_s *binding,
         /* sealark_debug_print_ast_outline(val, 0); */
         if (op_count == 1)
             return sunlark_node_new(s7, val);
-        else {// op_count == 2
-            s7_pointer idx = s7_cadr(path_args);
-            if (s7_is_integer(idx)) {
-                struct node_s *expr_list = utarray_eltptr(val->subnodes, 1);
-                struct node_s *item = utarray_eltptr(expr_list->subnodes,
-                                                     2 * s7_integer(idx));
-                return sunlark_node_new(s7,item);
-            } else {
-                return(s7_error(s7,
-                                s7_make_symbol(s7, "invalid_argument"),
-                                s7_list(s7, 2, s7_make_string(s7,
-                              "Bad arg ~S; :value may only be followed by int or string"),
-                                    idx)));
-            }
+
+        s7_pointer idx = s7_cadr(path_args);
+        if (s7_is_integer(idx)) {
+            struct node_s *expr_list = utarray_eltptr(val->subnodes, 1);
+            struct node_s *item = utarray_eltptr(expr_list->subnodes,
+                                                 2 * s7_integer(idx));
+            return sunlark_node_new(s7,item);
         }
+        if (s7_is_string(idx)) {
+            sealark_debug_print_ast_outline(val, 0);
+            UT_array *items     /* list of item nodes */
+                = sealark_vector_items_for_string(val, s7_string(idx));
+            /* s7_pointer ilist = intlist_to_s7_list(s7, items); */
+            /* utarray_free(items); */
+            s7_pointer ilist = vec_entries_to_s7_list(s7, items);
+            // utarray_free(items); /* FIXME: leak */
+            return ilist;
+        }
+        return(s7_error(s7,
+                        s7_make_symbol(s7, "invalid_argument"),
+                        s7_list(s7, 2, s7_make_string(s7,
+                                                      "Bad arg ~S; :value may only be followed by int or string"),
+                                idx)));
     }
     log_error("Bad arg %s; only :key or :value valid in this context",
               s7_object_to_c_string(s7, op));

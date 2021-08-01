@@ -195,6 +195,7 @@ struct node_s {
     /* enum node_type_e type; */
     int tid;
     int line, col;
+    int index; //HACK, may be used when node is in vector
     bool trailing_newline; // FIXME: do we need to retain this?
     enum quote_type_e qtype;
     char *s;

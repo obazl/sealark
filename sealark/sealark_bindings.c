@@ -147,14 +147,34 @@ EXPORT struct node_s *sealark_target_binding_for_index(struct node_s *call_expr,
 
     struct node_s *call_sfx = utarray_eltptr(call_expr->subnodes, 1);
     struct node_s *arg_list = utarray_eltptr(call_sfx->subnodes, 1);
+    int arg_list_ct = utarray_len(arg_list->subnodes);
+    int args_item_ct = (arg_list_ct + 1) / 2;
+    log_debug("arg_list_ct: %d; item ct: %d", arg_list_ct, args_item_ct);
 
-    /* struct node_s *node, *binding; */
+    /* reverse indexing */
+    if (index < 0) {
+        if (abs(index) > args_item_ct) {
+            log_error("abs(%d) > args_item_ct", index, args_item_ct);
+            errno = 3;
+            return NULL;
+        } else {
+            index = args_item_ct + index;
+            log_debug("recurring...");
+            return sealark_target_binding_for_index(call_expr, index);
+        }
+    }
+
+    if (index > args_item_ct-1) {
+        log_error("index > target count");
+        errno = 2;              /* FIXME */
+        return NULL;
+    }
 
 #if defined(DEBUG_UTARRAYS)
-    log_debug("SEARCHING arg_list %d %s, child ct: %d",
+    log_debug("SEARCHING arg_list %d %s, child ct: %d, item ct: %d",
               arg_list->tid,
               token_name[arg_list->tid][0],
-              utarray_len(arg_list->subnodes));
+              arg_list_ct, args_item_ct);
 #endif
 
     /* struct node_s *id; */
