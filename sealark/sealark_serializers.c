@@ -97,7 +97,7 @@ EXPORT char *sealark_squeeze_string(UT_string *src)
     return dstptr;
 }
 
-//FIXME: for debugging, make this return char* ?
+//FIXME: see sealark_display_ast_outline
 EXPORT void sealark_node_to_starlark(struct node_s *node, UT_string *buffer)
 {
 #if defined(DEBUG_SERIALIZERS)
@@ -251,9 +251,8 @@ LOCAL void comments2string(UT_array *nodes, UT_string *buffer)
 
 /* **************************************************************** */
 //FIXME: handle large files. use dynamic alloc
-EXPORT void sealark_display_node(// s7_scheme *s7,
-                          struct node_s *nd,
-                          UT_string *buffer, int level)
+EXPORT void sealark_display_node(struct node_s *nd,
+                                 UT_string *buffer, int level)
 {
 #ifdef DEBUG_SERIALIZERS
     log_debug("sealark_display_node: %d %s", nd->tid, TIDNAME(nd));
@@ -380,3 +379,64 @@ EXPORT void sealark_display_node(// s7_scheme *s7,
 
     /* return display_buf; */
 }
+
+LOCAL void _display_ast_outline(struct node_s *node,
+                                      UT_string *buf, /* update in place */
+                                      int level)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug("sealark_display_ast_outline");
+#endif
+
+   switch(node->tid) {
+    case TK_STRING: {
+        char *br = SEALARK_STRTYPE(node->qtype);
+        char *q = sealark_quote_type(node);
+
+        utstring_printf(buf, "%*.s%d: %s[%d] @%d:%d    %s%s%s%s\n",
+                  2*level, " ", level, TIDNAME(node), node->tid,
+                  node->line, node->col,
+                  br, q, node->s, q);
+                  /* node->index); */
+    }
+        break;
+    case TK_INT:
+        utstring_printf(buf, "%*.s%d: %s[%d] @%d:%d        %s\n",
+                  2*level, " ", level, TIDNAME(node), node->tid,
+                  node->line, node->col, node->s);
+        break;
+    case TK_ID:
+        utstring_printf(buf, "%*.s%d: %s[%d] @%d:%d    %s\n",
+                  2*level, " ", level, TIDNAME(node), node->tid,
+                  node->line, node->col, node->s);
+        break;
+    default:
+        utstring_printf(buf, "%*.s%d: %s[%d] @%d:%d\n",
+                  2*level, " ", level, TIDNAME(node), node->tid,
+                  node->line, node->col);
+        if (node->subnodes) {
+            struct node_s *subnode = NULL;
+            while((subnode=(struct node_s*)utarray_next(node->subnodes,
+                                                        subnode))) {
+                _display_ast_outline(subnode, buf, level+1);
+            }
+        }
+    }
+}
+
+/* **************************************************************** */
+EXPORT UT_string *sealark_display_ast_outline(struct node_s *nd,
+                                              int level)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug("sealark_display_node: %d %s", nd->tid, TIDNAME(nd));
+    if (nd->tid == TK_ID)
+        log_debug("ID: %s", nd->s);
+#endif
+
+    UT_string *buf;
+    utstring_new(buf); // caller must free
+
+    _display_ast_outline(nd, buf, level);
+    return buf;
+ }

@@ -161,10 +161,23 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
 #endif
 
     /* pseudo-bindings */
-    if (kw == KW(pprint)) {
-        char *s = sealark_node_printable_string(ast_node);
-        s7_pointer str =  s7_make_string(s7, s);
-        return str;
+    if (kw == KW(ast)) {
+        UT_string *buf = sealark_display_ast_outline(ast_node, 0);
+        s7_pointer out = s7_make_string(s7, utstring_body(buf));
+        utstring_free(buf);
+        return out;
+    }
+
+    if (kw == KW(starlark)) {
+        return sunlark_to_starlark(s7,
+                            s7_list(s7, 2,
+                                    sunlark_node_new(s7,ast_node),
+                                    KW(crush)));
+        /* UT_string *buf; */
+        /* utstring_new(buf); */
+        /* sealark_node_to_starlark(ast_node, buf); */
+        /* utstring_free(buf); */
+        /* return NULL; */
     }
 
     if (kw == s7_make_keyword(s7, "$")) {
