@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -6,6 +7,7 @@
 
 #include "log.h"
 #include "utarray.h"
+#include "utstring.h"
 
 #include "expressors_target.h"
 
@@ -55,10 +57,21 @@ EXPORT struct node_s *sealark_target_name(struct node_s *target)
     log_debug("sealark_target_name");
 #endif
 
+    assert(target->tid == TK_Call_Expr);
+
+    /* :call-expr[1] > :call-sfx[1] > :arg-list */
+    /* :arg-list - for targets, list of bindings */
+    /*   for ordinary fn application could be anything */
+
+    UT_string *buf;
+    utstring_new(buf);
+    sealark_display_node(target, buf, 0);
+    utstring_free(buf);
+
     struct node_s *call_sfx = utarray_eltptr(target->subnodes, 1);
     struct node_s *arg_list = utarray_eltptr(call_sfx->subnodes, 1);
 
-#if defined(DEBUG_QUERY)
+#if defined(DEBUG_UTARRAYS)
     log_debug("SEARCHING arg_list %d %s, child ct: %d",
               arg_list->tid,
               token_name[arg_list->tid][0],
@@ -70,20 +83,24 @@ EXPORT struct node_s *sealark_target_name(struct node_s *target)
     int i = 0;
     while((arg_node=(struct node_s*)utarray_next(arg_list->subnodes,
                                                   arg_node))) {
-#if defined(DEBUG_QUERY)
-        log_debug(" LOOP arg_list[%d] tid: %d %s", i++, arg_node->tid,
-                  token_name[arg_node->tid][0]);
+#if defined(DEBUG_UTARRAYS)
+        log_debug(" LOOP arg_list[%d] tid: %d %s", i++,
+                  arg_node->tid, token_name[arg_node->tid][0]);
 #endif
+
         if (arg_node->tid == TK_Binding) { // skip TK_COMMA nodes
             /* first subnode is TK_ID */
             id = utarray_eltptr(arg_node->subnodes, 0);
-            /* log_debug("testing id[%d]: %d %s", i, id->tid, id->s); */
-
+#if defined(DEBUG_UTARRAYS)
+            log_debug("testing id[%d]: %d %s", i, id->tid, id->s);
+#endif
             if ((strncmp(id->s, "name", 4) == 0)
                 && strlen(id->s) == 4 ){
                 val = utarray_eltptr(arg_node->subnodes, 2);
                 return val;
             }
+        } else {
+            log_debug("0 xxxxxxxxxxxxxxxx");
         }
     }
     return NULL;

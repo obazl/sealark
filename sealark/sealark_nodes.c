@@ -459,9 +459,9 @@ EXPORT int sealark_subnode_count(struct node_s *node,
     case TK_List_Expr:
         if (node->subnodes)
             if ( !printables_only ) {
-                if (exclude_meta)
+                if (exclude_meta) {
                     count_node = utarray_eltptr(node->subnodes, 1);
-                else
+                } else
                     count_node = node;
             } else {
                 ct--; // self is non-printable
@@ -508,6 +508,7 @@ EXPORT int sealark_subnode_count(struct node_s *node,
                     if (subnode->tid == TK_RBRACE) continue;
                     if (subnode->tid == TK_LPAREN) continue;
                     if (subnode->tid == TK_RPAREN) continue;
+                /* } else { */
                 }
             }
             if (recursive)

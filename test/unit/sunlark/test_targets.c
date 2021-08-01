@@ -12,7 +12,6 @@
 
 UT_string *buf;
 UT_string *test_s;
-UT_array  *result;
 
 char *build_file = "test/unit/sunlark/BUILD.targets";
 
@@ -20,7 +19,7 @@ s7_scheme *s7;
 
 struct parse_state_s *parse_state;
 
-s7_pointer ast;
+static s7_pointer ast;
 struct node_s *root;
 
 void setUp(void) {
@@ -127,7 +126,7 @@ void test_target(void) {
     s7_pointer is_string = s7_apply_function(s7, s7_name_to_value(s7, "string?"),
                                              s7_list(s7, 1, name_str));
     TEST_ASSERT( s7_t(s7) == is_string );
-    TEST_ASSERT_EQUAL_STRING( "hello-world", s7_string(name_str) );
+    TEST_ASSERT_EQUAL_STRING( "\"hello-world\"", s7_string(name_str) );
 
     /* bindings */
     s7_pointer bindings = s7_apply_function(s7, target, s7_eval_c_string(s7, "'(:bindings)"));
@@ -203,8 +202,8 @@ void test_target_string_parse(void) {
 
 int main(void) {
     UNITY_BEGIN();
-    /* RUN_TEST(test_forall_targets); */
-    /* RUN_TEST(test_target); */
+    RUN_TEST(test_forall_targets);
+    RUN_TEST(test_target);
     RUN_TEST(test_target_string_parse);
     return UNITY_END();
 }

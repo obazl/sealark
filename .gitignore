@@ -4,6 +4,10 @@ tmp/
 test/data/tmp
 user.bazelrc
 
+GPATH
+GRTAGS
+GTAGS
+
 # Prerequisites
 *.d
 

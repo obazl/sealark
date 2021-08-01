@@ -15,6 +15,7 @@ s7_pointer is_equal_s7;
 s7_pointer is_list_s7;
 s7_pointer is_sunlark_node_s7;
 s7_pointer length_s7;
+s7_pointer set_bang;
 
 void init_s7_syms(s7_scheme *s7)
 {
@@ -23,4 +24,5 @@ void init_s7_syms(s7_scheme *s7)
     is_list_s7 = s7_name_to_value(s7, "list?");
     is_sunlark_node_s7 = s7_name_to_value(s7, "sunlark-node?");
     length_s7 = s7_name_to_value(s7, "length");
+    set_bang = s7_name_to_value(s7, "set!");
 }

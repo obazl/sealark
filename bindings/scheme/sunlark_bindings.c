@@ -137,7 +137,7 @@ s7_pointer sunlark_dispatch_on_binding(s7_scheme *s7,
             /* tmp_node = utarray_eltptr(binding->subnodes, 0); */
             /* return sunlark_node_new(s7, tmp_node); */
         }
-        if (KW(value) == op) {
+        if (op == s7_make_keyword(s7, "$") || op == KW(value)) {
             struct node_s *bval = utarray_eltptr(binding->subnodes, 2);
             if (s7_is_null(s7, s7_cdr(path_args)))
                 return sunlark_node_new(s7, bval);
@@ -492,7 +492,7 @@ s7_pointer sunlark_forall_targets_forall_bindings(s7_scheme *s7,
     if ( !s7_is_null(s7, s7_cdr(path_args)) ) {
         log_debug("0 xxxxxxxxxxxxxxxx");
         if (s7_list_length(s7, path_args) > 2) {
-            log_error("Invalid arg(s): last arg must be :key or :value");
+            log_error("Invalid arg(s): last arg must be :key or :value (or :$)");
             return s7_unspecified(s7);
         }
         op2 = s7_cadr(path_args);
@@ -524,7 +524,7 @@ s7_pointer sunlark_forall_targets_forall_bindings(s7_scheme *s7,
                         utarray_push_back(bindings, v);
                     }
                 } else {
-                    if (op2 == KW(value)) {
+                    if (op2 == s7_make_keyword(s7,"$") || op2 == KW(value)) {
                         if (binding) {
                             struct node_s *v
                                 = utarray_eltptr(binding->subnodes, 2);
@@ -699,7 +699,7 @@ s7_pointer _binding_component(s7_scheme *s7, struct node_s *binding,
             return sunlark_node_new(s7, k);
         }
     }
-    if (op == KW(value)) {
+    if (op == s7_make_keyword(s7,"$") || op == KW(value)) {
         struct node_s *val = utarray_eltptr(binding->subnodes, 2);
         /* sealark_debug_print_ast_outline(val, 0); */
         if (op_count == 1)

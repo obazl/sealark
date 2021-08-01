@@ -12,7 +12,6 @@
 
 UT_string *buf;
 UT_string *test_s;
-UT_array  *result;
 
 char *build_file = "test/unit/sunlark/BUILD.test1";
 
@@ -20,7 +19,7 @@ s7_scheme *s7;
 
 struct parse_state_s *parse_state;
 
-s7_pointer ast;
+static s7_pointer ast;
 struct node_s *root;
 
 void setUp(void) {

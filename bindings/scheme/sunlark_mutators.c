@@ -70,7 +70,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
 #ifdef DEBUG_AST
     /* sealark_debug_print_ast_outline(self_node, 0); */
     /* sealark_debug_print_node_starlark(self_node, true); */
-    sunlark_debug_print_node(s7, self);
+    /* sunlark_debug_print_node(s7, self); */
 #endif
 
     /*
@@ -148,9 +148,58 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
     if (s7_is_immutable(self))
         return(s7_wrong_type_arg_error(s7, "ast-node-set!", 1, self, "a mutable ast_node"));
 
-    if (s7_list_length(s7, get_path) > 1) {
-        log_error("Too many get_path? %s", s7_object_to_c_string(s7, get_path));
-        /* exit(EXIT_FAILURE); */
+    /* if (s7_list_length(s7, get_path) > 1) { */
+    /*     log_error("Too many get_path? %s", s7_object_to_c_string(s7, get_path)); */
+    /*     /\* exit(EXIT_FAILURE); *\/ */
+    /* } */
+
+    /* case: (set! (ast :> 0 :@ 3) 99)
+       get_path is (:> 0 :@), which will fail
+       ok because we cannot replace a binding with an int
+       so we need to fail here.
+       But: what if newval is a binding?
+       e.g. (set! (ast :> 0 :@ 3) (make-binding ...))
+     */
+    if (s7_car(s7_reverse(s7,get_path)) == KW(@)) {
+        if (s7_is_c_object(update_val)) {
+            if (sunlark_node_tid(s7, update_val) == TK_Binding) {
+                // ok - push lval back onto get_path
+                log_error("set! binding not yet implemented");
+                exit(EXIT_FAILURE); //FIXME
+            } else {
+                log_error("Cannot replace binding with %s",
+                          s7_object_to_c_string(s7,
+                                                s7_type_of(s7, update_val)));
+                return(s7_error(s7,
+                                s7_make_symbol(s7, "invalid_argument"),
+                                s7_list(s7, 2, s7_make_string(s7,
+                              "Cannot update binding with ~A"),
+                                        update_val)));
+            }
+        } else {
+            log_error("Cannot replace binding with %s",
+                      s7_object_to_c_string(s7, update_val));
+            return(s7_error(s7,
+                            s7_make_symbol(s7, "invalid_argument"),
+                            s7_list(s7, 2, s7_make_string(s7,
+                        "Cannot replace binding with: ~A"),
+                                    update_val)));
+        }
+        /* lval must be a binding selector */
+        if (s7_is_integer(lval) || s7_is_symbol(lval)) {
+            get_path = s7_append(s7, get_path,
+                                 s7_list(s7, 1, lval));
+            lval  = s7_nil(s7);
+        } else {
+            log_error("get_path terminates in :@; lval: %s",
+                      s7_object_to_c_string(s7, lval));
+            return(s7_error(s7,
+                            s7_make_symbol(s7, "invalid_argument"),
+                            s7_list(s7, 2, s7_make_string(s7,
+                                                          "Cannot set! a binding like this (?) ~A"),
+                                    get_path)));
+            return NULL;
+        }
     }
 
     s7_pointer context = sunlark_node_object_applicator(s7, s7_cons(s7, self, get_path));
@@ -175,7 +224,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
             if (s7_is_c_object(update_val)) {
                 struct node_s *newitem
                     = sealark_set_string_c_object(context_node,
-                                                  s7_c_object_value(update_val));
+                                  s7_c_object_value(update_val));
                 return sunlark_node_new(s7,newitem);
             } else {
                 struct node_s *newitem
@@ -209,9 +258,9 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
                 exit(EXIT_FAILURE); //FIXME
             }
         }
-        if (lval == KW(value)) {
-            /* log_debug("replacing lval: value"); */
-            struct node_s *newb =  sunlark_replace_binding_value(s7, context_node, update_val);
+        if (lval == s7_make_keyword(s7, "$") || lval == KW(value)) {
+            log_debug("replacing lval: value");
+            struct node_s *newb =  sunlark_mutate_binding_value(s7, context_node, update_val);
             log_debug("after replacement:");
             sealark_debug_print_ast_outline(newb, true); // crush
 
@@ -240,7 +289,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
                               s7_object_to_c_string(s7, update_val));
 #endif
                     struct node_s *updated;
-                    updated =sunlark_set_vector(s7, result, update_val);
+                    updated =sunlark_mutate_vector(s7, result, update_val);
                     /* sealark_debug_print_ast_outline(result, 4); */
                     return sunlark_node_new(s7, updated);
                 }
@@ -263,7 +312,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
         if (r) {
             switch(r->tid) {
             case TK_List_Expr:  /* (myvec) */
-                updated =sunlark_set_vector(s7, r, update_val);
+                updated =sunlark_mutate_vector(s7, r, update_val);
                 /* sealark_debug_print_ast_outline(r, 4); */
                 break;
             /* path indexed into vector */
@@ -343,7 +392,7 @@ LOCAL struct node_s *_mutate_binding(s7_scheme *s7, struct node_s *binding, s7_p
         if (s7_is_list(s7, new_value)) {
             if (old_value->tid == TK_List_Expr) {
                 /* update existing vector */
-                sunlark_set_vector(s7, old_value, new_value);
+                sunlark_mutate_vector(s7, old_value, new_value);
             } else {
                 /* replace */
                 sealark_node_free(old_value);
@@ -379,4 +428,88 @@ LOCAL struct node_s *sunlark_set_id(s7_scheme *s7,
     log_debug("sunlark_set_id");
 #endif
 
+}
+
+struct node_s *sunlark_convert_node_to_list_expr(s7_scheme *s7,
+                                                 struct node_s *node,
+                                                 s7_pointer list)
+{
+#if defined(DEBUG_TRACE) || defined(DEBUG_SET)
+    log_debug("sunlark_convert_node_to_list_expr");
+#endif
+
+    if (node->s) {
+        free(node->s);
+        node->s = NULL;
+    }
+
+    if (node->subnodes) {
+        utarray_free(node->subnodes);
+        node->subnodes = NULL;
+    }
+
+    node->tid = TK_List_Expr;
+    utarray_new(node->subnodes, &node_icd);
+
+    struct node_s *lbrack = (struct node_s*)calloc(1, sizeof(struct node_s));
+    lbrack->tid = TK_LBRACK;
+    utarray_push_back(node->subnodes, lbrack);
+
+    struct node_s *vec = (struct node_s*)calloc(1, sizeof(struct node_s));
+    vec->tid = TK_Expr_List;
+    utarray_new(vec->subnodes, &node_icd);
+    struct node_s *new, *comma;
+    int len = s7_list_length(s7, list);
+    int i = 0;
+    char ibuf[256]; // for int to string conversion
+    const char *sbuf;
+    int  slen;
+    while( !s7_is_null(s7, list) ) {
+        ibuf[0] = '\0';
+        s7_pointer arg = s7_car(list);
+        /* log_debug("arg: %s", s7_object_to_c_string(s7, arg)); */
+        new = (struct node_s*)calloc(1, sizeof(struct node_s));
+        if (s7_is_integer(arg)) {
+            int i = s7_integer(arg);
+            snprintf(ibuf, 256, "%d", i);
+            slen = strlen(ibuf) + 1;
+            new->s = calloc(slen, sizeof(char));
+            strncpy(new->s, ibuf, slen);
+            new->tid = TK_INT;
+            goto loop;
+        }
+        /* new->s = (char*)calloc(8, sizeof(char)); */
+        /* snprintf(new->s, 2, "%d", i); */
+        /* log_debug("new int: %s", new->s); */
+
+        if (s7_is_string(arg)) {
+            new->tid = TK_STRING;
+            sbuf = s7_string(arg);
+            slen = strlen(sbuf) + 1;
+            new->s = calloc(slen, sizeof(char));
+            strncpy(new->s, sbuf, slen);
+            goto loop;
+        }
+
+        if (s7_is_c_object(arg)) {
+            /* FIXME: handle sunlark-make-string */
+        }
+
+    loop:
+        log_debug("1 xxxxxxxxxxxxxxxx");
+        utarray_push_back(vec->subnodes, new);
+        if (len-i > 1) {
+            comma = (struct node_s*)calloc(1, sizeof(struct node_s));
+            comma->tid = TK_COMMA;
+            utarray_push_back(vec->subnodes, comma);
+        }
+        i++;
+        list = s7_cdr(list);
+    }
+    utarray_push_back(node->subnodes, vec);
+
+    struct node_s *rbrack = (struct node_s*)calloc(1, sizeof(struct node_s));
+    rbrack->tid = TK_RBRACK;
+    utarray_push_back(node->subnodes, rbrack);
+    return node;
 }

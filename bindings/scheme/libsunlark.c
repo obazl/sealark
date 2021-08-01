@@ -26,8 +26,6 @@ UT_string *user_handlers_dir;
 char *default_handler_file_name = "handler.scm";
 UT_string *user_s7_file;
 
-int x;
-
 /* commonly used keywords */
 
 #if INTERFACE

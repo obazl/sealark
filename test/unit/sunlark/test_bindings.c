@@ -12,7 +12,7 @@
 
 UT_string *buf;
 UT_string *test_s;
-UT_array  *result;
+/* UT_array  *result; */
 
 char *build_file = "test/unit/sunlark/BUILD.bindings";
 
@@ -20,7 +20,7 @@ s7_scheme *s7;
 
 /* struct parse_state_s *parse_state; */
 
-s7_pointer ast;
+static s7_pointer ast;
 struct node_s *root;
 
 void setUp(void) {
@@ -268,15 +268,58 @@ void test_binding_value_vector(void) {
     TEST_ASSERT( bvalue_node->tid == TK_List_Expr );
 }
 
+void test_binding_value_selectors(void) {
+    /* srcs = ["hello-world.cc", 'hello-singlequotes.cc'], */
+    s7_pointer path = s7_eval_c_string(s7, "'(:> 1 :@ srcs :value)");
+    s7_pointer bvalue = s7_apply_function(s7, ast, path);
+    s7_pointer blen = s7_apply_function(s7, s7_name_to_value(s7, "length"),
+                                        s7_list(s7,1,bvalue));
+    TEST_ASSERT_EQUAL(2, s7_integer(blen));
+
+    path = bvalue = blen = NULL;
+    path = s7_eval_c_string(s7, "'(:> 1 :@ srcs :value 1)");
+    bvalue = s7_apply_function(s7, ast, path);
+    s7_pointer pred = s7_apply_function(s7, bvalue,
+                                        s7_eval_c_string(s7, "'(:string?)"));
+    TEST_ASSERT( s7_t(s7) == pred );
+    s7_pointer str = s7_apply_function(s7, bvalue,
+                                       s7_eval_c_string(s7, "'(:$)"));
+    TEST_ASSERT_EQUAL_STRING( "'hello-singlequotes.cc'", s7_string(str) );
+}
+
+void test_binding_value_selector_dollar(void) {
+    /* test :$ for :value */
+    /* srcs = ["hello-world.cc", 'hello-singlequotes.cc'], */
+    s7_pointer path = s7_eval_c_string(s7, "'(:> 1 :@ srcs :$)");
+    s7_pointer bvalue = s7_apply_function(s7, ast, path);
+    TEST_ASSERT( s7_is_c_object(bvalue) );
+    TEST_ASSERT( sunlark_node_tid(s7, bvalue) == TK_List_Expr );
+    struct node_s *bvalue_node = s7_c_object_value(bvalue);
+    TEST_ASSERT( bvalue_node->tid == TK_List_Expr );
+    s7_pointer blen = s7_apply_function(s7, s7_name_to_value(s7, "length"),
+                                        s7_list(s7,1,bvalue));
+    TEST_ASSERT_EQUAL(2, s7_integer(blen));
+
+    path = bvalue = blen = NULL;
+    path = s7_eval_c_string(s7, "'(:> 1 :@ srcs :$ 1)");
+    bvalue = s7_apply_function(s7, ast, path);
+    s7_pointer pred = s7_apply_function(s7, bvalue,
+                                        s7_eval_c_string(s7, "'(:string?)"));
+    TEST_ASSERT( s7_t(s7) == pred );
+    s7_pointer str = s7_apply_function(s7, bvalue,
+                                       s7_eval_c_string(s7, "'(:$)"));
+    TEST_ASSERT_EQUAL_STRING( "'hello-singlequotes.cc'", s7_string(str) );
+}
+
 /* (v (ast :target 1 :@ 'srcs :value 0)) */
 void test_binding_predicate(void) {
     s7_pointer path = s7_eval_c_string(s7,
                        "'(:> \"hello-lib\" :@ srcs :value 0)");
     s7_pointer item = s7_apply_function(s7, ast, path);
-    log_debug("item: %s", s7_object_to_c_string(s7, item));
+    /* log_debug("item: %s", s7_object_to_c_string(s7, item)); */
     /* check type, tid */
     TEST_ASSERT( s7_is_c_object(item) );
-    log_debug("item tid: %s", s7_object_to_c_string(s7, item));
+    /* log_debug("item tid: %s", s7_object_to_c_string(s7, item)); */
     TEST_ASSERT( sunlark_node_tid(s7, item) == TK_STRING );
 
     struct node_s *item_node = s7_c_object_value(item);
@@ -290,6 +333,8 @@ int main(void) {
     RUN_TEST(test_bindings_foreach);
     RUN_TEST(test_binding_srcs);
     RUN_TEST(test_binding_key);
+    RUN_TEST(test_binding_value_selectors);
+    RUN_TEST(test_binding_value_selector_dollar);
     RUN_TEST(test_binding_value_vector);
     RUN_TEST(test_binding_predicate);
     return UNITY_END();

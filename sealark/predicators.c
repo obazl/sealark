@@ -19,7 +19,7 @@ EXPORT bool sealark_is_printable(struct node_s *ast_node)
     return false;
 }
 
-EXPORT bool sealark_is_target(struct node_s *call_expr)
+EXPORT bool sealark_call_expr_is_target(struct node_s *call_expr)
 {
 #ifdef DEBUG_PREDICATES
     log_debug("sunlark_is_target");

@@ -50,6 +50,9 @@ Some nodes have a list of subnodes; for example, the Starlark list
    1: TK_RBRACK 69
 ```
 
+Length is not meaningful for most nodes, so the length op will return
+#<undefined>.  Bindings always have a length of 2 (key and value).
+
 We have multiple ways of counting subnodes:
 
 * `(length nd)` counts the semantic subnodes like strings and ints,

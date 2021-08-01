@@ -23,10 +23,16 @@ debug_defs = select({
     "//:debug-preds": ["DEBUG_PREDICATES"],
     "//conditions:default":   []
 }) + select({
+    "//:debug-properties": ["DEBUG_PROPERTIES"],
+    "//conditions:default":   []
+}) + select({
     "//:debug-queries": ["DEBUG_QUERY"],
     "//conditions:default":   []
 }) + select({
     "//:debug-s7-api": ["DEBUG_S7_API"],
+    "//conditions:default":   []
+}) + select({
+    "//:debug-set": ["DEBUG_SET"],
     "//conditions:default":   []
 }) + select({
     "//:debug-serializers": ["DEBUG_SERIALIZERS"],

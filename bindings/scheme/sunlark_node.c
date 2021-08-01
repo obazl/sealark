@@ -287,10 +287,18 @@ s7_pointer sunlark_node_length(s7_scheme *s7, s7_pointer _node)
     struct node_s *node = s7_c_object_value(s7_car(_node));
     log_debug("tid: %d %s", node->tid, TIDNAME(node));
 
-    int ct = sealark_subnode_count(node,
-                                   true, // exclude meta
-                                   false, // not printables_only
-                                   false); // non-recursive
+    int ct;
+    if (node->tid == TK_List_Expr) {
+        ct = sealark_subnode_count(node,
+                                       true, // exclude meta
+                                       false, // not printables_only
+                                       false); // non-recursive
+    } else
+        if (node->tid == TK_Binding) {
+            return s7_make_integer(s7, 2);
+        } else
+            return s7_undefined(s7);
+
     ct--; // exclude self from count
     return s7_make_integer(s7, ct);
 }
@@ -358,7 +366,7 @@ s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
               s7_object_to_c_string(s7, s7_cdr(args)));
 #endif
 #if defined(DEBUG_AST)
-    sealark_debug_print_ast_outline(s7_c_object_value(s7_car(args)), 0);
+    /* sealark_debug_print_ast_outline(s7_c_object_value(s7_car(args)), 0); */
 #endif
 
     s7_pointer self_s7 = s7_car(args);
@@ -840,7 +848,7 @@ static void _register_c_type_methods(s7_scheme *s7, s7_int ast_node_t)
     /* s7_c_type_set_reverse(s7, ast_node_t, sunlark_node_reverse); */
     /* s7_c_type_set_fill(s7, ast_node_t, sunlark_node_fill); */
 
-    s7_c_type_set_to_string(s7, ast_node_t, sunlark_node_to_string);
+    sunlark_register_to_string_entry_pt(s7);
 
     s7_c_type_set_to_list(s7, ast_node_t, sunlark_node_to_list);
 }

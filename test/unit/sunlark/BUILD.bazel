@@ -5,6 +5,7 @@ test_suite(
     tests = [
         ":binding_val_vectors",
         ":bindings",
+        ":set_bindings",
         # ":definitions",
         ":loads",
         ":set_strings",
@@ -25,7 +26,7 @@ COPTS = select({
         "-I$(GENDIR)/test/unit/sunlark",
     "-I$(GENDIR)/external/sealark/test/unit/sunlark",
 
-        "-I$(GENDIR)/bindings/scheme",
+    "-I$(GENDIR)/bindings/scheme",
     "-I$(GENDIR)/external/sealark/bindings/scheme",
 
         "-I$(GENDIR)/sealark",
@@ -55,6 +56,15 @@ cc_test(
     name = "bindings",
     srcs = ["test_bindings.c", "test_bindings.h"],
     data = [":BUILD.bindings"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
+    name = "set_bindings",
+    srcs = ["test_set_bindings.c", "test_set_bindings.h"],
+    data = [":BUILD.set_bindings"],
     copts = COPTS,
     deps = DEPS,
     linkstatic = 1
@@ -169,6 +179,7 @@ cc_library(
 genrule(
     name = "mkhdrs",
     srcs = [
+        "test_set_bindings.c",
         "test_bindings.c",
         "definitions.c",
         "test_dictionaries.c",
@@ -183,6 +194,7 @@ genrule(
         "test_vectors.c"
     ],
     outs = [
+        "test_set_bindings.h",
         "test_bindings.h",
         "definitions.h",
         "test_dictionaries.h",
@@ -205,6 +217,7 @@ genrule(
         "    $(location definitions.c) \\",
         "    $(location test_loads.c) \\",
         "    $(location paths_tetradic.c) \\",
+        "    $(location test_set_bindings.c) \\",
         "    $(location test_bindings.c) \\",
         "    $(location test_set_strings.c) \\",
         "    $(location test_strings.c) \\",

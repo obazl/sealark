@@ -130,6 +130,12 @@ s7_pointer sunlark_update_binding_value(s7_scheme *s7,
                                     s7_list(s7, 2, s7_make_string(s7,
                                     "FIXME error msg"), key)));
                     break;
+                default:
+                    return(s7_error(s7, s7_make_symbol(s7,
+                                                       "key error: "),
+                                    s7_list(s7, 2, s7_make_string(s7,
+                                    "FIXME2 error msg"), key)));
+
                 }
             }
             return sunlark_node_new(s7, result);
@@ -223,28 +229,70 @@ s7_pointer sunlark_update_binding_value(s7_scheme *s7,
 */
 
 /* **************************************************************** */
-struct node_s *sunlark_replace_binding_value(s7_scheme *s7,
+struct node_s *sunlark_mutate_binding_value(s7_scheme *s7,
                                          struct node_s *binding,
                                          s7_pointer newval)
 {
-#ifdef DEBUG_TRACE
-    log_debug("sunlark_replace_binding_value: %s",
+#if defined(DEBUG_TRACE) || defined(DEBUG_SET)
+    log_debug("sunlark_mutate_binding_value: %s",
               s7_object_to_c_string(s7, newval));
+    log_debug("\tself: %d %s", binding->tid, TIDNAME(binding));
 #endif
 
-    struct node_s *val = utarray_eltptr(binding->subnodes, 2);
-    /* sealark_debug_print_ast_outline(binding, true); // crush */
-    utarray_free(val->subnodes);
-    utarray_clear(val->subnodes);
+    struct node_s *oldval = utarray_eltptr(binding->subnodes, 2);
+    sealark_debug_print_ast_outline(binding, true); // crush
+
+#if defined(DEBUG_SET)
+    log_debug("replacing %d %s with value of type %s",
+              oldval->tid, TIDNAME(oldval),
+              s7_object_to_c_string(s7, (s7_type_of(s7, newval))));
+#endif
+    /* utarray_free(val->subnodes); */
+    /* utarray_clear(val->subnodes); */
+
+    if (oldval->tid == TK_List_Expr) {
+        if (s7_is_list(s7, newval)) {
+            log_debug("replacing list with list");
+            return sunlark_mutate_vector(s7, oldval, newval);
+        }
+    }
+
+    /* newval has no subnodes  */
+    if (oldval->subnodes) {
+        utarray_free(oldval->subnodes);
+        /* utarray_clear(val->subnodes); */
+        oldval->subnodes = NULL;
+    }
+
+    if (s7_is_c_object(newval)) {
+        /* newval is e.g. sunlark-make-string */
+
+        /* const char *s = s7_string(newval); */
+        /* log_debug("new val: %s", s); */
+        /* int len = strlen(s); */
+        /* val->tid = TK_STRING; */
+        /* val->s = calloc(len, sizeof(char)); */
+        /* strncpy(val->s, s, len); */
+        /* /\* val->qtype = DQUOTE; *\/ */
+        return binding;
+    }
+
+    if (s7_is_list(s7, newval)) {
+        return sunlark_convert_node_to_list_expr(s7, oldval, newval);
+    }
+
+    if (s7_is_pair(newval)) {
+        log_debug("NOT YET: replacing with pair");
+        return binding;
+    }
 
     if (s7_is_string(newval)) {
         const char *s = s7_string(newval);
         log_debug("new val: %s", s);
         int len = strlen(s);
-        val->tid = TK_STRING;
-        val->s = calloc(len, sizeof(char));
-        strncpy(val->s, s, len);
-        /* val->qtype = DQUOTE; */
+        oldval->tid = TK_STRING;
+        oldval->s = calloc(len, sizeof(char));
+        strncpy(oldval->s, s, len);
         return binding;
     }
 
@@ -252,9 +300,9 @@ struct node_s *sunlark_replace_binding_value(s7_scheme *s7,
         const char *s = s7_symbol_name(newval);
         log_debug("new val: %s", s);
         int len = strlen(s);
-        val->tid = TK_STRING;
-        val->s = calloc(len, sizeof(char));
-        strncpy(val->s, s, len);
+        oldval->tid = TK_ID;
+        oldval->s = calloc(len, sizeof(char));
+        strncpy(oldval->s, s, len);
         return binding;
     }
 
@@ -264,10 +312,24 @@ struct node_s *sunlark_replace_binding_value(s7_scheme *s7,
         snprintf(buf, 128, "%d", d);
         int len = strlen(buf);
         log_debug("new val: %d", d);
-        val->tid = TK_INT;
-        val->s = calloc(len, sizeof(char));
-        strncpy(val->s, buf, len);
+        oldval->tid = TK_INT;
+        oldval->s = calloc(len, sizeof(char));
+        strncpy(oldval->s, buf, len);
         return binding;
     }
+
+    if (s7_is_boolean(newval)) {
+        log_debug("new val: %s", s7_object_to_c_string(s7, newval));
+        oldval->tid = TK_ID;
+        if (newval == s7_t(s7)) {
+            oldval->s = calloc(4, sizeof(char));
+            strncpy(oldval->s, "True", 4);
+        } else {
+            oldval->s = calloc(5, sizeof(char));
+            strncpy(oldval->s, "False", 5);
+        }
+        return binding;
+    }
+
     return binding;
 }

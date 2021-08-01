@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -19,12 +20,19 @@ char *display_buf;
 int   display_bufsz;
 char *display_ptr;
 
+int indent = 2;
+
+void sunlark_register_to_string_entry_pt(s7_scheme *s7)
+{
+    s7_c_type_set_to_string(s7, ast_node_t, sunlark_display);
+}
+
 /* Scheme entry point for object->string */
-s7_pointer sunlark_node_to_string(s7_scheme *s7, s7_pointer args)
+/* WARNING: called by s7_object_to_c_string - do not call directly  */
+LOCAL s7_pointer sunlark_display(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_SERIALIZERS
-    log_debug(">>>>>>>>>>>>>>>> sunlark_node_to_string <<<<<<<<<<<<<<<<");
-    /* debug_print_s7(s7, "to_string cdr: ", s7_cdr(args)); */
+    log_debug(">>>>>>>>>>>>>>>> sunlark_display <<<<<<<<<<<<<<<<");
 #endif
 
     /* if (sunlark_node_tid(s7,s7_car(args)) == TK_Build_File) { */
@@ -47,6 +55,9 @@ s7_pointer sunlark_node_to_string(s7_scheme *s7, s7_pointer args)
     s7_pointer obj, choice;
     char *descr;
     obj = s7_car(args);
+    /* sealark_display_node(s7_c_object_value(obj), buffer, 0); */
+    sealark_debug_print_ast_outline(s7_c_object_value(obj), 0);
+
     if (s7_is_pair(s7_cdr(args)))
         choice = s7_cadr(args);
     else choice = s7_t(s7);
@@ -58,10 +69,9 @@ s7_pointer sunlark_node_to_string(s7_scheme *s7, s7_pointer args)
     }
     else {
         /* descr = sunlark_node_display(s7, s7_c_object_value(obj)); */
-        sealark_node_display(/* s7, */ s7_c_object_value(obj), buffer, 0);
+        sunlark_display_node(s7_c_object_value(obj), buffer, 0);
     }
 
-    /* log_debug("TO_STRING LEN: %d", strlen(descr)); */
     obj = s7_make_string(s7, utstring_body(buffer));
     /* obj = s7_make_string(s7, descr); */
 
@@ -174,7 +184,7 @@ char *sunlark_node_display_readably(s7_scheme *s7, void *value)
    arg2: optional style kw, :squeeze, :crush
 
  */
-s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
+EXPORT s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
 {
 #if defined(DEBUG_SERIALIZERS)
     log_debug("sunlark_to_starlark");
@@ -264,129 +274,559 @@ s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
     s7_pointer out = s7_make_string(s7, output);
     free(output);
     return out;
+}
 
+/* **************** */
+LOCAL void _display_arg_list(struct node_s *nd,
+                             UT_string *buffer,
+                             int level)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug("_display_arg_list");
+#endif
 
-/*     s7_pointer arg = s7_car(args); */
-/*     s7_pointer format; */
+    utstring_printf(buffer, "%*s:attrs (",
+                    level*indent, " ", (level+1)*indent, " ");
 
-/*     if (s7_list_length(s7, args) == 2) { */
-/*         format = s7_cadr(args); */
-/*         if (format != kw_squeeze) */
-/*             if (format != kw_crush) */
-/*                 return s7_error(s7, s7_make_symbol(s7, */
-/*                                                    "invalid_argument"), */
-/*                                 s7_list(s7, 2, s7_make_string(s7, */
-/* "optional arg to sunlark->starlark must be :squeeze or :crush; got ~A"), */
-/*                                         format)); */
-/*     } */
-
-    /* UT_string *buf; */
-    /* utstring_new(buf); */
-
-    /* if (c_is_sunlark_node(s7, arg)) { */
-    /*     log_debug("single node %d %s", */
-    /*               sunlark_node_tid(s7, arg), */
-    /*               token_name[sunlark_node_tid(s7, arg)][0]); */
-
-    /*     /\*this should not happen for sunlark nodes: *\/ */
-    /*     if (sunlark_node_tid(s7, arg) == TK_Node_List) { */
-    /*         UT_array *nodelist = s7_c_object_value(arg); */
-    /*         log_debug("node ct %d", utarray_len(nodelist)); */
-
-    /*         struct node_s *n1=NULL; */
-    /*         while(n1=(struct node_s*)utarray_next(nodelist, n1)) { */
-    /*             sealark_node_to_starlark(n1, buf); */
-    /*         } */
-
-    /*     } else { */
-    /*         /\* a single target node *\/ */
-    /*         if (sunlark_node_tid(s7, arg) == TK_Call_Expr) { */
-    /*             struct node_s *n1 = s7_c_object_value(arg); */
-    /*             sealark_node_to_starlark(n1, buf); */
-    /*         } else { */
-    /*             if (sunlark_node_tid(s7, arg) == TK_Build_File) { */
-    /*                 struct node_s *n1 = s7_c_object_value(arg); */
-    /*                 sealark_node_to_starlark(n1, buf); */
-    /*             } else { */
-    /*                 log_warn("Unexpected arg type: %d, %s", */
-    /*                      sunlark_node_tid(s7, arg), */
-    /*                      token_name[sunlark_node_tid(s7, arg)][0]); */
-    /*             } */
-    /*         } */
-    /*     } */
-    /* } else { */
-    /*     if (sunlark_is_nodelist(s7, args)) { */
-    /*         log_debug("nodelist"); */
-    /*         UT_array *nodelist = s7_c_object_value(arg); */
-    /*         log_debug("node ct %d", utarray_len(nodelist)); */
-
-    /*         struct node_s *n1=NULL; */
-    /*         while(n1=(struct node_s*)utarray_next(nodelist, n1)) { */
-    /*             sealark_node_to_starlark(n1, buf); */
-    /*         } */
-
-    /*     } else { */
-    /*         log_error("unexpected args, neither node nor nodelist"); */
-    /*     } */
-    /* } */
-    /* char *output; */
-    /* if (format == kw_squeeze) { */
-    /*     output = sealark_squeeze_string(buf); */
-    /* } else { */
-    /*     if (format == kw_crush) { */
-    /*     output = sealark_crush_string(buf); */
-    /*     } else { */
-    /*         output = utstring_body(buf); */
-    /*     } */
-    /* } */
-
-    /* s7_pointer out = s7_make_string(s7, output); */
-    /* free(output); */
-    /* return out; */
-
-    /* s7_pointer out = s7_make_string(s7, utstring_body(output)); */
-    /* utstring_free(buf); */
-    /* utstring_free(output); */
-    /* return out; */
+    struct node_s *sub = NULL;
+    int len = utarray_len(nd->subnodes);
+    int i = 0;
+    while( (sub=(struct node_s*)utarray_next(nd->subnodes, sub)) ) {
+        if (sub->tid == TK_COMMA) continue;
+        sunlark_display_node(sub, buffer,
+                             (i==0)? 0 : level+2);
+        /* utstring_printf(buffer, " == LEN %d, i %d ==", len, i); */
+        if (len - i > 1) {
+            utstring_printf(buffer, "\n");
+        }
+        i+=2;
+    }
+    utstring_printf(buffer, ")");
 }
 
 /* **************************************************************** */
-/* s7_pointer sunlark_nodelist_to_string(s7_scheme *s7, s7_pointer args) */
-/* { */
-/* #ifdef DEBUG_TRACE */
-/*     log_debug("sunlark_nodelist_to_string"); */
-/*     /\* debug_print_s7(s7, "to_string cdr: ", s7_cdr(args)); *\/ */
-/* #endif */
-/*     if (display_bufsz == 0) { */
-/*         display_buf = calloc(1, SZDISPLAY_BUF); */
-/*         if (display_buf == NULL) { */
-/*             log_error("ERROR on calloc"); */
-/*             //FIXME cleanup */
-/*             exit(EXIT_FAILURE); */
-/*         } else { */
-/*             display_bufsz = SZDISPLAY_BUF; */
-/*         } */
-/*     } */
+LOCAL void _display_assign_stmt(struct node_s *nd,
+                                UT_string *buffer,
+                                int level)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug("_display_assign_stmt");
+#endif
 
-/*     display_ptr = display_buf; */
+    utstring_printf(buffer, "%*s(def-var\n%*s(",
+                    level*indent, " ", (level+1)*indent, " ");
 
-/*     s7_pointer obj, choice; */
-/*     char *descr; */
-/*     obj = s7_car(args); */
+    utstring_printf(buffer, " ... NOT YET IMLEMENTED ...");
 
-/*     if (s7_is_pair(s7_cdr(args))) */
-/*         choice = s7_cadr(args); */
-/*     else choice = s7_t(s7); */
+    /* struct node_s *sub = NULL; */
+    /* while( (sub=(struct node_s*)utarray_next(nd->subnodes, sub)) ) { */
+    /*     sunlark_display_node(sub, buffer, level+1); */
+    /* } */
+    utstring_printf(buffer, ")");
+}
 
-/*     if (choice == s7_make_keyword(s7, "readable")) */
-/*         descr = sunlark_nodelist_display_readably(s7, s7_c_object_value(obj)); */
-/*     else descr = sunlark_nodelist_display(s7, s7_c_object_value(obj)); */
+/* **************************************************************** */
+LOCAL void _display_build_file(struct node_s *nd,
+                               UT_string *buffer,
+                               int level)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug("_display_build_file, level %d", level);
+#endif
 
-/*     /\* printf("sunlark_nodelist_display => %s", descr); *\/ */
-/*     obj = s7_make_string(s7, descr); */
+    utstring_printf(buffer, "(package\n");
+    /* struct node_s *subnodes = utarray_eltptr(nd->subnodes, 0); */
+    struct node_s *sub = NULL;
+    while( (sub=(struct node_s*)utarray_next(nd->subnodes, sub)) ) {
+        sunlark_display_node(sub, buffer, level+1);
+    }
+}
 
-/*     /\* free(descr); //BUG? FIXME free substruct strings *\/ */
-/*     return(obj); */
-/* } */
-/* /section: serialization */
+/* **************** */
+LOCAL void _display_binding_node(struct node_s *nd,
+                                  UT_string *buffer,
+                                  int level)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug("sunlark_display_binding_node");
+#endif
 
+    utstring_printf(buffer, "%*s(",
+                    (level==0)? 0 : level*indent+7,
+                    (level==0)? "" : " ");
+                    /* (level==0)? 0 : (level+1)*indent+level+1, */
+                    /* (level==0)? "" : " "); */
+    struct node_s *key = utarray_eltptr(nd->subnodes, 0);
+    assert(key->tid == TK_ID);
+    utstring_printf(buffer, "%s . ", key->s);
+    /* skip TK_EQ */
+    struct node_s *val = utarray_eltptr(nd->subnodes, 2);
+    _display_binding_value(val, buffer, level);
+
+    utstring_printf(buffer, ")");
+                    /* (level==0)? 0 : (level+1)*indent+level+1, "."); */
+}
+
+/* **************************************************************** */
+LOCAL void _display_binding_value(struct node_s *nd,
+                                  UT_string *buffer,
+                                  int level)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug("sunlark_display_binding_value");
+#endif
+
+    switch(nd->tid) {
+    case TK_INT:
+        utstring_printf(buffer, "%s", nd->s);
+        break;
+    case TK_STRING: {
+        char *br = SEALARK_STRTYPE(nd->qtype);
+        char *q = sealark_quote_type(nd);
+        utstring_printf(buffer, "%s%s%s%s",
+                        br, q, nd->s, q);
+        /* utstring_printf(buffer, " %s", nd->s); */
+    }
+        break;
+    case TK_List_Expr:
+        _display_vector(nd, buffer, level);
+        break;
+    case TK_ID:
+        if (strncmp(nd->s, "True", 4) == 0)
+            utstring_printf(buffer, " #t");
+        else
+            if (strncmp(nd->s, "False", 5) == 0)
+                utstring_printf(buffer, " #f");
+            else
+                utstring_printf(buffer, "'%s", nd->s);
+        break;
+    default:
+        sunlark_display_node(nd, buffer, level);
+        ;
+    }
+}
+
+/* **************** */
+LOCAL void _display_call_expr(struct node_s *nd,
+                              UT_string *buffer,
+                              int level)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug("_display_call_expr");
+#endif
+
+    assert(nd->tid == TK_Call_Expr);
+
+    struct node_s *id = utarray_eltptr(nd->subnodes, 0);
+    if ( (strncmp(id->s, "package", 7) == 0)
+         && (strlen(id->s) == 7) ) {
+        utstring_printf(buffer, "%*s(def-package",
+                        level*indent, " ", (level+1)*indent, " ");
+        struct node_s *sub = NULL;
+        while( (sub=(struct node_s*)utarray_next(nd->subnodes, sub)) ) {
+            if (sub->tid == TK_ID) continue;
+            if (sub->tid == TK_COMMA) continue;
+            sunlark_display_node(sub, buffer, level+1);
+            /* utstring_printf(buffer, "\n"); */
+        }
+        utstring_printf(buffer, ")");
+
+    } else {
+        bool is_target = sealark_call_expr_is_target(nd);
+        if (is_target) {
+            utstring_printf(buffer, "%*s(def-target",
+                            level*indent, " ", (level+1)*indent, " ");
+            struct node_s *rule = utarray_eltptr(nd->subnodes, 0);
+            struct node_s *name = sealark_target_name(nd);
+            if (name) {
+                utstring_printf(buffer, " :name \"%s\"", name->s);
+            }
+            utstring_printf(buffer, " :rule %s", rule->s);
+            struct node_s *sub = NULL;
+            while( (sub=(struct node_s*)utarray_next(nd->subnodes, sub)) ) {
+                if (sub->tid == TK_ID) continue;
+                if (sub->tid == TK_COMMA) continue;
+                sunlark_display_node(sub, buffer, level+1);
+                /* utstring_printf(buffer, "\n"); */
+            }
+            utstring_printf(buffer, "))");
+        } else {
+            utstring_printf(buffer, "%*s(FIXME-apply",
+                            (level==0)? 0 : level*indent, " ");
+            struct node_s *fn = utarray_eltptr(nd->subnodes, 0);
+            utstring_printf(buffer, " %s", fn->s);
+            struct node_s *sub = NULL;
+            while( (sub=(struct node_s*)utarray_next(nd->subnodes, sub)) ) {
+                if (sub->tid == TK_ID) continue;
+                if (sub->tid == TK_COMMA) continue;
+                sunlark_display_node(sub, buffer, level+1);
+                /* utstring_printf(buffer, "\n"); */
+            }
+            utstring_printf(buffer, "))");
+        }
+    }
+}
+
+/* **************** */
+LOCAL void _display_call_sfx(struct node_s *nd,
+                             UT_string *buffer,
+                             int level)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug("_display_call_sfx");
+#endif
+
+    /* utstring_printf(buffer, "\n%*s#^(:call-sfx ", level*indent, " "); */
+
+    struct node_s *sub = NULL;
+    utstring_printf(buffer, "\n");
+    while( (sub=(struct node_s*)utarray_next(nd->subnodes, sub)) ) {
+        if (sub->tid == TK_COMMA) continue;
+        sunlark_display_node(sub, buffer, level);
+        /* utstring_printf(buffer, "\n"); */
+    }
+    /* utstring_printf(buffer, ")"); */
+}
+
+/* **************** */
+LOCAL void _display_comments(struct node_s *nd,
+                             UT_string *buffer,
+                             int level)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug("_display_comments");
+#endif
+    utstring_printf(buffer, "(comments ");
+
+    utstring_printf(buffer, ")");
+}
+
+/* **************************************************************** */
+LOCAL void _display_expr_list(struct node_s *nd,
+                              UT_string *buffer,
+                              int level)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug("_display_expr_list");
+#endif
+
+    /* utstring_printf(buffer, "#^(:expr_list"); */
+    /* utstring_printf(buffer, "%*s#^(:expr-list\n", level*indent, " "); */
+    /*                 /\* (level==0)? 4 : (level+1)*indent+level+1, " "); *\/ */
+
+    int len = utarray_len(nd->subnodes);
+    int i = 0;
+
+    struct node_s *sub = NULL;
+    while( (sub=(struct node_s*)utarray_next(nd->subnodes, sub)) ) {
+        /* utstring_printf(buffer, "expr item %d\n", i); */
+        sunlark_display_node(sub, buffer, level);
+        /* utstring_printf(buffer, ")\n"); */
+        /* if (len - i > 0) { */
+        /*     utstring_printf(buffer, "\n"); */
+        /* } */
+        i++;
+    }
+}
+
+/* **************************************************************** */
+/*
+   3: TK_Load_Stmt 117
+         4: TK_LOAD 53
+         4: TK_LPAREN 54
+         4: TK_STRING 79: @rules_cc//cc:defs.bzl
+         4: TK_COMMA 15
+         4: TK_STRING 79: cc_binary
+         4: TK_COMMA 15
+         4: TK_STRING 79: cc_library
+         4: TK_COMMA 15
+         4: TK_STRING 79: cc_test
+         4: TK_RPAREN 71
+*/
+LOCAL void _display_load_args(struct node_s *nd,
+                              UT_string *buffer,
+                              int level)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug("_display_load_args");
+#endif
+
+    struct node_s *sub = NULL;
+
+    /* we have to iterate twice, once to determine if there are any
+       singleton args (so we can decide to print ':args ( )', then to
+       print them */
+
+    int i = 0;
+    int ct = 0;
+    while( (sub=(struct node_s*)utarray_next(nd->subnodes, sub)) ) {
+        if (i == 2) { i++; continue; }
+        if (sub->tid == TK_STRING) ct++;
+    }
+
+    int len = utarray_len(nd->subnodes);
+    i = 0;
+    if (ct > 0) {
+        utstring_printf(buffer, "%*s:args (", level*indent+8, " ");
+        sub = NULL;
+        while( (sub=(struct node_s*)utarray_next(nd->subnodes, sub)) ) {
+            /* utstring_printf(buffer, "%d %s: len %d, i %d: len-i: %d\n", */
+            /*                 sub->tid, TIDNAME(sub), */
+            /*                 len, i, len-i); */
+            if (i == 2) { goto loop; }
+            if (sub->tid == TK_STRING) {
+                sunlark_display_node(sub, buffer, 0); // level+2);
+                ct--;
+                if ( ct > 1 )
+                    utstring_printf(buffer, " ");
+                /* else */
+                /*     utstring_printf(buffer, "AAAA"); */
+            }
+        loop:
+            i++;
+        }
+        utstring_printf(buffer, ")\n");
+    }
+}
+
+/* **************************************************************** */
+LOCAL void _display_load_bindings(struct node_s *nd,
+                              UT_string *buffer,
+                              int level)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug("_display_load_bindings");
+#endif
+
+    struct node_s *sub = NULL;
+
+    /* we have to iterate twice, once to determine if there are any
+       singleton args (so we can decide to print ':args ( )', then to
+       print them */
+
+    int ct = 0;
+    while( (sub=(struct node_s*)utarray_next(nd->subnodes, sub)) ) {
+        if (sub->tid == TK_Binding) ct++;
+    }
+
+    /* int len = utarray_len(nd->subnodes); */
+    if (ct > 0) {
+        utstring_printf(buffer, "%*s:bindings (", level*indent+8, " ");
+        sub = NULL;
+        while( (sub=(struct node_s*)utarray_next(nd->subnodes, sub)) ) {
+            if (sub->tid == TK_Binding) {
+                sunlark_display_node(sub, buffer, 0); // level+2);
+                ct--;
+                if ( ct > 0 )
+                    utstring_printf(buffer, " ");
+            }
+        }
+        utstring_printf(buffer, ")\n");
+    }
+}
+
+/* **************************************************************** */
+LOCAL void _display_load_stmt(struct node_s *nd,
+                              UT_string *buffer,
+                              int level)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug("_display_load_stmt");
+#endif
+
+    assert(nd->tid == TK_Load_Stmt);
+
+    char *src = sealark_loadstmt_src_node(nd);
+
+    utstring_printf(buffer, "%*s(def-load :src \"%s\"\n",
+                    level*indent, " ", src);
+
+    _display_load_args(nd, buffer, level);
+
+    _display_load_bindings(nd, buffer, level);
+}
+
+/* **************************************************************** */
+LOCAL void _display_small_stmt_list(struct node_s *nd,
+                                    UT_string *buffer,
+                                    int level)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug("_display_small_stmt_list");
+#endif
+
+    /* utstring_printf(buffer, "#^(:small-smt-list"); */
+    /* utstring_printf(buffer, "%*s#^(:small-stmt-list\n", */
+    /*                 level*indent, " "); */
+                    /* (level==0)? 0 : level*indent, " "); */
+    /* struct node_s *subnodes = utarray_eltptr(nd->subnodes, 1); */
+
+    int len = utarray_len(nd->subnodes);
+    int i = 0;
+    struct node_s *sub = NULL;
+    /* utstring_printf(buffer, "small item count %d\n", len); */
+    while( (sub=(struct node_s*)utarray_next(nd->subnodes, sub)) ) {
+        /* utstring_printf(buffer, "small item %d\n", i); */
+        sunlark_display_node(sub, buffer, level);
+        utstring_printf(buffer, "\n");
+        if (len - i > 1) {      /* add blank line between items */
+            utstring_printf(buffer, "\n");
+        }
+        i++;
+    }
+    /* utstring_printf(buffer, "Z)"); */
+}
+
+/* **************************************************************** */
+LOCAL void _display_stmt_list(struct node_s *nd,
+                              UT_string *buffer,
+                              int level)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug("_display_stmt_list");
+#endif
+
+    /* utstring_printf(buffer, "%*s#^(:stmt_list\n", level*indent, " "); */
+    /*                 /\* (level==0)? 0 : level*indent, " "); *\/ */
+
+    struct node_s *sub = NULL;
+    while( (sub=(struct node_s*)utarray_next(nd->subnodes, sub)) ) {
+        sunlark_display_node(sub, buffer, level);
+    }
+    /* utstring_printf(buffer, ")"); */
+}
+
+/* **************************************************************** */
+LOCAL void _display_vector(struct node_s *nd,
+                           UT_string *buffer,
+                           int level)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug("sunlark_display_vector");
+#endif
+
+    utstring_printf(buffer, " [");
+    struct node_s *expr_list = utarray_eltptr(nd->subnodes, 1);
+    struct node_s *sub = NULL;
+    while( (sub=(struct node_s*)utarray_next(expr_list->subnodes, sub)) ) {
+        if (sub->tid == TK_COMMA) {
+            utstring_printf(buffer, ", ");
+        } else {
+            _display_binding_value(sub, buffer, level);
+        }
+    }
+    utstring_printf(buffer, "]");
+}
+
+/* **************************************************************** */
+// sunlark-aware version of sealark_display_node
+void sunlark_display_node(// s7_scheme *s7,
+                          struct node_s *nd,
+                          UT_string *buffer,
+                          int level)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug("sunlark_display_node: %d %s", nd->tid, TIDNAME(nd));
+#endif
+
+    int len;
+
+    /* if (level == 0) utstring_printf(buffer, "\n"); */
+
+    switch(nd->tid) {
+    case TK_Assign_Stmt:
+        _display_assign_stmt(nd, buffer, level);
+        break;
+    case TK_Build_File:
+        _display_build_file(nd, buffer, level);
+        break;
+    case TK_Arg_List:
+        _display_arg_list(nd, buffer, level);
+        break;
+    case TK_Binding:
+        _display_binding_node(nd, buffer, level);
+        break;
+    case TK_Call_Expr:
+        _display_call_expr(nd, buffer, level);
+        break;
+    case TK_Call_Sfx:
+        _display_call_sfx(nd, buffer, level);
+        break;
+    case TK_Expr_List:
+        _display_expr_list(nd, buffer, level);
+        break;
+    case TK_ID: {
+        if (strncmp(nd->s, "True", 4) == 0)
+            utstring_printf(buffer, "#t");
+        else
+            if (strncmp(nd->s, "False", 5) == 0)
+                utstring_printf(buffer, "#f");
+            else
+                utstring_printf(buffer, "%s", nd->s);
+    }
+        break;
+    case TK_LOAD:
+        utstring_printf(buffer, "%*s#^(:load", level*indent, " ");
+        //utstring_printf(buffer, "load");
+        break;
+    case TK_Load_Stmt:
+        _display_load_stmt(nd, buffer, level);
+        break;
+    case TK_Small_Stmt_List:
+        _display_small_stmt_list(nd, buffer, level);
+        break;
+    case TK_Stmt_List:
+        _display_stmt_list(nd, buffer, level);
+        break;
+    case TK_STRING: {
+        char *br = SEALARK_STRTYPE(nd->qtype);
+        char *q = sealark_quote_type(nd);
+        utstring_printf(buffer, "%s%s%s%s",
+                        br, q, nd->s, q);
+        /* utstring_printf(buffer, " s=\"%s\"", nd->s); */
+    }
+        break;
+    case TK_COMMA:
+    case TK_LBRACK:
+    case TK_RBRACK:
+    case TK_LPAREN:
+    case TK_RPAREN:
+        break;
+    default:
+        /* utstring_printf(buffer, "#^("); */
+        /* utstring_printf(buffer, "%*.s#^(", */
+        /*                 (level==0)? 0 : (level+1)*indent+level+1, "."); */
+
+        /* utstring_printf(buffer, "tid=%d", nd->tid); */
+
+        utstring_printf(buffer, ":%s", sealark_tid_to_string(nd->tid));
+        //token_name[nd->tid][0]);
+
+        /* utstring_printf(buffer, " line=%d", nd->line); */
+        /* utstring_printf(buffer, " col=%d", nd->col); */
+        /* utstring_printf(buffer, " trailing_newline=%d", nd->trailing_newline); */
+
+        /* if (nd->tid == TK_STRING) */
+        /*     utstring_printf(buffer, " qtype=%#04x", nd->qtype); */
+
+        if (nd->comments) {
+            _display_comments(nd, buffer, level);
+        }
+
+        if (nd->subnodes) {
+            /* utstring_printf(buffer, "\n%*.s(", */
+            /*                 (level==0)? 2 : (level+2)*indent+level+1, "."); */
+
+            //FIXME sunlark_nodelist_display(s7, (UT_array*)nd->subnodes);
+            struct node_s *subn = NULL;
+            int lvl = ++level;
+            while((subn=(struct node_s*)utarray_next(nd->subnodes,
+                                                     subn))) {
+                sunlark_display_node(subn, buffer, lvl);
+            }
+
+            /* utstring_printf(buffer, "%*.s)", (level+1)*indent+1, " "); */
+        }
+    }
+    /* utstring_printf(buffer, ")\n"); */
+}

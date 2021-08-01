@@ -158,76 +158,127 @@ s7_pointer sunlark_dispatch_on_buildfile(s7_scheme *s7,
             return result_list;
     }
 
+    if (op == KW(loads)) {
+        // :build-file > :stmt-list :smallstmt-list > load-expr,...
+        /* result_list = sunlark_fetch_load_stmts(s7, bf_node); */
 
-    switch(op_count) {
-    case 1:
-        if (op == KW(>>) || op == KW(>) || op == KW(targets)) {
-            result_list = sunlark_targets_for_buildfile(s7, bf_node);
-            //FIXME: switch to:
-            /* UT_array *loads = sealark_procs_for_id(bf_node, */
-            /*                                       "target"); */
-            return result_list;
-        }
-       if (op == KW(loads)) {
-            // :build-file > :stmt-list :smallstmt-list > load-expr,...
-           /* result_list = sunlark_fetch_load_stmts(s7, bf_node); */
-
-           UT_array *loads = sealark_procs_for_id(bf_node,
-                                                  "load");
-           /* UT_array *loads = sealark_loadstmts(bf_node); */
-           if (loads)
-               return nodelist_to_s7_list(s7, loads);
-           else
-               log_debug("ERROR: ...fixme...");
-        }
-       if (op == KW(package)) {
-           UT_array *procs = sealark_procs_for_id(bf_node,
-                                                  "package");
-           if (utarray_len(procs) == 1)
-               return sunlark_node_new(s7,
-                                       utarray_eltptr(procs, 0));
-           else
-               return s7_nil(s7);
-        }
-        if (op == KW(directives)) {
-            /* all procs and definitions */
-            UT_array *directives = sealark_directives(bf_node);
-            return nodelist_to_s7_list(s7, directives);
-            return NULL;
-        }
-        if (op == KW(definitions)) {
-            /* sealark_debug_print_ast_outline(bf_node, 0); */
-            UT_array *defns = sealark_definitions(bf_node);
-            return nodelist_to_s7_list(s7, defns);
-        }
-        if (op == KW(vardefs)) {
-            /* result_list = */
-            UT_array *vardefs = sealark_vardefs(bf_node);
-            return nodelist_to_s7_list(s7, vardefs);
-        }
-        if (op == KW(procedures)) {
-            UT_array *procs = sealark_procs(bf_node);
-            return nodelist_to_s7_list(s7, procs);
-        }
-        /* common properties */
-        s7_pointer result = sunlark_common_property_lookup(s7, bf_node, op);
-        if (result) return result;
-        break;
-    case 2:
-        return buildfile_handle_dyadic_path(s7, bf_node, path_args);
-        break;
-    case 3:
-        return buildfile_handle_triadic_path(s7, bf_node, path_args);
-        break;
-    case 4:
-        return buildfile_handle_tetradic_path(s7, bf_node, path_args);
-        break;
-    case 5:
-        return buildfile_handle_pentadic_path(s7, bf_node, path_args);
-        break;
-    default:
-        return buildfile_handle_pentadic_path(s7, bf_node, path_args);
+        UT_array *loads = sealark_procs_for_id(bf_node,
+                                               "load");
+        /* UT_array *loads = sealark_loadstmts(bf_node); */
+        if (loads)
+            return nodelist_to_s7_list(s7, loads);
+        else
+            log_debug("ERROR: ...fixme...");
     }
+    if (op == KW(package)) {
+        UT_array *procs = sealark_procs_for_id(bf_node,
+                                               "package");
+        if (utarray_len(procs) == 1)
+            return sunlark_node_new(s7,
+                                    utarray_eltptr(procs, 0));
+        else
+            return s7_nil(s7);
+    }
+    if (op == KW(directives)) {
+        /* all procs and definitions */
+        UT_array *directives = sealark_directives(bf_node);
+        return nodelist_to_s7_list(s7, directives);
+        return NULL;
+    }
+    if (op == KW(definitions)) {
+        /* sealark_debug_print_ast_outline(bf_node, 0); */
+        UT_array *defns = sealark_definitions(bf_node);
+        return nodelist_to_s7_list(s7, defns);
+    }
+    if (op == KW(vardefs)) {
+        /* result_list = */
+        UT_array *vardefs = sealark_vardefs(bf_node);
+        return nodelist_to_s7_list(s7, vardefs);
+    }
+    if (op == KW(procedures)) {
+        UT_array *procs = sealark_procs(bf_node);
+        return nodelist_to_s7_list(s7, procs);
+    }
+    /* common properties */
+    s7_pointer result = sunlark_common_property_lookup(s7, bf_node, op);
+    if (result) return result;
+
+        log_error("Bad arg on buildfile: %s", s7_object_to_c_string(s7, op));
+    return(s7_error(s7,
+                    s7_make_symbol(s7, "invalid_argument"),
+                    s7_list(s7, 2, s7_make_string(s7,
+                 "Arg \"~A\" inadmissable here"),
+                            op)));
+
+    /* switch(op_count) { */
+    /* case 1: */
+    /*     /\* if (op == KW(>>) || op == KW(>) || op == KW(targets)) { *\/ */
+    /*     /\*     result_list = sunlark_targets_for_buildfile(s7, bf_node); *\/ */
+    /*     /\*     //FIXME: switch to: *\/ */
+    /*     /\*     /\\* UT_array *loads = sealark_procs_for_id(bf_node, *\\/ *\/ */
+    /*     /\*     /\\*                                       "target"); *\\/ *\/ */
+    /*     /\*     return result_list; *\/ */
+    /*     /\* } *\/ */
+    /*    if (op == KW(loads)) { */
+    /*         // :build-file > :stmt-list :smallstmt-list > load-expr,... */
+    /*        /\* result_list = sunlark_fetch_load_stmts(s7, bf_node); *\/ */
+
+    /*        UT_array *loads = sealark_procs_for_id(bf_node, */
+    /*                                               "load"); */
+    /*        /\* UT_array *loads = sealark_loadstmts(bf_node); *\/ */
+    /*        if (loads) */
+    /*            return nodelist_to_s7_list(s7, loads); */
+    /*        else */
+    /*            log_debug("ERROR: ...fixme..."); */
+    /*     } */
+    /*    if (op == KW(package)) { */
+    /*        UT_array *procs = sealark_procs_for_id(bf_node, */
+    /*                                               "package"); */
+    /*        if (utarray_len(procs) == 1) */
+    /*            return sunlark_node_new(s7, */
+    /*                                    utarray_eltptr(procs, 0)); */
+    /*        else */
+    /*            return s7_nil(s7); */
+    /*     } */
+    /*     if (op == KW(directives)) { */
+    /*         /\* all procs and definitions *\/ */
+    /*         UT_array *directives = sealark_directives(bf_node); */
+    /*         return nodelist_to_s7_list(s7, directives); */
+    /*         return NULL; */
+    /*     } */
+    /*     if (op == KW(definitions)) { */
+    /*         /\* sealark_debug_print_ast_outline(bf_node, 0); *\/ */
+    /*         UT_array *defns = sealark_definitions(bf_node); */
+    /*         return nodelist_to_s7_list(s7, defns); */
+    /*     } */
+    /*     if (op == KW(vardefs)) { */
+    /*         /\* result_list = *\/ */
+    /*         UT_array *vardefs = sealark_vardefs(bf_node); */
+    /*         return nodelist_to_s7_list(s7, vardefs); */
+    /*     } */
+    /*     if (op == KW(procedures)) { */
+    /*         UT_array *procs = sealark_procs(bf_node); */
+    /*         return nodelist_to_s7_list(s7, procs); */
+    /*     } */
+    /*     /\* common properties *\/ */
+    /*     s7_pointer result = sunlark_common_property_lookup(s7, bf_node, op); */
+    /*     if (result) return result; */
+    /*     break; */
+    /* case 2: */
+    /*     return buildfile_handle_dyadic_path(s7, bf_node, path_args); */
+    /*     break; */
+    /* case 3: */
+    /*     return buildfile_handle_triadic_path(s7, bf_node, path_args); */
+    /*     break; */
+    /* case 4: */
+    /*     return buildfile_handle_tetradic_path(s7, bf_node, path_args); */
+    /*     break; */
+    /* case 5: */
+    /*     return buildfile_handle_pentadic_path(s7, bf_node, path_args); */
+    /*     break; */
+    /* default: */
+    /*     return buildfile_handle_pentadic_path(s7, bf_node, path_args); */
+    /* } */
 
     /* /\* predicates *\/ */
     /* s7_pointer sym = s7_keyword_to_symbol(s7, op); */

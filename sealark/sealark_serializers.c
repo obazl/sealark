@@ -32,8 +32,9 @@
  */
 EXPORT char *sealark_crush_string(UT_string *src)
 {
-    /* log_debug("sealark_crush_string"); */
-
+#if defined(DEBUG_SERIALIZERS)
+    log_debug("sealark_crush_string");
+#endif
     char *srcptr = utstring_body(src);
     char *dstptr = calloc(utstring_len(src), sizeof(char));
 
@@ -66,8 +67,9 @@ EXPORT char *sealark_crush_string(UT_string *src)
  */
 EXPORT char *sealark_squeeze_string(UT_string *src)
 {
+#if defined(DEBUG_SERIALIZERS)
     log_debug("sealark_squeeze_string");
-
+#endif
     char *srcptr = utstring_body(src);
     char *dstptr = calloc(utstring_len(src), sizeof(char));
 
@@ -110,7 +112,9 @@ EXPORT void sealark_node_to_starlark(struct node_s *node, UT_string *buffer)
 
 EXPORT void sealark_nodelist2string(UT_array *nodes, UT_string *buffer)
 {
-    /* log_debug("rootlist2string, line %d", line); */
+#if defined(DEBUG_SERIALIZERS)
+    log_debug("sealark_nodelist2string, line %d", line);
+#endif
     line = col = 0;
     _nodelist2string(nodes, buffer);
     if (utstring_body(buffer)[utstring_len(buffer)-1] != '\n') {
@@ -224,7 +228,9 @@ LOCAL void _node2string(struct node_s *node, UT_string *buffer)
 
 LOCAL void _nodelist2string(UT_array *nodes, UT_string *buffer)
 {
-    /* log_debug("nodelist2string"); */
+#if defined(DEBUG_SERIALIZERS)
+    log_debug("nodelist2string");
+#endif
     /* line = col = 0; */
     struct node_s *node=NULL;
     while( (node=(struct node_s*)utarray_next(nodes, node))) {
@@ -234,6 +240,9 @@ LOCAL void _nodelist2string(UT_array *nodes, UT_string *buffer)
 
 LOCAL void comments2string(UT_array *nodes, UT_string *buffer)
 {
+#if defined(DEBUG_SERIALIZERS)
+    log_debug("comments2string");
+#endif
     struct node_s *node=NULL;
     while( (node=(struct node_s*)utarray_next(nodes, node))) {
         _node2string(node, buffer);
@@ -242,15 +251,15 @@ LOCAL void comments2string(UT_array *nodes, UT_string *buffer)
 
 /* **************************************************************** */
 //FIXME: handle large files. use dynamic alloc
-//FIXME: rename: sunlark_debug_print_node
-EXPORT void sealark_node_display(// s7_scheme *s7,
+EXPORT void sealark_display_node(// s7_scheme *s7,
                           struct node_s *nd,
                           UT_string *buffer, int level)
 {
-/* #ifdef DEBUG_SERIALIZERS */
-/*     log_debug("sealark_node_display"); */
-/*     log_debug("tid: %d %s", nd->tid, TIDNAME(nd)); */
-/* #endif */
+#ifdef DEBUG_SERIALIZERS
+    log_debug("sealark_display_node: %d %s", nd->tid, TIDNAME(nd));
+    if (nd->tid == TK_ID)
+        log_debug("ID: %s", nd->s);
+#endif
 
     // check display_buf size, expand if needed
 
@@ -353,7 +362,7 @@ EXPORT void sealark_node_display(// s7_scheme *s7,
         int lvl = ++level;
         while((subn=(struct node_s*)utarray_next(nd->subnodes,
                                                  subn))) {
-            sealark_node_display(subn, buffer, lvl);
+            sealark_display_node(subn, buffer, lvl);
         }
 
         utstring_printf(buffer, "%*.s]", (level+1)*2+1, " ");

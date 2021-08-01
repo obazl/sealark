@@ -26,7 +26,7 @@ EXPORT void sunlark_debug_print_node(s7_scheme *s7,
         exit(EXIT_FAILURE);
     }
     struct node_s *nd = s7_c_object_value(node);
-    sealark_node_display(nd, buf, 0);
+    sealark_display_node(nd, buf, 0);
 
     if (utstring_body(buf)[utstring_len(buf)-1] == '\n')
         utstring_body(buf)[utstring_len(buf)-1] = '\0';

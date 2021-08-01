@@ -85,7 +85,7 @@ s7_pointer sunlark_node_is_kw_pred(s7_scheme *s7, s7_pointer kw, struct node_s *
 
     if ( (strncmp("target?", pred, 7) == 0) && (strlen(pred) == 7) ) {
         /* until we get TK_Target implemented */
-        bool is_target =  sealark_is_target(self);
+        bool is_target = sealark_call_expr_is_target(self);
         return s7_make_boolean(s7, is_target);
     }
 

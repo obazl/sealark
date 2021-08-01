@@ -12,7 +12,7 @@
 #include "sunlark_dispatcher_pentads.h"
 
 /* ************************************************** */
-s7_pointer buildfile_handle_pentadic_path(s7_scheme *s7,
+s7_pointer xbuildfile_handle_pentadic_path(s7_scheme *s7,
                                          struct node_s *bf_node,
                                          s7_pointer path_args)
 {

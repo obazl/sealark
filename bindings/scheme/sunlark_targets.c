@@ -352,7 +352,6 @@ EXPORT s7_pointer sunlark_target_1(s7_scheme *s7,
             }
         }
         if (s7_is_integer(op2)) {
-            log_debug("1 xxxxxxxxxxxxxxxx");
             s7_pointer binding = sunlark_resolve_binding_path_on_target(s7, tgt_node, rest);
             return binding;
                 /* = sealark_target_binding_for_index(tgt_node, s7_integer(op2)); */
@@ -386,7 +385,7 @@ EXPORT s7_pointer sunlark_target_1(s7_scheme *s7,
             return(s7_error(s7,
                             s7_make_symbol(s7, "invalid_argument"),
                             s7_list(s7, 2, s7_make_string(s7,
-                            "Keyword ~A must come last in path expression."),
+                            "Keyword ~A must come last in path expression; did you mean :target (or :>)?"),
                                     op)));
         }
     }

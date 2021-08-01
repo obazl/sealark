@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -215,4 +216,19 @@ struct node_s *sealark_loadstmt_binding_for_index(struct node_s *load_stmt,
         }
     }
     return NULL;
+}
+
+/* **************** */
+EXPORT
+char *sealark_loadstmt_src_node(struct node_s *load_stmt)
+{
+#if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
+    log_debug("sealark_loadstmt_src");
+#endif
+
+    assert(load_stmt->tid == TK_Load_Stmt);
+
+    struct node_s *src = utarray_eltptr(load_stmt->subnodes, 2);
+    assert(src->tid == TK_STRING);
+    return src->s;
 }

@@ -14,18 +14,21 @@
 
 /* **************** */
 //FIXME: also update rbrack position?
-/*  replace content of list_expr, not the whole expr */
-struct node_s *sunlark_set_vector(s7_scheme *s7,
+/*  replace _content_ of list_expr, not the whole expr */
+struct node_s *sunlark_mutate_vector(s7_scheme *s7,
                                         struct node_s *old_vec,
                                         s7_pointer new_vec)
 {
 #if defined(DEBUG_TRACE) || defined(DEBUG_MUTATORS)
-    log_debug("sunlark_set_vector => %s",
+    log_debug("sunlark_mutate_vector => %s",
               s7_object_to_c_string(s7, new_vec));
 #endif
 #if defined(DEBUG_AST)
     sealark_debug_print_ast_outline(old_vec, 4);
 #endif
+
+    assert(old_vec->tid == TK_List_Expr);
+
     int new_ct = s7_list_length(s7, new_vec);
 
     /* :list_expr > :lbrack, :expr_list, :rbrack */
@@ -51,6 +54,11 @@ struct node_s *sunlark_set_vector(s7_scheme *s7,
         return old_vec;
     }
 
+    if (s7_car(new_vec) == KW(remove)) {
+        sunlark_remove_attr_list_items(s7, old_items, s7_cdr(new_vec));
+        return old_vec;
+    }
+
     /* first element sets element type */
     /* BUT: what if first elt is sym? e.g. (myvar 8 9) */
     new_vec_type = sunlark_infer_vector_type_from_list(s7, new_vec);
@@ -67,6 +75,7 @@ struct node_s *sunlark_set_vector(s7_scheme *s7,
 
     /* FIXME: handle case where new item ct > old item ct */
 
+    /* default: replace */
     int i = 0;
     int new_idx = 0;
     while( ! s7_is_null(s7, new_vec) ) {
@@ -448,12 +457,13 @@ struct node_s *_replace_attr_list_items(s7_scheme *s7,
     return expr_list;
 }
 
-struct node_s *_remove_attr_list_items(s7_scheme *s7,
+/*FIXME: remove from right to left, so indexing will work after removals */
+struct node_s *sunlark_remove_attr_list_items(s7_scheme *s7,
                                     struct node_s *expr_list,
                                     s7_pointer edits)
 {
 #if defined(DEBUG_TRACE) || defined(DEBUG_ATTR)
-    log_debug("_remove_attr_list_items, tid: %d", expr_list->tid);
+    log_debug("sunlark_remove_attr_list_items, tid: %d", expr_list->tid);
 #endif
 
     log_debug("edits: %s", s7_object_to_c_string(s7, edits));
@@ -471,28 +481,44 @@ struct node_s *_remove_attr_list_items(s7_scheme *s7,
     attr_ct = (subnode_ct - 1) / 2 + 1;
     log_debug("subnode_ct: %d, attr_ct: %d", subnode_ct, attr_ct);
 
+    s7_pointer tmp = edits, editem;
+    while( ! s7_is_null(s7, tmp) ) {
+        editem = s7_car(tmp);
+        if (abs(s7_integer(editem)) >= attr_ct) {
+            log_error("ERROR: abs(%d) (edit locn) >= length %d of attr list value", s7_integer(editem), attr_ct);
+            /* return(s7_error(s7, */
+            /*                 s7_make_symbol(s7, "invalid_argument"), */
+            /*                 s7_list(s7, 2, s7_make_string(s7,                           "ERROR: abs(%~A) (edit locn) >= length ~A of attr list value"), */
+            /*                         editem, s7_make_integer(s7,attr_ct)))); */
+            errno = ESUNLARK_INVALID_ARG;
+            return NULL;
+        }
+        tmp = s7_cdr(tmp);
+    }
+
     /* for multiple removals, e.g. (:remove :0 :1), we need to account
        for elements already removed as we iterate over the list. */
     int remove_ct = 0;
 
     while(!s7_is_null(s7, edits)) {
-        if ( s7_is_keyword(s7_car(edits)) ) {
+        if ( s7_is_integer(s7_car(edits)) ) {
             locn_s7 = s7_car(edits); /* :n */
-            locn_c =  s7_object_to_c_string(s7, locn_s7);
-            log_debug("locn_c: %s, %c", locn_c, locn_c[1]);
-            s7_pointer sym = s7_keyword_to_symbol(s7, locn_s7);
-            log_debug("SYM: %s", s7_object_to_c_string(s7, sym));
-            if (strncmp("*", s7_object_to_c_string(s7, sym), 1) == 0) {
-                utarray_clear(expr_list->subnodes);
-                return expr_list;
-            } else {
-                attr_locn = atoi((char*)s7_symbol_name(sym));
-            }
+            attr_locn = s7_integer(locn_s7);
+            /* locn_c =  s7_object_to_c_string(s7, locn_s7); */
+            /* log_debug("locn_c: %s, %c", locn_c, locn_c[1]); */
+            /* s7_pointer sym = s7_keyword_to_symbol(s7, locn_s7); */
+            /* log_debug("SYM: %s", s7_object_to_c_string(s7, sym)); */
+            /* if (strncmp("*", s7_object_to_c_string(s7, sym), 1) == 0) { */
+            /*     utarray_clear(expr_list->subnodes); */
+            /*     return expr_list; */
+            /* } else { */
+            /*     attr_locn = atoi((char*)s7_symbol_name(sym)); */
+            /* } */
             log_debug("attr_locn: %d", attr_locn);
 
-            if (abs(attr_locn) > attr_ct) {
+            if (abs(attr_locn) >= attr_ct) {
                 /* subnode_ct = (subnode_ct + 1)/2; */
-                log_error("ERROR: abs(edit location) %d > length %d of attr list value", abs(attr_locn), attr_ct);
+                log_error("ERROR: abs(edit location) %d >= length %d of attr list value", abs(attr_locn), attr_ct);
                 errno = ESUNLARK_INVALID_ARG;
                 return NULL;
             }
@@ -521,8 +547,8 @@ struct node_s *_remove_attr_list_items(s7_scheme *s7,
         }
 
         struct node_s *target = utarray_eltptr(expr_list->subnodes, idx);
-        log_debug("target[%d] tid: %d, s: %s",
-                  idx, target->tid, target->s);
+        log_debug("target[%d] tid: %d %s, s: %s",
+                  idx, target->tid, TIDNAME(target), target->s);
 
         /* last element: remove preceding comma too */
         /* if (target->tid != TK_STRING) { */
@@ -643,6 +669,21 @@ s7_pointer sunlark_vector_replace_item(s7_scheme *s7,
                 }
             }
         }
+        if (s7_is_list(s7, newval)) {
+            if (KW(remove) == s7_car(newval)) {
+                struct node_s *newitem
+                    = sunlark_remove_attr_list_items(s7, item, s7_cdr(newval));
+                    /* = sunlark_update_list_value(s7, item, "foo", newval); */
+                if (newitem)
+                    return _list_expr;
+                else
+                    return(s7_error(s7,
+                                    s7_make_symbol(s7, "invalid_argument"),
+                                    s7_list(s7, 2, s7_make_string(s7,
+                                            "Arg out of bounds ~A"),
+                                            newval)));
+            }
+        }
         log_error("Type mismatch: newval %s, list type %d %s",
                   s7_object_to_c_string(s7, newval),
                   vec_type, token_name[vec_type][0]);
@@ -734,7 +775,7 @@ struct node_s *sunlark_update_list_value(s7_scheme *s7,
         }
         errno = 0;
         struct node_s *new_expr_list
-            = _remove_attr_list_items(s7, expr_list, s7_cdr(edits));
+            = sunlark_remove_attr_list_items(s7, expr_list, s7_cdr(edits));
         if (new_expr_list == NULL) {
             /* errno already set, msg printed */
             return NULL;
