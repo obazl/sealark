@@ -5,6 +5,7 @@ sunlark_test(
 
     int_attr = 3,
     int_list = [1, 2, 3],
+    int_list_dup = [1, 2, 1, 3],
 
     plaindq = "I am a plain double-quoted string",
     plainsq = 'I am a plain single-quoted string',

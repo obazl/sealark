@@ -288,17 +288,24 @@ s7_pointer sunlark_node_length(s7_scheme *s7, s7_pointer _node)
     log_debug("tid: %d %s", node->tid, TIDNAME(node));
 
     int ct;
-    if (node->tid == TK_List_Expr) {
+    if (node->tid == TK_Arg_List) {
         ct = sealark_subnode_count(node,
                                        true, // exclude meta
-                                       false, // not printables_only
+                                       false, // not all_printables
                                        false); // non-recursive
-    } else
-        if (node->tid == TK_Binding) {
-            return s7_make_integer(s7, 2);
-        } else
-            return s7_undefined(s7);
-
+    } else {
+        if (node->tid == TK_List_Expr) {
+            ct = sealark_subnode_count(node,
+                                       true, // exclude meta
+                                       false, // not all_printables
+                                       false); // non-recursive
+        } else {
+            if (node->tid == TK_Binding) {
+                return s7_make_integer(s7, 2);
+            } else
+                return s7_undefined(s7);
+        }
+    }
     ct--; // exclude self from count
     return s7_make_integer(s7, ct);
 }

@@ -173,12 +173,6 @@ EXPORT const char *token_name[136][2] =
      /* NULL */
     };
 
-/* struct obazl_buildfile_s { */
-/*     char *fname; */
-/*     struct node_s *root; */
-/*     /\* UT_array *nodelist; *\/ */
-/* }; */
-
 #if EXPORT_INTERFACE
 #include "utarray.h"
 
@@ -195,7 +189,11 @@ struct node_s {
     /* enum node_type_e type; */
     int tid;
     int line, col;
-    int index; //HACK, may be used when node is in vector
+
+    //HACK! if 1 in TK_List_Expr, then list items are (i . val) pairs
+    // set to list index for elts of such a list
+    int index;
+
     bool trailing_newline; // FIXME: do we need to retain this?
     enum quote_type_e qtype;
     char *s;
@@ -425,19 +423,20 @@ EXPORT struct node_s *sealark_new_list_expr(void)
 #if defined(DEBUG_MEM)
     log_debug("sealark_new_node");
 #endif
-    struct node_s *n = (struct node_s *)calloc(1, sizeof(struct node_s));
-    n->tid = TK_List_Expr;
-    utarray_new(n->subnodes, &node_icd);
+    struct node_s *newlist
+        = (struct node_s *)calloc(1, sizeof(struct node_s));
+    newlist->tid = TK_List_Expr;
+    utarray_new(newlist->subnodes, &node_icd);
 
     struct node_s *brack = sealark_new_node(TK_LBRACK, without_subnodes);
-    utarray_push_back(n->subnodes, brack);
+    utarray_push_back(newlist->subnodes, brack);
 
     struct node_s *list = sealark_new_node(TK_Expr_List, with_subnodes);
-    utarray_push_back(n->subnodes, list);
+    utarray_push_back(newlist->subnodes, list);
 
     brack = sealark_new_node(TK_RBRACK, without_subnodes);
-    utarray_push_back(n->subnodes, brack);
-    return n;
+    utarray_push_back(newlist->subnodes, brack);
+    return newlist;
 }
 
 /* **************** */
@@ -475,7 +474,7 @@ EXPORT void sealark_node_free(void *_elt) {
 /* count subnodes. a little overloaded */
 EXPORT int sealark_subnode_count(struct node_s *node,
                                  bool exclude_meta,
-                                 bool printables_only,
+                                 bool all_printables,
                                  bool recursive)
 {
     int ct = 0;
@@ -489,7 +488,7 @@ EXPORT int sealark_subnode_count(struct node_s *node,
     switch(node->tid) {
     case TK_List_Expr:
         if (node->subnodes)
-            if ( !printables_only ) {
+            if ( !all_printables ) {
                 if (exclude_meta) {
                     count_node = utarray_eltptr(node->subnodes, 1);
                 } else
@@ -502,17 +501,17 @@ EXPORT int sealark_subnode_count(struct node_s *node,
             return 1;
         break;
     case TK_Arg_List:
-        if (printables_only)
+        if (all_printables)
             ct--; // self is non-printable
         count_node = node;
         break;
     case TK_Binding:
-        if (printables_only)
+        if (all_printables)
             ct--; // self is non-printable
         count_node = node;
         break;
     case TK_Expr_List:
-        if (printables_only)
+        if (all_printables)
             ct--; // self is non-printable
         count_node = node;
         break;
@@ -529,7 +528,7 @@ EXPORT int sealark_subnode_count(struct node_s *node,
         ct++; // count count_node?
         struct node_s *subnode = NULL;
         while( (subnode=(struct node_s*)utarray_next(count_node->subnodes, subnode)) ) {
-            if ( !printables_only ) {
+            if ( !all_printables ) {
                 if (exclude_meta) {
                     if (subnode->tid == TK_COMMA) continue;
                     if (subnode->tid == TK_COLON) continue;
@@ -543,9 +542,9 @@ EXPORT int sealark_subnode_count(struct node_s *node,
                 }
             }
             if (recursive)
-                ct=ct+sealark_subnode_count(subnode, exclude_meta, printables_only, recursive);
+                ct=ct+sealark_subnode_count(subnode, exclude_meta, all_printables, recursive);
             else
-                if (printables_only) {
+                if (all_printables) {
                     if (sealark_is_printable(subnode)) {
                         log_debug("is printable: %d, %s",
                                   subnode->tid, TIDNAME(subnode));
@@ -664,6 +663,7 @@ EXPORT struct node_s *sealark_get_binding_node(struct node_s *node, char *kw)
     return NULL;
 }
 
+/* FIXME: this does not really copy */
 EXPORT void sealark_node_copy(void *_dst, const void *_src)
 {
     /* log_debug("node_copy"); // : %p <- %p", _dst, _src); */

@@ -203,10 +203,10 @@ void test_set_string_list_to_bool(void) {
 /**************/
 int main(void) {
     UNITY_BEGIN();
-    /* RUN_TEST(test_set_bool_to_int); */
-    /* RUN_TEST(test_set_bool_to_int_list1); */
-    /* RUN_TEST(test_set_bool_to_int_list2); */
-    /* RUN_TEST(test_set_bool_to_int_list4); */
+    RUN_TEST(test_set_bool_to_int);
+    RUN_TEST(test_set_bool_to_int_list1);
+    RUN_TEST(test_set_bool_to_int_list2);
+    RUN_TEST(test_set_bool_to_int_list4);
 
     RUN_TEST(test_set_string_list_to_bool);
     return UNITY_END();

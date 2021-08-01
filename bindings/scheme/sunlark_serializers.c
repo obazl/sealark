@@ -765,6 +765,50 @@ LOCAL void _display_stmt_list(struct node_s *nd,
 }
 
 /* **************************************************************** */
+LOCAL void _display_vector_item(struct node_s *nd,
+                                bool as_map_entries,
+                                UT_string *buffer,
+                                int level)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug("sunlark_display_binding_value");
+#endif
+
+    switch(nd->tid) {
+    case TK_INT:
+        utstring_printf(buffer, "%s", nd->s);
+        break;
+    case TK_STRING: {
+        char *br = SEALARK_STRTYPE(nd->qtype);
+        char *q = sealark_quote_type(nd);
+        if (as_map_entries) {
+            utstring_printf(buffer, "(%d . %s%s%s%s)",
+                            nd->index, br, q, nd->s, q);
+        } else {
+            utstring_printf(buffer, "%s%s%s%s",
+                            br, q, nd->s, q);
+        }
+    }
+        break;
+    case TK_ID:
+        if (strncmp(nd->s, "True", 4) == 0)
+            utstring_printf(buffer, " #t");
+        else
+            if (strncmp(nd->s, "False", 5) == 0)
+                utstring_printf(buffer, " #f");
+            else
+                utstring_printf(buffer, "'%s", nd->s);
+        break;
+    /* case TK_List_Expr: */
+    /*     _display_vector(nd, buffer, level); */
+    /*     break; */
+    default:
+        log_error("Support list item for nodes of type %d %s not yet implemented...", nd->tid, TIDNAME(nd));
+        utstring_printf(buffer, "Support list item for nodes of type %d %s not yet implemented...", nd->tid, TIDNAME(nd));
+    }
+}
+
+/* **************************************************************** */
 LOCAL void _display_vector(struct node_s *nd,
                            UT_string *buffer,
                            int level)
@@ -794,7 +838,7 @@ LOCAL void _display_vector(struct node_s *nd,
                 utstring_printf(buffer, "%*s",
                                 split? (level+3)*2 : 0,
                                 split? " " : "");
-            _display_binding_value(sub, buffer, level);
+            _display_vector_item(sub, (bool)nd->index, buffer, level);
         }
         i++;
     }
@@ -847,6 +891,9 @@ void sunlark_display_node(// s7_scheme *s7,
             else
                 utstring_printf(buffer, "%s", nd->s);
     }
+        break;
+    case TK_INT:
+        utstring_printf(buffer, "%s", nd->s);
         break;
     case TK_List_Expr:
         _display_vector(nd, buffer, level);

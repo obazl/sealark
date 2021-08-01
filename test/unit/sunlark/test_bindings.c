@@ -118,6 +118,12 @@ void test_binding_lists(void) {
     s7_pointer path1 = s7_eval_c_string(s7, "'(:target 1 :bindings)");
     s7_pointer bindings1 = s7_apply_function(s7, ast, path1);
 
+    s7_pointer ct = s7_apply_function(s7,
+                                      s7_eval_c_string(s7, "length"),
+                                      s7_list(s7, 1, bindings1));
+    TEST_ASSERT_EQUAL_INT( 3, s7_integer(ct) );
+
+    sealark_debug_print_ast_outline(s7_c_object_value(bindings1), 0);
     /* (bindings1 :arg-list?) =? #t */
     s7_pointer pred = s7_apply_function(s7, bindings1,
                              s7_eval_c_string(s7, "'(:arg-list?)"));
@@ -127,11 +133,6 @@ void test_binding_lists(void) {
     pred = s7_apply_function(s7, bindings1,
                              s7_eval_c_string(s7, "'(:bindings?)"));
     TEST_ASSERT( pred == s7_t(s7) );
-
-    s7_pointer ct = s7_apply_function(s7,
-                                      s7_eval_c_string(s7, "length"),
-                                      s7_list(s7, 1, bindings1));
-    TEST_ASSERT( s7_integer(ct) == 3 ); // 3 elts, 5 including commas
 
     /* check type, tid */
     TEST_ASSERT( s7_is_c_object(bindings1) );

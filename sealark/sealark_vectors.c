@@ -53,7 +53,7 @@ EXPORT struct node_s *sealark_vector_item_for_int(struct node_s *list_expr,
 
 /* **************************************************************** */
 /* NB: returns list of (idx .item) */
-EXPORT UT_array *sealark_vector_items_for_string(struct node_s *vector,
+EXPORT struct node_s *sealark_vector_items_for_string(struct node_s *vector,
                                                  const char *selector)
 {
 #if defined(DEBUG_TRACE)
@@ -63,8 +63,11 @@ EXPORT UT_array *sealark_vector_items_for_string(struct node_s *vector,
 
     int selector_len = strlen(selector);
 
-    UT_array *items;
-    utarray_new(items, &node_icd);
+    struct node_s *new_list = sealark_new_list_expr();
+    assert(new_list->tid == TK_List_Expr);
+    new_list->index = 1;
+    struct node_s *new_items = utarray_eltptr(new_list->subnodes, 1);
+    struct node_s *comma;
 
     struct node_s *expr_list = utarray_eltptr(vector->subnodes, 1);
     int item_ct = utarray_len(expr_list->subnodes);
@@ -77,10 +80,13 @@ EXPORT UT_array *sealark_vector_items_for_string(struct node_s *vector,
             if ((strncmp(sub->s, selector, selector_len) == 0)
                 && strlen(sub->s) == selector_len ){
                 sub->index = i;
-                utarray_push_back(items, sub);
+                utarray_push_back(new_items->subnodes, sub);
+                /* fixme: omit trailing comma */
+                comma = sealark_new_node(TK_COMMA, without_subnodes);
+                utarray_push_back(new_items->subnodes, comma);
             }
             i++;
         }
     }
-    return items;
+    return new_list;
 }
