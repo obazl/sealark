@@ -107,17 +107,17 @@ struct node_s *sunlark_mutate_vector(s7_scheme *s7,
 
         if (new_idx > old_ct-1) {
             log_debug("extending vec");
-            struct node_s *newnode = sealark_node_new();
-            newnode->tid = TK_COMMA;
+            struct node_s *newnode = sealark_new_node(TK_COMMA, without_subnodes);
+            /* newnode->tid = TK_COMMA; */
             //FIXME: set line, col
             utarray_push_back(old_items->subnodes, newnode);
 
-            newnode = sealark_node_new();
+            newnode = sealark_new_node(new_item_type, with_subnodes);
             newnode->tid = new_item_type;
             if (new_item_type == TK_STRING) {
                 ; //newnode->qtype = DQUOTE;
             }
-            newnode->s = calloc(new_str_len, sizeof(char));
+            /* newnode->s = calloc(new_str_len, sizeof(char)); */
             strncpy(newnode->s, new_str, new_str_len);
             //FIXME: set line, col
             utarray_push_back(old_items->subnodes, newnode);
@@ -325,10 +325,10 @@ struct node_s *_replace_attr_list_all(s7_scheme *s7,
 #endif
 
     utarray_clear(expr_list->subnodes);
-    struct node_s *node = sealark_node_new();
-    node->tid = TK_STRING;
+    struct node_s *node = sealark_new_node(TK_STRING, with_subnodes);
+    /* node->tid = TK_STRING; */
     int len = strlen(replacement);
-    node->s = calloc(1, len + 1);
+    /* node->s = calloc(1, len + 1); */
     strncpy(node->s, replacement, len);
     log_debug("node->s: %s", node->s);
     /* node->qtype = DQUOTE; */
@@ -345,7 +345,7 @@ struct node_s *_remove_attr_list_all(s7_scheme *s7,
 #endif
 
     utarray_clear(expr_list->subnodes);
-    /* struct node_s *node = sealark_node_new(); */
+    /* struct node_s *node = sealark_new_node(); */
     /* node->tid = TK_STRING; */
     /* int len = strlen(replacement); */
     /* node->s = calloc(1, len + 1); */

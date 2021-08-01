@@ -662,6 +662,7 @@ static void _register_get_and_set(s7_scheme *s7)
     else ;;  arg1 not ast_node, so arg2 must be
 
  */
+/* FIXME: does not really copy */
 static s7_pointer sunlark_node_copy(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
@@ -698,7 +699,7 @@ static s7_pointer sunlark_node_copy(s7_scheme *s7, s7_pointer args)
             /* struct node_s *n2 = (struct node_s *) */
             /*     calloc(1, sizeof(struct node_s)); */
             /* n2 = ast_node_init_default(n2); */
-            n2 = sealark_node_new();
+            /* n2 = sealark_new_node(n2->tid, ); */
             sealark_node_copy(n2, n1);
             return s7_make_c_object(s7, ast_node_t,
                                     (void *)n2);
@@ -726,6 +727,7 @@ s7_pointer sunlark_node_init_from_s7(s7_scheme *s7, struct node_s *cs, s7_pointe
     //FIXME: is this the right way to cdr over a list?
     s7_pointer arg = s7_car(args);
     s7_pointer cdr  = s7_cdr(args);
+    /* args are ordered */
     int i = 0;
     while ( !s7_is_unspecified(s7, arg) ) {
         int len;
@@ -776,10 +778,11 @@ s7_pointer sunlark_node_init_from_s7(s7_scheme *s7, struct node_s *cs, s7_pointe
 
         case FLD_COMMENTS:
             //FIXME: implement
+            log_error("FIXME: comments initialization not implemented");
             break;
 
         case FLD_SUBNODES:
-            //FIXME: implement
+            log_error("FIXME: subnodes initialization not implemented");
             break;
         }
         arg = s7_car(cdr);

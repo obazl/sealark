@@ -90,7 +90,8 @@ LOCAL s7_pointer sunlark_make_ast_node(s7_scheme *s7, s7_pointer args)
     /*     calloc(1, sizeof(struct node_s)); */
     /* new_ast_node = ast_node_init_default(new_ast_node); */
 
-    struct node_s *n = sealark_node_new();
+    struct node_s *n = sealark_new_node(0, /* will be initialized */
+                                        without_subnodes);
 
     if (sunlark_node_init_from_s7(s7, n, args) != NULL) {
         log_debug("OOPS");
@@ -120,7 +121,7 @@ EXPORT s7_pointer sunlark_make_string(s7_scheme *s7, s7_pointer args)
 
     log_debug("make-string args: %s", s7_object_to_c_string(s7, args));
 
-    struct node_s *nd = sealark_node_new();
+    struct node_s *nd = sealark_new_node(TK_STRING, without_subnodes);
 
     if ( s7_is_string(s7_car(args)) ) {
         const char *s = s7_string(s7_car(args));
@@ -133,7 +134,7 @@ EXPORT s7_pointer sunlark_make_string(s7_scheme *s7, s7_pointer args)
                                                       "First arg to sunlark-make-string must be a string: ~A"), args)));
     }
 
-    nd->tid = TK_STRING;
+    /* nd->tid = TK_STRING; */
     s7_pointer type = s7_cadr(args);
 
     if (type == KW(plain)) {

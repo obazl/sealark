@@ -402,15 +402,45 @@ EXPORT int sealark_kw_to_tid(char *kw)
 }
 
 /* **************************************************************** */
-EXPORT struct node_s *sealark_node_new()
+#if EXPORT_INTERFACE
+#define without_subnodes false
+#define with_subnodes true
+#endif
+
+EXPORT struct node_s *sealark_new_node(int type, bool init_subnodes)
 {
 #if defined(DEBUG_MEM)
-    log_debug("sealark_node_new");
+    log_debug("sealark_new_node");
 #endif
     struct node_s *n = (struct node_s *)calloc(1, sizeof(struct node_s));
+    n->tid = type;
+    if (init_subnodes)
+        utarray_new(n->subnodes, &node_icd);
     return n;
 }
 
+/* **** */
+EXPORT struct node_s *sealark_new_list_expr(void)
+{
+#if defined(DEBUG_MEM)
+    log_debug("sealark_new_node");
+#endif
+    struct node_s *n = (struct node_s *)calloc(1, sizeof(struct node_s));
+    n->tid = TK_List_Expr;
+    utarray_new(n->subnodes, &node_icd);
+
+    struct node_s *brack = sealark_new_node(TK_LBRACK, without_subnodes);
+    utarray_push_back(n->subnodes, brack);
+
+    struct node_s *list = sealark_new_node(TK_Expr_List, with_subnodes);
+    utarray_push_back(n->subnodes, list);
+
+    brack = sealark_new_node(TK_RBRACK, without_subnodes);
+    utarray_push_back(n->subnodes, brack);
+    return n;
+}
+
+/* **************** */
 EXPORT void sealark_node_free(void *_elt) {
 #if defined(DEBUG_MEM)
     log_debug("sealark_node_free: %s (%d)",

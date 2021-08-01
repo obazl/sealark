@@ -396,7 +396,7 @@ LOCAL struct node_s *_mutate_binding(s7_scheme *s7, struct node_s *binding, s7_p
             } else {
                 /* replace */
                 sealark_node_free(old_value);
-                old_value = sealark_node_new();
+                old_value = sealark_new_node(TK_List_Expr, without_subnodes);
             }
         }
         return binding;
