@@ -174,6 +174,7 @@ char *sunlark_node_display_readably(s7_scheme *s7, void *value)
     return display_buf; // workbuffer;
 }
 
+/* **************************************************************** */
 #if INTERFACE
 #define SUNLARK_TO_STARLARK_HELP "(ast-node->starlark ast_node)"
 #endif

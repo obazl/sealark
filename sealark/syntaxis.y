@@ -266,9 +266,7 @@ i.e. only SimpleStmt allowed in BUILD files.
 program ::= stmt_list(SS) .
 {
     /* log_trace(">>program ::= stmt_list ."); */
-    struct node_s *root = calloc(sizeof(struct node_s), 1);
-    root->tid = TK_Build_File;
-    utarray_new(root->subnodes, &node_icd);
+    struct node_s *root = sealark_new_node(TK_Build_File, with_subnodes);
     utarray_push_back(root->subnodes, SS);
     parse_state->root = root;
 }

@@ -231,6 +231,7 @@ static void comment_push(int type, /* 1: comment, 0: null */
                     line++;
                     lexer->extra_lines++;
                     struct node_s *n = calloc(sizeof(struct node_s), 1);
+                    n->index = -1;
                     n->tid = TK_BLANK;
                     n->line = line; // - newlines;
                     /* log_debug("xxxx: %d:%d", n->line, n->col); */
@@ -314,6 +315,7 @@ static void comment_push(int type, /* 1: comment, 0: null */
 
         /* starting at #ecmt, find first preceding newline */
         struct node_s *n = calloc(sizeof(struct node_s), 1);
+        n->index = -1;
         n->tid = TK_COMMENT;
         /* n->line = newlines + line; */
         n->line = line; // - newlines;

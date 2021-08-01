@@ -460,13 +460,10 @@ struct node_s *sunlark_convert_node_to_list_expr(s7_scheme *s7,
     node->tid = TK_List_Expr;
     utarray_new(node->subnodes, &node_icd);
 
-    struct node_s *lbrack = (struct node_s*)calloc(1, sizeof(struct node_s));
-    lbrack->tid = TK_LBRACK;
+    struct node_s *lbrack = sealark_new_node(TK_LBRACK, without_subnodes);
     utarray_push_back(node->subnodes, lbrack);
 
-    struct node_s *vec = (struct node_s*)calloc(1, sizeof(struct node_s));
-    vec->tid = TK_Expr_List;
-    utarray_new(vec->subnodes, &node_icd);
+    struct node_s *vec = sealark_new_node(TK_Expr_List, with_subnodes);
     struct node_s *new, *comma;
     int len = s7_list_length(s7, list);
     int i = 0;
@@ -476,8 +473,8 @@ struct node_s *sunlark_convert_node_to_list_expr(s7_scheme *s7,
     while( !s7_is_null(s7, list) ) {
         ibuf[0] = '\0';
         s7_pointer arg = s7_car(list);
-        /* log_debug("arg: %s", s7_object_to_c_string(s7, arg)); */
-        new = (struct node_s*)calloc(1, sizeof(struct node_s));
+        new = sealark_new_node(0, without_subnodes);
+
         if (s7_is_integer(arg)) {
             int i = s7_integer(arg);
             snprintf(ibuf, 256, "%d", i);

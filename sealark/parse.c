@@ -73,6 +73,7 @@ EXPORT UT_array *sealark_lex_string(const char *buffer)
 
     int tok;
     struct node_s *btok = calloc(sizeof(struct node_s), 1);
+    btok->index = -1;
 
     struct bf_lexer_s * lexer = malloc(sizeof(struct bf_lexer_s));
     lexer_init(NULL, lexer, buffer);
@@ -96,6 +97,7 @@ EXPORT UT_array *sealark_lex_string(const char *buffer)
         utarray_push_back(token_list, btok);
 
         btok = calloc(sizeof(struct node_s), 1);
+        btok->index = -1;
     }
     return token_list;
 }
@@ -142,6 +144,7 @@ EXPORT UT_array *sealark_lex_file(char *fname)
 
     int tok;
     struct node_s *btok = calloc(sizeof(struct node_s), 1);
+    btok->index = -1;
 
     log_set_quiet(false);
     log_set_level(LOG_TRACE);
@@ -163,6 +166,7 @@ EXPORT UT_array *sealark_lex_file(char *fname)
         utarray_push_back(token_list, btok);
 
         btok = calloc(sizeof(struct node_s), 1);
+        btok->index = -1;
     }
     return token_list;
 }
@@ -176,6 +180,7 @@ EXPORT struct node_s *sealark_parse_string(const char *buffer)
 
     int tok;
     struct node_s *btok = calloc(sizeof(struct node_s), 1);
+    btok->index = -1;
 
     struct bf_lexer_s * lexer = malloc(sizeof(struct bf_lexer_s));
     lexer_init(NULL, lexer, buffer);
@@ -227,6 +232,7 @@ EXPORT struct node_s *sealark_parse_string(const char *buffer)
         Parse(pParser, tok, btok, parse_state);
         // log_debug(">>>>>>>>>>>>>>>>/call parser");
         btok = calloc(sizeof(struct node_s), 1);
+        btok->index = -1;
     }
     // log_debug(">>>>>>>>>>>>>>>>FINAL call parser");
     Parse(pParser, 0, btok, parse_state);
@@ -283,6 +289,7 @@ EXPORT struct parse_state_s *sealark_parse_file(const char *fname)
     int tok;
     /* struct bzl_token_s *btok = calloc(sizeof(struct bzl_token_s), 1); */
     struct node_s *btok = calloc(sizeof(struct node_s), 1);
+    btok->index = -1;
     struct bf_lexer_s * lexer = malloc(sizeof(struct bf_lexer_s));
     lexer_init(fname, lexer, buffer);
 
@@ -353,6 +360,7 @@ EXPORT struct parse_state_s *sealark_parse_file(const char *fname)
         Parse(pParser, tok, btok, parse_state);
         /* log_debug(">>>>>>>>>>>>>>>>/call parser"); */
         btok = calloc(sizeof(struct node_s), 1);
+        btok->index = -1;
     }
     /* log_debug(">>>>>>>>>>>>>>>>FINAL call parser"); */
     Parse(pParser, 0, btok, parse_state);

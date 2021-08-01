@@ -412,6 +412,7 @@ EXPORT struct node_s *sealark_new_node(int type, bool init_subnodes)
 #endif
     struct node_s *n = (struct node_s *)calloc(1, sizeof(struct node_s));
     n->tid = type;
+    n->index = -1;
     if (init_subnodes)
         utarray_new(n->subnodes, &node_icd);
     return n;
