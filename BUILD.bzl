@@ -11,6 +11,9 @@ debug_defs = select({
     "//:debug-load": ["DEBUG_LOAD"],
     "//conditions:default":   []
 }) + select({
+    "//:debug-loads": ["DEBUG_LOADS"],
+    "//conditions:default":   []
+}) + select({
     "//:debug-mem": ["DEBUG_MEM"],
     "//conditions:default":   []
 }) + select({
