@@ -139,7 +139,7 @@ s7_pointer sunlark_dispatch_on_buildfile(s7_scheme *s7,
     s7_pointer op = s7_car(path_args);
     //s7_pointer op2, op3, op4, op5;
     if ( !s7_is_keyword(op) ) {
-        log_error("Path op %s not supported for :build-file nodes",
+        log_error("Path op %s not supported for :package nodes",
                   s7_object_to_c_string(s7, op));
         exit(EXIT_FAILURE);     /* FIXME */
     }
@@ -159,21 +159,21 @@ s7_pointer sunlark_dispatch_on_buildfile(s7_scheme *s7,
     }
 
     if (op == KW(load)) {
-        // :build-file > :stmt-list :smallstmt-list > load-expr,...
+        // :package > :stmt-list :smallstmt-list > load-expr,...
         /* s7_pointer loadstmt = sunlark_load_select(s7, bf_node,  */
 
-        /* struct node_s *loadstmt = sealark_load_stmt_for_src(bf_node, */
-        /*                                                     "load"); */
+        struct node_s *loadstmt
+            = sealark_loadstmt_for_src(bf_node, "load");
         /* /\* UT_array *loads = sealark_loadstmts(bf_node); *\/ */
-        /* if (loads) */
-        /*     return nodelist_to_s7_list(s7, loads); */
-        /* else */
+        if (loadstmt)
+            return sunlark_node_new(s7, loadstmt);
+        else
             log_error("ERROR on load: ...fixme...");
             exit(-1);
     }
 
     if (op == KW(loads)) {
-        // :build-file > :stmt-list :smallstmt-list > load-expr,...
+        // :package > :stmt-list :smallstmt-list > load-expr,...
         /* result_list = sunlark_fetch_load_stmts(s7, bf_node); */
 
         UT_array *loads = sealark_procs_for_id(bf_node,
@@ -235,7 +235,7 @@ s7_pointer sunlark_dispatch_on_buildfile(s7_scheme *s7,
     /*     /\*     return result_list; *\/ */
     /*     /\* } *\/ */
     /*    if (op == KW(loads)) { */
-    /*         // :build-file > :stmt-list :smallstmt-list > load-expr,... */
+    /*         // :package > :stmt-list :smallstmt-list > load-expr,... */
     /*        /\* result_list = sunlark_fetch_load_stmts(s7, bf_node); *\/ */
 
     /*        UT_array *loads = sealark_procs_for_id(bf_node, */

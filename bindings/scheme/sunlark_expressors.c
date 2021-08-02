@@ -19,7 +19,7 @@ s7_pointer sunlark_targets_for_buildfile(s7_scheme *s7,
 #endif
 
     if (buildfile_node->tid != TK_Package) {
-        /* log_warn("property :targets only valid for :build-file nodes"); */
+        /* log_warn("property :targets only valid for :package nodes"); */
         return s7_unspecified(s7);
     }
 

@@ -28,7 +28,7 @@ s7_pointer buildfile_handle_dyadic_path(s7_scheme *s7,
     s7_pointer op = s7_car(path_args);
 
     if ( !s7_is_keyword(op) ) {
-        log_error("Path op %s not supported for :build-file nodes",
+        log_error("Path op %s not supported for :package nodes",
                   s7_object_to_c_string(s7, op));
         exit(EXIT_FAILURE);     /* FIXME */
     }

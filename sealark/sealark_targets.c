@@ -16,7 +16,7 @@ EXPORT UT_array *sealark_targets_for_buildfile(struct node_s *buildfile_node)
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
     log_debug("sealark_targets_for_buildfile");
 #endif
-    // :build-file > :stmt-list :smallstmt-list > expr-list > call-expr
+    // :package > :stmt-list :smallstmt-list > expr-list > call-expr
 
     struct node_s *stmt_list = utarray_eltptr(buildfile_node->subnodes, 0);
     struct node_s *small_list = utarray_eltptr(stmt_list->subnodes, 0);

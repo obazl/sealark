@@ -345,7 +345,7 @@ EXPORT struct node_s *sealark_package(struct node_s *buildfile_node)
     log_debug("sealark_package");
 #endif
 
-    // :build-file > :assign-stmt
+    // :package > :assign-stmt
 
     struct node_s *expr_list = utarray_eltptr(buildfile_node->subnodes, 0);
     struct node_s *small_list = utarray_eltptr(expr_list->subnodes, 0);
@@ -373,13 +373,13 @@ EXPORT UT_array *sealark_procs_for_id(struct node_s *buildfile_node,
     log_debug("sealark_procs_for_id: %s", proc_id);
 #endif
 
-    //FIXME: verify that build-file nodes always start with
-    //  :build-file > :stmt_list : :small-stmt-list
+    //FIXME: verify that package nodes always start with
+    //  :package > :stmt_list : :small-stmt-list
     struct node_s *stmt_list = utarray_eltptr(buildfile_node->subnodes, 0);
     struct node_s *small_list = utarray_eltptr(stmt_list->subnodes, 0);
 
     //FIXME: verify assumption:
-    //    each expr_list subnode of a build-file node has just one
+    //    each expr_list subnode of a package node has just one
     //    subnode, a call_expr.
 
     // NB: load statments are proc applications, although they parse
@@ -436,7 +436,7 @@ EXPORT UT_array *sealark_procs(struct node_s *buildfile_node)
     log_debug("sealark_procs");
 #endif
 
-    // :build-file > :assign-stmt
+    // :package > :assign-stmt
 
     struct node_s *stmt_list = utarray_eltptr(buildfile_node->subnodes, 0);
     struct node_s *small_list = utarray_eltptr(stmt_list->subnodes, 0);

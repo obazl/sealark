@@ -12,7 +12,7 @@
 
 /* **************************************************************** */
 /*
-  :build-file > :stmt-list > :small-stmt-list > :load-stmt
+  :package > :stmt-list > :small-stmt-list > :load-stmt
   :load-stmt
     > :load, :lparen, :string, :comma, :alias > :id, :eq, :string
    **************************************************************** */
@@ -69,7 +69,7 @@ struct node_s *sealark_loadstmt_for_index(struct node_s *package,
     struct node_s *stmt_list = utarray_eltptr(package->subnodes, 0);
     struct node_s *small_list = utarray_eltptr(stmt_list->subnodes, 0);
 
-    // :build-file > :stmt-list :smallstmt-list > expr-list > call-expr
+    // :package > :stmt-list :smallstmt-list > expr-list > call-expr
 
     struct node_s *expr_nd=NULL;
     int load_ct = 0;
