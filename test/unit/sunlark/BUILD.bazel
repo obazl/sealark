@@ -7,7 +7,7 @@ test_suite(
         ":bindings",
         ":set_bindings",
         # ":definitions",
-        ":loads",
+        ":loadstmts",
         ":set_strings",
         ":strings",
         ":string_props",
@@ -89,9 +89,9 @@ cc_test(
 )
 
 cc_test(
-    name = "loads",
-    srcs = ["test_loads.c", "test_loads.h"],
-    data = [":BUILD.loads"],
+    name = "loadstmts",
+    srcs = ["test_loadstmts.c", "test_loadstmts.h"],
+    data = [":BUILD.loadstmts"],
     copts = COPTS,
     deps = DEPS,
     linkstatic = 1
@@ -183,7 +183,7 @@ genrule(
         "test_bindings.c",
         "definitions.c",
         "test_dictionaries.c",
-        "test_loads.c",
+        "test_loadstmts.c",
         "paths_tetradic.c",
         "test_set_strings.c",
         "test_strings.c",
@@ -198,7 +198,7 @@ genrule(
         "test_bindings.h",
         "definitions.h",
         "test_dictionaries.h",
-        "test_loads.h",
+        "test_loadstmts.h",
         "paths_tetradic.h",
         "test_set_strings.h",
         "test_strings.h",
@@ -215,7 +215,7 @@ genrule(
         "    $(location binding_val_vectors.c) \\",
         "    $(location common.c) \\",
         "    $(location definitions.c) \\",
-        "    $(location test_loads.c) \\",
+        "    $(location test_loadstmts.c) \\",
         "    $(location paths_tetradic.c) \\",
         "    $(location test_set_bindings.c) \\",
         "    $(location test_bindings.c) \\",

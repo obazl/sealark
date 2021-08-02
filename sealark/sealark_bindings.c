@@ -10,7 +10,6 @@
 
 #include "sealark_bindings.h"
 
-
 /* ******************************** */
 /* returns only bindings (TK_Named_Arg) in a new UT_array */
 /* **************************************************************** */

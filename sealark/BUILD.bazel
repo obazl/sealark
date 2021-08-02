@@ -149,8 +149,6 @@ cc_library(
         "sealark_nodes.h",
         "sealark_debug.c",
         "sealark_debug.h",
-        "sealark_errors.c",
-        "sealark_errors.h",
         "//vendored/logc:log.h",
     ],
     copts = select({

@@ -1,0 +1,41 @@
+load("@repoa//pkga:targeta.bzl", "arg0a", "arg1a")
+
+load("@repob//pkgb:targetb.bzl", "arg0b", "arg1b", key0b = "val0b"  )
+
+package(default_visibility = ["//visibility:public"])
+
+load(
+    "@repoc//pkgc:targetc.bzl",
+    "arg0c", "arg1c", "arg2c",
+    key0c = "val0c",
+    key1c = "val1c",
+    lastkey2c = "lastval2c",
+)
+
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+
+cc_library(
+    name = "hello-lib",
+    srcs = ["hello-lib.cc", 'howdy.cc', r"howdy.h"],
+    hdrs = ["hello-lib.h"],
+)
+
+cc_binary(
+    name = "hello-world",
+    srcs = ["hello-world.cc"],
+    deps = [":hello-lib"],
+)
+
+cc_test(
+    name = "hello-success_test",
+
+
+    srcs = ["hello-world.cc"],
+    deps = [":hello-lib"],
+)
+
+cc_test(
+    name = "hello-fail_test",
+    srcs = ["hello-fail.cc"],
+    deps = [":hello-lib"],
+)

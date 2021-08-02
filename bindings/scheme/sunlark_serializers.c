@@ -229,9 +229,9 @@ EXPORT s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
     }
     if (s7_is_boolean(form)) {
         if (form == s7_t(s7))
-            utstring_printf(buf, "True");
+            utstring_printf(buf, "#t");
         else
-            utstring_printf(buf, "False");
+            utstring_printf(buf, "#f");
         goto resume;
     }
     if (s7_is_number(form)) {

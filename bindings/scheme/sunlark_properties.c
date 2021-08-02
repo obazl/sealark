@@ -238,8 +238,9 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
         return s7_make_keyword(s7, s);
     }
 
-    if (kw == KW(line))
+    if (kw == KW(line)) {
         return s7_make_integer(s7, ast_node->line);
+    }
 
     if (kw == KW(col))
         return s7_make_integer(s7, ast_node->col);
@@ -302,7 +303,7 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
     if (s7_is_keyword(kw)) {
         if (sunlark_op_is_predicate(s7, kw)) {
             s7_pointer is = sunlark_node_is_kw_pred(s7, kw, ast_node);
-            log_debug("is? %d", s7_object_to_c_string(s7, is));
+            log_debug("is? %s", s7_object_to_c_string(s7, is));
             return is;
             /* if (is_p == s7_f(s7)) { */
             /*     return is_p; */

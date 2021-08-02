@@ -15,10 +15,6 @@
 
 /* docs at bottom */
 
-#define ESUNLARK_INVALID_ARG -1
-#define ESUNLARK_ARG_TYPE_ERR -2
-#define ESUNLARK_LOCN_ARG_ERR -3
-
 /* ******************************** */
 /*
   args: type predicate (e.g. :bindings?), ??
