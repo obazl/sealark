@@ -279,16 +279,26 @@ LOCAL void _display_arg_list(struct node_s *nd,
     log_debug("_display_arg_list");
 #endif
 
+    assert(nd->tid == TK_Arg_List);
+
     utstring_printf(buffer, "%*s:attrs (",
                     level*indent, " ", (level+1)*indent, " ");
 
     struct node_s *sub = NULL;
     int len = utarray_len(nd->subnodes);
-    int i = 0;
+    int i = 0, nameidx = -1;
+    /* NB: 'name' attr can occur anywhere, we need to skip it */
     while( (sub=(struct node_s*)utarray_next(nd->subnodes, sub)) ) {
-        if (sub->tid == TK_COMMA) continue;
+        if (sealark_is_name_attr(sub)) {
+            nameidx = i;
+            i+=2;
+            continue;
+        }
+        if (sub->tid == TK_COMMA) {
+            continue;
+        }
         sunlark_display_node(sub, buffer,
-                             (i==0)? 0 : level+2);
+                             (i==nameidx+2)? 0 : level+2);
         /* utstring_printf(buffer, " == LEN %d, i %d ==", len, i); */
         if (len - i > 1) {
             utstring_printf(buffer, "\n");
@@ -460,7 +470,7 @@ LOCAL void _display_call_expr(struct node_s *nd,
     } else {
         bool is_target = sealark_call_expr_is_target(nd);
         if (is_target) {
-            utstring_printf(buffer, "%*s(def-target",
+            utstring_printf(buffer, "\n%*s(def-target",
                             level*indent,
                             (level==0)? "" : " ", (level+1)*indent, " ");
             struct node_s *rule = utarray_eltptr(nd->subnodes, 0);
@@ -769,7 +779,8 @@ LOCAL void _display_vector_item(struct node_s *nd,
                                 int level)
 {
 #ifdef DEBUG_SERIALIZERS
-    log_debug("sunlark_display_binding_value");
+    log_debug("_display_vector_item - as_map_entries %d",
+              as_map_entries);
 #endif
 
     switch(nd->tid) {
@@ -779,7 +790,8 @@ LOCAL void _display_vector_item(struct node_s *nd,
     case TK_STRING: {
         char *br = SEALARK_STRTYPE(nd->qtype);
         char *q = sealark_quote_type(nd);
-        if (as_map_entries) {
+        if (as_map_entries > 0) {
+            log_debug("0 xxxxxxxxxxxxxxxx %d", as_map_entries);
             utstring_printf(buffer, "(%d . %s%s%s%s)",
                             nd->index, br, q, nd->s, q);
         } else {
