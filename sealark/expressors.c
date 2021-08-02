@@ -93,13 +93,13 @@ EXPORT struct node_s *sealark_ruleid_for_target(struct node_s *call_expr)
 /* ******************************** */
 /* includes all args, named or not, including commas */
 EXPORT struct node_s *sealark_arglist_for_target_for_name
-(struct node_s *build_file, const char *name)
+(struct node_s *package, const char *name)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
     log_debug("sealark_arglist_for_target_for_name %s", name);
 #endif
 
-    struct node_s *target = sealark_target_for_name(build_file, name);
+    struct node_s *target = sealark_target_for_name(package, name);
 
     struct node_s *args = sealark_arglist_for_target(target);
     return args;
@@ -108,13 +108,13 @@ EXPORT struct node_s *sealark_arglist_for_target_for_name
 /* ******************************** */
 /* includes all args, named or not, including commas */
 EXPORT struct node_s *sealark_arglist_for_target_for_index
-(struct node_s *build_file, int i)
+(struct node_s *package, int i)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
     log_debug("sealark_arglist_for_target_for_index %d", i);
 #endif
 
-    struct node_s *target = sealark_target_for_index(build_file, i);
+    struct node_s *target = sealark_target_for_index(package, i);
 
     struct node_s *args = sealark_arglist_for_target(target);
     return args;

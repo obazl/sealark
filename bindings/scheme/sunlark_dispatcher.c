@@ -43,9 +43,9 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
 
     switch( data_tid ) {
 
-    case TK_Build_File: /* build_target */
+    case TK_Package: /* build_target */
 #if defined(DEBUG_TRACE)
-        log_debug("dispatching on TK_Build_File");
+        log_debug("dispatching on TK_Package");
 #endif
         return sunlark_dispatch_on_buildfile(s7, data, path_args);
         break;
@@ -127,8 +127,8 @@ s7_pointer sunlark_dispatch_on_buildfile(s7_scheme *s7,
               s7_object_to_c_string(s7, path_args));
 #endif
     struct node_s *bf_node = s7_c_object_value(data);
-    if (bf_node->tid != TK_Build_File) {
-        log_error("Expected node tid %d, got %d %s", TK_Build_File,
+    if (bf_node->tid != TK_Package) {
+        log_error("Expected node tid %d, got %d %s", TK_Package,
                   bf_node->tid, TIDNAME(bf_node));
         exit(EXIT_FAILURE);     /* FIXME */
     }
@@ -158,6 +158,20 @@ s7_pointer sunlark_dispatch_on_buildfile(s7_scheme *s7,
             return result_list;
     }
 
+    if (op == KW(load)) {
+        // :build-file > :stmt-list :smallstmt-list > load-expr,...
+        /* s7_pointer loadstmt = sunlark_load_select(s7, bf_node,  */
+
+        /* struct node_s *loadstmt = sealark_load_stmt_for_src(bf_node, */
+        /*                                                     "load"); */
+        /* /\* UT_array *loads = sealark_loadstmts(bf_node); *\/ */
+        /* if (loads) */
+        /*     return nodelist_to_s7_list(s7, loads); */
+        /* else */
+            log_error("ERROR on load: ...fixme...");
+            exit(-1);
+    }
+
     if (op == KW(loads)) {
         // :build-file > :stmt-list :smallstmt-list > load-expr,...
         /* result_list = sunlark_fetch_load_stmts(s7, bf_node); */
@@ -170,6 +184,7 @@ s7_pointer sunlark_dispatch_on_buildfile(s7_scheme *s7,
         else
             log_debug("ERROR: ...fixme...");
     }
+
     if (op == KW(package)) {
         UT_array *procs = sealark_procs_for_id(bf_node,
                                                "package");

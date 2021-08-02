@@ -65,27 +65,27 @@ EXPORT UT_array *sealark_targets_for_buildfile(struct node_s *buildfile_node)
 
 /* ********************************* */
 EXPORT
-struct node_s *sealark_target_for_name(struct node_s *build_file,
+struct node_s *sealark_target_for_name(struct node_s *package,
                                       const char *name)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_PATHS)
     log_debug("sealark_target_for_name: %s", name);
 #endif
-    return _target_for_predicate(build_file, name, -1);
+    return _target_for_predicate(package, name, -1);
 }
 
 /* ********************************** */
 EXPORT
-struct node_s *sealark_target_for_index(struct node_s *build_file, int i)
+struct node_s *sealark_target_for_index(struct node_s *package, int i)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
     log_debug("sealark_target_for_index %d", i);
 #endif
-    return _target_for_predicate(build_file, NULL, i);
+    return _target_for_predicate(package, NULL, i);
 }
 
 /* **************************************************************** */
-LOCAL struct node_s *_target_for_predicate(struct node_s *build_file,
+LOCAL struct node_s *_target_for_predicate(struct node_s *package,
                                            const char *name, int i)
 {
 #if defined (DEBUG_TRACE)
@@ -94,7 +94,7 @@ LOCAL struct node_s *_target_for_predicate(struct node_s *build_file,
 
     /* if build file starts with comment lines, then the ast will look
        like:
-0: TK_Build_File 96
+0: TK_Package 96
    1: TK_Stmt_List 131
      2: TK_Stmt 130
        3: TK_COMMENT 16: # comment 1
@@ -105,7 +105,7 @@ LOCAL struct node_s *_target_for_predicate(struct node_s *build_file,
        ...  # load stmts, targets ...
 
        otherwise:
- 0: TK_Build_File 96
+ 0: TK_Package 96
    1: TK_Stmt_List 131
      2: TK_Small_Stmt_List 129
        3: TK_Expr_List 109   (package directive)
@@ -128,7 +128,7 @@ LOCAL struct node_s *_target_for_predicate(struct node_s *build_file,
 
     int target_ct = 0;
 
-    struct node_s *stmt_list = utarray_eltptr(build_file->subnodes, 0);
+    struct node_s *stmt_list = utarray_eltptr(package->subnodes, 0);
 
     /* struct node_s *small_list = utarray_eltptr(stmt_list->subnodes, 0); */
 
@@ -204,7 +204,7 @@ LOCAL struct node_s *_target_for_predicate(struct node_s *build_file,
                 return NULL;
             } else {
                 i = target_ct + i;
-                return sealark_target_for_index(build_file, i);
+                return sealark_target_for_index(package, i);
             }
         }
 

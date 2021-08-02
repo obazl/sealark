@@ -138,7 +138,7 @@ i.e. only SimpleStmt allowed in BUILD files.
 %token Attr_Value .             /* hides type? */
 %token Assign_Stmt .
 %token Bin_Expr .
-%token Build_File .
+%token Package .
 %token Call_Expr .
 %token Call_Sfx .
 %token Comp_Clause .
@@ -266,7 +266,7 @@ i.e. only SimpleStmt allowed in BUILD files.
 program ::= stmt_list(SS) .
 {
     /* log_trace(">>program ::= stmt_list ."); */
-    struct node_s *root = sealark_new_node(TK_Build_File, with_subnodes);
+    struct node_s *root = sealark_new_node(TK_Package, with_subnodes);
     utarray_push_back(root->subnodes, SS);
     parse_state->root = root;
 }

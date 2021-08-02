@@ -12,7 +12,7 @@
 #include "sunlark_filters.h"
 
 /*
-  filter build_file targets by list
+  filter package targets by list
 */
 //FIXME: this should be in sealark, but select_list is a list...
 // todo: pass it as string array? no, it may contain symbols

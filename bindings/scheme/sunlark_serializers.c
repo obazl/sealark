@@ -35,7 +35,7 @@ LOCAL s7_pointer sunlark_display(s7_scheme *s7, s7_pointer args)
     log_debug(">>>>>>>>>>>>>>>> sunlark_display <<<<<<<<<<<<<<<<");
 #endif
 
-    /* if (sunlark_node_tid(s7,s7_car(args)) == TK_Build_File) { */
+    /* if (sunlark_node_tid(s7,s7_car(args)) == TK_Package) { */
     /*     return s7_nil(s7); */
     /* } */
 
@@ -362,12 +362,12 @@ LOCAL void _display_assign_stmt(struct node_s *nd,
 }
 
 /* **************************************************************** */
-LOCAL void _display_build_file(struct node_s *nd,
+LOCAL void _display_package(struct node_s *nd,
                                UT_string *buffer,
                                int level)
 {
 #ifdef DEBUG_SERIALIZERS
-    log_debug("_display_build_file, level %d", level);
+    log_debug("_display_package, level %d", level);
 #endif
 
     utstring_printf(buffer, "(package\n");
@@ -874,8 +874,8 @@ void sunlark_display_node(// s7_scheme *s7,
     case TK_Assign_Stmt:
         _display_assign_stmt(nd, buffer, level);
         break;
-    case TK_Build_File:
-        _display_build_file(nd, buffer, level);
+    case TK_Package:
+        _display_package(nd, buffer, level);
         break;
     case TK_Arg_List:
         _display_arg_list(nd, buffer, level);

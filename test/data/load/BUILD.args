@@ -2,6 +2,8 @@ load("@repoa//pkga:tgta.bzl", "arg1a", "arg2a")
 
 load("@repob//pkgb:tgtb.bzl", "arg1b", "arg2b", key1b = "val1b"  )
 
+package(default_visibility = ["//visibility:public"])
+
 load(
     "@repoc//pkgc:tgtc.bzl",
     "arg1c", "arg2c", "arg3c",

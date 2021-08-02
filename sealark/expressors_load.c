@@ -26,7 +26,7 @@
 /*     log_debug("sunlark_fetch_load_stmts"); */
 /* #endif */
 
-/*     if (buildfile_node->tid != TK_Build_File) { */
+/*     if (buildfile_node->tid != TK_Package) { */
 /*         log_warn("property :loads only valid for :build-file nodes"); */
 /*         return NULL; */
 /*     } */
@@ -51,10 +51,10 @@
 
 /* **************** */
 EXPORT
-struct node_s *sealark_loadstmt_for_name(struct node_s *build_file,
+struct node_s *sealark_loadstmt_for_name(struct node_s *package,
                                                    const char *name)
 {
-#if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
+#if defined (DEBUG_TRACE) || defined(DEBUG_LOADS)
     log_debug("sealark_loadstmt_for_name %s", name);
 #endif
 
@@ -62,7 +62,7 @@ struct node_s *sealark_loadstmt_for_name(struct node_s *build_file,
     /* then search arg-list children for arg-named/name=str */
     /* :arg-named[0] = :id */
 
-    struct node_s *stmt_list = utarray_eltptr(build_file->subnodes, 0);
+    struct node_s *stmt_list = utarray_eltptr(package->subnodes, 0);
     struct node_s *small_list = utarray_eltptr(stmt_list->subnodes, 0);
 
     // :build-file > :stmt-list :smallstmt-list > expr-list > call-expr
@@ -91,14 +91,14 @@ struct node_s *sealark_loadstmt_for_name(struct node_s *build_file,
 
 /* **************** */
 EXPORT
-struct node_s *sealark_loadstmt_for_index(struct node_s *build_file,
+struct node_s *sealark_loadstmt_for_index(struct node_s *package,
                                          int index)
 {
-#if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
+#if defined (DEBUG_TRACE) || defined(DEBUG_LOADS)
     log_debug("sealark_loadstmt_for_index %d", index);
 #endif
 
-    struct node_s *stmt_list = utarray_eltptr(build_file->subnodes, 0);
+    struct node_s *stmt_list = utarray_eltptr(package->subnodes, 0);
     struct node_s *small_list = utarray_eltptr(stmt_list->subnodes, 0);
 
     // :build-file > :stmt-list :smallstmt-list > expr-list > call-expr
@@ -121,7 +121,7 @@ struct node_s *sealark_loadstmt_for_index(struct node_s *build_file,
 EXPORT
 UT_array *sealark_loadstmt_arglist(struct node_s *load_stmt)
 {
-#if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
+#if defined (DEBUG_TRACE) || defined(DEBUG_LOADS)
     log_debug("sealark_loadstmt_arg_list");
 #endif
 
@@ -146,7 +146,7 @@ UT_array *sealark_loadstmt_arglist(struct node_s *load_stmt)
 EXPORT
 UT_array *sealark_loadstmt_args(struct node_s *load_stmt)
 {
-#if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
+#if defined (DEBUG_TRACE) || defined(DEBUG_LOADS)
     log_debug("sealark_loadstmt_args");
 #endif
 
@@ -169,7 +169,7 @@ UT_array *sealark_loadstmt_args(struct node_s *load_stmt)
 EXPORT
 UT_array *sealark_loadstmt_bindings(struct node_s *load_stmt)
 {
-#if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
+#if defined (DEBUG_TRACE) || defined(DEBUG_LOADS)
     log_debug("sealark_loadstmt_bindings");
 #endif
 
@@ -193,7 +193,7 @@ EXPORT
 struct node_s *sealark_loadstmt_binding_for_index(struct node_s *load_stmt,
                                                   int index)
 {
-#if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
+#if defined (DEBUG_TRACE) || defined(DEBUG_LOADS)
     log_debug("sealark_loadstmt_binding_for_index: %d", index);
 #endif
 
@@ -222,7 +222,7 @@ struct node_s *sealark_loadstmt_binding_for_index(struct node_s *load_stmt,
 EXPORT
 char *sealark_loadstmt_src_node(struct node_s *load_stmt)
 {
-#if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
+#if defined (DEBUG_TRACE) || defined(DEBUG_LOADS)
     log_debug("sealark_loadstmt_src");
 #endif
 

@@ -24,7 +24,7 @@
 
 #include "parse.h"
 
-/* UT_string *build_file; */
+/* UT_string *package; */
 
 int line;
 int col;

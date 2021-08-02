@@ -41,7 +41,7 @@
 #define TK_Comp_Clause                    99
 #define TK_Call_Sfx                       98
 #define TK_Call_Expr                      97
-#define TK_Build_File                     96
+#define TK_Package                     96
 #define TK_Bin_Expr                       95
 #define TK_Assign_Stmt                    94
 #define TK_Attr_Value                     93

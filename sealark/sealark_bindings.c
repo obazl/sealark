@@ -47,13 +47,13 @@ EXPORT struct node_s *sealark_bindings_for_target(struct node_s *target)
 
 /* **************************************************************** */
 EXPORT struct node_s *sealark_bindings_for_target_for_name
-(struct node_s *build_file, const char *tgt_name)
+(struct node_s *package, const char *tgt_name)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
     log_debug("sealark_bindings_for_target_for_name %s", tgt_name);
 #endif
 
-    struct node_s *target = sealark_target_for_name(build_file, tgt_name);
+    struct node_s *target = sealark_target_for_name(package, tgt_name);
 
     /* UT_array *bindings = sealark_bindings_for_target(target); */
     struct node_s *bindings = sealark_bindings_for_target(target);
@@ -63,13 +63,13 @@ EXPORT struct node_s *sealark_bindings_for_target_for_name
 /* **************************************************************** */
 /* EXPORT UT_array *sealark_bindings_for_target_for_index */
 EXPORT struct node_s *sealark_bindings_for_target_for_index
-(struct node_s *build_file, int i)
+(struct node_s *package, int i)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
     log_debug("sealark_bindings_for_target_for_index %d", i);
 #endif
 
-    struct node_s *target = sealark_target_for_index(build_file, i);
+    struct node_s *target = sealark_target_for_index(package, i);
 
     /* UT_array *bindings = sealark_bindings_for_target(target); */
     struct node_s *bindings = sealark_bindings_for_target(target);
