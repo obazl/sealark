@@ -266,7 +266,7 @@ s7_pointer buildfile_handle_tetradic_path(s7_scheme *s7,
                 if (s7_is_integer(op4)) {
                     log_debug("tetrad_int_args_string_load");
                     struct node_s *load
-                        = sealark_loadstmt_for_name(bf_node, s7_string(op2));
+                        = sealark_loadstmt_for_src(bf_node, s7_string(op2));
                     UT_array *args
                         = sealark_loadstmt_args(load);
                     struct node_s *arg=utarray_eltptr(args, s7_integer(op4));
@@ -277,7 +277,7 @@ s7_pointer buildfile_handle_tetradic_path(s7_scheme *s7,
                 if (s7_is_integer(op4)) {
                     log_debug("tetrad_int_bindings_string_load");
                     struct node_s *load
-                        = sealark_loadstmt_for_name(bf_node, s7_string(op2));
+                        = sealark_loadstmt_for_src(bf_node, s7_string(op2));
                     UT_array *bindings
                         = sealark_loadstmt_bindings(load);
                     struct node_s *arg=utarray_eltptr(bindings,
@@ -290,7 +290,7 @@ s7_pointer buildfile_handle_tetradic_path(s7_scheme *s7,
                 if (s7_is_integer(op4)) {
                     log_debug("tetrad_int_arglist_string_load");
                     struct node_s *load
-                        = sealark_loadstmt_for_name(bf_node, s7_string(op2));
+                        = sealark_loadstmt_for_src(bf_node, s7_string(op2));
                     UT_array *bindings
                         = sealark_loadstmt_arglist(load);
                     struct node_s *arg=utarray_eltptr(bindings,

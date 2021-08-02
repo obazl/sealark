@@ -227,7 +227,7 @@ s7_pointer buildfile_handle_triadic_path(s7_scheme *s7,
             if (op3 == KW(args)) {
                 log_debug("triad_args_string_load");
                 struct node_s *load =
-                    sealark_loadstmt_for_name(bf_node, s7_string(op2));
+                    sealark_loadstmt_for_src(bf_node, s7_string(op2));
                 UT_array *args =
                     sealark_loadstmt_args(load);
                 return nodelist_to_s7_list(s7, args);
@@ -235,7 +235,7 @@ s7_pointer buildfile_handle_triadic_path(s7_scheme *s7,
             if (op3 == KW(bindings)) {
                 log_debug("triad_bindings_string_load");
                 struct node_s *load =
-                    sealark_loadstmt_for_name(bf_node, s7_string(op2));
+                    sealark_loadstmt_for_src(bf_node, s7_string(op2));
                 UT_array *args =
                     sealark_loadstmt_bindings(load);
                 return nodelist_to_s7_list(s7, args);
@@ -243,7 +243,7 @@ s7_pointer buildfile_handle_triadic_path(s7_scheme *s7,
             if (op3 == KW(arg-list)) {
                 log_debug("triad_arglist_string_load");
                 struct node_s *load =
-                    sealark_loadstmt_for_name(bf_node, s7_string(op2));
+                    sealark_loadstmt_for_src(bf_node, s7_string(op2));
                 UT_array *args =
                     sealark_loadstmt_arglist(load);
                 return nodelist_to_s7_list(s7, args);

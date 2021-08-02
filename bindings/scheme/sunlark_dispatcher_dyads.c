@@ -65,7 +65,7 @@ s7_pointer buildfile_handle_dyadic_path(s7_scheme *s7,
     if (op == KW(load)) {
         if (s7_is_string(op2)) {
             struct node_s *loadstmt
-                = sealark_loadstmt_for_name(bf_node, s7_string(op2));
+                = sealark_loadstmt_for_src(bf_node, s7_string(op2));
             if (loadstmt)
                 return sunlark_node_new(s7, loadstmt);
             else
