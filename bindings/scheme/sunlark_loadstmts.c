@@ -9,13 +9,12 @@
 
 #include "s7.h"
 
-#include "sunlark_dispatcher_dyads.h"
+#include "sunlark_loadstmts.h"
 
 /* **************************************************************** */
-/* build file handlers */
-s7_pointer buildfile_handle_dyadic_path(s7_scheme *s7,
-                                        struct node_s *bf_node,
-                                        s7_pointer path_args)
+struct node_s *sealark_pkg_loadstmt_select(s7_scheme *s7,
+                                       s7_pointer pkg,
+                                       s7_pointer path_args)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_PROPERTIES)
     log_debug("buildfile_handle_dyadic_path: %s",
