@@ -5,7 +5,7 @@
 
 #include "log.h"
 
-#include "predicators.h"
+#include "sealark_predicators.h"
 
 EXPORT bool sealark_is_printable(struct node_s *ast_node)
 {
@@ -19,10 +19,25 @@ EXPORT bool sealark_is_printable(struct node_s *ast_node)
     return false;
 }
 
+EXPORT bool sealark_is_name_attr(struct node_s *node)
+{
+#ifdef DEBUG_PREDICATES
+    log_debug("sealark_is_name_attr %d %s", node->tid, TIDNAME(node));
+#endif
+
+    if (node->tid != TK_Binding) return false;
+    struct node_s *key = utarray_eltptr(node->subnodes, 0);
+    log_debug("keystr: %s", key->s);
+    if ((strncmp(key->s, "name", 4) == 0) && strlen(key->s) == 4) {
+        return true;
+    }
+    return false;
+}
+
 EXPORT bool sealark_call_expr_is_target(struct node_s *call_expr)
 {
 #ifdef DEBUG_PREDICATES
-    log_debug("sunlark_is_target");
+    log_debug("sealark_call_expr_is_target");
 #endif
     if (call_expr->tid != TK_Call_Expr) return false;
 
@@ -164,7 +179,6 @@ EXPORT bool sealark_target_has_binding_key(struct node_s *call_expr,
     return false;
 }
 
-/* EXPORT bool sealark_load_has_name(struct node_s *call_expr, */
 EXPORT bool sealark_target_has_name(struct node_s *call_expr,
                                        const char *name)
 {
