@@ -160,16 +160,33 @@ s7_pointer sunlark_dispatch_on_buildfile(s7_scheme *s7,
 
     if (op == KW(load)) {
         // :package > :stmt-list :smallstmt-list > load-expr,...
-        /* s7_pointer loadstmt = sunlark_load_select(s7, bf_node,  */
-
+        errno = 0;
         struct node_s *loadstmt
-            = sealark_loadstmt_for_src(bf_node, "load");
+            = sunlark_pkg_loadstmt_select(s7, bf_node, s7_cdr(path_args));
         /* /\* UT_array *loads = sealark_loadstmts(bf_node); *\/ */
         if (loadstmt)
             return sunlark_node_new(s7, loadstmt);
         else
-            log_error("ERROR on load: ...fixme...");
-            exit(-1);
+            switch(errno) {
+            case ENOT_FOUND:
+                return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
+                                s7_list(s7, 2, s7_make_string(s7,
+                                "Load stmt for src ~A not found."),
+                                        s7_cadr(path_args))));
+                break;
+            case EINVALID_ARG_LOAD:
+                return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
+                                s7_list(s7, 2, s7_make_string(s7,
+                                "Invalid arg ~A following :load"),
+                                    path_args)));
+                break;
+            default:
+                return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
+                                s7_list(s7, 2, s7_make_string(s7,
+                                "Error: errno ~D on path_args: ~A"),
+                                        s7_make_integer(s7,errno),
+                                        path_args)));
+            }
     }
 
     if (op == KW(loads)) {

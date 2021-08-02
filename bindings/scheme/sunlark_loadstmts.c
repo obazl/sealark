@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -12,99 +13,61 @@
 #include "sunlark_loadstmts.h"
 
 /* **************************************************************** */
-struct node_s *sealark_pkg_loadstmt_select(s7_scheme *s7,
-                                       s7_pointer pkg,
-                                       s7_pointer path_args)
+/* (car path_args): string (= src); int (index)  */
+EXPORT struct node_s *sunlark_pkg_loadstmt_select(s7_scheme *s7,
+                                           struct node_s *pkg,
+                                           s7_pointer path_args)
 {
-#if defined (DEBUG_TRACE) || defined(DEBUG_PROPERTIES)
-    log_debug("buildfile_handle_dyadic_path: %s",
+#if defined (DEBUG_TRACE) || defined(DEBUG_LOADS)
+    log_debug("sunlark_pkg_loadstmt_select %s",
               s7_object_to_c_string(s7, path_args));
 #endif
 
-    /* int op_count = s7_list_length(s7, path_args); */
-    /* log_debug("op count: %d", op_count); */
+    assert(pkg->tid == TK_Package);
 
     s7_pointer op = s7_car(path_args);
 
-    if ( !s7_is_keyword(op) ) {
-        log_error("Path op %s not supported for :package nodes",
-                  s7_object_to_c_string(s7, op));
-        exit(EXIT_FAILURE);     /* FIXME */
-    }
-
     s7_pointer result_list;
 
+    /* s7_pointer op2; */
+    /* op2 = s7_cadr(path_args); */
 
-    s7_pointer op2;
-    op2 = s7_cadr(path_args);
+    struct node_s *loadstmt;
 
-    if (op == KW(>>) || op == KW(targets)) {
-        s7_pointer r
-            = sunlark_forall_targets(s7, bf_node, s7_cdr(path_args));
-        return r;
-    }
     /* **************** */
-    if (op == KW(>) || op == KW(target)) {
-        if (s7_is_string(op2)) {
-            struct node_s *n = sealark_target_for_name(bf_node,
-                                                       s7_string(op2));
-            /* struct node_s *n = sealark_target_for_name(bf_node, */
-            /*                                            s7_string(op2)); */
-            return sunlark_node_new(s7, n);
+    if (s7_is_string(op)) {
+        if (s7_is_null(s7, s7_cdr(path_args))) {
+            loadstmt = sealark_pkg_loadstmt_for_src(pkg, s7_string(op));
+        } else {
+            loadstmt = _loadstmt_select(s7, loadstmt, s7_cdr(path_args));
         }
-        // only strings after :target
-        log_error("Only string arg after :target");
-        return(s7_error(s7,
-                        s7_make_symbol(s7, "invalid_argument"),
-                            s7_list(s7, 2, s7_make_string(s7,
-                      "Only string arg allowed after :target; got ~A"),
-                                    op2)));
+        return loadstmt;
     }
+
     /* **************** */
-    if (op == KW(load)) {
-        if (s7_is_string(op2)) {
-            struct node_s *loadstmt
-                = sealark_loadstmt_for_src(bf_node, s7_string(op2));
-            if (loadstmt)
-                return sunlark_node_new(s7, loadstmt);
-            else
-                log_debug("ERROR: ...fixme...");
-        }
-        // only strings after :target
-        log_error("Only string arg after :load");
-        return(s7_error(s7,
-                        s7_make_symbol(s7, "invalid_argument"),
-                            s7_list(s7, 2, s7_make_string(s7,
-                      "Only string arg allowed after :load; got ~A"),
-                                    op2)));
+    if (s7_is_integer(op)) {
+        /* loadstmt = sealark_pkg_loadstmt_for_int(bf_node, s7_string(op2)); */
+        /* return loadstmt; */
+        log_error("not yet load int");
     }
-    /* **************** */
-    if (op == KW(loads)) {
-        if (s7_is_integer(op2)) {
-            log_debug("dyad_int_loads");
-            struct node_s *loadstmt
-                = sealark_loadstmt_for_index(bf_node, s7_integer(op2));
-            return sunlark_node_new(s7, loadstmt);
-        }
-        if (s7_is_list(s7, op2)) {
-            log_debug("loads_from_filterlist");
-            /* UT_array *tgts = sunlark_targets_from_filterlist(s7, */
-            /*                                                    bf_node, */
-            /*                                                    op2); */
-            /* return nodelist_to_s7_list(s7, tgts); */
-            return NULL;
-        }
-        if (op2 == KW(count)) {
-            log_debug("count_loads");
-            return NULL;
-        }
-        // only strings after :target
-        log_error("Only integer arg after :loads");
-        return(s7_error(s7,
-                        s7_make_symbol(s7, "invalid_argument"),
-                            s7_list(s7, 2, s7_make_string(s7,
-                      "Only integer arg allowed after :loads; got ~A"),
-                                    op2)));
-    }
+    log_error("Invalid arg: %s", s7_object_to_c_string(s7, path_args));
+    errno = EINVALID_ARG_LOAD;
+    return NULL;
 }
 
+/* **************************************************************** */
+/* (car path_args): :args, :bindings */
+LOCAL struct node_s *_loadstmt_select(s7_scheme *s7,
+                                      struct node_s *pkg,
+                                      s7_pointer path_args)
+{
+#if defined (DEBUG_TRACE) || defined(DEBUG_LOADS)
+    log_debug("sunlark_loadstmt_select %s",
+              s7_object_to_c_string(s7, path_args));
+#endif
+
+    assert(pkg->tid == TK_Load_Stmt);
+
+    log_error("NOT YET: sunlark_loadstmt_select");
+    exit(-1);
+}

@@ -19,8 +19,8 @@
 
 /* **************** */
 EXPORT
-struct node_s *sealark_loadstmt_for_src(struct node_s *package,
-                                        const char *name)
+struct node_s *sealark_pkg_loadstmt_for_src(struct node_s *package,
+                                            const char *name)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_LOADS)
     log_debug("sealark_loadstmt_for_src %s", name);
@@ -37,21 +37,25 @@ struct node_s *sealark_loadstmt_for_src(struct node_s *package,
 
     int name_len = strlen(name);
 
+#if defined(DEBUG_UTARRAYS)
+    log_debug("SEARCHING load stmts for src: %s", name);
+#endif
     while( (expr_nd=(struct node_s*)utarray_next(small_list->subnodes,
                                                  expr_nd)) ) {
-        log_debug("node %d %s", expr_nd->tid, TIDNAME(expr_nd));
         if (expr_nd->tid == TK_Load_Stmt) {
             struct node_s *loadid =
                 utarray_eltptr(expr_nd->subnodes, 2);
+#if defined(DEBUG_UTARRAYS)
             log_debug("loadid %d %s %s",
                       loadid->tid, TIDNAME(loadid), loadid->s);
-
+#endif
             if ( (strncmp(loadid->s, name, name_len) == 0)
                  && strlen(loadid->s) == name_len ) {
                 return expr_nd;
             }
         }
     }
+    errno = ENOT_FOUND;
     return NULL;
 }
 
@@ -189,7 +193,7 @@ EXPORT
 char *sealark_loadstmt_src_node(struct node_s *load_stmt)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_LOADS)
-    log_debug("sealark_loadstmt_src");
+    log_debug("sealark_loadstmt_src_node");
 #endif
 
     assert(load_stmt->tid == TK_Load_Stmt);
