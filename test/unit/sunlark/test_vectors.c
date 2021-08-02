@@ -24,14 +24,10 @@ struct node_s *root;
 
 s7_pointer is_eq_s7;
 s7_pointer is_equal_s7;
-static s7_pointer length_s7;
 
 void setUp(void) {
     s7 = sunlark_init();
-    length_s7 = s7_name_to_value(s7, "length");
-
-    /* is_eq_s7 = s7_name_to_value(s7, "eq?"); */
-    /* is_equal_s7 = s7_name_to_value(s7, "equal?"); */
+    init_s7_syms(s7);
     /* ast = sunlark_parse_build_file(s7, */
     /*                                s7_list(s7, 1, */
     /*                                        s7_make_string(s7, build_file))); */

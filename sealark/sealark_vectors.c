@@ -31,17 +31,38 @@ EXPORT struct node_s *sealark_vector_item_for_int(struct node_s *list_expr,
     log_debug("sealark_vector_item_for_int: %d", index);
 #endif
 
+    assert(list_expr->tid == TK_List_Expr);
+
+    struct node_s *expr_list = utarray_eltptr(list_expr->subnodes, 1);
+
+    int list_ct = utarray_len(expr_list->subnodes);
+    int item_ct = (list_ct + 1) / 2;
+
+    /* reverse indexing */
     if (index < 0) {
-        log_error("index out of bounds: %d", index);
+        if (abs(index) > item_ct) {
+            log_error("abs(%d) > item_ct", index, item_ct);
+            errno = 3;
+            return NULL;
+        } else {
+            index = item_ct + index;
+            /* log_debug("recurring..."); */
+            return sealark_vector_item_for_int(list_expr, index);
+        }
+    }
+
+    if (index > item_ct-1) {
+        log_error("index > target count");
+        errno = 2;              /* FIXME */
         return NULL;
     }
 
-    struct node_s *expr_list = utarray_eltptr(list_expr->subnodes, 1);
-    int item_ct = utarray_len(expr_list->subnodes);
-    if (index*2 > item_ct) {
-        log_error("index out of bounds: %d", index);
-        return NULL;
-    }
+    /* struct node_s *expr_list = utarray_eltptr(list_expr->subnodes, 1); */
+    /* item_ct = utarray_len(expr_list->subnodes); */
+    /* if (index*2 > item_ct) { */
+    /*     log_error("index out of bounds: %d", index); */
+    /*     return NULL; */
+    /* } */
 
     //FIXME: support negative index
 

@@ -176,17 +176,17 @@ EXPORT struct node_s *sealark_bindings_binding_for_key(UT_array *bindings,
     int i = 0;
 
     while((binding=(struct node_s*)utarray_next(bindings, binding))) {
-        log_debug(" LOOP bindings[%d] tid: %d %s", i++, binding->tid,
-                  token_name[binding->tid][0]);
+        /* log_debug(" LOOP bindings[%d] tid: %d %s", i++, binding->tid, */
+        /*           token_name[binding->tid][0]); */
 
         if (binding->tid == TK_Binding) { // skip TK_COMMA nodes
             key_id = utarray_eltptr(binding->subnodes, 0);
-            log_debug("testing key_id[%d]: %d %s", i, key_id->tid, key_id->s);
+            /* log_debug("testing key_id[%d]: %d %s", i, key_id->tid, key_id->s); */
 
             if ((strncmp(key_id->s, key, key_len) == 0)
                 && strlen(key_id->s) == key_len ){
 
-                log_debug("MATCHED key: %s", key);
+                /* log_debug("MATCHED key: %s", key); */
                 return binding;
 
             }
@@ -402,8 +402,8 @@ EXPORT UT_array *sealark_procs_for_id(struct node_s *buildfile_node,
     struct node_s *subnode = NULL;
     while((subnode=(struct node_s*)utarray_next(small_list->subnodes,
                                                   subnode))) {
-        log_debug("  subnode %d %s",
-                  subnode->tid, TIDNAME(subnode));
+        /* log_debug("  subnode %d %s", */
+        /*           subnode->tid, TIDNAME(subnode)); */
 
         if (get_loads)
             if (subnode->tid == TK_Load_Stmt) {

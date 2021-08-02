@@ -44,7 +44,7 @@ EXPORT s7_pointer sunlark_dispatch_on_target(s7_scheme *s7,
 
     int op_count = s7_list_length(s7, path_args);
     s7_pointer op = s7_car(path_args);
-    log_debug("op: %s", s7_object_to_c_string(s7, op));
+    /* log_debug("op: %s", s7_object_to_c_string(s7, op)); */
 
     s7_pointer rest = s7_cdr(path_args);
 
@@ -58,7 +58,7 @@ EXPORT s7_pointer sunlark_dispatch_on_target(s7_scheme *s7,
     if (s7_is_null(s7, op))
         return _target;
 
-    if (op == KW(@) || op == KW(bindings)) {
+    if (op == KW(@) || op == KW(binding) || KW(attr)) {
         if (s7_is_null(s7, rest)) {
             struct node_s *bindings = sealark_bindings_for_target(target);
             return sunlark_node_new(s7, bindings);
@@ -70,21 +70,21 @@ EXPORT s7_pointer sunlark_dispatch_on_target(s7_scheme *s7,
     if (KW(name) == op) {   /* i.e. target "name" attr val */
             struct node_s *id=sealark_target_name(target);
             return sunlark_node_new(s7, id);
-        }
-        if (KW(rule) == op) {
-            struct node_s *id=sealark_ruleid_for_target(target);
-            return sunlark_node_new(s7, id);
-        }
-        if (KW(arg-list) == op) {
-            struct node_s *arg_list=sealark_arglist_for_target(target);
-            return nodelist_to_s7_list(s7, arg_list->subnodes);
-        }
-        /* common properties */
-        s7_pointer result = sunlark_common_property_lookup(s7, target, op);
-        if (result) return result;
+    }
+    if (KW(rule) == op) {
+        struct node_s *id=sealark_ruleid_for_target(target);
+        return sunlark_node_new(s7, id);
+    }
+    if (KW(arg-list) == op) {
+        struct node_s *arg_list=sealark_arglist_for_target(target);
+        return nodelist_to_s7_list(s7, arg_list->subnodes);
+    }
+    /* common properties */
+    s7_pointer result = sunlark_common_property_lookup(s7, target, op);
+    if (result) return result;
 
-        log_error("dispatch on %s for target not yet implemented",
-                  s7_object_to_c_string(s7, op));
+    log_error("dispatch on %s for target not yet implemented",
+              s7_object_to_c_string(s7, op));
     /*     break; */
     /* case 2: */
     /*     // :bindings 'sym -- returns node for binding with name sym */
@@ -299,7 +299,7 @@ EXPORT s7_pointer sunlark_target_1(s7_scheme *s7,
 #endif
 
     int op_count = s7_list_length(s7, path_args);
-    log_debug("op count: %d", op_count);
+    /* log_debug("op count: %d", op_count); */
 
     s7_pointer op = s7_car(path_args);
 

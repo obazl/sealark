@@ -144,7 +144,7 @@ LOCAL struct node_s *_target_for_predicate(struct node_s *build_file,
 
     while( (node=(struct node_s*)utarray_next(stmt_list->subnodes,
                                               node)) ) {
-        log_debug("tid: %d %s", node->tid, TIDNAME(node));
+        /* log_debug("tid: %d %s", node->tid, TIDNAME(node)); */
         if (node->tid == TK_Stmt) { // comment lines at start of file
             continue;
         }
@@ -193,7 +193,7 @@ LOCAL struct node_s *_target_for_predicate(struct node_s *build_file,
             /* } */
         }
     }
-    log_debug("target_ct: %d", target_ct);
+    /* log_debug("target_ct: %d", target_ct); */
 
     if (name == NULL) {
         /* support reverse indexing */

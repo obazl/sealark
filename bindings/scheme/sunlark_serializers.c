@@ -320,7 +320,10 @@ LOCAL void _display_assign_stmt(struct node_s *nd,
         struct node_s *sub = NULL;
         int i;
         while( (sub=(struct node_s*)utarray_next(lhs->subnodes, sub)) ) {
-            if (sub->tid == TK_COMMA) {i++; continue;}
+            if (sub->tid == TK_COMMA) {
+                utstring_printf(buffer, " ");
+                i++; continue;
+            }
             utstring_printf(buffer, "%s", sub->s);
             if (len - i > 2) utstring_printf(buffer, " ");
             i++;
@@ -458,7 +461,8 @@ LOCAL void _display_call_expr(struct node_s *nd,
         bool is_target = sealark_call_expr_is_target(nd);
         if (is_target) {
             utstring_printf(buffer, "%*s(def-target",
-                            level*indent, " ", (level+1)*indent, " ");
+                            level*indent,
+                            (level==0)? "" : " ", (level+1)*indent, " ");
             struct node_s *rule = utarray_eltptr(nd->subnodes, 0);
             struct node_s *name = sealark_target_name(nd);
             if (name) {

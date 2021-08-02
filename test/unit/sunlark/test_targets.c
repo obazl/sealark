@@ -13,7 +13,7 @@
 UT_string *buf;
 UT_string *test_s;
 
-char *build_file = "test/unit/sunlark/BUILD.targets";
+char *build_file = "test/unit/sunlark/BUILD.mock";
 
 s7_scheme *s7;
 
@@ -44,7 +44,7 @@ void test_forall_targets(void) {
     /* check type, tid */
     TEST_ASSERT( !s7_is_c_object(targets) );
     TEST_ASSERT( s7_is_list(s7, targets) );
-    TEST_ASSERT( s7_list_length(s7, targets) == 6 );
+    TEST_ASSERT_EQUAL_INT( 6, s7_list_length(s7, targets) );
 
     /* same with concise op */
     s7_pointer path2 = s7_eval_c_string(s7,
@@ -134,7 +134,7 @@ void test_target(void) {
     TEST_ASSERT( !s7_is_list(s7, bindings) );
     s7_pointer bindings_ct = s7_apply_function(s7, s7_name_to_value(s7,"length"),
                                                s7_list(s7, 1, bindings));
-    TEST_ASSERT_EQUAL_INT( 3, s7_integer(bindings_ct) );
+    TEST_ASSERT_EQUAL_INT( 4, s7_integer(bindings_ct) );
 }
 
 void test_target_string_parse(void) {

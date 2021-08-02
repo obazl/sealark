@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -149,7 +150,7 @@ EXPORT struct node_s *sealark_target_binding_for_index(struct node_s *call_expr,
     struct node_s *arg_list = utarray_eltptr(call_sfx->subnodes, 1);
     int arg_list_ct = utarray_len(arg_list->subnodes);
     int args_item_ct = (arg_list_ct + 1) / 2;
-    log_debug("arg_list_ct: %d; item ct: %d", arg_list_ct, args_item_ct);
+    /* log_debug("arg_list_ct: %d; item ct: %d", arg_list_ct, args_item_ct); */
 
     /* reverse indexing */
     if (index < 0) {
@@ -159,14 +160,14 @@ EXPORT struct node_s *sealark_target_binding_for_index(struct node_s *call_expr,
             return NULL;
         } else {
             index = args_item_ct + index;
-            log_debug("recurring...");
+            /* log_debug("recurring..."); */
             return sealark_target_binding_for_index(call_expr, index);
         }
     }
 
     if (index > args_item_ct-1) {
         log_error("index > target count");
-        errno = 2;              /* FIXME */
+        errno = EINDEX_TOO_BIG;
         return NULL;
     }
 
@@ -212,12 +213,7 @@ EXPORT struct node_s *sealark_bindings_binding_for_index(struct node_s *bindings
     sealark_debug_print_ast_outline(bindings, 0);
 #endif
 
-    if (bindings->tid != TK_Arg_List) {
-        log_error("Node type error. Expected TK_Arg_List, got %d %s",
-                  bindings->tid, TIDNAME(bindings));
-    }
-
-    /* struct node_s *node, *binding; */
+    assert(bindings->tid == TK_Arg_List);
 
 #if defined(DEBUG_UTARRAYS)
     log_debug("SEARCHING bindings %d %s, child ct: %d",
@@ -227,12 +223,33 @@ EXPORT struct node_s *sealark_bindings_binding_for_index(struct node_s *bindings
 #endif
     struct node_s *binding_node = NULL;
 
+    /* reverse indexing */
+    int list_ct = utarray_len(bindings->subnodes);
+    int item_ct = (list_ct + 1) / 2;
+    if (index < 0) {
+        if (abs(index) > item_ct) {
+            log_error("abs(%d) > item_ct", index, item_ct);
+            errno = 3;
+            return NULL;
+        } else {
+            index = item_ct + index;
+            log_debug("recurring...");
+            return sealark_bindings_binding_for_index(bindings, index);
+        }
+    }
+
+    if (index > item_ct-1) {
+        log_error("index > target count");
+        errno = 2;              /* FIXME */
+        return NULL;
+    }
+
     /* for target nodes, only bindings (attrs) are allowed in arglist,
        so no need to account for non-attribute args
      */
     int binding_ct = 0;
     while((binding_node=(struct node_s*)utarray_next(bindings->subnodes,
-                                                  binding_node))) {
+                                                     binding_node))) {
 #if defined(DEBUG_UTARRAYS)
         log_debug(" LOOP bindings[%d] tid: %d %s",
                   binding_ct, binding_node->tid,

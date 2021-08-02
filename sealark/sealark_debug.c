@@ -22,7 +22,7 @@ void print_stacktrace()
 /* recursively print outline */
 EXPORT void sealark_debug_print_ast_outline(struct node_s *node, int level)
 {
-#if defined (DEBUG_TRACE) || defined(DEBUG_AST)
+#if defined(DEBUG_SERIALIZER)
     log_debug("sealark_debug_print_ast_outline");
 #endif
 

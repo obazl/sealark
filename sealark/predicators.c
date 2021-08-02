@@ -155,12 +155,12 @@ EXPORT bool sealark_target_has_binding_key(struct node_s *call_expr,
 
             if ((strncmp(id->s, key, key_len) == 0)
                 && strlen(id->s) == key_len ){
-                log_debug("true");
+                /* log_debug("true"); */
                 return true;
             }
         }
     }
-    log_debug("false");
+    /* log_debug("false"); */
     return false;
 }
 
