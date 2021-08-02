@@ -2,6 +2,8 @@
 
 Not much here yet, but the examples below should suffice to get you started.
 
+**WARNING**: only tested on MacOS.  Will test on Linux in the next few days.
+
 ## repl examples
 
 * [projection](#projection)
