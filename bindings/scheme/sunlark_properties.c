@@ -280,18 +280,21 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
         case TK_Arg_List:
             ct = sealark_subnode_count(ast_node, true, false, false);
             break;
+        case TK_Binding:
+            ct = sealark_subnode_count(ast_node, true, false, false);
+            /* return s7_make_integer(s7, 2); */
+            break;
         case TK_Call_Expr:
             ct = sealark_subnode_count(ast_node, true, false, false);
             break;
         case TK_List_Expr:
             ct = sealark_subnode_count(ast_node, true, false, false);
             break;
-        case TK_Package:
+        case TK_Load_Stmt:
             ct = sealark_subnode_count(ast_node, true, false, false);
             break;
-        case TK_Binding:
+        case TK_Package:
             ct = sealark_subnode_count(ast_node, true, false, false);
-            /* return s7_make_integer(s7, 2); */
             break;
         default:
             log_warn("Uncaught node type for :length: %d %s",

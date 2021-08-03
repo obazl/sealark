@@ -487,20 +487,6 @@ EXPORT int sealark_subnode_count(struct node_s *node,
     struct node_s *count_node = NULL;  /* we'll iterate over this */
 
     switch(node->tid) {
-    case TK_List_Expr:
-        if (node->subnodes)
-            if ( !all_printables ) {
-                if (exclude_meta) {
-                    count_node = utarray_eltptr(node->subnodes, 1);
-                } else
-                    count_node = node;
-            } else {
-                ct--; // self is non-printable
-                count_node = node;
-            }
-        else
-            return 1;
-        break;
     case TK_Arg_List:
         if (all_printables)
             ct--; // self is non-printable
@@ -520,6 +506,25 @@ EXPORT int sealark_subnode_count(struct node_s *node,
         count_node = node;
         break;
     case TK_Expr_List:
+        if (all_printables)
+            ct--; // self is non-printable
+        count_node = node;
+        break;
+    case TK_List_Expr:
+        if (node->subnodes)
+            if ( !all_printables ) {
+                if (exclude_meta) {
+                    count_node = utarray_eltptr(node->subnodes, 1);
+                } else
+                    count_node = node;
+            } else {
+                ct--; // self is non-printable
+                count_node = node;
+            }
+        else
+            return 1;
+        break;
+    case TK_Load_Stmt:
         if (all_printables)
             ct--; // self is non-printable
         count_node = node;
@@ -547,6 +552,7 @@ EXPORT int sealark_subnode_count(struct node_s *node,
                     if (subnode->tid == TK_RBRACE) continue;
                     if (subnode->tid == TK_LPAREN) continue;
                     if (subnode->tid == TK_RPAREN) continue;
+                    if (subnode->tid == TK_LOAD) continue;
                 /* } else { */
                 }
             }
