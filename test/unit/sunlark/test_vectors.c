@@ -109,12 +109,14 @@ void test_vector_meta_properties(void) {
 
     s7_pointer path = s7_eval_c_string(s7, "'(:> 1 :@ 1)");
     s7_pointer bnode = s7_apply_function(s7, ast, path);
+    TEST_ASSERT( s7_is_c_object(bnode) );
+    TEST_ASSERT( !s7_is_list(s7, bnode) );
     /* bnode is binding expr "int_veca = [1, 2, 3]", at posn 17:4 */
 
-    s7_pointer is_sunlark_node = s7_name_to_value(s7, "sunlark-node?");
-    s7_pointer pred = s7_apply_function(s7, is_sunlark_node,
-                                        s7_list(s7, 1, bnode));
-    TEST_ASSERT( pred == s7_t(s7) );
+    /* s7_pointer is_sunlark_node = s7_name_to_value(s7, "sunlark-node?"); */
+    /* s7_pointer pred = s7_apply_function(s7, is_sunlark_node, */
+    /*                                     s7_list(s7, 1, bnode)); */
+    /* TEST_ASSERT( pred == s7_t(s7) ); */
 
     s7_pointer posn = NULL;
     posn = s7_apply_function(s7, bnode, s7_list(s7, 1,

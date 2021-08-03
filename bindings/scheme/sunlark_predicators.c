@@ -17,35 +17,12 @@
 
 /* **************************************************************** */
 
-#if INTERFACE
-#define SUNLARK_IS_NODE_HELP "(node? obj) returns #t if obj is a node."
-#define SUNLARK_IS_NODE_SIG s7_make_signature(s7, 2, s7_make_symbol(s7, "boolean?"), s7_t(s7))
-#endif
-
-/* called by Scheme 'node?'; internally, use c_is_sunlark_node (bool) */
-s7_pointer sunlark_is_node(s7_scheme *s7, s7_pointer args)
-{
-#if defined(DEBUG_S7_API)
-    log_debug(">>>>>>>>>>>>>>>> sunlark_is_node <<<<<<<<<<<<<<<<");
-#endif
-    /* log_debug("obj t %d, node t %d", */
-    /*           s7_c_object_type(args), ast_node_t); */
-
-    /* log_debug("car obj t %d, node t %d", */
-    /*           s7_c_object_type(args), ast_node_t); */
-
-    //NB: args is always a list
-
-    return s7_make_boolean(s7, c_is_sunlark_node(s7, s7_car(args)));
-}
-
 /* for internal C use (returns bool); Scheme 'node?' calls sunlark_is_node */
 bool c_is_sunlark_node(s7_scheme *s7, s7_pointer node_s7)
 {
 #if defined(DEBUG_PREDICATES)
-    log_debug("c_is_sunlark_node");
-    /* %s", */
-    /*           s7_object_to_c_string(s7, node_s7)); */
+    log_debug("c_is_sunlark_node %s",
+              s7_object_to_c_string(s7, node_s7));
 #endif
 
     if (s7_is_c_object(node_s7)) {

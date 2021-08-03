@@ -12,7 +12,6 @@ test_suite(
         ":strings",
         ":string_props",
         ":targets",
-        # ":tetrads",
         ":vectors",
     ])
 
@@ -143,15 +142,6 @@ cc_test(
 )
 
 cc_test(
-    name = "tetrads",
-    srcs = ["paths_tetradic.c", "paths_tetradic.h"],
-    data = [":BUILD.test1"],
-    copts = COPTS,
-    deps = DEPS,
-    linkstatic = 1
-)
-
-cc_test(
     name = "vectors",
     srcs = ["test_vectors.c", "test_vectors.h"],
     data = [":BUILD.vectors"],
@@ -184,7 +174,6 @@ genrule(
         "definitions.c",
         "test_dictionaries.c",
         "test_loadstmts.c",
-        "paths_tetradic.c",
         "test_set_strings.c",
         "test_strings.c",
         "test_string_props.c",
@@ -199,7 +188,6 @@ genrule(
         "definitions.h",
         "test_dictionaries.h",
         "test_loadstmts.h",
-        "paths_tetradic.h",
         "test_set_strings.h",
         "test_strings.h",
         "test_string_props.h",
@@ -209,14 +197,13 @@ genrule(
         "test_vectors.h"
     ],
     cmd = "\n".join([
-        "SRC1=$(location paths_tetradic.c)",
+        "SRC1=$(location definitions.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "$(location //vendored/makeheaders) \\",
         "    $(location binding_val_vectors.c) \\",
         "    $(location common.c) \\",
         "    $(location definitions.c) \\",
         "    $(location test_loadstmts.c) \\",
-        "    $(location paths_tetradic.c) \\",
         "    $(location test_set_bindings.c) \\",
         "    $(location test_bindings.c) \\",
         "    $(location test_set_strings.c) \\",

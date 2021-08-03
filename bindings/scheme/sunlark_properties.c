@@ -163,6 +163,8 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
     /* pseudo-bindings */
     if (kw == KW(ast)) {
         UT_string *buf = sealark_display_ast_outline(ast_node, 0);
+        struct node_s *s = sealark_new_node(TK_STRING, without_subnodes);
+        strncpy(s->s, utstring_body(buf), utstring_len(buf));
         s7_pointer out = s7_make_string(s7, utstring_body(buf));
         utstring_free(buf);
         return out;
@@ -295,7 +297,7 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
 
     /* pseudo-props */
     //FIXME: nodelist?
-    if (kw == KW(node?)) {
+    if (kw == KW(node?)) { // || kw == KW(sunlark-node?)) {
         return s7_t(s7);
     }
 

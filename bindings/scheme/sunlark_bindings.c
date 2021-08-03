@@ -16,16 +16,112 @@
 /* docs at bottom */
 
 /* ******************************** */
+/* binding accepts :key, :value
+       :value optionally followed by int index
+   returns: node
+ */
+//s7_pointer
+/* s7_pointer sunlark_binding_dispatcher(s7_scheme *s7, */
+struct node_s *sunlark_binding_dispatcher(s7_scheme *s7,
+                                      struct node_s *binding,
+                                      /* s7_pointer _binding, */
+                                      s7_pointer path_args)
+{
+#if defined (DEBUG_TRACE) || defined(DEBUG_PATHS)
+    log_debug("sunlark_binding_dispatcher: %s",
+              s7_object_to_c_string(s7, path_args));
+#endif
+#if defined(DEBUG_AST)
+    sealark_debug_print_ast_outline(binding, 0);
+#endif
+
+    /* struct node_s *binding = s7_c_object_value(_binding); */
+    assert(binding->tid == TK_Binding);
+
+    int op_count = s7_list_length(s7, path_args);
+    if (op_count == 0) {
+log_debug("0 xxxxxxxxxxxxxxxx");
+        return binding;
+        /* log_error("not enough path steps"); */
+        /* return(s7_wrong_type_arg_error(s7, "node type :binding applicator:", */
+        /*                                1, path_args, ":key or :value")); */
+    }
+    s7_pointer op = s7_car(path_args);
+
+    struct node_s *tmp_node;
+
+    s7_pointer result_list;
+
+    if (KW(key) == op) {
+        return utarray_eltptr(binding->subnodes, 0);
+        //return sunlark_node_new(s7, utarray_eltptr(binding->subnodes, 0));
+        /* tmp_node = utarray_eltptr(binding->subnodes, 0); */
+        /* return sunlark_node_new(s7, tmp_node); */
+    }
+    if (op == s7_make_keyword(s7, "$") || op == KW(value)) {
+        struct node_s *bval = utarray_eltptr(binding->subnodes, 2);
+        if (s7_is_null(s7, s7_cdr(path_args)))
+            return bval;
+        /* return sunlark_node_new(s7, bval); */
+        if (s7_is_integer(s7_cadr(path_args))) {
+            int idx = s7_integer(s7_cadr(path_args));
+            /* implies: val is a vector */
+            if (bval->tid == TK_List_Expr) {
+                return sealark_vector_item_for_int(bval, idx);
+                //  return sunlark_node_new(s7, sealark_vector_item_for_int(bval, idx));
+            } else {
+                log_error("trying to index a non-list of type %d %s",
+                          bval->tid, TIDNAME(bval));
+                errno = EBAD_INDEX;
+                return NULL;
+                /*        return(s7_error(s7, */
+                /*                        s7_make_symbol(s7, "invalid_argument"), */
+                /*                        s7_list(s7, 2, */
+                /*                                s7_make_string(s7, */
+                /* "Trying to index a non-list value of type ~A"), */
+                /* s7_make_string(s7,token_name[bval->tid][0])))); */
+            }
+        } else {
+            log_error("invalid path op: %s",
+                      s7_object_to_c_string(s7, path_args));
+            exit(EXIT_FAILURE);
+        }
+    }
+    if (s7_is_integer(op)) {
+        log_error("Integer indexing of bindings (0 == :key, 1 == :value) not (yet?) supported", s7_object_to_c_string(s7, op));
+        errno = EBAD_INDEX;
+        return NULL;
+        /* return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"), */
+        /*                 s7_list(s7, 2, s7_make_string(s7, */
+        /*                 "Invalid arg ~D (integer indexing of bindings (0 == :key, 1 == :value) not (yet?) supported)"), op))); */
+    }
+
+    if (s7_is_keyword(op)) {
+        errno = EUNKNOWN_KW;
+        return NULL;
+        /* return sunlark_common_property_lookup(s7, binding, op); */
+    }
+
+    log_error("Invalid op: %s", s7_object_to_c_string(s7, op));
+    errno = EINVALID_ARG;
+    return NULL;
+    /*    return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"), */
+    /*                    s7_list(s7, 2, s7_make_string(s7, */
+    /* "Invalid arg: ~A (a binding can be indexed by :key or :value only)"), op))); */
+}
+
+/* ******************************** */
 /*
   args: type predicate (e.g. :bindings?), ??
   returns: bool or node?
  */
-s7_pointer sunlark_dispatch_on_bindings_list(s7_scheme *s7,
+//FIXME: rename arglist_dispatcher (bindings a subset of args)
+s7_pointer sunlark_bindings_list_dispatcher(s7_scheme *s7,
                                                  s7_pointer _bindings,
                                                  s7_pointer path_args)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_PATHS)
-    log_debug("sunlark_dispatch_on_bindings_list: %s",
+    log_debug("sunlark_binding_dispatchers_list: %s",
               s7_object_to_c_string(s7, path_args));
     /* sealark_debug_print_ast_outline(s7_c_object_value(_bindings), 0); */
 #endif
@@ -58,12 +154,16 @@ s7_pointer sunlark_dispatch_on_bindings_list(s7_scheme *s7,
 
     if (s7_is_symbol(op)) {
         /* log_debug("index bindings by key"); */
+        errno = 0;
         tmp_node = sealark_bindings_binding_for_key(bindings_node->subnodes,
                                                     s7_symbol_name(op));
-        return sunlark_dispatch_on_binding(s7,
-                                           sunlark_node_new(s7, tmp_node),
+        struct node_s *r = sunlark_binding_dispatcher(s7, tmp_node,
+                                    /* sunlark_node_new(s7, tmp_node), */
                                            s7_cdr(path_args));
-        /* return sunlark_node_new(s7, tmp_node); */
+        if (r)
+            return sunlark_node_new(s7, r);
+        else
+            return NULL; // errno already set
     }
 
     if (s7_is_integer(op)) {
@@ -71,9 +171,14 @@ s7_pointer sunlark_dispatch_on_bindings_list(s7_scheme *s7,
         int index = s7_integer(op);
         struct node_s *binding
             = sealark_bindings_binding_for_index(bindings_node, index);
-        return sunlark_dispatch_on_binding(s7, sunlark_node_new(s7, binding),
+        errno = 0;
+        struct node_s *r = sunlark_binding_dispatcher(s7, binding,
+                                     /* sunlark_node_new(s7, binding), */
                                            s7_cdr(path_args));
-        /* return sunlark_node_new(s7, binding); */
+        if (r)
+            return sunlark_node_new(s7, r);
+        else
+            return NULL;
     }
         /* s7_pointer result = sunlark_common_property_lookup(s7, binding, op); */
         /* if (result) return result; */
@@ -81,97 +186,6 @@ s7_pointer sunlark_dispatch_on_bindings_list(s7_scheme *s7,
     log_error("dispatch on %s for binding not yet implemented",
               s7_object_to_c_string(s7, op));
     exit(EXIT_FAILURE);     /* FIXME */
-}
-
-/* ******************************** */
-/* binding accepts :key, :value
-       :value optionally followed by int index
-   returns: node
- */
-//s7_pointer
-s7_pointer sunlark_dispatch_on_binding(s7_scheme *s7,
-                                      s7_pointer _binding,
-                                      s7_pointer path_args)
-{
-#if defined (DEBUG_TRACE) || defined(DEBUG_PATHS)
-    log_debug("sunlark_dispatch_on_binding: %s",
-              s7_object_to_c_string(s7, path_args));
-#endif
-#if defined(DEBUG_AST)
-    sealark_debug_print_ast_outline(s7_c_object_value(_binding), 0);
-#endif
-
-    struct node_s *binding = s7_c_object_value(_binding);
-    assert(binding->tid == TK_Binding);
-
-    assert(binding->tid == TK_Binding);
-
-    int op_count = s7_list_length(s7, path_args);
-    if (op_count == 0) {
-        return _binding;
-        /* log_error("not enough path steps"); */
-        /* return(s7_wrong_type_arg_error(s7, "node type :binding applicator:", */
-        /*                                1, path_args, ":key or :value")); */
-    }
-    s7_pointer op = s7_car(path_args);
-
-    struct node_s *tmp_node;
-
-    s7_pointer result_list;
-
-    /* switch(op_count) { */
-    /* case 0: */
-    /*     return binding; */
-    /*     /\* log_error("not enough path steps"); *\/ */
-    /*     /\* return(s7_wrong_type_arg_error(s7, "node type :binding applicator:", *\/ */
-    /*     /\*                                1, path_args, ":key or :value")); *\/ */
-    /*     break; */
-    /* case 1: */
-        if (KW(key) == op) {
-            return sunlark_node_new(s7, utarray_eltptr(binding->subnodes, 0));
-            /* tmp_node = utarray_eltptr(binding->subnodes, 0); */
-            /* return sunlark_node_new(s7, tmp_node); */
-        }
-        if (op == s7_make_keyword(s7, "$") || op == KW(value)) {
-            struct node_s *bval = utarray_eltptr(binding->subnodes, 2);
-            if (s7_is_null(s7, s7_cdr(path_args)))
-                return sunlark_node_new(s7, bval);
-            if (s7_is_integer(s7_cadr(path_args))) {
-                int idx = s7_integer(s7_cadr(path_args));
-                /* implies: val is a vector */
-                if (bval->tid == TK_List_Expr) {
-                    return sunlark_node_new(s7, sealark_vector_item_for_int(bval, idx));
-                } else {
-                    log_error("trying to index a non-list of type %d %s",
-                              bval->tid, TIDNAME(bval));
-                    return(s7_error(s7,
-                                    s7_make_symbol(s7, "invalid_argument"),
-                                    s7_list(s7, 2,
-                                            s7_make_string(s7,
-             "Trying to index a non-list value of type ~A"),
-             s7_make_string(s7,token_name[bval->tid][0]))));
-                }
-            } else {
-                log_error("invalid path op: %s",
-                          s7_object_to_c_string(s7, path_args));
-                exit(EXIT_FAILURE);
-            }
-        }
-        if (s7_is_keyword(op)) {
-            /* common properties */
-            /* FIXME: this returns string, int, etc, not node */
-            return sunlark_common_property_lookup(s7, binding, op);
-        }
-        if (s7_is_integer(op)) {
-            log_error("Integer indexing of bindings (0 == :key, 1 == :value) not (yet?) supported", s7_object_to_c_string(s7, op));
-            return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
-                            s7_list(s7, 2, s7_make_string(s7,
-                            "Invalid arg ~D (integer indexing of bindings (0 == :key, 1 == :value) not (yet?) supported)"), op)));
-        }
-        log_error("Invalid op: %s", s7_object_to_c_string(s7, op));
-        return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
-                        s7_list(s7, 2, s7_make_string(s7,
-     "Invalid arg: ~A (a binding can be indexed by :key or :value only)"), op)));
 }
 
 /* **************************************************************** */
@@ -499,132 +513,6 @@ s7_pointer sunlark_forall_targets_forall_bindings(s7_scheme *s7,
     }
 
     return s7_unspecified(s7);
-}
-
-/* ******************************** */
-/* resolved path: (:> x :@) */
-EXPORT s7_pointer sunlark_resolve_binding_path_on_target(s7_scheme *s7,
-                                                      struct node_s *target,
-                                                      s7_pointer path_args)
-{
-#ifdef DEBUG_TRACE
-    log_debug("sunlark_resolve_binding_path_on_target: %s",
-              s7_object_to_c_string(s7, path_args));
-#endif
-
-    if (target->tid != TK_Call_Expr) {
-        log_error("Expected node tid %d, got %d %s", TK_Call_Expr,
-                  target->tid, TIDNAME(target));
-        exit(EXIT_FAILURE);     /* FIXME */
-    }
-
-    int op_count = s7_list_length(s7, path_args);
-    s7_pointer op = s7_car(path_args);
-    /* log_debug("op: %s", s7_object_to_c_string(s7, op)); */
-
-    s7_pointer rest = s7_cdr(path_args);
-    s7_pointer op2 = s7_car(rest);
-
-    /* expected args: <int> or <sym <key>? idx?>, where <key> = :key | :value */
-    struct node_s *binding;
-    if (s7_is_keyword(op)) { /* kws are symbols, so we catch here */
-        return(s7_error(s7,
-                        s7_make_symbol(s7, "invalid_argument"),
-                        s7_list(s7, 3, s7_make_string(s7,
-                        "Bad arg: ~S in ~S; expected symbol or int"),
-                                op, path_args)));
-    }
-
-    if (s7_is_symbol(op)) {
-        errno = 0;
-        binding = sealark_target_binding_for_key(target, s7_symbol_name(op));
-        if (binding) {
-            if (s7_is_null(s7, rest)) {
-                return sunlark_node_new(s7, binding);
-            } else {
-                /* if (s7_list_length(s7, rest) == 1) */
-                return _binding_component(s7, binding, rest);
-                /* else { */
-                /*     log_error("Too many args: %s", */
-                /*               s7_object_to_c_string(s7, path_args)); */
-                /*     return(s7_error(s7, */
-                /*                     s7_make_symbol(s7, "invalid_argument"), */
-                /*                     s7_list(s7, 2, s7_make_string(s7, */
-                /*                                                   "too many args: ~A"), path_args))); */
-                /* } */
-            }
-        } else {
-            if (errno = -1) {
-                log_error("Binding not found for key: %s", s7_symbol_name(op));
-                return(s7_error(s7,
-                                s7_make_symbol(s7, "not_found"),
-                                s7_list(s7, 2, s7_make_string(s7,
-                                "Binding not found for key: ~A"), op)));
-            } else {
-                log_error("wtf 2 ????????????????");
-                return NULL;
-            }
-        }
-    }
-
-    if (s7_is_integer(op)) {
-        binding = sealark_target_binding_for_index(target, s7_integer(op));
-        if (binding) {
-            if (s7_is_null(s7, rest)) {
-                return sunlark_node_new(s7, binding);
-            } else {
-                return _binding_component(s7, binding, rest);
-                /* else { */
-                /*     log_error("Too many args: %s", */
-                /*               s7_object_to_c_string(s7, path_args)); */
-                /*     return(s7_error(s7, */
-                /*                     s7_make_symbol(s7, "invalid_argument"), */
-                /*                     s7_list(s7, 2, s7_make_string(s7, */
-                /*                                                   "too many args: ~A"), path_args))); */
-                /* } */
-            }
-        } else {
-            switch(errno) {
-            case -1:
-                log_error("Binding not found for key: %s", s7_symbol_name(op));
-                return(s7_error(s7,
-                                s7_make_symbol(s7, "not_found"),
-                                s7_list(s7, 2, s7_make_string(s7,
-                                                              "Binding not found for key: ~A"), op)));
-                break;
-            case EINDEX_TOO_BIG:
-                return(s7_error(s7,
-                                s7_make_symbol(s7, "invalid_argument"),
-                                s7_list(s7, 2, s7_make_string(s7,
-                                "Index too big: ~A"), op)));
-                break;
-            default:
-                log_error("wtf 2 ????????????????");
-            }
-        }
-
-
-        /* if (s7_is_null(s7, rest)) { */
-        /*     return sunlark_node_new(s7, binding); */
-        /* } else { */
-        /*     if (s7_list_length(s7, rest) == 1) */
-        /*         return _binding_component(s7, binding, rest); */
-        /*     else { */
-        /*         log_error("too many args: %s", */
-        /*                   s7_object_to_c_string(s7, path_args)); */
-        /*         return(s7_error(s7, */
-        /*                         s7_make_symbol(s7, "invalid_argument"), */
-        /*                 s7_list(s7, 2, s7_make_string(s7, */
-        /*                 "too many args: ~A"), path_args))); */
-        /*     } */
-        /* } */
-    }
-
-    return(s7_error(s7,
-                    s7_make_symbol(s7, "invalid_argument"),
-                    s7_list(s7, 2, s7_make_string(s7,
-                                                  "Bad arg: ~S; expected symbol or int"),
-                            op)));
 }
 
 /* component: :key or :val (idx | fld)? */

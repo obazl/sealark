@@ -67,7 +67,6 @@ LOCAL s7_pointer _loadstmt_dispatch(s7_scheme *s7,
 
     if (op == KW(args)) {
         if (s7_is_null(s7, s7_cdr(path_args))) {
-            sealark_debug_print_ast_outline(loadstmt, 0);
             UT_array *args
                 = sealark_loadstmt_args(loadstmt);
             if (args) {
@@ -86,7 +85,6 @@ LOCAL s7_pointer _loadstmt_dispatch(s7_scheme *s7,
     }
 
     if (op == KW(bindings) || op == KW(@@) || op == KW(attrs)) {
-        log_debug("...bindings..");
         if (s7_is_null(s7, s7_cdr(path_args))) {
             sealark_debug_print_ast_outline(loadstmt, 0);
             UT_array *bindings
@@ -106,8 +104,7 @@ LOCAL s7_pointer _loadstmt_dispatch(s7_scheme *s7,
         }
     }
 
-    if (op == KW(binding) || op == KW(@) || op == KW(attr)) {
-        log_debug("...binding..");
+    if (op == KW(@) || op == KW(binding) || op == KW(attr)) {
         if (s7_is_null(s7, s7_cdr(path_args))) {
             log_error(":binding must be followed by another arg: %s",
                       s7_object_to_c_string(s7, path_args));
@@ -115,7 +112,7 @@ LOCAL s7_pointer _loadstmt_dispatch(s7_scheme *s7,
             return NULL;
         } else {
             s7_pointer binding
-                = sunlark_loadstmt_binding_dispatcher(s7, loadstmt,
+                = _loadstmt_binding_dispatcher(s7, loadstmt,
                                                       s7_cdr(path_args));
             if (binding) {
                 return binding;
@@ -237,7 +234,8 @@ s7_pointer sunlark_loadstmt_arg_dispatcher(s7_scheme *s7,
 }
 
 /* **************************************************************** */
-s7_pointer sunlark_loadstmt_binding_dispatcher(s7_scheme *s7,
+/* so far: <tgt> :@ */
+LOCAL s7_pointer _loadstmt_binding_dispatcher(s7_scheme *s7,
                                                struct node_s *loadstmt,
                                                s7_pointer path_args)
 {
@@ -265,16 +263,25 @@ s7_pointer sunlark_loadstmt_binding_dispatcher(s7_scheme *s7,
                     return NULL;
                 } else {
                     s7_pointer sel = s7_cadr(path_args);
+                    if (sel == KW(key)) {
+                        log_debug("project key");
+                        struct node_s *k
+                            = sunlark_binding_dispatcher(s7, binding,
+                                                         s7_cdr(path_args));
+                        return sunlark_node_new(s7, k);
+                    }
+                    if (sel == KW(value)) {
+                        log_debug("project value");
+                    }
                     if (s7_is_keyword(sel)) {
                         s7_pointer result
                             = sunlark_common_property_lookup(s7, binding, sel);
                         return result;
-                    } else {
-                        log_debug("Invalid arg: %s",
-                                  s7_object_to_c_string(s7, sel));
-                        errno = EINVALID_ARG;
-                        return NULL;
                     }
+                    log_debug("Invalid arg: %s",
+                              s7_object_to_c_string(s7, sel));
+                    errno = EINVALID_ARG;
+                    return NULL;
                 }
             }
         } else {
@@ -297,6 +304,14 @@ s7_pointer sunlark_loadstmt_binding_dispatcher(s7_scheme *s7,
                     return NULL;
                 } else {
                     s7_pointer sel = s7_cadr(path_args);
+                    if (sel == KW(key)) {
+                        log_debug("projecting key");
+                        struct node_s *k
+                            = sunlark_binding_dispatcher(s7, binding, sel);
+                    }
+                    if (sel == KW(value)) {
+                        log_debug("project value");
+                    }
                     if (s7_is_keyword(sel)) {
                         s7_pointer result
                             = sunlark_common_property_lookup(s7, binding, sel);
@@ -321,7 +336,7 @@ s7_pointer sunlark_loadstmt_binding_dispatcher(s7_scheme *s7,
         return result;
     }
 
-    log_error("NOT YET: sunlark_loadstmt_select for %s (%s)",
+    log_error("NOT IMPLEMENTED: sunlark_loadstmt_select for %s (%s)",
               s7_object_to_c_string(s7, path_args),
               s7_object_to_c_string(s7, s7_type_of(s7, op)));
     errno = ENOT_IMPLEMENTED;
@@ -331,12 +346,12 @@ s7_pointer sunlark_loadstmt_binding_dispatcher(s7_scheme *s7,
 /* **************************************************************** */
 /* (car path_args): string (= src); int (index)  */
 /* return: node or list of nodes */
-EXPORT s7_pointer sunlark_pkg_loadstmt_select(s7_scheme *s7,
-                                           struct node_s *pkg,
-                                           s7_pointer path_args)
+s7_pointer sunlark_pkg_loadstmt_dispatch(s7_scheme *s7,
+                                                 struct node_s *pkg,
+                                                 s7_pointer path_args)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_LOADS)
-    log_debug("sunlark_pkg_loadstmt_select %s",
+    log_debug("sunlark_pkg_loadstmt_dispatch %s",
               s7_object_to_c_string(s7, path_args));
 #endif
 
@@ -363,9 +378,18 @@ EXPORT s7_pointer sunlark_pkg_loadstmt_select(s7_scheme *s7,
 
     /* **************** */
     if (s7_is_integer(op)) {
-        /* loadstmt = sealark_pkg_loadstmt_for_int(bf_node, s7_string(op2)); */
-        /* return loadstmt; */
-        log_error("not yet load int");
+        struct node_s *loadstmt
+            = sealark_pkg_loadstmt_for_int(pkg, s7_integer(op));
+        if (loadstmt)
+            if (s7_is_null(s7, s7_cdr(path_args))) {
+                return sunlark_node_new(s7, loadstmt);
+            } else {
+                s7_pointer result
+                    = _loadstmt_dispatch(s7, loadstmt, s7_cdr(path_args));
+                return result;
+            }
+        else
+            return NULL;
     }
     log_error("Invalid arg: %s", s7_object_to_c_string(s7, path_args));
     errno = EINVALID_ARG_LOAD;

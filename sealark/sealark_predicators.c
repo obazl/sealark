@@ -27,7 +27,7 @@ EXPORT bool sealark_is_name_attr(struct node_s *node)
 
     if (node->tid != TK_Binding) return false;
     struct node_s *key = utarray_eltptr(node->subnodes, 0);
-    log_debug("keystr: %s", key->s);
+    /* log_debug("keystr: %s", key->s); */
     if ((strncmp(key->s, "name", 4) == 0) && strlen(key->s) == 4) {
         return true;
     }

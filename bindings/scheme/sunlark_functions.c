@@ -105,6 +105,28 @@ LOCAL s7_pointer sunlark_make_ast_node(s7_scheme *s7, s7_pointer args)
     return(new_ast_node_s7);
 }
 
+#if INTERFACE
+#define SUNLARK_IS_NODE_HELP "(node? obj) returns #t if obj is a node."
+#define SUNLARK_IS_NODE_SIG s7_make_signature(s7, 2, s7_make_symbol(s7, "boolean?"), s7_t(s7))
+#endif
+
+/* called by Scheme 'node?'; internally, use c_is_sunlark_node (bool) */
+s7_pointer sunlark_is_node(s7_scheme *s7, s7_pointer args)
+{
+#if defined(DEBUG_S7_API)
+    log_debug(">>>>>>>>>>>>>>>> sunlark_is_node <<<<<<<<<<<<<<<<");
+#endif
+    /* log_debug("obj t %d, node t %d", */
+    /*           s7_c_object_type(args), ast_node_t); */
+
+    /* log_debug("car obj t %d, node t %d", */
+    /*           s7_c_object_type(args), ast_node_t); */
+
+    //NB: args is always a list
+
+    return s7_make_boolean(s7, c_is_sunlark_node(s7, s7_car(args)));
+}
+
 /* **************************************************************** */
 #if INTERFACE
 #define SUNLARK_MAKE_STRING_HELP "(sunlark-make-string) returns a new :string node"

@@ -61,11 +61,11 @@ struct node_s *sealark_pkg_loadstmt_for_src(struct node_s *package,
 
 /* **************** */
 EXPORT
-struct node_s *sealark_loadstmt_for_index(struct node_s *package,
-                                         int index)
+struct node_s *sealark_pkg_loadstmt_for_int(struct node_s *package,
+                                            int index)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_LOADS)
-    log_debug("sealark_loadstmt_for_index %d", index);
+    log_debug("sealark_pkg_loadstmt_for_int %d", index);
 #endif
 
     struct node_s *stmt_list = utarray_eltptr(package->subnodes, 0);
@@ -156,7 +156,7 @@ UT_array *sealark_loadstmt_bindings(struct node_s *loadstmt)
 
     while( (arg_nd=(struct node_s*)utarray_next(loadstmt->subnodes,
                                                  arg_nd)) ) {
-        log_debug("nd %d %s", arg_nd->tid, TIDNAME(arg_nd));
+        /* log_debug("nd %d %s", arg_nd->tid, TIDNAME(arg_nd)); */
 
         if (arg_nd->tid == TK_Binding)
             utarray_push_back(args, arg_nd);

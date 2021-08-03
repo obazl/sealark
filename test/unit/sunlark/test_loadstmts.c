@@ -17,8 +17,8 @@ UT_string *test_s;
 char *build_file = "test/unit/sunlark/BUILD.loadstmts";
 
 s7_scheme *s7;
-s7_pointer old_port, result;
-int gc_loc = -1;
+static s7_pointer old_port, result;
+static int gc_loc = -1;
 
 LOCAL s7_pointer _error_handler(s7_scheme *sc, s7_pointer args)
 {
@@ -89,7 +89,7 @@ void test_all_loadstmts(void) {
     }
 }
 
-void test_load_src(void) {
+void test_pkg_load_src(void) {
     s7_pointer path = s7_eval_c_string(s7,
                        "'(:load \"@repoc//pkgc:targetc.bzl\")");
     s7_pointer loadstmt = s7_apply_function(s7, ast, path);
@@ -136,6 +136,78 @@ void test_pkg_load_src_args(void) {
         TEST_ASSERT( s7_is_c_object(arg) );
         pred = s7_apply_function(s7, arg,
                                  s7_eval_c_string(s7, "'(:string?)"));
+        TEST_ASSERT( pred == s7_t(s7) );
+        arg = s7_iterate(s7, iter);
+    }
+}
+
+void test_pkg_load_int(void) {
+    s7_pointer path = s7_eval_c_string(s7, "'(:load 2)");
+    s7_pointer loadstmt = s7_apply_function(s7, ast, path);
+
+    TEST_ASSERT( ! s7_is_list(s7, loadstmt) );
+    TEST_ASSERT( s7_is_c_object(loadstmt) );
+    s7_pointer pred
+        = s7_apply_function(s7, loadstmt,
+                            s7_eval_c_string(s7, "'(:load-stmt?)"));
+    TEST_ASSERT( pred == s7_t(s7) );
+
+    s7_pointer loadstmt_ct
+        = s7_apply_function(s7, s7_name_to_value(s7,"length"),
+                            s7_list(s7, 1, loadstmt));
+    TEST_ASSERT_EQUAL_INT( 0, s7_integer(loadstmt_ct) );
+
+}
+
+void test_pkg_load_int_args(void) {
+    s7_pointer path = s7_eval_c_string(s7,
+                       "'(:load 2 :args)");
+    s7_pointer args = s7_apply_function(s7, ast, path);
+
+    TEST_ASSERT( !s7_is_c_object(args) );
+    TEST_ASSERT( s7_is_list(s7, args) );
+
+    s7_pointer args_ct
+        = s7_apply_function(s7, s7_name_to_value(s7,"length"),
+                            s7_list(s7, 1, args));
+    TEST_ASSERT_EQUAL_INT( 3, s7_integer(args_ct) );
+
+    s7_pointer pred;
+    s7_pointer iter = s7_make_iterator(s7, args);
+    s7_pointer arg = s7_iterate(s7, iter);
+    while ( ! s7_iterator_is_at_end(s7, iter) ) {
+        sealark_debug_print_ast_outline(s7_c_object_value(arg), 0);
+        TEST_ASSERT( !s7_is_list(s7, arg) );
+        TEST_ASSERT( s7_is_c_object(arg) );
+        pred = s7_apply_function(s7, arg,
+                                 s7_eval_c_string(s7, "'(:string?)"));
+        TEST_ASSERT( pred == s7_t(s7) );
+        arg = s7_iterate(s7, iter);
+    }
+}
+
+void test_pkg_load_int_bindings(void) {
+    s7_pointer path = s7_eval_c_string(s7,
+                       "'(:load 2 :bindings)");
+    s7_pointer args = s7_apply_function(s7, ast, path);
+
+    TEST_ASSERT( !s7_is_c_object(args) );
+    TEST_ASSERT( s7_is_list(s7, args) );
+
+    s7_pointer args_ct
+        = s7_apply_function(s7, s7_name_to_value(s7,"length"),
+                            s7_list(s7, 1, args));
+    TEST_ASSERT_EQUAL_INT( 3, s7_integer(args_ct) );
+
+    s7_pointer pred;
+    s7_pointer iter = s7_make_iterator(s7, args);
+    s7_pointer arg = s7_iterate(s7, iter);
+    while ( ! s7_iterator_is_at_end(s7, iter) ) {
+        sealark_debug_print_ast_outline(s7_c_object_value(arg), 0);
+        TEST_ASSERT( !s7_is_list(s7, arg) );
+        TEST_ASSERT( s7_is_c_object(arg) );
+        pred = s7_apply_function(s7, arg,
+                                 s7_eval_c_string(s7, "'(:binding?)"));
         TEST_ASSERT( pred == s7_t(s7) );
         arg = s7_iterate(s7, iter);
     }
@@ -255,6 +327,61 @@ void test_pkg_load_src_binding_int(void) {
     /* TEST_ASSERT_EQUAL_STRING( "\"arg2c\"", s7_string(str) ); */
 }
 
+void test_pkg_load_src_binding_int_key(void) {
+    char *path_str
+        = "'(:load \"@repoc//pkgc:targetc.bzl\" :binding 0 :key)";
+    s7_pointer path = s7_eval_c_string(s7, path_str);
+    s7_pointer arg = s7_apply_function(s7, ast, path);
+
+    TEST_ASSERT( s7_is_c_object(arg) );
+    TEST_ASSERT( !s7_is_list(s7, arg) );
+
+    /* binding key has type :id */
+    s7_pointer pred = s7_apply_function(s7, arg,
+                                      s7_eval_c_string(s7, "'(:id?)"));
+    TEST_ASSERT( pred == s7_t(s7) );
+
+    /* s7_pointer str = s7_apply_function(s7, arg, */
+    /*                                    s7_eval_c_string(s7, "'(:$)")); */
+    /* TEST_ASSERT_EQUAL_STRING( "\"arg2c\"", s7_string(str) ); */
+}
+
+void test_pkg_load_src_binding_value(void) {
+    char *path_str
+        = "'(:load \"@repoc//pkgc:targetc.bzl\" :binding 0 :value)";
+    s7_pointer path = s7_eval_c_string(s7, path_str);
+    s7_pointer arg = s7_apply_function(s7, ast, path);
+
+    TEST_ASSERT( s7_is_c_object(arg) );
+    TEST_ASSERT( !s7_is_list(s7, arg) );
+
+    s7_pointer pred = s7_apply_function(s7, arg,
+                                      s7_eval_c_string(s7, "'(:binding?)"));
+    TEST_ASSERT( pred == s7_t(s7) );
+
+    /* s7_pointer str = s7_apply_function(s7, arg, */
+    /*                                    s7_eval_c_string(s7, "'(:$)")); */
+    /* TEST_ASSERT_EQUAL_STRING( "\"arg2c\"", s7_string(str) ); */
+}
+
+void test_pkg_load_int_binding_int(void) {
+    char *path_str
+        = "'(:load 2 :binding 0)";
+    s7_pointer path = s7_eval_c_string(s7, path_str);
+    s7_pointer arg = s7_apply_function(s7, ast, path);
+
+    TEST_ASSERT( s7_is_c_object(arg) );
+    TEST_ASSERT( !s7_is_list(s7, arg) );
+
+    s7_pointer pred = s7_apply_function(s7, arg,
+                                      s7_eval_c_string(s7, "'(:binding?)"));
+    TEST_ASSERT( pred == s7_t(s7) );
+
+    /* s7_pointer str = s7_apply_function(s7, arg, */
+    /*                                    s7_eval_c_string(s7, "'(:$)")); */
+    /* TEST_ASSERT_EQUAL_STRING( "\"arg2c\"", s7_string(str) ); */
+}
+
 void test_pkg_load_src_binding_sym(void) {
     char *path_str
         = "'(:load \"@repoc//pkgc:targetc.bzl\" :binding key1c)";
@@ -285,7 +412,9 @@ void test_pkg_load_src_binding_sym_prop(void) {
 int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_all_loadstmts);
-    RUN_TEST(test_load_src);
+
+    /* (pkg :load "@repoc//pkgc:targetc.bzl") */
+    RUN_TEST(test_pkg_load_src);
 
     /* (pkg :load "@repoc//pkgc:targetc.bzl" :args) */
     RUN_TEST(test_pkg_load_src_args);
@@ -303,6 +432,7 @@ int main(void) {
     /* (:load "@repoc//pkgc:targetc.bzl" :arg "arg2c :tid->kw") */
     RUN_TEST(test_pkg_load_src_arg_string_prop);
 
+    /* **************** */
     /* (pkg :load "@repoc//pkgc:targetc.bzl" :bindings) */
     RUN_TEST(test_pkg_load_src_bindings);
 
@@ -312,8 +442,24 @@ int main(void) {
     /* (pkg :load "@repoc//pkgc:targetc.bzl" :binding key1c) */
     RUN_TEST(test_pkg_load_src_binding_sym);
 
+    /* (pkg :load "@repoc//pkgc:targetc.bzl" :binding 0 :key) */
+    RUN_TEST(test_pkg_load_src_binding_int_key);
+
     /* (:load "@repoc//pkgc:targetc.bzl" :binding key1c  :tid->kw") */
     RUN_TEST(test_pkg_load_src_binding_sym_prop);
+
+    /* ******************************** */
+    /* (pkg :load 1) */
+    RUN_TEST(test_pkg_load_int);
+
+    /* (pkg :load 1 :args) */
+    RUN_TEST(test_pkg_load_int_args);
+
+    /* (pkg :load 1 :bindings) */
+    RUN_TEST(test_pkg_load_int_bindings);
+
+    /* (pkg :load 2 :binding 0) */
+    RUN_TEST(test_pkg_load_int_binding_int);
 
     return UNITY_END();
 }

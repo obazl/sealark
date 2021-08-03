@@ -13,6 +13,9 @@
 #define EMISSING_ARG_SELECTOR -11
 #define EMISSING_ARG_BINDING -12
 #define ENOT_IMPLEMENTED -13
+#define EBAD_INDEX -14
+#define EUNKNOWN_KW -15
+
 #endif
 
 int e;
