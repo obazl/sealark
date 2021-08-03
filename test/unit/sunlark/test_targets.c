@@ -13,7 +13,7 @@
 UT_string *buf;
 UT_string *test_s;
 
-char *build_file = "test/unit/sunlark/BUILD.targets";
+char *build_file;
 
 s7_scheme *s7;
 
@@ -29,7 +29,7 @@ void setUp(void) {
                                    s7_list(s7, 1,
                                            s7_make_string(s7, build_file)));
     root = s7_c_object_value(pkg);
-    s7_pointer path = s7_eval_c_string(s7, "'(:target \"hello-world\")");
+    s7_pointer path = s7_eval_c_string(s7, "'(:target \"hello-lib\")");
     tgt = s7_apply_function(s7, pkg, path);
 }
 
@@ -60,7 +60,7 @@ void _validate_rule(s7_pointer rule) {
                              s7_list(s7, 1, rule_sym));
     TEST_ASSERT( pred == s7_t(s7) );
 
-    TEST_ASSERT_EQUAL_STRING( "cc_binary", s7_symbol_name(rule_sym) );
+    TEST_ASSERT_EQUAL_STRING( "cc_library", s7_symbol_name(rule_sym) );
 
 }
 
@@ -83,7 +83,7 @@ void _validate_name(s7_pointer nm) {
                                        s7_eval_c_string(s7, "'(:$)"));
     TEST_ASSERT( !s7_is_c_object(sym) );
     TEST_ASSERT( s7_is_string(sym) );
-    TEST_ASSERT_EQUAL_STRING( "\"hello-world\"", s7_string(sym) );
+    TEST_ASSERT_EQUAL_STRING( "\"hello-lib\"", s7_string(sym) );
 }
 
 void test_tgt_name(void) {
@@ -143,19 +143,19 @@ void test_tgt_at_sym_value(void) {
     /* of length 1 */
     s7_pointer len = s7_apply_function(s7, s7_name_to_value(s7,"length"),
                                        s7_list(s7, 1, val_node));
-    TEST_ASSERT_EQUAL_INT( 1, s7_integer(len) );
+    TEST_ASSERT_EQUAL_INT( 3, s7_integer(len) );
 
-    /* whose 0 item is "hello-world.cc" */
+    /* whose 0 item is "hello-lib.cc" */
     s7_pointer item = s7_apply_function(s7, val_node,
                              s7_eval_c_string(s7, "'(0)"));
     /* which is a string node */
     pred = s7_apply_function(s7, item,
                              s7_eval_c_string(s7, "'(:string?)"));
     TEST_ASSERT( pred == s7_t(s7) );
-    /* whose Scheme value is string "hello-world.cc" */
+    /* whose Scheme value is string "hello-lib.cc" */
     s7_pointer sval = s7_apply_function(s7, item,
                                         s7_eval_c_string(s7, "'(:$)"));
-    TEST_ASSERT_EQUAL_STRING( "\"hello-world.cc\"", s7_string(sval) );
+    TEST_ASSERT_EQUAL_STRING( "\"hello-lib.cc\"", s7_string(sval) );
 }
 
 void test_tgt_at_sym_value_i(void) {
@@ -164,16 +164,30 @@ void test_tgt_at_sym_value_i(void) {
     s7_pointer pred = s7_apply_function(s7, item,
                                         s7_eval_c_string(s7, "'(:string?)"));
     TEST_ASSERT( pred == s7_t(s7) );
-    /* whose Scheme value is string "hello-world.cc" */
+    /* whose Scheme value is string "hello-lib.cc" */
     s7_pointer sval = s7_apply_function(s7, item,
                                         s7_eval_c_string(s7, "'(:$)"));
-    TEST_ASSERT_EQUAL_STRING( "\"hello-world.cc\"", s7_string(sval) );
+    TEST_ASSERT_EQUAL_STRING( "\"hello-lib.cc\"", s7_string(sval) );
+}
+
+void test_tgt_at_sym_value_string(void) {
+    s7_pointer path = s7_eval_c_string(s7, "'(:@ srcs :value 0)");
+    s7_pointer item = s7_apply_function(s7, tgt, path);
+    s7_pointer pred = s7_apply_function(s7, item,
+                                        s7_eval_c_string(s7, "'(:string?)"));
+    TEST_ASSERT( pred == s7_t(s7) );
+    /* whose Scheme value is string "hello-lib.cc" */
+    s7_pointer sval = s7_apply_function(s7, item,
+                                        s7_eval_c_string(s7, "'(:$)"));
+    TEST_ASSERT_EQUAL_STRING( "\"hello-lib.cc\"", s7_string(sval) );
 }
 
 /* **************************************************************** */
 int main(void) {
+    build_file = "test/unit/sunlark/BUILD.targets";
+
     UNITY_BEGIN();
-    RUN_TEST(test_target);
+    RUN_TEST(test_target);      /* verify setUp worked */
     RUN_TEST(test_tgt_rule);        /* (:rule) */
     RUN_TEST(test_tgt_name);        /* (:name) */
 
@@ -186,8 +200,8 @@ int main(void) {
 
     RUN_TEST(test_tgt_at_sym_value_i);    /* (:@ srcs :value 0) */
 
-    /* (:@ srcs :value "hello-world.cc") */
-    /* RUN_TEST(test_tgt_at_sym_value_string); */
+    /* (:@ srcs :value "hello-lib.cc") */
+    RUN_TEST(test_tgt_at_sym_value_string);
 
     return UNITY_END();
 }

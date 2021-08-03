@@ -124,25 +124,25 @@ void test_pkg_targets_atat(void) {
 
 /* **************************************************************** */
 void test_pkg_target_int(void) {
-    s7_pointer path = s7_eval_c_string(s7, "'(:target 1)");
+    s7_pointer path = s7_eval_c_string(s7, "'(:target 0)");
     s7_pointer target = s7_apply_function(s7, pkg, path);
     validate_hello_world_target(target);
 }
 
 void test_pkg_tgt_int(void) {
-    s7_pointer path = s7_eval_c_string(s7, "'(:> 1)");
+    s7_pointer path = s7_eval_c_string(s7, "'(:> 0)");
     s7_pointer target = s7_apply_function(s7, pkg, path);
     validate_hello_world_target(target);
 }
 
 void test_pkg_target_string(void) {
-    s7_pointer path = s7_eval_c_string(s7, "'(:target \"hello-world\")");
+    s7_pointer path = s7_eval_c_string(s7, "'(:target \"hello-lib\")");
     s7_pointer target = s7_apply_function(s7, pkg, path);
     validate_hello_world_target(target);
 }
 
 void test_pkg_tgt_string(void) {
-    s7_pointer path = s7_eval_c_string(s7, "'(:> \"hello-world\")");
+    s7_pointer path = s7_eval_c_string(s7, "'(:> \"hello-lib\")");
     s7_pointer target = s7_apply_function(s7, pkg, path);
     validate_hello_world_target(target);
 }
@@ -163,19 +163,19 @@ void _validate_rule(s7_pointer rule) {
                              s7_list(s7, 1, rule_sym));
     TEST_ASSERT( pred == s7_t(s7) );
 
-    TEST_ASSERT_EQUAL_STRING( "cc_binary", s7_symbol_name(rule_sym) );
+    TEST_ASSERT_EQUAL_STRING( "cc_library", s7_symbol_name(rule_sym) );
 
 }
 
 void test_pkg_target_string_rule(void) {
-    char *s = "'(:target \"hello-world\" :rule)";
+    char *s = "'(:target \"hello-lib\" :rule)";
     s7_pointer path = s7_eval_c_string(s7, s);
     s7_pointer rule = s7_apply_function(s7, pkg, path);
     _validate_rule(rule);
 }
 
 void test_pkg_target_int_rule(void) {
-    char *s = "'(:target 1 :rule)";
+    char *s = "'(:target 0 :rule)";
     s7_pointer path = s7_eval_c_string(s7, s);
     s7_pointer rule = s7_apply_function(s7, pkg, path);
     _validate_rule(rule);
@@ -193,18 +193,18 @@ void _validate_name(s7_pointer nm) {
                                        s7_eval_c_string(s7, "'(:$)"));
     TEST_ASSERT( !s7_is_c_object(sym) );
     TEST_ASSERT( s7_is_string(sym) );
-    TEST_ASSERT_EQUAL_STRING( "\"hello-world\"", s7_string(sym) );
+    TEST_ASSERT_EQUAL_STRING( "\"hello-lib\"", s7_string(sym) );
 }
 
 void test_pkg_target_string_name(void) {
-    char *s = "'(:target \"hello-world\" :name)";
+    char *s = "'(:target \"hello-lib\" :name)";
     s7_pointer path = s7_eval_c_string(s7, s);
     s7_pointer nm = s7_apply_function(s7, pkg, path);
     _validate_name(nm);
 }
 
 void test_pkg_target_int_name(void) {
-    char *s = "'(:target 1 :name)";
+    char *s = "'(:target 0 :name)";
     s7_pointer path = s7_eval_c_string(s7, s);
     s7_pointer nm = s7_apply_function(s7, pkg, path);
     _validate_name(nm);
@@ -233,107 +233,107 @@ void _validate_attrs(s7_pointer attrs) {
 }
 
 void test_pkg_target_string_attrs(void) {
-    char *s = "'(:target \"hello-world\" :attrs)";
+    char *s = "'(:target \"hello-lib\" :attrs)";
     s7_pointer path = s7_eval_c_string(s7, s);
     s7_pointer attrs = s7_apply_function(s7, pkg, path);
     _validate_attrs(attrs);
 }
 
 void test_pkg_target_string_bindings(void) {
-    char *s = "'(:target \"hello-world\" :bindings)";
+    char *s = "'(:target \"hello-lib\" :bindings)";
     s7_pointer path = s7_eval_c_string(s7, s);
     s7_pointer attrs = s7_apply_function(s7, pkg, path);
     _validate_attrs(attrs);
 }
 
 void test_pkg_target_string_atat(void) {
-    char *s = "'(:target \"hello-world\" :@@)";
+    char *s = "'(:target \"hello-lib\" :@@)";
     s7_pointer path = s7_eval_c_string(s7, s);
     s7_pointer attrs = s7_apply_function(s7, pkg, path);
     _validate_attrs(attrs);
 }
 
 void test_pkg_target_int_attrs(void) {
-    char *s = "'(:target 1 :attrs)";
+    char *s = "'(:target 0 :attrs)";
     s7_pointer path = s7_eval_c_string(s7, s);
     s7_pointer attrs = s7_apply_function(s7, pkg, path);
     _validate_attrs(attrs);
 }
 
 void test_pkg_target_int_bindings(void) {
-    char *s = "'(:target 1 :bindings)";
+    char *s = "'(:target 0 :bindings)";
     s7_pointer path = s7_eval_c_string(s7, s);
     s7_pointer attrs = s7_apply_function(s7, pkg, path);
     _validate_attrs(attrs);
 }
 
 void test_pkg_target_int_atat(void) {
-    char *s = "'(:target 1 :@@)";
+    char *s = "'(:target 0 :@@)";
     s7_pointer path = s7_eval_c_string(s7, s);
     s7_pointer attrs = s7_apply_function(s7, pkg, path);
     _validate_attrs(attrs);
 }
 
 void test_pkg_target_string_attr_sym(void) {
-    char *s = "'(:target \"hello-world\" :attr srcs)";
+    char *s = "'(:target \"hello-lib\" :attr srcs)";
     s7_pointer path = s7_eval_c_string(s7, s);
     s7_pointer attrs = s7_apply_function(s7, pkg, path);
     validate_attr_srcs(attrs);
 }
 void test_pkg_tgt_string_attr_sym(void) {
-    char *s = "'(:> \"hello-world\" :attr srcs)";
+    char *s = "'(:> \"hello-lib\" :attr srcs)";
     s7_pointer path = s7_eval_c_string(s7, s);
     s7_pointer attrs = s7_apply_function(s7, pkg, path);
     validate_attr_srcs(attrs);
 }
 
 void test_pkg_target_string_binding_sym(void) {
-    char *s = "'(:target \"hello-world\" :binding srcs)";
+    char *s = "'(:target \"hello-lib\" :binding srcs)";
     s7_pointer path = s7_eval_c_string(s7, s);
     s7_pointer attrs = s7_apply_function(s7, pkg, path);
     validate_attr_srcs(attrs);
 }
 void test_pkg_tgt_string_binding_sym(void) {
-    char *s = "'(:> \"hello-world\" :binding srcs)";
+    char *s = "'(:> \"hello-lib\" :binding srcs)";
     s7_pointer path = s7_eval_c_string(s7, s);
     s7_pointer attrs = s7_apply_function(s7, pkg, path);
     validate_attr_srcs(attrs);
 }
 
 void test_pkg_target_string_at_sym(void) {
-    char *s = "'(:target \"hello-world\" :@ srcs)";
+    char *s = "'(:target \"hello-lib\" :@ srcs)";
     s7_pointer path = s7_eval_c_string(s7, s);
     s7_pointer attrs = s7_apply_function(s7, pkg, path);
     validate_attr_srcs(attrs);
 }
 void test_pkg_tgt_string_at_sym(void) {
-    char *s = "'(:> \"hello-world\" :@ srcs)";
+    char *s = "'(:> \"hello-lib\" :@ srcs)";
     s7_pointer path = s7_eval_c_string(s7, s);
     s7_pointer attrs = s7_apply_function(s7, pkg, path);
     validate_attr_srcs(attrs);
 }
 
 void test_pkg_target_int_attr_sym(void) {
-    char *s = "'(:target 1 :attr srcs)";
+    char *s = "'(:target 0 :attr srcs)";
     s7_pointer path = s7_eval_c_string(s7, s);
     s7_pointer attrs = s7_apply_function(s7, pkg, path);
     validate_attr_srcs(attrs);
 }
 void test_pkg_tgt_int_attr_sym(void) {
-    char *s = "'(:> 1 :attr srcs)";
+    char *s = "'(:> 0 :attr srcs)";
     s7_pointer path = s7_eval_c_string(s7, s);
     s7_pointer attrs = s7_apply_function(s7, pkg, path);
     validate_attr_srcs(attrs);
 }
 
 void test_pkg_target_int_binding_sym(void) {
-    char *s = "'(:target 1 :binding srcs)";
+    char *s = "'(:target 0 :binding srcs)";
     s7_pointer path = s7_eval_c_string(s7, s);
     s7_pointer attrs = s7_apply_function(s7, pkg, path);
     validate_attr_srcs(attrs);
 }
 void test_pkg_tgt_int_binding_sym(void) {
-    char *s = "'(:> 1 :binding srcs)";
+    char *s = "'(:> 0 :binding srcs)";
     s7_pointer path = s7_eval_c_string(s7, s);
     s7_pointer attrs = s7_apply_function(s7, pkg, path);
     validate_attr_srcs(attrs);
@@ -341,13 +341,13 @@ void test_pkg_tgt_int_binding_sym(void) {
 
 
 void test_pkg_target_int_at_sym(void) {
-    char *s = "'(:target 1 :@ srcs)";
+    char *s = "'(:target 0 :@ srcs)";
     s7_pointer path = s7_eval_c_string(s7, s);
     s7_pointer attrs = s7_apply_function(s7, pkg, path);
     validate_attr_srcs(attrs);
 }
 void test_pkg_tgt_int_at_sym(void) {
-    char *s = "'(:> 1 :@ srcs)";
+    char *s = "'(:> 0 :@ srcs)";
     s7_pointer path = s7_eval_c_string(s7, s);
     s7_pointer attrs = s7_apply_function(s7, pkg, path);
     validate_attr_srcs(attrs);
@@ -375,7 +375,7 @@ void test_target_string_parse(void) {
                             s7_eval_c_string(s7, "'(:target?)"));
     TEST_ASSERT( is_target == s7_t(s7) );
 
-    /* (target :rule) => cc_binary */
+    /* (target :rule) => cc_library */
     s7_pointer rule = s7_apply_function(s7, target, s7_eval_c_string(s7, "'(:rule)"));
     s7_pointer is_id = s7_apply_function(s7, rule, s7_eval_c_string(s7, "'(:id?)"));
     TEST_ASSERT( s7_t(s7) == is_id );
@@ -428,54 +428,54 @@ int main(void) {
     RUN_TEST(test_pkg_targets_atat); /* (pkg :targets :atat) */
 
     RUN_TEST(test_pkg_tgts);          /* (pkg :>>) */
-    RUN_TEST(test_pkg_target_int);    /* (pkg :target 1) */
-    RUN_TEST(test_pkg_tgt_int);       /* (pkg :> 1) */
-    RUN_TEST(test_pkg_target_string); /* (pkg :target "hello-world") */
-    RUN_TEST(test_pkg_tgt_string);    /* (pkg :> "hello-world")  */
+    RUN_TEST(test_pkg_target_int);    /* (pkg :target 0) */
+    RUN_TEST(test_pkg_tgt_int);       /* (pkg :> 0) */
+    RUN_TEST(test_pkg_target_string); /* (pkg :target "hello-lib") */
+    RUN_TEST(test_pkg_tgt_string);    /* (pkg :> "hello-lib")  */
 
-    RUN_TEST(test_pkg_target_string_rule); /* (pkg :> "hello-world" :rule)*/
-    RUN_TEST(test_pkg_target_int_rule);    /* (pkg :> 1 :rule) */
+    RUN_TEST(test_pkg_target_string_rule); /* (pkg :> "hello-lib" :rule)*/
+    RUN_TEST(test_pkg_target_int_rule);    /* (pkg :> 0 :rule) */
 
-    RUN_TEST(test_pkg_target_string_name); /*(pkg :> "hello-world" :name)*/
-    RUN_TEST(test_pkg_target_int_name);    /* (pkg :> 1 name)  */
+    RUN_TEST(test_pkg_target_string_name); /*(pkg :> "hello-lib" :name)*/
+    RUN_TEST(test_pkg_target_int_name);    /* (pkg :> 0 name)  */
 
-    RUN_TEST(test_pkg_target_string_attrs);/*(pkg :> "hello-world" :attrs)*/
-    /* (pkg :> "hello-world" :bindings) */
+    RUN_TEST(test_pkg_target_string_attrs);/*(pkg :> "hello-lib" :attrs)*/
+    /* (pkg :> "hello-lib" :bindings) */
     RUN_TEST(test_pkg_target_string_bindings);
-    RUN_TEST(test_pkg_target_string_atat); /* (pkg :> "hello-world" :@@) */
+    RUN_TEST(test_pkg_target_string_atat); /* (pkg :> "hello-lib" :@@) */
 
-    RUN_TEST(test_pkg_target_int_attrs);    /* (pkg :> 1 :attrs)  */
-    RUN_TEST(test_pkg_target_int_bindings); /* (pkg :> 1 :bindings)  */
-    RUN_TEST(test_pkg_target_int_atat);     /* (pkg :> 1 :@@)  */
+    RUN_TEST(test_pkg_target_int_attrs);    /* (pkg :> 0 :attrs)  */
+    RUN_TEST(test_pkg_target_int_bindings); /* (pkg :> 0 :bindings)  */
+    RUN_TEST(test_pkg_target_int_atat);     /* (pkg :> 0 :@@)  */
 
-    /* (pkg :target "hello-world" :attr 'srcs) */
+    /* (pkg :target "hello-lib" :attr 'srcs) */
     RUN_TEST(test_pkg_target_string_attr_sym);
-    /* (pkg :> "hello-world" :attr 'srcs) */
+    /* (pkg :> "hello-lib" :attr 'srcs) */
     RUN_TEST(test_pkg_tgt_string_attr_sym);
 
-    /* (pkg :target "hello-world" :binding 'srcs) */
+    /* (pkg :target "hello-lib" :binding 'srcs) */
     RUN_TEST(test_pkg_target_string_binding_sym);
-    /* (pkg :> "hello-world" :binding 'srcs) */
+    /* (pkg :> "hello-lib" :binding 'srcs) */
     RUN_TEST(test_pkg_tgt_string_binding_sym);
 
-    /* (pkg :target "hello-world" :@ 'srcs) */
+    /* (pkg :target "hello-lib" :@ 'srcs) */
     RUN_TEST(test_pkg_target_string_at_sym);
-    /* (pkg :> "hello-world" :@ 'srcs) */
+    /* (pkg :> "hello-lib" :@ 'srcs) */
     RUN_TEST(test_pkg_tgt_string_at_sym);
 
-    /* (pkg :target 1 :attr 'srcs) */
+    /* (pkg :target 0 :attr 'srcs) */
     RUN_TEST(test_pkg_target_int_attr_sym);
-    /* (pkg :> 1 :attr 'srcs) */
+    /* (pkg :> 0 :attr 'srcs) */
     RUN_TEST(test_pkg_tgt_int_attr_sym);
 
-    /* (pkg :target 1 :binding 'srcs) */
+    /* (pkg :target 0 :binding 'srcs) */
     RUN_TEST(test_pkg_target_int_binding_sym);
-    /* (pkg :> 1 :binding 'srcs) */
+    /* (pkg :> 0 :binding 'srcs) */
     RUN_TEST(test_pkg_tgt_int_binding_sym);
 
-    /* (pkg :target 1 :@ 'srcs) */
+    /* (pkg :target 0 :@ 'srcs) */
     RUN_TEST(test_pkg_target_int_at_sym);
-    /* (pkg :> 1 :@ 'srcs) */
+    /* (pkg :> 0 :@ 'srcs) */
     RUN_TEST(test_pkg_tgt_int_at_sym);
 
     RUN_TEST(test_target_string_parse);

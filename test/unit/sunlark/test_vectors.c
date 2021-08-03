@@ -40,7 +40,6 @@ void tearDown(void) {
 
 void test_vector_properties(void) {
     s7_pointer vec = sunlark_parse_string(s7, s7_make_string(s7, "[1, 2, 3]\n"));
-
     s7_pointer is_sunlark_node = s7_name_to_value(s7, "sunlark-node?");
     s7_pointer pred = s7_apply_function(s7, is_sunlark_node,
                                         s7_list(s7, 1, vec));
