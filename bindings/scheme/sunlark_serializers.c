@@ -188,15 +188,17 @@ char *sunlark_node_display_readably(s7_scheme *s7, void *value)
 EXPORT s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
 {
 #if defined(DEBUG_SERIALIZERS)
-    log_debug("sunlark_to_starlark");
+    log_debug(">>>>>>>>>>>>>>>> sunlark_to_starlark <<<<<<<<<<<<<<<<");
+    log_debug("args type: %s", s7_object_to_c_string(s7, s7_type_of(s7, args)));
 #endif
 
     UT_string *buf;
     utstring_new(buf);
 
     s7_pointer form = s7_car(args); // what to print
+
     s7_pointer style = s7_cadr(args);
-    log_debug("style: %s", s7_object_to_c_string(s7, style));
+    /* log_debug("style: %s", s7_object_to_c_string(s7, style)); */
 
     if ( s7_is_c_object(form) ) {
         struct node_s *n1 = s7_c_object_value(form);
@@ -204,12 +206,17 @@ EXPORT s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
         goto resume;
     }
     if ( s7_is_list(s7, form) ) {
-            /* log_debug("printing s7 list"); */
+            log_debug("printing s7 list");
+            log_debug("c-object? %d", s7_is_c_object(s7_car(form)));
             s7_pointer _list = form;
             while (! s7_is_null(s7, _list)) {
+                /* log_debug("form type: %s", */
+                /*           s7_object_to_c_string(s7, s7_type_of(s7, s7_car(_list)))); */
+                /* if (s7_is_c_object(_list)) { */
                 struct node_s *t = s7_c_object_value(s7_car(_list));
                 /* log_debug("\titem tid: %d %s", t->tid, TIDNAME(t)); */
                 sealark_node_to_starlark(t, buf);
+                /* } */
                 _list = s7_cdr(_list);
             }
         goto resume;
@@ -774,13 +781,11 @@ LOCAL void _display_stmt_list(struct node_s *nd,
 
 /* **************************************************************** */
 LOCAL void _display_vector_item(struct node_s *nd,
-                                bool as_map_entries,
                                 UT_string *buffer,
                                 int level)
 {
 #ifdef DEBUG_SERIALIZERS
-    log_debug("_display_vector_item - as_map_entries %d",
-              as_map_entries);
+    log_debug("_display_vector_item");
 #endif
 
     switch(nd->tid) {
@@ -790,14 +795,7 @@ LOCAL void _display_vector_item(struct node_s *nd,
     case TK_STRING: {
         char *br = SEALARK_STRTYPE(nd->qtype);
         char *q = sealark_quote_type(nd);
-        if (as_map_entries > 0) {
-            log_debug("0 xxxxxxxxxxxxxxxx %d", as_map_entries);
-            utstring_printf(buffer, "(%d . %s%s%s%s)",
-                            nd->index, br, q, nd->s, q);
-        } else {
-            utstring_printf(buffer, "%s%s%s%s",
-                            br, q, nd->s, q);
-        }
+        utstring_printf(buffer, "%s%s%s%s", br, q, nd->s, q);
     }
         break;
     case TK_ID:
@@ -848,7 +846,7 @@ LOCAL void _display_vector(struct node_s *nd,
                 utstring_printf(buffer, "%*s",
                                 split? (level+3)*2 : 0,
                                 split? " " : "");
-            _display_vector_item(sub, (bool)nd->index, buffer, level);
+            /* _display_vector_item(sub, (bool)nd->index, buffer, level); */
         }
         i++;
     }

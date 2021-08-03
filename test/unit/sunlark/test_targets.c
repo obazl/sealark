@@ -170,8 +170,8 @@ void test_tgt_at_sym_value_i(void) {
     TEST_ASSERT_EQUAL_STRING( "\"hello-lib.cc\"", s7_string(sval) );
 }
 
-void test_tgt_at_sym_value_string(void) {
-    s7_pointer path = s7_eval_c_string(s7, "'(:@ srcs :value 0)");
+void test_tgt_at_int_value_i(void) {
+    s7_pointer path = s7_eval_c_string(s7, "'(:@ 1 :value 0)");
     s7_pointer item = s7_apply_function(s7, tgt, path);
     s7_pointer pred = s7_apply_function(s7, item,
                                         s7_eval_c_string(s7, "'(:string?)"));
@@ -180,6 +180,69 @@ void test_tgt_at_sym_value_string(void) {
     s7_pointer sval = s7_apply_function(s7, item,
                                         s7_eval_c_string(s7, "'(:$)"));
     TEST_ASSERT_EQUAL_STRING( "\"hello-lib.cc\"", s7_string(sval) );
+}
+
+void test_tgt_at_int_dollar_i(void) {
+    s7_pointer path = s7_eval_c_string(s7, "'(:@ 1 :$ 0)");
+    s7_pointer item = s7_apply_function(s7, tgt, path);
+    s7_pointer pred = s7_apply_function(s7, item,
+                                        s7_eval_c_string(s7, "'(:string?)"));
+    TEST_ASSERT( pred == s7_t(s7) );
+    /* whose Scheme value is string "hello-lib.cc" */
+    s7_pointer sval = s7_apply_function(s7, item,
+                                        s7_eval_c_string(s7, "'(:$)"));
+    TEST_ASSERT_EQUAL_STRING( "\"hello-lib.cc\"", s7_string(sval) );
+}
+
+/* **************************************************************** */
+/* NB: the main purpose of :value "string" projector is to support set! ops */
+void test_tgt_attr_sym_value_string(void) {
+    s7_pointer path = s7_eval_c_string(s7, "'(:attr srcs :value \"howdy.cc\")");
+    s7_pointer item_list = s7_apply_function(s7, tgt, path);
+    _validate_value_string(item_list);
+}
+void test_tgt_attr_sym_dollar_string(void) {
+    s7_pointer path = s7_eval_c_string(s7, "'(:attr srcs :$ \"howdy.cc\")");
+    s7_pointer item_list = s7_apply_function(s7, tgt, path);
+    _validate_value_string(item_list);
+}
+void test_tgt_at_sym_value_string(void) {
+    s7_pointer path = s7_eval_c_string(s7, "'(:@ srcs :value \"howdy.cc\")");
+    s7_pointer item_list = s7_apply_function(s7, tgt, path);
+    _validate_value_string(item_list);
+}
+void test_tgt_at_sym_dollar_string(void) {
+    s7_pointer path = s7_eval_c_string(s7, "'(:@ srcs :$ \"howdy.cc\")");
+    s7_pointer item_list = s7_apply_function(s7, tgt, path);
+    _validate_value_string(item_list);
+}
+void test_tgt_at_int_value_string(void) {
+    s7_pointer path = s7_eval_c_string(s7, "'(:@ 1 :value \"howdy.cc\")");
+    s7_pointer item_list = s7_apply_function(s7, tgt, path);
+    _validate_value_string(item_list);
+}
+void test_tgt_at_int_dollar_string(void) {
+    s7_pointer path = s7_eval_c_string(s7, "'(:@ 1 :$ \"howdy.cc\")");
+    s7_pointer item_list = s7_apply_function(s7, tgt, path);
+    _validate_value_string(item_list);
+}
+
+void _validate_value_string(s7_pointer item_list)
+{
+    TEST_ASSERT( s7_is_list(s7, item_list));
+    s7_pointer len = s7_apply_function(s7, s7_name_to_value(s7,"length"),
+                                       s7_list(s7, 1, item_list));
+    TEST_ASSERT_EQUAL_INT( 1, s7_integer(len) );
+
+    s7_pointer item1 = s7_apply_function(s7, s7_name_to_value(s7, "car"),
+                                       s7_list(s7, 1, item_list));
+    TEST_ASSERT( s7_is_c_object(item1));
+    s7_pointer pred = s7_apply_function(s7, item1,
+                                        s7_eval_c_string(s7, "'(:string?)"));
+    TEST_ASSERT( pred == s7_t(s7) );
+    s7_pointer sval = s7_apply_function(s7, item1,
+                                        s7_eval_c_string(s7, "'(:$)"));
+    TEST_ASSERT_EQUAL_STRING( "\"howdy.cc\"", s7_string(sval) );
 }
 
 /* **************************************************************** */
@@ -199,9 +262,17 @@ int main(void) {
     RUN_TEST(test_tgt_at_sym_value);    /* (:@ srcs :value) */
 
     RUN_TEST(test_tgt_at_sym_value_i);    /* (:@ srcs :value 0) */
+    RUN_TEST(test_tgt_at_int_value_i);    /* (:@ 1 :value 0) */
+    RUN_TEST(test_tgt_at_int_dollar_i);    /* (:@ 1 :$ 0) */
 
-    /* (:@ srcs :value "hello-lib.cc") */
-    RUN_TEST(test_tgt_at_sym_value_string);
+    RUN_TEST(test_tgt_attr_sym_value_string); /* (:attr srcs :value "hello-lib.cc") */
+    RUN_TEST(test_tgt_attr_sym_dollar_string); /* (:attr srcs :$ "hello-lib.cc") */
+
+    RUN_TEST(test_tgt_at_sym_dollar_string); /* (:@ srcs :value "hello-lib.cc") */
+    RUN_TEST(test_tgt_at_sym_dollar_string); /* (:@ srcs :$ "hello-lib.cc") */
+
+    RUN_TEST(test_tgt_at_int_value_string); /* (:@ 1 :value "hello-lib.cc") */
+    RUN_TEST(test_tgt_at_int_dollar_string); /* (:@ 1 :$ "hello-lib.cc") */
 
     return UNITY_END();
 }

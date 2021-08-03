@@ -25,3 +25,10 @@ sunlark_test(
         300
     ]
 )
+
+sunlark_test(
+    name = "dup-entries",
+
+    dup_veca = [1, 2, 1],
+    dup_vecb = ["a", "b", "a"]
+)

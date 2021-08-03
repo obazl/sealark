@@ -192,7 +192,7 @@ struct node_s {
 
     //HACK! if 1 in TK_List_Expr, then list items are (i . val) pairs
     // set to list index for elts of such a list
-    int index;
+    /* int index; */
 
     bool trailing_newline; // FIXME: do we need to retain this?
     enum quote_type_e qtype;
@@ -202,6 +202,17 @@ struct node_s {
 };
 #endif
 
+#if EXPORT_INTERFACE
+struct mapentry_s {
+    int index;
+    struct node_s *node;
+};
+#endif
+
+/* mapentry node pointer points to object owned by other */
+EXPORT UT_icd mapentry_icd = {sizeof(struct mapentry_s), NULL, NULL, NULL};
+
+/* **************************************************************** */
 UT_array *split_small_stmt_list(struct node_s *iblock,
                                 struct node_s* list, int indent)
 {
@@ -412,7 +423,6 @@ EXPORT struct node_s *sealark_new_node(int type, bool init_subnodes)
 #endif
     struct node_s *n = (struct node_s *)calloc(1, sizeof(struct node_s));
     n->tid = type;
-    n->index = -1;
     if (init_subnodes)
         utarray_new(n->subnodes, &node_icd);
     return n;

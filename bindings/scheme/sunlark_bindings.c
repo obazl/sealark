@@ -573,20 +573,20 @@ s7_pointer _binding_component(s7_scheme *s7, struct node_s *binding,
             return sunlark_node_new(s7,item);
         }
         if (s7_is_string(idx)) {
-            sealark_debug_print_ast_outline(val, 0);
-            struct node_s *items     /* list of item nodes */
+            /* sealark_debug_print_ast_outline(val, 0); */
+            UT_array *items     /* list of item nodes */
                 = sealark_vector_items_for_string(val, s7_string(idx));
             /* s7_pointer ilist = intlist_to_s7_list(s7, items); */
             /* utarray_free(items); */
             /* s7_pointer ilist = vec_entries_to_s7_list(s7, items); */
             // utarray_free(items); /* FIXME: leak */
-            return sunlark_node_new(s7, items);
+            return nodelist_to_s7_list(s7, items);
         }
         return(s7_error(s7,
                         s7_make_symbol(s7, "invalid_argument"),
-                        s7_list(s7, 2, s7_make_string(s7,
-                                                      "Bad arg ~S; :value may only be followed by int or string"),
-                                idx)));
+                        s7_list(s7, 3, s7_make_string(s7,
+                  "Bad arg ~S (of type ~A); :value may only be followed by int or string"),
+                                idx, s7_type_of(s7, idx))));
     }
     log_error("Bad arg %s; only :key or :value valid in this context",
               s7_object_to_c_string(s7, op));

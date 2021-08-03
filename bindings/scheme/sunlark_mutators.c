@@ -306,13 +306,13 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
         }
         if (s7_is_string(lval)) {
             /* indexing by fld name */
-            struct node_s *entries     /* list of mapentries */
+            UT_array *items
                 = sealark_vector_items_for_string(s7_c_object_value(context),
                                                   s7_string(lval));
-            sealark_update_vector_mapentries(entries,
+            sealark_update_vector_items(items,
                                              s7_string(update_val));
-            sealark_debug_print_ast_outline(entries, true); // crush
-            return sunlark_node_new(s7, entries);
+            /* sealark_debug_print_ast_outline(items, true); // crush */
+            return nodelist_to_s7_list(s7, items);
         }
 
         /* lval is compound expr */
