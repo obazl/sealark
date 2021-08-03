@@ -12,6 +12,6 @@ build --//:debug=ast,s7-api,bindings,paths,queries,vectors,filters,targets,mutat
 #,predicates
 #,mem
 
-test --//sealark:yydebug=bindings,dicts,vectors
+## in .bazelrc: test --//sealark:yydebug=bindings,dicts,vectors
 
 run -c dbg
