@@ -292,11 +292,11 @@ void test_set_vector(void) {
 int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_vector_properties);
-    RUN_TEST(test_vector_meta_properties);
-    RUN_TEST(test_int_vector);
-    RUN_TEST(test_string_vector);
-    RUN_TEST(test_symbol_vector);
+    /* RUN_TEST(test_vector_meta_properties); */
+    /* RUN_TEST(test_int_vector); */
+    /* RUN_TEST(test_string_vector); */
+    /* RUN_TEST(test_symbol_vector); */
 
-    RUN_TEST(test_set_vector);
+    /* RUN_TEST(test_set_vector); */
     return UNITY_END();
 }
