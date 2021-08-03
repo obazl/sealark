@@ -277,6 +277,9 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
     if (kw == KW(length)) {
         int ct;
         switch(ast_node->tid) {
+        case TK_Arg_List:
+            ct = sealark_subnode_count(ast_node, true, false, false);
+            break;
         case TK_Call_Expr:
             ct = sealark_subnode_count(ast_node, true, false, false);
             break;
@@ -291,7 +294,11 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
             /* return s7_make_integer(s7, 2); */
             break;
         default:
-            return s7_undefined(s7);
+            log_warn("Uncaught node type for :length: %d %s",
+                     ast_node->tid, TIDNAME(ast_node));
+            ct = sealark_subnode_count(ast_node, true, false, false);
+            /* return s7_undefined(s7); */
+            break;
         }
         ct--; // exclude self
         return s7_make_integer(s7, ct);
