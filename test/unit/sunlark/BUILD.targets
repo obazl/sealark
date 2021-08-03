@@ -1,0 +1,55 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+
+load("@arepo//apkg:afile.bzl", "arg1c", "arg2c", "arg3c",
+    key1c = "val1c", key2c = "val2c", lastkey3c = "lastval3c",
+)
+
+DEFINES = ["DEBUG", "FOO"]
+
+a, b = 25, 30  ## multiple assignment parse test
+
+cc_library(
+    name = "hello-lib",
+    srcs = ["hello-lib.cc", "howdy.cc", "howdy.h"],
+    hdrs = ["hello-lib.h"],
+    defines = DEFINES
+)
+
+cc_binary(
+    name = "hello-world",
+    srcs = ["hello-world.cc"],
+    deps = [":hello-lib"],
+    defines = DEFINES
+)
+
+cc_test(
+    name = "hello-success_test",
+    srcs = ["hello-world.cc"],
+    deps = [":hello-lib"],
+)
+
+cc_test(
+    name = "hello-fail_test",
+    srcs = ["hello-fail.cc"],
+    deps = [":hello-lib"],
+)
+
+sunlark_mock(
+    name = "strings",
+    true_attr = True,
+    str_attr = "hello",
+    strlist_attr = ["a", "b", "c"],
+    strlist_long = ["a",
+                    long, list, including,
+                    "variables", "and", "strings", "for",
+                    testing],
+)
+
+sunlark_mock(
+    name = "ints",
+    false_attr = False,
+    int_attr = 99,
+    int_list = [1, 2, 3]
+)

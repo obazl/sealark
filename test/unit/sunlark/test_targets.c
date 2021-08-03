@@ -13,14 +13,15 @@
 UT_string *buf;
 UT_string *test_s;
 
-char *build_file = "test/unit/sunlark/BUILD.mock";
+char *build_file = "test/unit/sunlark/BUILD.targets";
 
 s7_scheme *s7;
 
 struct parse_state_s *parse_state;
+struct node_s *root;
 
 static s7_pointer pkg;
-struct node_s *root;
+static s7_pointer tgt;
 
 void setUp(void) {
     s7 = sunlark_init();
@@ -29,6 +30,8 @@ void setUp(void) {
                                    s7_list(s7, 1,
                                            s7_make_string(s7, build_file)));
     root = s7_c_object_value(pkg);
+    s7_pointer path = s7_eval_c_string(s7, "'(:target \"hello-world\")");
+    tgt = s7_apply_function(s7, pkg, path);
 }
 
 void tearDown(void) {
@@ -93,36 +96,48 @@ void _validate_hello_world_target(s7_pointer target) {
     TEST_ASSERT_EQUAL_INT( 4, s7_integer(bindings_ct) );
 }
 
-void test_pkg_target_int(void) {
-    s7_pointer path = s7_eval_c_string(s7, "'(:target 1)");
-    s7_pointer target = s7_apply_function(s7, pkg, path);
-    _validate_hello_world_target(target);
+void test_target(void) {
+    _validate_hello_world_target(tgt);
 }
 
-void test_pkg_tgt_int(void) {
-    s7_pointer path = s7_eval_c_string(s7, "'(:> 1)");
-    s7_pointer target = s7_apply_function(s7, pkg, path);
-    _validate_hello_world_target(target);
+void test_tgt_rule(void) {
+    s7_pointer path = s7_eval_c_string(s7, "'(:rule)");
+    s7_pointer rule = s7_apply_function(s7, pkg, path);
+    /* _validate_hello_world_target(target); */
 }
 
-void test_pkg_target_string(void) {
-    s7_pointer path = s7_eval_c_string(s7, "'(:target \"hello-world\")");
-    s7_pointer target = s7_apply_function(s7, pkg, path);
-    _validate_hello_world_target(target);
+void test_tgt_name(void) {
+    s7_pointer path = s7_eval_c_string(s7, "'(:name)");
+    s7_pointer name = s7_apply_function(s7, pkg, path);
+    /* _validate_hello_world_target(target); */
 }
 
-void test_pkg_tgt_string(void) {
-    s7_pointer path = s7_eval_c_string(s7, "'(:> \"hello-world\")");
+void test_tgt_attr_sym(void) {
+    s7_pointer path = s7_eval_c_string(s7, "'(:attr srcs)");
     s7_pointer target = s7_apply_function(s7, pkg, path);
-    _validate_hello_world_target(target);
+    /* _validate_hello_world_target(target); */
+}
+
+void test_tgt_binding_sym(void) {
+    s7_pointer path = s7_eval_c_string(s7, "'(:binding srcs)");
+    s7_pointer target = s7_apply_function(s7, pkg, path);
+    /* _validate_hello_world_target(target); */
+}
+
+void test_tgt_at_sym(void) {
+    s7_pointer path = s7_eval_c_string(s7, "'(:@ srcs)");
+    s7_pointer target = s7_apply_function(s7, pkg, path);
+    /* _validate_hello_world_target(target); */
 }
 
 int main(void) {
     UNITY_BEGIN();
-    RUN_TEST(test_pkg_target_int);    /* (pkg :target 1) */
-    RUN_TEST(test_pkg_tgt_int);       /* (pkg :> 1) */
-    RUN_TEST(test_pkg_target_string); /* (pkg :target "hello-world") */
-    RUN_TEST(test_pkg_tgt_string);    /* (pkg :> "hello-world")  */
+    RUN_TEST(test_target);
+    RUN_TEST(test_tgt_rule);    /* (:rule) */
+    RUN_TEST(test_tgt_name);  /* (:name) */
+    RUN_TEST(test_tgt_attr_sym);  /* (:attr srcs) */
+    RUN_TEST(test_tgt_binding_sym);  /* (:binding srcs) */
+    RUN_TEST(test_tgt_at_sym);  /* (:binding srcs) */
 
     return UNITY_END();
 }

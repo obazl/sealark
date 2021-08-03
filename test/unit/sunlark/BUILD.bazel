@@ -109,7 +109,7 @@ cc_test(
 cc_test(
     name = "targets",
     srcs = ["test_targets.c", "test_targets.h"],
-    data = [":BUILD.mock"],
+    data = [":BUILD.targets"],
     copts = COPTS,
     deps = DEPS,
     linkstatic = 1
