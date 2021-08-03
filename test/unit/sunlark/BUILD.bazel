@@ -73,8 +73,9 @@ cc_test(
 
 cc_test(
     name = "common_props",
+    args = ["-f", "test/unit/sunlark/BUILD.common_props"],
+    data = [":BUILD.common_props"],
     srcs = ["test_common_props.c", "test_common_props.h"],
-    data = [":BUILD.targets"],
     copts = COPTS,
     deps = DEPS,
     linkstatic = 1

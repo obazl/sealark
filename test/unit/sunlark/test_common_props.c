@@ -1,3 +1,5 @@
+#include <unistd.h>
+
 #include "log.h"
 #include "utarray.h"
 #include "utstring.h"
@@ -13,7 +15,7 @@
 UT_string *buf;
 UT_string *test_s;
 
-char *build_file = "test/unit/sunlark/BUILD.targets";
+char *build_file;
 
 s7_scheme *s7;
 
@@ -43,10 +45,13 @@ void tearDown(void) {
 :length
 :subnodes
  */
-void validate_common_props(s7_pointer node)
+void validate_target_props(s7_pointer node)
 {
     s7_pointer pred = s7_apply_function(s7, node,
                                         s7_eval_c_string(s7, "'(:node?)"));
+    TEST_ASSERT( pred == s7_t(s7) );
+    pred = s7_apply_function(s7, node,
+                                        s7_eval_c_string(s7, "'(:target?)"));
     TEST_ASSERT( pred == s7_t(s7) );
 }
 
@@ -54,7 +59,9 @@ void validate_common_props(s7_pointer node)
 void test_target_props(void) {
     s7_pointer path = s7_eval_c_string(s7, "'(:> \"hello-world\")");
     s7_pointer target = s7_apply_function(s7, pkg, path);
-    validate_common_props(target);
+
+    validate_target_props(target);
+
     s7_pointer nd = s7_apply_function(s7, target,
                                        s7_eval_c_string(s7, "'(:tid)"));
     TEST_ASSERT( s7_is_integer(nd) );
@@ -78,7 +85,7 @@ void test_target_props(void) {
     nd = s7_apply_function(s7, target,
                             s7_eval_c_string(s7, "'(:line)"));
     TEST_ASSERT( s7_is_integer(nd) );
-    TEST_ASSERT_EQUAL_INT( 19, s7_integer(nd) );
+    TEST_ASSERT_EQUAL_INT( 4, s7_integer(nd) );
 
     nd = s7_apply_function(s7, target,
                             s7_eval_c_string(s7, "'(:col)"));
@@ -100,19 +107,222 @@ void test_target_props(void) {
     nd = s7_apply_function(s7, target,
                             s7_eval_c_string(s7, "'(:subnode-count-recursive)"));
     TEST_ASSERT( s7_is_integer(nd) );
-    TEST_ASSERT_EQUAL_INT( 32, s7_integer(nd) );
+    TEST_ASSERT_EQUAL_INT( 38, s7_integer(nd) );
 
     nd = s7_apply_function(s7, target,
                             s7_eval_c_string(s7,
                                              "'(:printable-subnode-count-recursive)"));
     TEST_ASSERT( s7_is_integer(nd) );
-    TEST_ASSERT_EQUAL_INT( 22, s7_integer(nd) );
+    TEST_ASSERT_EQUAL_INT( 28, s7_integer(nd) );
 }
 
 /* **************************************************************** */
-int main(void) {
+void validate_arg_list_props(s7_pointer node)
+{
+    s7_pointer pred = s7_apply_function(s7, node,
+                                        s7_eval_c_string(s7, "'(:node?)"));
+    TEST_ASSERT( pred == s7_t(s7) );
+}
+
+void test_target_arg_list_props(void) {
+    char *path = "'(:> \"hello-world\" :@@)";
+    s7_pointer path_node = s7_eval_c_string(s7, path);
+    s7_pointer bindings = s7_apply_function(s7, pkg, path_node);
+    sealark_debug_print_ast_outline(s7_c_object_value(bindings), 0);
+
+    validate_arg_list_props(bindings);
+
+    s7_pointer pred = s7_apply_function(s7, bindings,
+                               s7_eval_c_string(s7, "'(:arg-list?)"));
+    TEST_ASSERT( pred == s7_t(s7) );
+
+    s7_pointer nd = s7_apply_function(s7, bindings,
+                                       s7_eval_c_string(s7, "'(:tid)"));
+    TEST_ASSERT( s7_is_integer(nd) );
+    TEST_ASSERT_EQUAL_INT( TK_Arg_List, s7_integer(nd) );
+
+    nd = s7_apply_function(s7, bindings,
+                            s7_eval_c_string(s7, "'(:tid->kw)"));
+    TEST_ASSERT( s7_is_keyword(nd) );
+    TEST_ASSERT_EQUAL_STRING( ":arg-list", s7_symbol_name(nd) );
+
+    nd = s7_apply_function(s7, bindings,
+                           s7_eval_c_string(s7, "'(:tid->string)"));
+    TEST_ASSERT( s7_is_string(nd) );
+    TEST_ASSERT_EQUAL_STRING( "arg-list", s7_string(nd) );
+
+    nd = s7_apply_function(s7, bindings,
+                            s7_eval_c_string(s7, "'(:node-type)"));
+    TEST_ASSERT( s7_is_keyword(nd) );
+    TEST_ASSERT_EQUAL_STRING( ":arg-list", s7_symbol_name(nd) );
+
+    /* 0: TK_Arg_List[87] @20:4 */
+    /*   1: TK_Binding[88] @20:4 */
+    /*     2: TK_ID[37] @20:4    name */
+    /*     2: TK_EQ[26] @20:9 */
+    /*     2: TK_STRING[79] @20:11    "hello-world" */
+    /*   1: TK_COMMA[15] @20:24 */
+    /*   1: TK_Binding[88] @21:4 */
+    /*     ... */
+
+    nd = s7_apply_function(s7, bindings,
+                            s7_eval_c_string(s7, "'(:line)"));
+    TEST_ASSERT( s7_is_integer(nd) );
+    TEST_ASSERT_EQUAL_INT( 5, s7_integer(nd) );
+
+    nd = s7_apply_function(s7, bindings,
+                            s7_eval_c_string(s7, "'(:col)"));
+    TEST_ASSERT( s7_is_integer(nd) );
+    TEST_ASSERT_EQUAL_INT( 4, s7_integer(nd) );
+
+    nd = s7_apply_function(s7, bindings,
+                            s7_eval_c_string(s7, "'(:length)"));
+    TEST_ASSERT_EQUAL_INT( 4, s7_integer(nd) ); /* omitting commas */
+
+    nd = s7_apply_function(s7, bindings,
+                           s7_eval_c_string(s7, "'(:subnode-count)"));
+    TEST_ASSERT( s7_is_integer(nd) );
+    TEST_ASSERT_EQUAL_INT( 7, s7_integer(nd) ); /* including commas */
+
+    nd = s7_apply_function(s7, bindings,
+                            s7_eval_c_string(s7, "'(:subnode-count-recursive)"));
+    TEST_ASSERT( s7_is_integer(nd) );
+    TEST_ASSERT_EQUAL_INT( 33, s7_integer(nd) );
+
+    nd = s7_apply_function(s7, bindings,
+                            s7_eval_c_string(s7,
+                            "'(:printable-subnode-count-recursive)"));
+    TEST_ASSERT( s7_is_integer(nd) );
+    TEST_ASSERT_EQUAL_INT( 25, s7_integer(nd) );
+
+    s7_pointer iter = s7_make_iterator(s7, bindings);
+    s7_pointer binding = s7_iterate(s7, iter);
+    /* each item in target arg_list is a binding */
+    while ( ! s7_iterator_is_at_end(s7, iter) ) {
+        validate_binding_props(binding);
+        binding = s7_iterate(s7, iter);
+    }
+}
+
+/* **************************************************************** */
+void validate_binding_props(s7_pointer node)
+{
+    TEST_ASSERT( s7_is_c_object(node) );
+    s7_pointer pred = s7_apply_function(s7, node,
+                                        s7_eval_c_string(s7, "'(:node?)"));
+    TEST_ASSERT( pred == s7_t(s7) );
+    pred = s7_apply_function(s7, node,
+                                        s7_eval_c_string(s7, "'(:binding?)"));
+    TEST_ASSERT( pred == s7_t(s7) );
+}
+
+void test_binding_props(void) {
+    char *path = "'(:> \"hello-world\" :@ srcs)";
+    s7_pointer path_node = s7_eval_c_string(s7, path);
+    s7_pointer binding = s7_apply_function(s7, pkg, path_node);
+
+    validate_binding_props(binding);
+
+    s7_pointer nd = s7_apply_function(s7, binding,
+                                       s7_eval_c_string(s7, "'(:tid)"));
+    TEST_ASSERT( s7_is_integer(nd) );
+    TEST_ASSERT_EQUAL_INT( TK_Binding, s7_integer(nd) );
+
+    nd = s7_apply_function(s7, binding,
+                            s7_eval_c_string(s7, "'(:tid->kw)"));
+    TEST_ASSERT( s7_is_keyword(nd) );
+    TEST_ASSERT_EQUAL_STRING( ":binding", s7_symbol_name(nd) );
+
+    nd = s7_apply_function(s7, binding,
+                            s7_eval_c_string(s7, "'(:tid->string)"));
+    TEST_ASSERT( s7_is_string(nd) );
+    TEST_ASSERT_EQUAL_STRING( "binding", s7_string(nd) );
+
+    nd = s7_apply_function(s7, binding,
+                            s7_eval_c_string(s7, "'(:node-type)"));
+    TEST_ASSERT( s7_is_keyword(nd) );
+    TEST_ASSERT_EQUAL_STRING( ":binding", s7_symbol_name(nd) );
+
+    /* 0: TK_Binding[88] @6:4 */
+    /*   1: TK_ID[37] @6:4    srcs */
+    /*   1: TK_EQ[26] @6:9 */
+    /*   1: TK_List_Expr[116] @6:11 */
+    /*     2: TK_LBRACK[49] @6:11 */
+    /*     2: TK_Expr_List[109] @7:8 */
+    /*       3: TK_STRING[79] @7:8    "hello-world.cc" */
+    /*       3: TK_COMMA[15] @7:24 */
+    /*       3: TK_STRING[79] @7:26    "hello-world.h" */
+    /*       3: TK_COMMA[15] @7:41 */
+    /*       3: TK_STRING[79] @8:8    "bonjour-monde.cc" */
+    /*       3: TK_COMMA[15] @8:26 */
+    /*       3: TK_STRING[79] @8:28    "bonjour-monde.h" */
+    /*     2: TK_RBRACK[69] @9:4 */
+
+    nd = s7_apply_function(s7, binding,
+                            s7_eval_c_string(s7, "'(:line)"));
+    TEST_ASSERT( s7_is_integer(nd) );
+    TEST_ASSERT_EQUAL_INT( 6, s7_integer(nd) );
+
+    nd = s7_apply_function(s7, binding,
+                            s7_eval_c_string(s7, "'(:col)"));
+    TEST_ASSERT( s7_is_integer(nd) );
+    TEST_ASSERT_EQUAL_INT( 4, s7_integer(nd) );
+
+    /* counts: :subnode-count, :subnode-count-recursive,
+       :printable-subnode-count-recursive
+       :length
+       :subnodes */
+
+    nd = s7_apply_function(s7, binding,
+                            s7_eval_c_string(s7, "'(:length)"));
+    TEST_ASSERT_EQUAL_INT( 3, s7_integer(nd) );
+
+    nd = s7_apply_function(s7, binding,
+                            s7_eval_c_string(s7, "'(:subnode-count)"));
+    TEST_ASSERT( s7_is_integer(nd) );
+    TEST_ASSERT_EQUAL_INT( 3, s7_integer(nd) );
+
+    sealark_debug_print_ast_outline(s7_c_object_value(binding), 0);
+    nd = s7_apply_function(s7, binding,
+                            s7_eval_c_string(s7, "'(:subnode-count-recursive)"));
+    TEST_ASSERT( s7_is_integer(nd) );
+    TEST_ASSERT_EQUAL_INT( 13, s7_integer(nd) );
+
+    nd = s7_apply_function(s7, binding,
+                            s7_eval_c_string(s7,
+                            "'(:printable-subnode-count-recursive)"));
+    TEST_ASSERT( s7_is_integer(nd) );
+    TEST_ASSERT_EQUAL_INT( 11, s7_integer(nd) );
+}
+
+/* **************************************************************** */
+int main(int argc, char *argv[])
+{
+    int opt;
+    /* char *build_file = NULL; */
+
+    while ((opt = getopt(argc, argv, "f:")) != -1) {
+        switch (opt) {
+        case 'f':
+            /* BUILD.bazel or BUILD file */
+            /* log_info("build file: %s", optarg); */
+            build_file = optarg;
+            break;
+        default:
+            log_error("Usage: bazel test test/unit/sunlark:common_props -- -f buildfile");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    if (build_file == NULL) {
+        log_error("-f <buildfile> must be provided.");
+        exit(EXIT_FAILURE);
+    }
+
     UNITY_BEGIN();
     RUN_TEST(test_target_props);
+    RUN_TEST(test_target_arg_list_props);
+    RUN_TEST(test_binding_props);
 
     /* RUN_TEST(test_tgt_at_sym);      /\* (:@ srcs) *\/ */
 
