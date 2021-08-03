@@ -276,13 +276,23 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
 
     if (kw == KW(length)) {
         int ct;
-        if (ast_node->tid == TK_List_Expr) {
+        switch(ast_node->tid) {
+        case TK_Call_Expr:
             ct = sealark_subnode_count(ast_node, true, false, false);
-        } else
-            if (ast_node->tid == TK_Binding) {
-                return s7_make_integer(s7, 2);
-            } else
-                return s7_undefined(s7);
+            break;
+        case TK_List_Expr:
+            ct = sealark_subnode_count(ast_node, true, false, false);
+            break;
+        case TK_Package:
+            ct = sealark_subnode_count(ast_node, true, false, false);
+            break;
+        case TK_Binding:
+            ct = sealark_subnode_count(ast_node, true, false, false);
+            /* return s7_make_integer(s7, 2); */
+            break;
+        default:
+            return s7_undefined(s7);
+        }
         ct--; // exclude self
         return s7_make_integer(s7, ct);
     }

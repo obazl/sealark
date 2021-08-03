@@ -6,6 +6,7 @@ test_suite(
         ":binding_val_vectors",
         ":bindings",
         ":set_bindings",
+        ":common_props",
         # ":definitions",
         ":loadstmts",
         ":packages",
@@ -71,6 +72,15 @@ cc_test(
 )
 
 cc_test(
+    name = "common_props",
+    srcs = ["test_common_props.c", "test_common_props.h"],
+    data = [":BUILD.targets"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
     name = "definitions",
     srcs = ["definitions.c", "definitions.h"],
     data = [":BUILD.test1"],
@@ -102,7 +112,7 @@ cc_test(
     srcs = ["test_packages.c", "test_packages.h"],
     data = [":BUILD.package"],
     copts = COPTS,
-    deps = DEPS,
+    deps = DEPS + [":validators"],
     linkstatic = 1
 )
 
@@ -111,7 +121,7 @@ cc_test(
     srcs = ["test_targets.c", "test_targets.h"],
     data = [":BUILD.targets"],
     copts = COPTS,
-    deps = DEPS,
+    deps = DEPS + [":validators"],
     linkstatic = 1
 )
 
@@ -161,6 +171,21 @@ cc_test(
 )
 
 cc_library(
+    name = "validators",
+    srcs = ["validators.c"],
+    hdrs = ["validators.h"],
+    copts = COPTS,
+    deps = [
+        "//vendored/s7",
+        "//vendored/unity",
+        "//vendored/uthash",
+        "//vendored/logc",
+        "//sealark",
+        "//bindings/scheme:sunlark",
+    ]
+)
+
+cc_library(
     name = "common",
     srcs = ["common.c"],
     hdrs = ["common.h"],
@@ -179,9 +204,12 @@ cc_library(
 genrule(
     name = "mkhdrs",
     srcs = [
-        "test_set_bindings.c",
+        "common.c",
+        "validators.c",
         "test_bindings.c",
+        "test_set_bindings.c",
         "definitions.c",
+        "test_common_props.c",
         "test_dictionaries.c",
         "test_loadstmts.c",
         "test_packages.c",
@@ -189,7 +217,6 @@ genrule(
         "test_strings.c",
         "test_string_props.c",
         "binding_val_vectors.c",
-        "common.c",
         "test_targets.c",
         "test_vectors.c"
     ],
@@ -197,6 +224,7 @@ genrule(
         "test_set_bindings.h",
         "test_bindings.h",
         "definitions.h",
+        "test_common_props.h",
         "test_dictionaries.h",
         "test_loadstmts.h",
         "test_packages.h",
@@ -205,6 +233,7 @@ genrule(
         "test_string_props.h",
         "binding_val_vectors.h",
         "common.h",
+        "validators.h",
         "test_targets.h",
         "test_vectors.h"
     ],
@@ -214,7 +243,9 @@ genrule(
         "$(location //vendored/makeheaders) \\",
         "    $(location binding_val_vectors.c) \\",
         "    $(location common.c) \\",
+        "    $(location validators.c) \\",
         "    $(location definitions.c) \\",
+        "    $(location test_common_props.c) \\",
         "    $(location test_loadstmts.c) \\",
         "    $(location test_packages.c) \\",
         "    $(location test_set_bindings.c) \\",

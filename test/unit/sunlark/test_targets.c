@@ -20,13 +20,12 @@ s7_scheme *s7;
 struct parse_state_s *parse_state;
 struct node_s *root;
 
-static s7_pointer pkg;
 static s7_pointer tgt;
 
 void setUp(void) {
     s7 = sunlark_init();
     init_s7_syms(s7);
-    pkg = sunlark_parse_build_file(s7,
+    s7_pointer pkg = sunlark_parse_build_file(s7,
                                    s7_list(s7, 1,
                                            s7_make_string(s7, build_file)));
     root = s7_c_object_value(pkg);
@@ -40,104 +39,155 @@ void tearDown(void) {
 }
 
 /* **************************************************************** */
-void _validate_hello_world_target(s7_pointer target) {
-    TEST_ASSERT( s7_is_c_object(target) );
-    TEST_ASSERT( sunlark_node_tid(s7, target) == TK_Call_Expr );
-    s7_pointer is_target
-        = s7_apply_function(s7, target,
-                            s7_eval_c_string(s7, "'(:target?)"));
-    TEST_ASSERT( is_target == s7_t(s7) );
-
-    /* (target :rule) => cc_binary */
-    s7_pointer rule = s7_apply_function(s7, target,
-                                        s7_eval_c_string(s7, "'(:rule)"));
-    TEST_ASSERT( s7_is_c_object(rule) );
-    TEST_ASSERT( !s7_is_string(rule) );
-    TEST_ASSERT( sunlark_node_tid(s7, rule) == TK_ID );
-    s7_pointer is_id = s7_apply_function(s7, rule,
-                                         s7_eval_c_string(s7, "'(:id?)"));
-    TEST_ASSERT( s7_t(s7) == is_id );
-
-    s7_pointer rule_sym = s7_apply_function(s7, rule,
-                                            s7_eval_c_string(s7, "'(:$)"));
-    log_debug("rule_sym: %s", s7_object_to_c_string(s7, rule_sym));
-    TEST_ASSERT( !s7_is_c_object(rule_sym) );
-    TEST_ASSERT( s7_is_symbol(rule_sym) );
-    TEST_ASSERT_EQUAL_STRING( "cc_binary", s7_symbol_name(rule_sym) );
-
-    /* check underlying c structure */
-    struct node_s *target_node = s7_c_object_value(target);
-    TEST_ASSERT( target_node->tid == TK_Call_Expr );
-    struct node_s *id_node = utarray_eltptr(target_node->subnodes, 0);
-    TEST_ASSERT( id_node->tid == TK_ID );
-    TEST_ASSERT( strncmp(id_node->s, "cc_binary", 9) == 0);
-    TEST_ASSERT( strlen(id_node->s) == 9);
-
-    /* check target name == "hello-world" */
-    s7_pointer name = s7_apply_function(s7, target, s7_eval_c_string(s7, "'(:name)"));
-    log_debug("name: %s", s7_object_to_c_string(s7, name));
-    TEST_ASSERT( s7_is_c_object(name) );
-    TEST_ASSERT( sunlark_node_tid(s7, name) == TK_STRING );
-
-    s7_pointer name_str = s7_apply_function(s7, name, s7_eval_c_string(s7, "'(:$)"));
-    TEST_ASSERT( !s7_is_c_object(name_str) );
-    TEST_ASSERT( s7_is_string(name_str) );
-    s7_pointer is_string = s7_apply_function(s7, s7_name_to_value(s7, "string?"),
-                                             s7_list(s7, 1, name_str));
-    TEST_ASSERT( s7_t(s7) == is_string );
-    TEST_ASSERT_EQUAL_STRING( "\"hello-world\"", s7_string(name_str) );
-
-    /* bindings */
-    s7_pointer bindings = s7_apply_function(s7, target, s7_eval_c_string(s7, "'(:bindings)"));
-    TEST_ASSERT( s7_is_c_object(bindings) );
-    TEST_ASSERT( !s7_is_list(s7, bindings) );
-    s7_pointer bindings_ct = s7_apply_function(s7, s7_name_to_value(s7,"length"),
-                                               s7_list(s7, 1, bindings));
-    TEST_ASSERT_EQUAL_INT( 4, s7_integer(bindings_ct) );
+void test_target(void) {
+    validate_hello_world_target(tgt);
 }
 
-void test_target(void) {
-    _validate_hello_world_target(tgt);
+/* **************************************************************** */
+void _validate_rule(s7_pointer rule) {
+    s7_pointer pred = s7_apply_function(s7, rule,
+                                         s7_eval_c_string(s7, "'(:id?)"));
+    TEST_ASSERT( pred == s7_t(s7) );
+    TEST_ASSERT( sunlark_node_tid(s7, rule) == TK_ID );
+    TEST_ASSERT( s7_is_c_object(rule) );
+    TEST_ASSERT( !s7_is_string(rule) );
+    s7_pointer rule_sym = s7_apply_function(s7, rule,
+                                            s7_eval_c_string(s7, "'(:$)"));
+    TEST_ASSERT( !s7_is_c_object(rule_sym) );
+    TEST_ASSERT( s7_is_symbol(rule_sym) );
+    pred = NULL;
+    pred = s7_apply_function(s7, s7_name_to_value(s7,"symbol?"),
+                             s7_list(s7, 1, rule_sym));
+    TEST_ASSERT( pred == s7_t(s7) );
+
+    TEST_ASSERT_EQUAL_STRING( "cc_binary", s7_symbol_name(rule_sym) );
+
 }
 
 void test_tgt_rule(void) {
     s7_pointer path = s7_eval_c_string(s7, "'(:rule)");
-    s7_pointer rule = s7_apply_function(s7, pkg, path);
-    /* _validate_hello_world_target(target); */
+    s7_pointer rule = s7_apply_function(s7, tgt, path);
+    _validate_rule(rule);
+}
+
+/* **************************************************************** */
+void _validate_name(s7_pointer nm) {
+    s7_pointer is_string
+        = s7_apply_function(s7, nm, s7_eval_c_string(s7, "'(:string?)"));
+    TEST_ASSERT( s7_t(s7) == is_string );
+    TEST_ASSERT( s7_is_c_object(nm) );
+    TEST_ASSERT( !s7_is_string(nm) );
+    TEST_ASSERT( sunlark_node_tid(s7, nm) == TK_STRING );
+
+    s7_pointer sym = s7_apply_function(s7, nm,
+                                       s7_eval_c_string(s7, "'(:$)"));
+    TEST_ASSERT( !s7_is_c_object(sym) );
+    TEST_ASSERT( s7_is_string(sym) );
+    TEST_ASSERT_EQUAL_STRING( "\"hello-world\"", s7_string(sym) );
 }
 
 void test_tgt_name(void) {
     s7_pointer path = s7_eval_c_string(s7, "'(:name)");
-    s7_pointer name = s7_apply_function(s7, pkg, path);
-    /* _validate_hello_world_target(target); */
+    s7_pointer name = s7_apply_function(s7, tgt, path);
+    /* validate_hello_world_target(target); */
 }
 
+/* **************************************************************** */
 void test_tgt_attr_sym(void) {
     s7_pointer path = s7_eval_c_string(s7, "'(:attr srcs)");
-    s7_pointer target = s7_apply_function(s7, pkg, path);
-    /* _validate_hello_world_target(target); */
+    s7_pointer attr = s7_apply_function(s7, tgt, path);
+    validate_attr_srcs(attr);
 }
 
 void test_tgt_binding_sym(void) {
     s7_pointer path = s7_eval_c_string(s7, "'(:binding srcs)");
-    s7_pointer target = s7_apply_function(s7, pkg, path);
-    /* _validate_hello_world_target(target); */
+    s7_pointer attr = s7_apply_function(s7, tgt, path);
+    validate_attr_srcs(attr);
 }
 
 void test_tgt_at_sym(void) {
     s7_pointer path = s7_eval_c_string(s7, "'(:@ srcs)");
-    s7_pointer target = s7_apply_function(s7, pkg, path);
-    /* _validate_hello_world_target(target); */
+    s7_pointer attr = s7_apply_function(s7, tgt, path);
+    validate_attr_srcs(attr);
 }
 
+void test_tgt_at_sym_key(void) {
+    s7_pointer path = s7_eval_c_string(s7, "'(:@ srcs :key)");
+    s7_pointer key_node = s7_apply_function(s7, tgt, path);
+    TEST_ASSERT( s7_is_c_object(key_node) );
+    s7_pointer pred = NULL;
+    pred = s7_apply_function(s7, key_node,
+                             s7_eval_c_string(s7, "'(:node?)"));
+    TEST_ASSERT( s7_t(s7) == pred );
+    /* Convert to Scheme datum */
+    s7_pointer key_str = s7_apply_function(s7, key_node,
+                                           s7_eval_c_string(s7, "'(:$)"));
+    TEST_ASSERT( !s7_is_c_object(key_str) );
+    TEST_ASSERT( s7_is_symbol(key_str) );
+    TEST_ASSERT_EQUAL_STRING( "srcs", s7_symbol_name(key_str) );
+}
+
+void test_tgt_at_sym_value(void) {
+    s7_pointer path = s7_eval_c_string(s7, "'(:@ srcs :value)");
+    s7_pointer val_node = s7_apply_function(s7, tgt, path);
+    TEST_ASSERT( s7_is_c_object(val_node) );
+    s7_pointer pred = s7_apply_function(s7, val_node,
+                                        s7_eval_c_string(s7, "'(:node?)"));
+    TEST_ASSERT( s7_t(s7) == pred );
+
+    /* in this case the value is a string list */
+    pred = NULL;
+    pred = s7_apply_function(s7, val_node,
+                             s7_eval_c_string(s7, "'(:list-expr?)"));
+    TEST_ASSERT( s7_t(s7) == pred );
+    /* of length 1 */
+    s7_pointer len = s7_apply_function(s7, s7_name_to_value(s7,"length"),
+                                       s7_list(s7, 1, val_node));
+    TEST_ASSERT_EQUAL_INT( 1, s7_integer(len) );
+
+    /* whose 0 item is "hello-world.cc" */
+    s7_pointer item = s7_apply_function(s7, val_node,
+                             s7_eval_c_string(s7, "'(0)"));
+    /* which is a string node */
+    pred = s7_apply_function(s7, item,
+                             s7_eval_c_string(s7, "'(:string?)"));
+    TEST_ASSERT( pred == s7_t(s7) );
+    /* whose Scheme value is string "hello-world.cc" */
+    s7_pointer sval = s7_apply_function(s7, item,
+                                        s7_eval_c_string(s7, "'(:$)"));
+    TEST_ASSERT_EQUAL_STRING( "\"hello-world.cc\"", s7_string(sval) );
+}
+
+void test_tgt_at_sym_value_i(void) {
+    s7_pointer path = s7_eval_c_string(s7, "'(:@ srcs :value 0)");
+    s7_pointer item = s7_apply_function(s7, tgt, path);
+    s7_pointer pred = s7_apply_function(s7, item,
+                                        s7_eval_c_string(s7, "'(:string?)"));
+    TEST_ASSERT( pred == s7_t(s7) );
+    /* whose Scheme value is string "hello-world.cc" */
+    s7_pointer sval = s7_apply_function(s7, item,
+                                        s7_eval_c_string(s7, "'(:$)"));
+    TEST_ASSERT_EQUAL_STRING( "\"hello-world.cc\"", s7_string(sval) );
+}
+
+/* **************************************************************** */
 int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_target);
-    RUN_TEST(test_tgt_rule);    /* (:rule) */
-    RUN_TEST(test_tgt_name);  /* (:name) */
-    RUN_TEST(test_tgt_attr_sym);  /* (:attr srcs) */
-    RUN_TEST(test_tgt_binding_sym);  /* (:binding srcs) */
-    RUN_TEST(test_tgt_at_sym);  /* (:binding srcs) */
+    RUN_TEST(test_tgt_rule);        /* (:rule) */
+    RUN_TEST(test_tgt_name);        /* (:name) */
+
+    RUN_TEST(test_tgt_attr_sym);    /* (:attr srcs) */
+    RUN_TEST(test_tgt_binding_sym); /* (:binding srcs) */
+    RUN_TEST(test_tgt_at_sym);      /* (:@ srcs) */
+
+    RUN_TEST(test_tgt_at_sym_key);      /* (:@ srcs :key) */
+    RUN_TEST(test_tgt_at_sym_value);    /* (:@ srcs :value) */
+
+    RUN_TEST(test_tgt_at_sym_value_i);    /* (:@ srcs :value 0) */
+
+    /* (:@ srcs :value "hello-world.cc") */
+    /* RUN_TEST(test_tgt_at_sym_value_string); */
 
     return UNITY_END();
 }

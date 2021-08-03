@@ -511,6 +511,14 @@ EXPORT int sealark_subnode_count(struct node_s *node,
             ct--; // self is non-printable
         count_node = node;
         break;
+    case TK_Call_Expr:
+        if (all_printables) ct--; // self is non-printable
+        count_node = node;
+        break;
+    case TK_Call_Sfx:
+        if (all_printables) ct--; // self is non-printable
+        count_node = node;
+        break;
     case TK_Expr_List:
         if (all_printables)
             ct--; // self is non-printable
