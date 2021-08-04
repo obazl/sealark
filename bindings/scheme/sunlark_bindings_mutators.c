@@ -271,6 +271,7 @@ struct node_s *sunlark_mutate_binding_value(s7_scheme *s7,
     }
 
     if (s7_is_c_object(newval)) {
+        log_error("replacing with c-object");
         /* newval is e.g. sunlark-make-string */
 
         /* const char *s = s7_string(newval); */

@@ -225,8 +225,11 @@ void test_binding_srcs(void) {
     TEST_ASSERT( s7_is_string(sval) );
     TEST_ASSERT_EQUAL_STRING( "\"hello-world.cc\"", s7_string(sval) );
 
-    /* second item uses single quotes */
-    item = s7_apply_function(s7, val, s7_cons(s7, s7_make_integer(s7, 1), s7_nil(s7)));
+    /* second item uses single quotes. index 2, accounting for comma */
+    item = s7_apply_function(s7, val,
+                             s7_list(s7,1,s7_make_integer(s7, 2)));
+    log_debug("ITEM xxx");
+    sealark_debug_print_ast_outline(s7_c_object_value(item), 0);
     TEST_ASSERT( s7_is_c_object(item) );
     TEST_ASSERT( sunlark_node_tid(s7, item) == TK_STRING );
 

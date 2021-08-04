@@ -302,7 +302,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
 
     case TK_Binding:
 #if defined(DEBUG_SET)
-        log_debug("set! context: TK_Binding");
+        log_debug("CASE SET! context: TK_Binding");
 #endif
         if (lval == KW(key)) {
             /* log_debug("replacing lval: key"); */
@@ -322,7 +322,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
             }
         }
         if (lval == s7_make_keyword(s7, "$") || lval == KW(value)) {
-            log_debug("replacing lval: value");
+            log_debug("replacing lval: :value");
             errno = 0;
             struct node_s *newb
                 =  sunlark_mutate_binding_value(s7, context_node, update_val);
@@ -330,6 +330,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
                 log_debug("after replacement:");
                 sealark_debug_print_ast_outline(newb, true); // crush
                 return sunlark_node_new(s7, newb);
+                /* return s7_values(s7, s7_nil(s7)); */
             } else {
                 return handle_errno(s7, errno, args);
             }
@@ -369,6 +370,19 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
                     return sunlark_node_new(s7, updated);
                 }
             }
+        }
+        break;
+    case TK_ID:                 /* Booleans, True or False */
+#if defined(DEBUG_SET)
+        log_debug("CASE: SET! on context TK_ID");
+#endif
+        result
+            = sunlark_set_id(s7, context_node, lval, update_val);
+        if (result)
+            return sunlark_node_new(s7, result);
+        else {
+            log_error("set! TK_ID error");
+            return NULL;
         }
         break;
     case TK_List_Expr:          /* vector */
@@ -436,7 +450,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
                 updated = sunlark_set_string(s7, r, update_val);
                 break;
             case TK_ID:
-                updated = sunlark_set_id(s7, r, update_val);
+                updated = sunlark_set_id(s7, r, lval, update_val);
                 break;
             case TK_INT:
                 updated = sealark_set_int(r, s7_integer(update_val));
@@ -612,17 +626,43 @@ LOCAL struct node_s *sunlark_set_string(s7_scheme *s7,
     log_debug("sunlark_set_string");
 #endif
 
+    log_error("NOT YET");
+
 }
 
 /* **************** */
 LOCAL struct node_s *sunlark_set_id(s7_scheme *s7,
-                                        struct node_s *old_vec,
-                                        s7_pointer new_vec)
+                                    struct node_s *context_node,
+                                    s7_pointer lval,
+                                    s7_pointer newval)
 {
 #if defined(DEBUG_TRACE) || defined(DEBUG_MUTATE)
-    log_debug("sunlark_set_id");
+    log_debug("sunlark_set_id: %s", s7_object_to_c_string(s7, newval));
 #endif
 
+    assert(context_node->tid == TK_ID);
+
+    log_debug("lval: %s", s7_object_to_c_string(s7, lval));
+    log_debug("newval: %s", s7_object_to_c_string(s7, newval));
+
+    /* NB: in this case lval should be '() - nothing to select */
+    if ( s7_is_null(s7, lval) ) { //FIXME
+        struct node_s *newitem;
+        if (s7_is_c_object(newval)) {
+            newitem = sealark_set_string_c_object(context_node,
+                                                  s7_c_object_value(newval));
+            return context_node;
+        }
+        if (s7_is_list(s7, newval)) {
+            return sunlark_convert_node_to_list_expr(s7, context_node,
+                                                     newval);
+        }
+        log_error("FIXME: fallthru on set_id");
+    } else {
+        /* should not happen, no futher selection possible */
+        log_error("set! on TK_ID wtf????????????????");
+        return NULL;
+    }
 }
 
 struct node_s *sunlark_convert_node_to_list_expr(s7_scheme *s7,

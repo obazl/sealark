@@ -239,12 +239,12 @@ EXPORT s7_pointer sunlark_make_string(s7_scheme *s7, s7_pointer args)
 }
 
 /* **************************************************************** */
-struct node_s *_make_list_valued_binding(s7_scheme *s7,
+struct node_s *_make_list_from_list(s7_scheme *s7,
                                          struct node_s *binding,
                                          s7_pointer val)
 {
 #ifdef DEBUG_TRACE
-    log_debug("_make_list_valued_binding");
+    log_debug("_make_list_from_list");
 #endif
 
     int list_len = s7_list_length(s7, val);
@@ -323,6 +323,87 @@ struct node_s *_make_list_valued_binding(s7_scheme *s7,
 }
 
 /* **************************************************************** */
+struct node_s *_make_list_from_vector(s7_scheme *s7,
+                                      struct node_s *binding,
+                                      s7_pointer val)
+{
+#ifdef DEBUG_TRACE
+    log_debug("_make_list_from_vector");
+#endif
+
+    int vector_len = s7_vector_length(val);
+    s7_pointer vals = val;
+    log_debug("xxxx %s", s7_object_to_c_string(s7, vals));
+    s7_pointer v;
+
+    struct node_s *list_expr
+        = sealark_new_node(TK_List_Expr, with_subnodes);
+    utarray_push_back(binding->subnodes, list_expr);
+
+    struct node_s *nd;
+    nd = sealark_new_node(TK_LBRACK, without_subnodes);
+    utarray_push_back(list_expr->subnodes, nd);
+
+    struct node_s *expr_list
+        = sealark_new_node(TK_Expr_List, with_subnodes);
+    utarray_push_back(list_expr->subnodes, expr_list);
+
+    char buf[64];
+
+    for (int i = 0; i < vector_len; i++) {
+        v = s7_vector_ref(s7, vals, i);
+        log_debug("0 val %s", s7_object_to_c_string(s7, v));
+        if (s7_is_integer(v)) {
+            nd = sealark_new_node(TK_INT, without_subnodes);
+            buf[0] = '\0';
+            /* int ival = s7_integer(v); */
+            /* log_debug("int: %d", ival); */
+            snprintf(buf, 32, "%d", s7_integer(v));
+            /* log_debug("buf: %s, i: %d", buf, i); */
+
+            nd->s = calloc(strlen(buf)+1, sizeof(char));
+            snprintf(nd->s, strlen(buf)+1, "%s", buf);
+            utarray_push_back(expr_list->subnodes, nd);
+            log_debug("vector_len: %d, i: %d", vector_len, i);
+            if ((vector_len - i) > 1) {
+                nd = sealark_new_node(TK_COMMA, without_subnodes);
+                utarray_push_back(expr_list->subnodes, nd);
+            }
+        }
+        if (s7_is_string(v)) {
+            nd = sealark_new_node(TK_STRING, without_subnodes);
+            const char *buf = s7_string(v);
+            nd->s = calloc(strlen(buf)+1, sizeof(char));
+            snprintf(nd->s, strlen(buf)+1, "%s", buf);
+            utarray_push_back(expr_list->subnodes, nd);
+            log_debug("vector_len: %d, i: %d", vector_len, i);
+            if ((vector_len - i) > 1) {
+                nd = sealark_new_node(TK_COMMA, without_subnodes);
+                utarray_push_back(expr_list->subnodes, nd);
+            }
+        }
+        if (s7_is_symbol(v)) {
+            nd = sealark_new_node(TK_ID, without_subnodes);
+            buf[0] = '\0';
+            snprintf(buf, 64, "%s", s7_symbol_name(v));
+            /* log_debug("buf: %s, i: %d", buf, i); */
+
+            nd->s = calloc(strlen(buf)+1, sizeof(char));
+            snprintf(nd->s, strlen(buf)+1, "%s", buf);
+            utarray_push_back(expr_list->subnodes, nd);
+            log_debug("vector_len: %d, i: %d", vector_len, i);
+            if ((vector_len - i) > 1) {
+                nd = sealark_new_node(TK_COMMA, without_subnodes);
+                utarray_push_back(expr_list->subnodes, nd);
+            }
+        }
+    }
+    nd = sealark_new_node(TK_RBRACK, without_subnodes);
+    utarray_push_back(list_expr->subnodes, nd);
+    return binding;
+}
+
+/* **************************************************************** */
 #if INTERFACE
 #define SUNLARK_MAKE_BINDING_HELP "(make-binding) returns a new node of type :binding"
 
@@ -371,10 +452,17 @@ EXPORT s7_pointer sunlark_make_binding(s7_scheme *s7, s7_pointer args)
     s7_pointer val = s7_cadr(args);
     log_debug("val %s", s7_object_to_c_string(s7, val));
     struct node_s *nd;
+
     if (s7_is_list(s7, val)) {
-        binding = _make_list_valued_binding(s7, binding, val);
+        binding = _make_list_from_list(s7, binding, val);
         goto resume;
     }
+
+    if (s7_is_vector(val)) {
+        binding = _make_list_from_vector(s7, binding, val);
+        goto resume;
+    }
+
     if (s7_is_integer(val)) {
         log_debug("int %d", s7_integer(val));
         nd = sealark_new_node(TK_INT, without_subnodes);

@@ -300,10 +300,12 @@ LOCAL s7_pointer sunlark_dispatch_on_list_expr(s7_scheme *s7,
     /* tid: TK_Expr-List */
     log_debug("vector tid %d %s", vector->tid, TIDNAME(vector));
 
-    /* treat first item as prototype, giving list type */
-    struct node_s *prototype = utarray_eltptr(vector->subnodes, 0);
-    int item_type = prototype->tid;
-    log_debug("item_type: %d", item_type);
+    // Let Bazel enforce list homogeneity in BUILD files
+    /* treat first non-sym item as prototype, giving list type */
+    /* struct node_s *prototype = utarray_eltptr(vector->subnodes, 0); */
+    /* int item_type = prototype->tid; */
+    /* log_debug("item_type: %d", item_type); */
+
     int item_ct = 0;
 
     if (s7_is_integer(op)) {
@@ -318,11 +320,11 @@ LOCAL s7_pointer sunlark_dispatch_on_list_expr(s7_scheme *s7,
         struct node_s *node = NULL;
         while( (node
                 =(struct node_s*)utarray_next(vector->subnodes, node)) ) {
-            if (node->tid == item_type) {
+            /* if (node->tid == item_type) { */
                 if (item_ct == idx)
                     return sunlark_node_new(s7, node);
                 item_ct++;
-            }
+            /* } */
         }
         //FIXME: handle index out of bounds
         return s7_unspecified(s7);

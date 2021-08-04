@@ -379,8 +379,11 @@ s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
     s7_pointer self_s7 = s7_car(args);
     s7_pointer rest = s7_cdr(args);
 
-    if (s7_is_null(s7, rest))   /* (nd) returns nd */
+    if (s7_is_null(s7, rest)) {   /* (nd) returns nd */
+        log_debug("<<<<<<<<<<<<<<<< sunlark_node_object_applicator returning val of type: %s <<<<<<<<<<<<<<<<",
+                  s7_object_to_c_string(s7, (s7_type_of(s7, self_s7))));
         return self_s7;
+    }
 
     s7_pointer params = s7_cdr(args);
     s7_pointer resolved_path;
@@ -399,7 +402,7 @@ s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
 
 #ifdef DEBUG_S7_API
     if (resolved_path == NULL) {
-        log_debug("<<<< sunlark_node_object_applicator: returning nil");
+        log_debug("<<<<<<<<<<<<<<<< sunlark_node_object_applicator: returning nil <<<<<<<<<<<<<<<<");
         return s7_nil(s7);
     } else {
         if (s7_is_c_object(resolved_path)) {
@@ -408,22 +411,25 @@ s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
                       node->tid, TIDNAME(node));
         } else {
             if (s7_is_unspecified(s7, resolved_path)) {
-                log_debug("<<<< sunlark_node_object_applicator: returning #<unspecified>");
+                log_debug("<<<< sunlark_node_object_applicator: returning #<unspecified> <<<<<<<<<<<<<<<<");
             } else {
                 if (s7_is_null(s7, resolved_path)) {
-                    log_debug("<<<< sunlark_node_object_applicator: returning nil");
+                    log_debug("<<<< sunlark_node_object_applicator: returning nil <<<<<<<<<<<<<<<<");
                 } else {
                     if (s7_is_boolean(resolved_path)) {
                         log_debug("<<<< sunlark_node_object_applicator: returning boolean");
-                    } else {
-                        log_debug("<<<< sunlark_node_object_applicator returning val of type: %s",
-                                  s7_object_to_c_string(s7, (s7_type_of(s7, resolved_path))));
+                    /* } else { */
+                    /*     log_debug("<<<< sunlark_node_object_applicator returning val of type: %s <<<<<<<<<<<<<<<<", */
+                    /*               s7_object_to_c_string(s7, (s7_type_of(s7, resolved_path)))); */
                     }
                 }
             }
         }
     }
 #endif
+    log_debug("<<<< sunlark_node_object_applicator returning val of type: %s <<<<<<<<<<<<<<<<",
+              s7_object_to_c_string(s7, (s7_type_of(s7, resolved_path))));
+    log_debug("resolved_path: %s", s7_object_to_c_string(s7, resolved_path));
     return resolved_path;
 
         /* s7_pointer op = s7_car(rest); */

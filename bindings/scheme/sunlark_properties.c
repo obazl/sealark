@@ -203,7 +203,7 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
                 break;
             case TK_ID:
                 if (strncmp("True", ast_node->s, 4) == 0) {
-                    val = s7_make_symbol(s7, "#t");
+                    val = s7_t(s7);
                 } else {
                     if (strncmp("False", ast_node->s, 4) == 0) {
                         val = s7_make_symbol(s7, "#f");

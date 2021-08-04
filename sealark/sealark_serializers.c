@@ -179,28 +179,43 @@ LOCAL void _node2string(struct node_s *node, UT_string *buffer)
         /* log_debug("STRINGED TOK: %d %s: :]%s[:", */
         /*           node->tid, token_name[node->tid][0], */
         /*           node->s); */
-        if (node->tid == TK_STRING) {
-            //FIXME: call ast_node_printable_string?
-
-            char *br = SEALARK_STRTYPE(node->qtype);
-            char *q = sealark_quote_type(node);
-
-            utstring_printf(buffer,
-                            "%s%s%s%s",
-                            br,
-                            q,
-                            node->s,
-                            q);
-            /* adjust line count for embedded escaped newlines */
-            for (char *p = node->s; *p != 0; p++) {
-                if (*p == '\n') {
-                    line++;
-                }
-            }
-            col += strlen(node->s) + 2; /* allow for quote marks */
+        if (node->tid == TK_ID) {
+            /* if (strncmp("True", node->s, 4) == 0) { */
+            /*     utstring_printf(buffer, "#t"); */
+            /*     col += 2; */
+            /* } else { */
+            /*     if (strncmp("True", node->s, 4) == 0) { */
+            /*         utstring_printf(buffer, "#f"); */
+            /*         col += 2; */
+            /*     } else { */
+                    utstring_printf(buffer, "%s", node->s);
+                    col += strlen(node->s);
+            /*     } */
+            /* } */
         } else {
-            utstring_printf(buffer, "%s", node->s);
-            col += strlen(node->s);
+            if (node->tid == TK_STRING) {
+                //FIXME: call ast_node_printable_string?
+
+                char *br = SEALARK_STRTYPE(node->qtype);
+                char *q = sealark_quote_type(node);
+
+                utstring_printf(buffer,
+                                "%s%s%s%s",
+                                br,
+                                q,
+                                node->s,
+                                q);
+                /* adjust line count for embedded escaped newlines */
+                for (char *p = node->s; *p != 0; p++) {
+                    if (*p == '\n') {
+                        line++;
+                    }
+                }
+                col += strlen(node->s) + 2; /* allow for quote marks */
+            } else {
+                utstring_printf(buffer, "%s", node->s);
+                col += strlen(node->s);
+            }
         }
     } else {
         /* log_debug("TOK[%d] %s: :]%s[: (len: %d)", */
