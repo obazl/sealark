@@ -19,6 +19,8 @@
 #define ENULL_BINDING_VAL -17
 #define EINDEX_OUT_OF_BOUNDS -18
 #define EINVALID_UPDATE -19
+#define EINDEX_TYPE_ERR -20
+#define EINVALID_REMOVE -21
 
 #endif
 

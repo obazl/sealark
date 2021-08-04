@@ -41,7 +41,6 @@ struct node_s *sunlark_binding_dispatcher(s7_scheme *s7,
 
     int op_count = s7_list_length(s7, path_args);
     if (op_count == 0) {
-log_debug("0 xxxxxxxxxxxxxxxx");
         return binding;
         /* log_error("not enough path steps"); */
         /* return(s7_wrong_type_arg_error(s7, "node type :binding applicator:", */
@@ -59,14 +58,11 @@ log_debug("0 xxxxxxxxxxxxxxxx");
         /* tmp_node = utarray_eltptr(binding->subnodes, 0); */
         /* return sunlark_node_new(s7, tmp_node); */
     }
+
     if (op == s7_make_keyword(s7, "$") || op == KW(value)) {
         struct node_s *bval = utarray_eltptr(binding->subnodes, 2);
         if (s7_is_null(s7, s7_cdr(path_args)))
-log_debug("0 xxxxxxxxxxxxxxxx");
             return bval;
-        /* return sunlark_node_new(s7, bval); */
-
-        /* if (s7_is_integer(s7_cadr(path_args))) { */
         /* vectors are indexed by number keyword */
         if (s7_is_keyword(s7_cadr(path_args))) {
             s7_pointer sym = s7_keyword_to_symbol(s7, s7_cadr(path_args));
@@ -88,7 +84,7 @@ log_debug("0 xxxxxxxxxxxxxxxx");
             } else {
                 log_error("trying to index a non-list of type %d %s",
                           bval->tid, TIDNAME(bval));
-                errno = EBAD_INDEX;
+                errno = EINDEX_TYPE_ERR;
                 return NULL;
             }
         } else {

@@ -7,12 +7,12 @@
 #include "sealark.h"
 #include "sunlark.h"
 
-#include "test_set_bool.h"
+#include "test_attr_set.h"
 
 UT_string *buf;
 UT_string *test_s;
 
-char *build_file = "test/unit/sunlark/BUILD.set_bool";
+char *build_file = "test/unit/sunlark/BUILD.attrs";
 
 s7_scheme *s7;
 

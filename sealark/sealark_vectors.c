@@ -42,7 +42,7 @@ EXPORT struct node_s *sealark_vector_item_for_int(struct node_s *list_expr,
     if (index < 0) {
         if (abs(index) > item_ct) {
             log_error("abs(%d) > item_ct", index, item_ct);
-            errno = 3;
+            errno = EINDEX_OUT_OF_BOUNDS;
             return NULL;
         } else {
             index = item_ct + index;
@@ -177,7 +177,7 @@ EXPORT struct node_s *sealark_vector_remove_item(struct node_s *vector,
     if (index < 0) {
         if (abs(index) > item_ct) {
             log_error("abs(%d) > item_ct", index, item_ct);
-            errno = 3;
+            errno = EINDEX_OUT_OF_BOUNDS;
             return NULL;
         } else {
             index = item_ct + index;
@@ -187,7 +187,7 @@ EXPORT struct node_s *sealark_vector_remove_item(struct node_s *vector,
 
     if (index > item_ct-1) {
         log_error("desired index %d > item count %d", index, item_ct);
-        errno = EINDEX_TOO_BIG;
+        errno = EINDEX_OUT_OF_BOUNDS;
         return NULL;
     }
 
@@ -205,6 +205,9 @@ EXPORT struct node_s *sealark_vector_remove_item(struct node_s *vector,
     }
     /* we should always match desired index */
     log_debug("removing item at %d, subnode %d", index, i);
+
+    /* if last item, back up one to remove preceding comma */
+    i = ((subnode_ct - i) > 1)? i : i-1;
     utarray_erase(vector->subnodes, i, 2);
     return vector;
 }

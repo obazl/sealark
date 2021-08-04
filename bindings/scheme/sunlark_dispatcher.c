@@ -103,7 +103,8 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
                     return sunlark_common_property_lookup(s7,
                                                           s7_c_object_value(data), op);
                 } else {
-                    return NULL; // errno already set
+                    return handle_errno(s7, errno,
+                                        s7_list(s7, 2, data, path_args));
                 }
         }
         /* FIXME: type of result? */

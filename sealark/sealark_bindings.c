@@ -268,3 +268,61 @@ EXPORT struct node_s *sealark_bindings_binding_for_index(struct node_s *bindings
     }
     return NULL;
 }
+
+/* ******************************** */
+EXPORT int sealark_binding_index_for_key(struct node_s *bindings,
+                                         const char *key)
+{
+#if defined(DEBUG_BINDINGS)
+    log_debug("sealark_binding_index_for_key: %s", key);
+#endif
+
+    assert(bindings->tid == TK_Arg_List);
+
+    int key_len = strlen(key);
+
+    struct node_s *bkey;
+    struct node_s *bnode = NULL;
+    int i = 0;
+    while((bnode=(struct node_s*)utarray_next(bindings->subnodes,
+                                                     bnode))) {
+#if defined(DEBUG_UTARRAYS)
+        log_debug(" LOOP bindings[%d] tid: %d %s",
+                  i, bnode->tid,
+                  token_name[bnode->tid][0]);
+#endif
+        if (bnode->tid == TK_Binding) {
+            bkey = utarray_eltptr(bnode->subnodes, 0);
+            if ( (strncmp(bkey->s, key, key_len) == 0)
+                 && strlen(bkey->s) == key_len ) {
+#if defined(DEBUG_UTARRAYS)
+                log_debug("MATCHED key: %s", key);
+#endif
+                return i;
+            }
+        }
+        i++;
+    }
+    return -1;
+}
+
+/* ******************************** */
+EXPORT
+struct node_s *sealark_remove_binding_at_index(struct node_s *bindings,
+                                               int index)
+{
+#if defined(DEBUG_BINDINGS) || defined(DEBUG_SET)
+    log_debug("sealark_remove_binding_at_index: %d", index);
+#endif
+
+    assert(bindings->tid == TK_Arg_List);
+
+    int len = utarray_len(bindings->subnodes);
+
+    if ( (len - index) > 1 ) {
+        utarray_erase(bindings->subnodes, index, 2);
+    } else {
+        utarray_erase(bindings->subnodes, index, 1);
+    }
+    return bindings;
+}

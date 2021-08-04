@@ -600,6 +600,10 @@ s7_pointer sunlark_vector_replace_item(s7_scheme *s7,
     /* get the item to update */
     struct node_s *item;
     item = sealark_vector_item_for_int(list_expr, index);
+    if (!item)
+        return handle_errno(s7, errno,
+                            s7_list(s7, 2, _list_expr,
+                                    s7_make_integer(s7,index)));
 
     /* we have the item, now update it */
 
@@ -642,9 +646,15 @@ s7_pointer sunlark_vector_replace_item(s7_scheme *s7,
         if (s7_is_keyword(newval)) {
             if (newval == KW(null)) {
                 log_debug("nullifying (removing) item from list");
+                errno = 0;
                 struct node_s *updated_vector
                     = sealark_vector_remove_item(vector, index);
-                return _list_expr;
+                if (updated_vector)
+                    return _list_expr;
+                else
+                    return handle_errno(s7, errno,
+                                        s7_list(s7, 2, _list_expr,
+                                                s7_make_integer(s7,index)));
             } else {
                 log_error("Cannot set item to keyword: %s",
                           s7_object_to_c_string(s7, newval));

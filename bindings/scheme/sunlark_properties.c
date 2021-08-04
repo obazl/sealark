@@ -344,5 +344,6 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
     }
 
     /* s7 hash-table-ref returns #f if key not found */
-    return s7_f(s7);
+    /* but that just seems confusing, since #f is a valid value */
+    return s7_unspecified(s7);
 }

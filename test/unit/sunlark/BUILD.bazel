@@ -4,7 +4,7 @@ test_suite(
     name = "sunlark",
     tests = [
         ":bindings",
-        ":set_bool",
+        ":attr_set",
         ":common_props",
         # ":definitions",
         ":loadstmts",
@@ -64,9 +64,9 @@ cc_test(
 )
 
 cc_test(
-    name = "set_bool",
-    srcs = ["test_set_bool.c", "test_set_bool.h"],
-    data = [":BUILD.set_bool"],
+    name = "attr_set",
+    srcs = ["test_attr_set.c", "test_attr_set.h"],
+    data = [":BUILD.attrs"],
     copts = COPTS,
     deps = DEPS,
     linkstatic = 1
@@ -217,7 +217,7 @@ genrule(
         "common.c",
         "validators.c",
         "test_bindings.c",
-        "test_set_bool.c",
+        "test_attr_set.c",
         "definitions.c",
         "test_common_props.c",
         "test_dictionaries.c",
@@ -232,7 +232,7 @@ genrule(
         "test_vectors.c"
     ],
     outs = [
-        "test_set_bool.h",
+        "test_attr_set.h",
         "test_bindings.h",
         "definitions.h",
         "test_common_props.h",
@@ -261,7 +261,7 @@ genrule(
         "    $(location test_loadstmts.c) \\",
         "    $(location test_make_binding.c) \\",
         "    $(location test_packages.c) \\",
-        "    $(location test_set_bool.c) \\",
+        "    $(location test_attr_set.c) \\",
         "    $(location test_bindings.c) \\",
         "    $(location test_string_set.c) \\",
         "    $(location test_strings.c) \\",

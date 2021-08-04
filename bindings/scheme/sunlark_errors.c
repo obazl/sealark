@@ -53,6 +53,18 @@ s7_pointer handle_errno(s7_scheme *s7, int errorno, s7_pointer path_args)
                            "Index out of bounds: ~A"),
                                 (path_args))));
         break;
+    case EINDEX_TYPE_ERR:
+        return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
+                        s7_list(s7, 2, s7_make_string(s7,
+                        "Attempting to index a non-sequece: ~A"),
+                                (path_args))));
+        break;
+    case EINVALID_REMOVE:
+        return(s7_error(s7, s7_make_symbol(s7, "invalid_remove"),
+                        s7_list(s7, 2, s7_make_string(s7,
+                 "set! :null not allowed in this context: ~A"),
+                                (path_args))));
+        break;
     case EINVALID_UPDATE:
         return(s7_error(s7, s7_make_symbol(s7, "invalid_update"),
                         s7_list(s7, 2, s7_make_string(s7,
@@ -68,7 +80,7 @@ s7_pointer handle_errno(s7_scheme *s7, int errorno, s7_pointer path_args)
     case ENULL_BINDING_VAL:
         return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
                         s7_list(s7, 2, s7_make_string(s7,
-                        "Cannot set binding value to null: ~A"),
+                        "Cannot set :value of binding to null: ~A"),
                                 path_args)));
         break;
     default:

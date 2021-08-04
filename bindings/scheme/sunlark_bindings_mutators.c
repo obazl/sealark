@@ -230,8 +230,8 @@ s7_pointer sunlark_update_binding_value(s7_scheme *s7,
 
 /* **************************************************************** */
 struct node_s *sunlark_mutate_binding_value(s7_scheme *s7,
-                                         struct node_s *binding,
-                                         s7_pointer newval)
+                                            struct node_s *binding,
+                                            s7_pointer newval)
 {
 #if defined(DEBUG_TRACE) || defined(DEBUG_SET)
     log_debug("sunlark_mutate_binding_value: %s",

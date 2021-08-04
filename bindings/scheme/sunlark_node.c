@@ -427,8 +427,8 @@ s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
         }
     }
 #endif
-    log_debug("<<<< sunlark_node_object_applicator returning val of type: %s <<<<<<<<<<<<<<<<",
-              s7_object_to_c_string(s7, (s7_type_of(s7, resolved_path))));
+    /* log_debug("<<<< sunlark_node_object_applicator returning val of type: %s <<<<<<<<<<<<<<<<", */
+    /*           s7_object_to_c_string(s7, (s7_type_of(s7, resolved_path)))); */
     log_debug("resolved_path: %s", s7_object_to_c_string(s7, resolved_path));
     return resolved_path;
 
