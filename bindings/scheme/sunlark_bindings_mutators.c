@@ -239,6 +239,12 @@ struct node_s *sunlark_mutate_binding_value(s7_scheme *s7,
     log_debug("\tself: %d %s", binding->tid, TIDNAME(binding));
 #endif
 
+    if (newval == KW(null)) {
+        log_error("Cannot nullify (remove) value of binding");
+        errno = ENULL_BINDING_VAL;
+        return NULL;
+    }
+
     struct node_s *oldval = utarray_eltptr(binding->subnodes, 2);
     sealark_debug_print_ast_outline(binding, true); // crush
 

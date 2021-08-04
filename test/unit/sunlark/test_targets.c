@@ -46,7 +46,7 @@ void test_target(void) {
 /* **************************************************************** */
 void _validate_rule(s7_pointer rule) {
     s7_pointer pred = s7_apply_function(s7, rule,
-                                         s7_eval_c_string(s7, "'(:id?)"));
+                                        s7_eval_c_string(s7, "'(:id?)"));
     TEST_ASSERT( pred == s7_t(s7) );
     TEST_ASSERT( sunlark_node_tid(s7, rule) == TK_ID );
     TEST_ASSERT( s7_is_c_object(rule) );

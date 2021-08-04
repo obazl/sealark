@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <ctype.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -61,10 +62,25 @@ log_debug("0 xxxxxxxxxxxxxxxx");
     if (op == s7_make_keyword(s7, "$") || op == KW(value)) {
         struct node_s *bval = utarray_eltptr(binding->subnodes, 2);
         if (s7_is_null(s7, s7_cdr(path_args)))
+log_debug("0 xxxxxxxxxxxxxxxx");
             return bval;
         /* return sunlark_node_new(s7, bval); */
-        if (s7_is_integer(s7_cadr(path_args))) {
-            int idx = s7_integer(s7_cadr(path_args));
+
+        /* if (s7_is_integer(s7_cadr(path_args))) { */
+        /* vectors are indexed by number keyword */
+        if (s7_is_keyword(s7_cadr(path_args))) {
+            s7_pointer sym = s7_keyword_to_symbol(s7, s7_cadr(path_args));
+            const char *kw = s7_symbol_name(sym);
+            int len = strlen(kw); // very unlikely to be more than 2
+            for (int i=0; i < len; i++) {
+                if ( !isdigit( (int)kw[i] ) ) {
+                    log_debug("Indexing keyword must be ':' followed by digit(s); got: %s", kw);
+                    errno = EINVALID_VECINDEX;
+                    return NULL;
+                }
+            }
+            int idx = atoi(kw);
+            /* int idx = s7_integer(s7_cadr(path_args)); */
             /* implies: val is a vector */
             if (bval->tid == TK_List_Expr) {
                 return sealark_vector_item_for_int(bval, idx);
@@ -74,12 +90,6 @@ log_debug("0 xxxxxxxxxxxxxxxx");
                           bval->tid, TIDNAME(bval));
                 errno = EBAD_INDEX;
                 return NULL;
-                /*        return(s7_error(s7, */
-                /*                        s7_make_symbol(s7, "invalid_argument"), */
-                /*                        s7_list(s7, 2, */
-                /*                                s7_make_string(s7, */
-                /* "Trying to index a non-list value of type ~A"), */
-                /* s7_make_string(s7,token_name[bval->tid][0])))); */
             }
         } else {
             log_error("invalid path op: %s",

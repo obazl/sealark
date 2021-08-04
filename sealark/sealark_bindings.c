@@ -141,6 +141,8 @@ EXPORT struct node_s *sealark_target_binding_for_index(struct node_s *call_expr,
 #if defined(DEBUG_TRACE)
     log_debug("sealark_target_binding_for_index: %d", index);
 #endif
+
+    sealark_debug_print_ast_outline(call_expr, 0);
     /* :call-expr[1] > :call-sfx[1] > :arg-list */
     /* then search arg-list children for arg-named/name=str */
     /* :arg-named[0] = :id */
@@ -159,7 +161,7 @@ EXPORT struct node_s *sealark_target_binding_for_index(struct node_s *call_expr,
             return NULL;
         } else {
             index = args_item_ct + index;
-            /* log_debug("recurring..."); */
+            // do we need to recur?
             return sealark_target_binding_for_index(call_expr, index);
         }
     }

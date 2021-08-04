@@ -207,11 +207,21 @@ EXPORT s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
     }
     if ( s7_is_list(s7, form) ) {
             log_debug("printing s7 list");
-            log_debug("c-object? %d", s7_is_c_object(s7_car(form)));
+
+            if (! s7_is_null(s7, s7_car(form))) return NULL; //FIXME
+
             s7_pointer _list = form;
+            if ( !s7_is_c_object(s7_car(form)) ) {
+                log_error("sunlark->starlark only applies to sunlark nodes");
+                return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
+                                s7_list(s7, 2, s7_make_string(s7,
+                "Cannot serialize a non-starlark node to starlark: ~A"),
+                                        form)));
+            }
+
             while (! s7_is_null(s7, _list)) {
-                /* log_debug("form type: %s", */
-                /*           s7_object_to_c_string(s7, s7_type_of(s7, s7_car(_list)))); */
+                log_debug("form type: %s",
+                          s7_object_to_c_string(s7, s7_type_of(s7, s7_car(_list))));
                 /* if (s7_is_c_object(_list)) { */
                 struct node_s *t = s7_c_object_value(s7_car(_list));
                 /* log_debug("\titem tid: %d %s", t->tid, TIDNAME(t)); */

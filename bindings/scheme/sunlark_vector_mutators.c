@@ -54,7 +54,7 @@ struct node_s *sunlark_mutate_vector(s7_scheme *s7,
         return old_vec;
     }
 
-    if (s7_car(new_vec) == KW(remove)) {
+    if (s7_car(new_vec) == KW(remove!)) {
         sunlark_remove_attr_list_items(s7, old_items, s7_cdr(new_vec));
         return old_vec;
     }
@@ -459,8 +459,8 @@ struct node_s *_replace_attr_list_items(s7_scheme *s7,
 
 /*FIXME: remove from right to left, so indexing will work after removals */
 struct node_s *sunlark_remove_attr_list_items(s7_scheme *s7,
-                                    struct node_s *expr_list,
-                                    s7_pointer edits)
+                                              struct node_s *expr_list,
+                                              s7_pointer edits)
 {
 #if defined(DEBUG_TRACE) || defined(DEBUG_ATTR)
     log_debug("sunlark_remove_attr_list_items, tid: %d", expr_list->tid);
@@ -574,12 +574,14 @@ struct node_s *sunlark_remove_attr_list_items(s7_scheme *s7,
 /* selector: key int, or val (string or symbol) */
 s7_pointer sunlark_vector_replace_item(s7_scheme *s7,
                                        s7_pointer _list_expr,
-                                       s7_pointer selector,
+                                       int index,
+                                       /* s7_pointer selector, */
                                        s7_pointer newval)
 {
 #if defined(DEBUG_TRACE) || defined(DEBUG_MUTATORS)
-    log_debug("sunlark_vector_replace_item @ %s => %s",
-              s7_object_to_c_string(s7, selector),
+    log_debug("sunlark_vector_replace_item @ %d => %s",
+              index,
+              /* s7_object_to_c_string(s7, selector), */
               s7_object_to_c_string(s7, newval));
 #endif
 
@@ -591,38 +593,17 @@ s7_pointer sunlark_vector_replace_item(s7_scheme *s7,
 #endif
 
     struct node_s *vector = utarray_eltptr(list_expr->subnodes, 1);
+    assert(vector->tid == TK_Expr_List);
     int vec_type = sunlark_infer_expr_list_type(vector);
     log_debug("vec_type %d %s", vec_type, token_name[vec_type][0]);
 
     /* get the item to update */
     struct node_s *item;
-    if (s7_is_integer(selector)) {
-        item = sealark_vector_item_for_int(list_expr, s7_integer(selector));
-        /* item=utarray_eltptr(vector->subnodes, 2*s7_integer(selector)); */
-    } else {
-
-
-        log_error("FIXME: update by string/sym not yet");
-        exit(-0);
-
-
-        if (s7_is_string(selector)) {
-            //FIXME: returns list of matching items
-            /* item = sealark_vector_items_for_string(vector, s7_string(selector)); */
-        } else {
-            if (s7_is_symbol(selector)) {
-                /* item = sealark_vector_items_for_string(vector, s7_symbol_name(selector)); */
-            } else {
-                log_error("Bad selector, must be int, string, or symbol; got %s (%s)",
-                          s7_object_to_c_string(s7, selector),
-                          s7_object_to_c_string(s7,s7_type_of(s7,selector)));
-            }
-        }
-    }
+    item = sealark_vector_item_for_int(list_expr, index);
 
     /* we have the item, now update it */
 
-    if (s7_is_integer(selector)) { /* index by int */
+    /* if (s7_is_integer(selector)) { /\* index by int *\/ */
         if (s7_is_string(newval)) {
             if (vec_type != TK_STRING) {
                 log_error("Trying to insert string item into list of %d %s",
@@ -658,6 +639,22 @@ s7_pointer sunlark_vector_replace_item(s7_scheme *s7,
                 = sealark_set_int(item, s7_integer(newval));
             return _list_expr;
         }
+        if (s7_is_keyword(newval)) {
+            if (newval == KW(null)) {
+                log_debug("nullifying (removing) item from list");
+                struct node_s *updated_vector
+                    = sealark_vector_remove_item(vector, index);
+                return _list_expr;
+            } else {
+                log_error("Cannot set item to keyword: %s",
+                          s7_object_to_c_string(s7, newval));
+                return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
+                                s7_list(s7, 2, s7_make_string(s7,
+                              "Cannot set item to keyword ~A"),
+                                    newval)));
+
+            }
+        }
         if (s7_is_symbol(newval)) {
             log_debug("replacing item in list with symbol");
             struct node_s *newitem
@@ -679,7 +676,7 @@ s7_pointer sunlark_vector_replace_item(s7_scheme *s7,
             }
         }
         if (s7_is_list(s7, newval)) {
-            if (KW(remove) == s7_car(newval)) {
+            if (KW(remove!) == s7_car(newval)) {
                 struct node_s *newitem
                     = sunlark_remove_attr_list_items(s7, item, s7_cdr(newval));
                     /* = sunlark_update_list_value(s7, item, "foo", newval); */
@@ -701,17 +698,8 @@ s7_pointer sunlark_vector_replace_item(s7_scheme *s7,
                         s7_list(s7, 3, s7_make_string(s7,
                         "Cannot put val ~A into list of type ~A"),
                                 newval, s7_make_string(s7, token_name[vec_type][0]))));
-    }
+    /* } */
 
-    if (s7_is_string(selector)) { /* find string value in list */
-        log_debug("selecting by string value");
-        return NULL;
-    }
-
-    if (s7_is_symbol(selector)) { /* find symbol value in list */
-        log_debug("selecting by symbol value");
-        return NULL;
-    }
 }
 
 /* ******************************** */
@@ -738,11 +726,11 @@ struct node_s *sunlark_update_list_value(s7_scheme *s7,
     s7_pointer action = s7_car(edits);
     log_debug("action: %s", s7_object_to_c_string(s7, action));
     if (!s7_is_keyword(action)) {
-        log_error("ERROR: action arg should be :add, :replace, or :remove; got %s", s7_object_to_c_string(s7, action));
+        log_error("ERROR: action arg should be :add! or :remove! (got %s)", s7_object_to_c_string(s7, action));
         errno = ESUNLARK_INVALID_ARG;
         return NULL;
     }
-    if (action == s7_make_keyword(s7, "add")) {
+    if (action == s7_make_keyword(s7, "add!")) {
         log_debug("ACTION ADD");
         int editlen = s7_list_length(s7, edits);
         if (editlen < 2) {
@@ -774,7 +762,7 @@ struct node_s *sunlark_update_list_value(s7_scheme *s7,
         /* return sunlark_node_new(s7, new_expr_list); */
         return new_expr_list;
    }
-    if (action == s7_make_keyword(s7, "remove")) {
+    if (action == s7_make_keyword(s7, "remove!")) {
         log_debug("ACTION REMOVE");
         int editlen = s7_list_length(s7, s7_cdr(edits));
         if ( editlen == 0 ) {

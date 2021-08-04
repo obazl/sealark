@@ -404,7 +404,7 @@ s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
     } else {
         if (s7_is_c_object(resolved_path)) {
             struct node_s *node = s7_c_object_value(resolved_path);
-            log_debug("<<<< sunlark_node_object_applicator: returning %d %s",
+            log_debug("<<<<<<<<<<<<<<<< sunlark_node_object_applicator: returning %d %s <<<<<<<<<<<<<<<<",
                       node->tid, TIDNAME(node));
         } else {
             if (s7_is_unspecified(s7, resolved_path)) {

@@ -73,7 +73,14 @@ EXPORT s7_pointer sunlark_target_dispatcher(s7_scheme *s7,
     }
 
     if (op == KW(@) || op == KW(binding) || op == KW(attr)) {
-        return _target_binding_dispatcher(s7, target, rest);
+        if (s7_is_null(s7, rest)) {
+            log_debug("0 xxxxxxxxxxxxxxxx");
+            /* treat :@ same as :@@ if no following args */
+            struct node_s *bindings = sealark_bindings_for_target(target);
+            return sunlark_node_new(s7, bindings);
+        } else {
+            return _target_binding_dispatcher(s7, target, rest);
+        }
         /* if (s7_is_null(s7, rest)) { */
 
         /* } else { */

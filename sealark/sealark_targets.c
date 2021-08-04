@@ -196,7 +196,7 @@ LOCAL struct node_s *_target_for_predicate(struct node_s *package,
     /* log_debug("target_ct: %d", target_ct); */
 
     if (name == NULL) {
-        /* support reverse indexing */
+        /* reverse indexing */
         if (i < 0) {
             if (abs(i) > target_ct) {
                 log_error("abs(%d) > target count", i);

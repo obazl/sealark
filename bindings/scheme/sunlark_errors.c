@@ -47,10 +47,28 @@ s7_pointer handle_errno(s7_scheme *s7, int errorno, s7_pointer path_args)
                            "Binding not found for: ~A"),
                                 (path_args))));
         break;
+    case EINDEX_OUT_OF_BOUNDS:
+        return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
+                        s7_list(s7, 2, s7_make_string(s7,
+                           "Index out of bounds: ~A"),
+                                (path_args))));
+        break;
+    case EINVALID_UPDATE:
+        return(s7_error(s7, s7_make_symbol(s7, "invalid_update"),
+                        s7_list(s7, 2, s7_make_string(s7,
+                 "Invalid update value: ~A"),
+                                (path_args))));
+        break;
     case EINVALID_ARG_LOAD:
         return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
                         s7_list(s7, 2, s7_make_string(s7,
                                                       "Invalid arg ~A following :load"),
+                                path_args)));
+        break;
+    case ENULL_BINDING_VAL:
+        return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
+                        s7_list(s7, 2, s7_make_string(s7,
+                        "Cannot set binding value to null: ~A"),
                                 path_args)));
         break;
     default:

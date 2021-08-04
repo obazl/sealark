@@ -15,6 +15,10 @@
 #define ENOT_IMPLEMENTED -13
 #define EBAD_INDEX -14
 #define EUNKNOWN_KW -15
+#define EINVALID_VECINDEX -16
+#define ENULL_BINDING_VAL -17
+#define EINDEX_OUT_OF_BOUNDS -18
+#define EINVALID_UPDATE -19
 
 #endif
 

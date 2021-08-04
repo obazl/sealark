@@ -159,3 +159,53 @@ EXPORT void sealark_update_vector_items(UT_array *items,
     /* } */
 }
 
+/* **************************************************************** */
+EXPORT struct node_s *sealark_vector_remove_item(struct node_s *vector,
+                                            int index)
+{
+#if defined(DEBUG_TRACE)
+    log_debug("sealark_vector_remove_item: %d", index);
+#endif
+
+    assert(vector->tid == TK_Expr_List);
+
+    int subnode_ct = utarray_len(vector->subnodes);
+    /* each item except the last followed by comma */
+    int item_ct = (subnode_ct + 1) / 2;
+
+    /* reverse indexing */
+    if (index < 0) {
+        if (abs(index) > item_ct) {
+            log_error("abs(%d) > item_ct", index, item_ct);
+            errno = 3;
+            return NULL;
+        } else {
+            index = item_ct + index;
+            // do we need to recur?
+        }
+    }
+
+    if (index > item_ct-1) {
+        log_error("desired index %d > item count %d", index, item_ct);
+        errno = EINDEX_TOO_BIG;
+        return NULL;
+    }
+
+    int i = 0;
+    int item_idx = 0;
+    struct node_s *sub = NULL;
+    while( (sub=(struct node_s*)utarray_next(vector->subnodes, sub)) ) {
+        if (sub->tid == TK_COMMA) {
+            i++;
+            continue;
+        }
+        if (index == item_idx) break;
+        item_idx++;
+        i++;
+    }
+    /* we should always match desired index */
+    log_debug("removing item at %d, subnode %d", index, i);
+    utarray_erase(vector->subnodes, i, 2);
+    return vector;
+}
+

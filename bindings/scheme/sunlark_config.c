@@ -51,6 +51,8 @@ EXPORT s7_scheme *sunlark_init(void)
 
     _redefine_define(s7);
 
+    register_binding_ctor_macro(s7);
+
     /* look for error messages */
     errmsg = s7_get_output_string(s7, s7_current_error_port(s7));
 

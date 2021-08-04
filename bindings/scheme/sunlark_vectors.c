@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -10,22 +11,18 @@
 
 #include "sunlark_vectors.h"
 
-struct node_s *sunlark_vector_resolve_path(s7_scheme *s7,
+struct node_s *sunlark_vector_dispatcher(s7_scheme *s7,
                                            s7_pointer self,
                                            s7_pointer path_args)
 {
 #ifdef DEBUG_TRACE
-    log_debug("sunlark_vector_resolve_path: %s",
+    log_debug("sunlark_vector_dispatcher: %s",
               s7_object_to_c_string(s7, path_args));
 #endif
 
     struct node_s *vec = s7_c_object_value(self);
-    /* validate */
-    if (vec->tid != TK_List_Expr) {
-        log_error("Expected TK_List_Expr, got: %d %s",
-                  vec->tid, TIDNAME(vec));
-        return NULL;
-    }
+    assert(vec->tid == TK_List_Expr);
+
     if ( !s7_is_list(s7, path_args) ) {
         log_error("Expected list of path_args, %s",
                   s7_object_to_c_string(s7, path_args));
