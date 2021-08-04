@@ -40,10 +40,10 @@ bool c_is_sunlark_node(s7_scheme *s7, s7_pointer node_s7)
 #endif
 
 /* **************************************************************** */
-s7_pointer sunlark_node_is_kw_pred(s7_scheme *s7, s7_pointer kw, struct node_s *self)
+s7_pointer sunlark_node_satisfies_kw_pred(s7_scheme *s7, s7_pointer kw, struct node_s *self)
 {
 #ifdef DEBUG_TRACE
-    log_debug("sunlark_node_is_kw_pred: %s", kw);
+    log_debug("sunlark_node_satisfies_kw_pred: %s", kw);
 #endif
 
     s7_pointer sym = s7_keyword_to_symbol(s7, kw);
@@ -64,6 +64,14 @@ s7_pointer sunlark_node_is_kw_pred(s7_scheme *s7, s7_pointer kw, struct node_s *
         /* until we get TK_Target implemented */
         bool is_target = sealark_call_expr_is_target(self);
         return s7_make_boolean(s7, is_target);
+    }
+
+    if ( (strncmp("symbol?", pred, 7) == 0) && (strlen(pred) == 7) ) {
+        /* until we get TK_Symbol implemented */
+        if (self->tid == TK_ID)
+            return s7_t(s7);
+        else
+            return s7_f(s7);
     }
 
     /* token type predication */

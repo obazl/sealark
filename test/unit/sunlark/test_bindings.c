@@ -214,8 +214,9 @@ void test_binding_srcs(void) {
     TEST_ASSERT( sunlark_node_tid(s7, val) == TK_List_Expr );
 
     /* in this case val is a vector; index into it */
-    s7_pointer item = s7_apply_function(s7, val, s7_cons(s7, s7_make_integer(s7, 0),
-                                                         s7_nil(s7)));
+    s7_pointer item = s7_apply_function(s7, val,
+                                        s7_cons(s7, s7_make_integer(s7, 0),
+                                                s7_nil(s7)));
     TEST_ASSERT( s7_is_c_object(item) );
     TEST_ASSERT( sunlark_node_tid(s7, item) == TK_STRING );
 

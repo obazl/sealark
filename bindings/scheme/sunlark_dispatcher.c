@@ -88,7 +88,8 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
 #endif
         bool p = sunlark_op_is_predicate(s7, op);
         if (p) {
-            return sunlark_node_is_kw_pred(s7, op, s7_c_object_value(data));
+            return sunlark_node_satisfies_kw_pred(s7, op,
+                                                  s7_c_object_value(data));
         } else {
             errno = 0;
             struct node_s *r = sunlark_binding_dispatcher(s7,

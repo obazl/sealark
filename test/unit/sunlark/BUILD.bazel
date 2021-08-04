@@ -9,6 +9,7 @@ test_suite(
         ":common_props",
         # ":definitions",
         ":loadstmts",
+        ":make_binding",
         ":packages",
         ":set_strings",
         ":strings",
@@ -103,6 +104,14 @@ cc_test(
     name = "loadstmts",
     srcs = ["test_loadstmts.c", "test_loadstmts.h"],
     data = [":BUILD.loadstmts"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
+    name = "make_binding",
+    srcs = ["test_make_binding.c", "test_make_binding.h"],
     copts = COPTS,
     deps = DEPS,
     linkstatic = 1
@@ -213,6 +222,7 @@ genrule(
         "test_common_props.c",
         "test_dictionaries.c",
         "test_loadstmts.c",
+        "test_make_binding.c",
         "test_packages.c",
         "test_set_strings.c",
         "test_strings.c",
@@ -228,6 +238,7 @@ genrule(
         "test_common_props.h",
         "test_dictionaries.h",
         "test_loadstmts.h",
+        "test_make_binding.h",
         "test_packages.h",
         "test_set_strings.h",
         "test_strings.h",
@@ -248,6 +259,7 @@ genrule(
         "    $(location definitions.c) \\",
         "    $(location test_common_props.c) \\",
         "    $(location test_loadstmts.c) \\",
+        "    $(location test_make_binding.c) \\",
         "    $(location test_packages.c) \\",
         "    $(location test_set_bindings.c) \\",
         "    $(location test_bindings.c) \\",

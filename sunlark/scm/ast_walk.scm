@@ -27,45 +27,45 @@
            (if (node :printable?) (node :print) "")))
   (newline))
 
-(define (foo)
-  ;; (display (format #f "(node :stmt-list?): ~A" (node :stmt-list?))) (newline)
-  ;; (display (format #f "(NODE :stmt-list?): ~A" (node :stmt-list?))) (newline)
+;; (define (foo)
+;;   ;; (display (format #f "(node :stmt-list?): ~A" (node :stmt-list?))) (newline)
+;;   ;; (display (format #f "(NODE :stmt-list?): ~A" (node :stmt-list?))) (newline)
 
-  ;; (display
-  ;;  (format #f "~NC~A[~A] ~A"
-  ;;          indent
-  ;;          #\space
-  ;;          (tokens (node :tid))
-  ;;          (node :tid)))
-  ;; (newline)
+;;   ;; (display
+;;   ;;  (format #f "~NC~A[~A] ~A"
+;;   ;;          indent
+;;   ;;          #\space
+;;   ;;          (tokens (node :tid))
+;;   ;;          (node :tid)))
+;;   ;; (newline)
 
-  (if (node :call-expr?)
-      (begin
-        (let ((strattr (node :@string_attr)))
-          ;; (display ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>") (newline)
-          ;; (walk-all strattr handlers)
-          ;; (display "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<") (newline)
-          ;; (newline)
-          (set! (strattr 'name) "new_attr")
-          (set! (strattr 'value) "goodbye!")
-          )
-        (let ((deps (node :@deps)))
-          ;; (display ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>") (newline)
-          ;; (walk-all deps handlers)
-          ;; (display "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<") (newline)
-          ;; (newline)
-          (set! (deps 'name) "foo")
-          ;; (set! (deps 'value) '(:add)) ;; error: # args
-          ;; (set! (deps 'value) '(:add "a" "b" "c")) ;; error # args
+;;   (if (node :call-expr?)
+;;       (begin
+;;         (let ((strattr (node :@string_attr)))
+;;           ;; (display ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>") (newline)
+;;           ;; (walk-all strattr handlers)
+;;           ;; (display "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<") (newline)
+;;           ;; (newline)
+;;           (set! (strattr 'name) "new_attr")
+;;           (set! (strattr 'value) "goodbye!")
+;;           )
+;;         (let ((deps (node :@deps)))
+;;           ;; (display ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>") (newline)
+;;           ;; (walk-all deps handlers)
+;;           ;; (display "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<") (newline)
+;;           ;; (newline)
+;;           (set! (deps 'name) "foo")
+;;           ;; (set! (deps 'value) '(:add)) ;; error: # args
+;;           ;; (set! (deps 'value) '(:add "a" "b" "c")) ;; error # args
 
-          ;; (set! (deps 'value) '(:add "dep_X")) ;; append
-          (set! (deps 'value) '(:add "dep_X" "dep_Y", "dep_Z")) ;; append
+;;           ;; (set! (deps 'value) '(:add "dep_X")) ;; append
+;;           (set! (deps 'value) '(:add "dep_X" "dep_Y", "dep_Z")) ;; append
 
-          ;; (set! (deps 'value) '(:add :2 "dep_X")) ;;
-          ;; (set! (deps 'value) '(:add :0 "dep_X" "dep_Y", "dep_Z")) ;; insert
-          )
-        ))
-  )
+;;           ;; (set! (deps 'value) '(:add :2 "dep_X")) ;;
+;;           ;; (set! (deps 'value) '(:add :0 "dep_X" "dep_Y", "dep_Z")) ;; insert
+;;           )
+;;         ))
+;;   )
 
   ;; (if (node :printable)
   ;;     )

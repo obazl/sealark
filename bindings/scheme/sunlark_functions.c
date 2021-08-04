@@ -239,6 +239,90 @@ EXPORT s7_pointer sunlark_make_string(s7_scheme *s7, s7_pointer args)
 }
 
 /* **************************************************************** */
+struct node_s *_make_list_valued_binding(s7_scheme *s7,
+                                         struct node_s *binding,
+                                         s7_pointer val)
+{
+#ifdef DEBUG_TRACE
+    log_debug("_make_list_valued_binding");
+#endif
+
+    int list_len = s7_list_length(s7, val);
+    s7_pointer vals = val;
+    /* log_debug("xxxx %s", s7_object_to_c_string(s7, vals)); */
+    s7_pointer v;
+
+    struct node_s *list_expr
+        = sealark_new_node(TK_List_Expr, with_subnodes);
+    utarray_push_back(binding->subnodes, list_expr);
+
+    struct node_s *nd;
+    nd = sealark_new_node(TK_LBRACK, without_subnodes);
+    utarray_push_back(list_expr->subnodes, nd);
+
+    struct node_s *expr_list
+        = sealark_new_node(TK_Expr_List, with_subnodes);
+    utarray_push_back(list_expr->subnodes, expr_list);
+
+    char buf[64];
+
+    int i = 0;
+    while ( !s7_is_null(s7, vals) ) {
+        v = s7_car(vals);
+        log_debug("0 val %s", s7_object_to_c_string(s7, v));
+        if (s7_is_integer(v)) {
+            nd = sealark_new_node(TK_INT, without_subnodes);
+            buf[0] = '\0';
+            /* int ival = s7_integer(v); */
+            /* log_debug("int: %d", ival); */
+            snprintf(buf, 32, "%d", s7_integer(v));
+            /* log_debug("buf: %s, i: %d", buf, i); */
+
+            nd->s = calloc(strlen(buf)+1, sizeof(char));
+            snprintf(nd->s, strlen(buf)+1, "%s", buf);
+            utarray_push_back(expr_list->subnodes, nd);
+            log_debug("list_len: %d, i: %d", list_len, i);
+            if ((list_len - i) > 1) {
+                nd = sealark_new_node(TK_COMMA, without_subnodes);
+                utarray_push_back(expr_list->subnodes, nd);
+            }
+        }
+        if (s7_is_string(v)) {
+            nd = sealark_new_node(TK_STRING, without_subnodes);
+            const char *buf = s7_string(v);
+            nd->s = calloc(strlen(buf)+1, sizeof(char));
+            snprintf(nd->s, strlen(buf)+1, "%s", buf);
+            utarray_push_back(expr_list->subnodes, nd);
+            log_debug("list_len: %d, i: %d", list_len, i);
+            if ((list_len - i) > 1) {
+                nd = sealark_new_node(TK_COMMA, without_subnodes);
+                utarray_push_back(expr_list->subnodes, nd);
+            }
+        }
+        if (s7_is_symbol(v)) {
+            nd = sealark_new_node(TK_ID, without_subnodes);
+            buf[0] = '\0';
+            snprintf(buf, 64, "%s", s7_symbol_name(v));
+            /* log_debug("buf: %s, i: %d", buf, i); */
+
+            nd->s = calloc(strlen(buf)+1, sizeof(char));
+            snprintf(nd->s, strlen(buf)+1, "%s", buf);
+            utarray_push_back(expr_list->subnodes, nd);
+            log_debug("list_len: %d, i: %d", list_len, i);
+            if ((list_len - i) > 1) {
+                nd = sealark_new_node(TK_COMMA, without_subnodes);
+                utarray_push_back(expr_list->subnodes, nd);
+            }
+        }
+        i++;
+        vals = s7_cdr(vals);
+    }
+    nd = sealark_new_node(TK_RBRACK, without_subnodes);
+    utarray_push_back(list_expr->subnodes, nd);
+    return binding;
+}
+
+/* **************************************************************** */
 #if INTERFACE
 #define SUNLARK_MAKE_BINDING_HELP "(make-binding) returns a new node of type :binding"
 
@@ -288,113 +372,61 @@ EXPORT s7_pointer sunlark_make_binding(s7_scheme *s7, s7_pointer args)
     log_debug("val %s", s7_object_to_c_string(s7, val));
     struct node_s *nd;
     if (s7_is_list(s7, val)) {
-        int list_len = s7_list_length(s7, val);
-        s7_pointer vals = val;
-        /* log_debug("xxxx %s", s7_object_to_c_string(s7, vals)); */
-        s7_pointer v;
-        int i = 0;
-
-        struct node_s *list_expr
-            = sealark_new_node(TK_List_Expr, with_subnodes);
-        utarray_push_back(binding->subnodes, list_expr);
-
-        nd = sealark_new_node(TK_LBRACK, without_subnodes);
-        utarray_push_back(list_expr->subnodes, nd);
-
-        struct node_s *expr_list
-            = sealark_new_node(TK_Expr_List, with_subnodes);
-        utarray_push_back(list_expr->subnodes, expr_list);
-
-        char buf[64];
-
-        while ( !s7_is_null(s7, vals) ) {
-            v = s7_car(vals);
-            if (s7_is_integer(v)) {
-                nd = sealark_new_node(TK_INT, without_subnodes);
-                buf[0] = '\0';
-                int i = s7_integer(v);
-                /* log_debug("int: %d", i); */
-                snprintf(buf, 32, "%d", s7_integer(v));
-                /* log_debug("buf: %s, i: %d", buf, i); */
-
-                nd->s = calloc(strlen(buf)+1, sizeof(char));
-                snprintf(nd->s, strlen(buf)+1, "%s", buf);
-                utarray_push_back(expr_list->subnodes, nd);
-                if ((list_len - i) > 0) {
-                    nd = sealark_new_node(TK_COMMA, without_subnodes);
-                    utarray_push_back(expr_list->subnodes, nd);
-                }
-            }
-            if (s7_is_symbol(v)) {
-                nd = sealark_new_node(TK_ID, without_subnodes);
-                buf[0] = '\0';
-                snprintf(buf, 64, "%s", s7_symbol_name(v));
-                /* log_debug("buf: %s, i: %d", buf, i); */
-
-                nd->s = calloc(strlen(buf)+1, sizeof(char));
-                snprintf(nd->s, strlen(buf)+1, "%s", buf);
-                utarray_push_back(expr_list->subnodes, nd);
-                if ((list_len - i) > 0) {
-                    nd = sealark_new_node(TK_COMMA, without_subnodes);
-                    utarray_push_back(expr_list->subnodes, nd);
-                }
-            }
-            i++;
-            vals = s7_cdr(vals);
-        }
-        nd = sealark_new_node(TK_RBRACK, without_subnodes);
-        utarray_push_back(list_expr->subnodes, nd);
-    } else {
-        if (s7_is_integer(val)) {
-            log_debug("int %d", s7_integer(val));
-            nd = sealark_new_node(TK_INT, without_subnodes);
-            char buf[32];
-            snprintf(buf, 32, "%d", s7_integer(val));
-            nd->s = calloc(strlen(buf)+1, sizeof(char));
-            snprintf(nd->s, strlen(buf)+1, buf);
-            utarray_push_back(binding->subnodes, nd);
-        } else {
-            if (s7_is_string(val)) {
-                log_debug("string %s", s7_string(val));
-                nd = sealark_new_node(TK_STRING,
-                                                     with_subnodes);
-                const char *s = s7_string(val);
-                int len = strlen(s);
-                nd->s = calloc(len+1, sizeof(char));
-                snprintf(nd->s, len+1, "%s", s);
-                utarray_push_back(binding->subnodes, nd);
-            } else {
-                if (s7_is_symbol(val)) {
-                    log_debug("symbol %s", s7_symbol_name(val));
-                    nd = sealark_new_node(TK_ID,
-                                          without_subnodes);
-                    const char *s = s7_symbol_name(val);
-                    int len = strlen(s);
-                    nd->s = calloc(len+1, sizeof(char));
-                    snprintf(nd->s, len+1, "%s", s);
-                    utarray_push_back(binding->subnodes, nd);
-                } else {
-                    if (s7_is_boolean(val)) {
-                        log_debug("boolean %d", s7_boolean(s7, val));
-                        nd = sealark_new_node(TK_ID,
-                                              without_subnodes);
-                        if (val == s7_t(s7)) {
-                            nd->s = calloc(5, sizeof(char));
-                            snprintf(nd->s, 5, "%s", "True");
-                            utarray_push_back(binding->subnodes, nd);
-                        } else {
-                            nd->s = calloc(6, sizeof(char));
-                            snprintf(nd->s, 6, "%s", "False");
-                            utarray_push_back(binding->subnodes, nd);
-                        }
-                    } else {
-                        log_error("xxxx");
-                    }
-                }
-            }
-        }
+        binding = _make_list_valued_binding(s7, binding, val);
+        goto resume;
+    }
+    if (s7_is_integer(val)) {
+        log_debug("int %d", s7_integer(val));
+        nd = sealark_new_node(TK_INT, without_subnodes);
+        char buf[32];
+        snprintf(buf, 32, "%d", s7_integer(val));
+        nd->s = calloc(strlen(buf)+1, sizeof(char));
+        snprintf(nd->s, strlen(buf)+1, buf);
+        utarray_push_back(binding->subnodes, nd);
+        goto resume;
+    }
+    if (s7_is_string(val)) {
+        log_debug("string %s", s7_string(val));
+        nd = sealark_new_node(TK_STRING,
+                              with_subnodes);
+        const char *s = s7_string(val);
+        int len = strlen(s);
+        nd->s = calloc(len+1, sizeof(char));
+        snprintf(nd->s, len+1, "%s", s);
+        utarray_push_back(binding->subnodes, nd);
+        goto resume;
+    }
+    if (s7_is_symbol(val)) {
+        log_debug("symbol %s", s7_symbol_name(val));
+        nd = sealark_new_node(TK_ID,
+                              without_subnodes);
+        const char *s = s7_symbol_name(val);
+        int len = strlen(s);
+        nd->s = calloc(len+1, sizeof(char));
+        snprintf(nd->s, len+1, "%s", s);
+        utarray_push_back(binding->subnodes, nd);
+        goto resume;
     }
 
+    if (s7_is_boolean(val)) {
+        log_debug("boolean %d", s7_boolean(s7, val));
+        nd = sealark_new_node(TK_ID,
+                              without_subnodes);
+        if (val == s7_t(s7)) {
+            nd->s = calloc(5, sizeof(char));
+            snprintf(nd->s, 5, "%s", "True");
+            utarray_push_back(binding->subnodes, nd);
+        } else {
+            nd->s = calloc(6, sizeof(char));
+            snprintf(nd->s, 6, "%s", "False");
+            utarray_push_back(binding->subnodes, nd);
+        }
+        goto resume;
+    }
+    log_error("UNCAUGHT binding val %s, satisfies %s",
+              s7_object_to_c_string(s7, val),
+              s7_object_to_c_string(s7, s7_type_of(s7, val)));
+ resume:
 
     log_debug("new binding: %d %s, %s",
               binding->tid, TIDNAME(binding), binding->s);
