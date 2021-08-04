@@ -7,14 +7,34 @@
 #include "sealark.h"
 #include "sunlark.h"
 
-#include "test_set_bindings.h"
+#include "test_binding_set_value.h"
 
 UT_string *buf;
 UT_string *test_s;
 
-char *build_file = "test/unit/sunlark/BUILD.set_bindings";
+char *build_file = "test/unit/sunlark/BUILD.binding_set_value";
 
 s7_scheme *s7;
+
+/**************/
+int main(void) {
+    UNITY_BEGIN();
+    RUN_TEST(test_set_bool_to_int);
+    RUN_TEST(test_set_bool_to_int_list1);
+    RUN_TEST(test_set_bool_to_int_list2);
+    RUN_TEST(test_set_bool_to_int_list4);
+
+    /* RUN_TEST(test_set_bool_to_string); */
+    /* RUN_TEST(test_set_bool_to_string_list1); */
+
+    /* RUN_TEST(test_set_string_to_bool); */
+    /* RUN_TEST(test_set_string_to_int); */
+    /* RUN_TEST(test_set_string_to_int_list); */
+    /* RUN_TEST(test_set_string_to_string); */
+
+    RUN_TEST(test_set_string_list_to_bool);
+    return UNITY_END();
+}
 
 /* struct parse_state_s *parse_state; */
 
@@ -186,16 +206,4 @@ void test_set_string_list_to_bool(void) {
                                       s7_eval_c_string(s7, "'(:$)"));
     TEST_ASSERT( s7_t(s7) == val );
     TEST_ASSERT_EQUAL_INT( 1, s7_boolean(s7, val));
-}
-
-/**************/
-int main(void) {
-    UNITY_BEGIN();
-    RUN_TEST(test_set_bool_to_int);
-    RUN_TEST(test_set_bool_to_int_list1);
-    RUN_TEST(test_set_bool_to_int_list2);
-    RUN_TEST(test_set_bool_to_int_list4);
-
-    RUN_TEST(test_set_string_list_to_bool);
-    return UNITY_END();
 }

@@ -25,6 +25,19 @@ struct node_s *root;
 s7_pointer is_eq_s7;
 s7_pointer is_equal_s7;
 
+int main(void) {
+    UNITY_BEGIN();
+    RUN_TEST(test_vector_properties);
+    /* RUN_TEST(test_vector_meta_properties); */
+    /* RUN_TEST(test_int_vector); */
+    /* RUN_TEST(test_string_vector); */
+    /* RUN_TEST(test_symbol_vector); */
+
+    /* RUN_TEST(test_set_vector); */
+    return UNITY_END();
+}
+
+/* **************************************************************** */
 void setUp(void) {
     s7 = sunlark_init();
     init_s7_syms(s7);
@@ -286,16 +299,4 @@ void test_set_vector(void) {
                                                  sym_val, /* from above, (item :$) */
                                                  s7_make_symbol(s7, "avar")));
     TEST_ASSERT( is_eq == s7_t(s7) );
-}
-
-int main(void) {
-    UNITY_BEGIN();
-    RUN_TEST(test_vector_properties);
-    /* RUN_TEST(test_vector_meta_properties); */
-    /* RUN_TEST(test_int_vector); */
-    /* RUN_TEST(test_string_vector); */
-    /* RUN_TEST(test_symbol_vector); */
-
-    /* RUN_TEST(test_set_vector); */
-    return UNITY_END();
 }

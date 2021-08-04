@@ -8,7 +8,7 @@
 #include "sealark.h"
 #include "sunlark.h"
 
-#include "binding_val_vectors.h"
+#include "test_vector_strings.h"
 
 UT_string *buf;
 UT_string *test_s;
@@ -25,6 +25,16 @@ struct node_s *root;
 s7_pointer is_eq_s7;
 s7_pointer is_equal_s7;
 
+
+int main(void) {
+    UNITY_BEGIN();
+    /* RUN_TEST(test_int_vector); */
+    /* RUN_TEST(test_label_vector); */
+    RUN_TEST(test_string_vector);
+    return UNITY_END();
+}
+
+/* **************************************************************** */
 void setUp(void) {
     s7 = sunlark_init();
     is_eq_s7 = s7_name_to_value(s7, "eq?");
@@ -110,12 +120,4 @@ void test_string_vector(void) {
 
     /* metadata: line, col */
 
-}
-
-int main(void) {
-    UNITY_BEGIN();
-    /* RUN_TEST(test_int_vector); */
-    /* RUN_TEST(test_label_vector); */
-    RUN_TEST(test_string_vector);
-    return UNITY_END();
 }
