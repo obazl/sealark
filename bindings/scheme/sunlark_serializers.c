@@ -856,7 +856,7 @@ LOCAL void _display_vector(struct node_s *nd,
                 utstring_printf(buffer, "%*s",
                                 split? (level+3)*2 : 0,
                                 split? " " : "");
-            /* _display_vector_item(sub, (bool)nd->index, buffer, level); */
+            _display_vector_item(sub, buffer, level);
         }
         i++;
     }
@@ -911,6 +911,7 @@ void sunlark_display_node(// s7_scheme *s7,
     }
         break;
     case TK_INT:
+log_debug("0 xxxxxxxxxxxxxxxx");
         utstring_printf(buffer, "%s", nd->s);
         break;
     case TK_List_Expr:
