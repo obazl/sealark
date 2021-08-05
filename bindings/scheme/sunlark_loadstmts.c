@@ -86,7 +86,7 @@ LOCAL s7_pointer _loadstmt_dispatch(s7_scheme *s7,
 
     if (op == KW(bindings) || op == KW(@@) || op == KW(attrs)) {
         if (s7_is_null(s7, s7_cdr(path_args))) {
-            sealark_debug_print_ast_outline(loadstmt, 0);
+            sealark_debug_log_ast_outline(loadstmt, 0);
             UT_array *bindings
                 = sealark_loadstmt_bindings(loadstmt);
             if (bindings) {

@@ -4,7 +4,8 @@ test_suite(
     name = "sunlark",
     tests = [
         ":bindings",
-        ":attr_set",
+        ":binding_set",
+        ":bool_set",
         ":common_props",
         # ":definitions",
         ":loadstmts",
@@ -64,9 +65,18 @@ cc_test(
 )
 
 cc_test(
-    name = "attr_set",
-    srcs = ["test_attr_set.c", "test_attr_set.h"],
-    data = [":BUILD.attrs"],
+    name = "binding_set",
+    srcs = ["test_binding_set.c", "test_binding_set.h"],
+    data = [":BUILD.binding_set"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
+    name = "bool_set",
+    srcs = ["test_bool_set.c", "test_bool_set.h"],
+    data = [":BUILD.binding_set"],
     copts = COPTS,
     deps = DEPS,
     linkstatic = 1
@@ -217,7 +227,8 @@ genrule(
         "common.c",
         "validators.c",
         "test_bindings.c",
-        "test_attr_set.c",
+        "test_binding_set.c",
+        "test_bool_set.c",
         "definitions.c",
         "test_common_props.c",
         "test_dictionaries.c",
@@ -232,8 +243,9 @@ genrule(
         "test_vectors.c"
     ],
     outs = [
-        "test_attr_set.h",
+        "test_binding_set.h",
         "test_bindings.h",
+        "test_bool_set.h",
         "definitions.h",
         "test_common_props.h",
         "test_dictionaries.h",
@@ -261,8 +273,9 @@ genrule(
         "    $(location test_loadstmts.c) \\",
         "    $(location test_make_binding.c) \\",
         "    $(location test_packages.c) \\",
-        "    $(location test_attr_set.c) \\",
+        "    $(location test_binding_set.c) \\",
         "    $(location test_bindings.c) \\",
+        "    $(location test_bool_set.c) \\",
         "    $(location test_string_set.c) \\",
         "    $(location test_strings.c) \\",
         "    $(location test_string_props.c) \\",

@@ -416,16 +416,32 @@ EXPORT int sealark_kw_to_tid(char *kw)
 #define with_subnodes true
 #endif
 
+//FIXME: no need for init_subnodes, we can decide based on node type
 EXPORT struct node_s *sealark_new_node(int type, bool init_subnodes)
 {
 #if defined(DEBUG_MEM)
     log_debug("sealark_new_node");
 #endif
+
     struct node_s *n = (struct node_s *)calloc(1, sizeof(struct node_s));
     n->tid = type;
+    /* if tid is printable, no subnodes, else init subnodes */
     if (init_subnodes)
         utarray_new(n->subnodes, &node_icd);
     return n;
+}
+
+EXPORT struct node_s *sealark_new_node_s(int type, const char *str)
+{
+#if defined(DEBUG_MEM)
+    log_debug("sealark_new_node");
+#endif
+    struct node_s *nd = (struct node_s *)calloc(1, sizeof(struct node_s));
+    nd->tid = type;
+    int len = strlen(str);
+    nd->s = calloc(len, sizeof(char));
+    strncpy(nd->s, str, len+1);
+    return nd;
 }
 
 /* **** */

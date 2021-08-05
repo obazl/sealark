@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) // , char **envp)
             log_debug("loading default script: %s", callback_script_file);
             lf =  s7_load(s7, callback_script_file);
         }
-        log_debug("load result: %s", s7_object_to_c_string(s7, lf));
+        /* log_debug("load result: %s", s7_object_to_c_string(s7, lf)); */
         fflush(stdout);
 
         /* s7_pointer s7_call(s7_scheme *sc, s7_pointer func, s7_pointer args); */
@@ -137,9 +137,9 @@ int main(int argc, char *argv[]) // , char **envp)
         log_error("BUILD_WORKING_DIRECTORY not found. This program is designed to be run from the root directory of a Bazel repo.");
     }
 
-    log_debug("ml CWD: %s", getcwd(NULL, 0));
-    int r = access(build_file, F_OK);
-    log_debug("access %s ? %d", build_file, r);
+    /* log_debug("ml CWD: %s", getcwd(NULL, 0)); */
+    /* int r = access(build_file, F_OK); */
+    /* log_debug("access %s ? %d", build_file, r); */
 
     /* now parse the file using libstarlark */
     /* log_debug("lark_parse_build_file: %s", build_file); */

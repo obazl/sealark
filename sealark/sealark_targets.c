@@ -71,7 +71,11 @@ struct node_s *sealark_target_for_name(struct node_s *package,
 #if defined (DEBUG_TRACE) || defined(DEBUG_PATHS)
     log_debug("sealark_target_for_name: %s", name);
 #endif
-    return _target_for_predicate(package, name, -1);
+    struct node_s *t = _target_for_predicate(package, name, -1);
+    if (t)
+        return t;
+    else
+        return NULL;
 }
 
 /* ********************************** */
@@ -195,12 +199,12 @@ LOCAL struct node_s *_target_for_predicate(struct node_s *package,
     }
     /* log_debug("target_ct: %d", target_ct); */
 
-    if (name == NULL) {
+    if (name == NULL) {         /* we're indexing by int */
         /* reverse indexing */
         if (i < 0) {
             if (abs(i) > target_ct) {
                 log_error("abs(%d) > target count", i);
-                errno = 3;
+                errno = EINDEX_OUT_OF_BOUNDS;
                 return NULL;
             } else {
                 i = target_ct + i;
@@ -210,16 +214,16 @@ LOCAL struct node_s *_target_for_predicate(struct node_s *package,
 
         if (i > target_ct-1) {
             log_error("index > target count");
-            errno = 2;              /* FIXME */
+            errno = EINDEX_OUT_OF_BOUNDS;
         }
     }
-    if (name)
+    if (name) {                   /* we had a name but could not match it */
         log_warn("target %s not found", name);
-    /* else */
-    /*     log_warn("target %d not found", i); */
-    errno = -1;
-
-    return NULL; /* not found */
+        errno = ENOT_FOUND;
+        return NULL; /* not found */
+    }
+    /* should not reach here? */
+    log_error("UNEXPECTED FALLTHRU");
 }
 
 
@@ -236,7 +240,7 @@ EXPORT UT_array *sealark_target_bindings_to_utarray(struct node_s *target)
     struct node_s *arg_list = utarray_eltptr(call_sfx->subnodes, 1);
 
 #if defined(DEBUG_AST)
-    sealark_debug_print_ast_outline(arg_list, 0);
+    sealark_debug_log_ast_outline(arg_list, 0);
 #endif
     UT_array *attribs;
     utarray_new(attribs, &node_icd);

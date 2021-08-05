@@ -72,7 +72,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
     struct node_s *self_node = s7_c_object_value(self);
 
 #ifdef DEBUG_AST
-    /* sealark_debug_print_ast_outline(self_node, 0); */
+    /* sealark_debug_log_ast_outline(self_node, 0); */
     /* sealark_debug_print_node_starlark(self_node, true); */
     /* sunlark_debug_print_node(s7, self); */
 #endif
@@ -152,103 +152,6 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
     if (s7_is_immutable(self))
         return(s7_wrong_type_arg_error(s7, "ast-node-set!", 1, self, "a mutable ast_node"));
 
-    /* if (s7_list_length(s7, get_path) > 1) { */
-    /*     log_error("Too many get_path? %s", s7_object_to_c_string(s7, get_path)); */
-    /*     /\* exit(EXIT_FAILURE); *\/ */
-    /* } */
-
-    /* case: (set! (ast :> 0 :@ 3) 99)
-       get_path is (:> 0 :@), which will fail
-       ok because we cannot replace a binding with an int
-       so we need to fail here.
-       But: what if newval is a binding?
-       e.g. (set! (ast :> 0 :@ 3) (make-binding ...))
-       Also: newval :null means remove
-     */
-    //FIXME: move this down with the other stuff
-    /* if (s7_car(s7_reverse(s7,get_path)) == KW(@)) { */
-    /*     if (s7_is_c_object(update_val)) { */
-    /*         if (sunlark_node_tid(s7, update_val) == TK_Binding) { */
-    /*             // ok - push lval back onto get_path */
-    /*             log_error("set! binding not yet implemented"); */
-    /*             exit(EXIT_FAILURE); //FIXME */
-    /*         } else { */
-    /*             log_error("Cannot replace binding with %s", */
-    /*                       s7_object_to_c_string(s7, */
-    /*                                             s7_type_of(s7, update_val))); */
-    /*             return(s7_error(s7, */
-    /*                             s7_make_symbol(s7, "invalid_argument"), */
-    /*                             s7_list(s7, 2, s7_make_string(s7, */
-    /*                           "Cannot update binding with ~A"), */
-    /*                                     update_val))); */
-    /*         } */
-    /*     } */
-
-    /*     if (update_val == KW(null)) { */
-    /*         log_debug("Removing binding at %s in context %s", */
-    /*                   s7_object_to_c_string(s7, lval), */
-    /*                   s7_object_to_c_string(s7, get_path)); */
-    /*         /\* get_path == :@, unresolved, so context is target *\/ */
-    /*         /\* self_node could be tgt, binding, or ? *\/ */
-    /*         /\* so we cannot assert(self_node->tid == TK_Call_Expr); *\/ */
-    /*         log_debug("self %d %s", self_node->tid, TIDNAME(self_node)); */
-
-    /*         errno = 0; */
-    /*         struct node_s *updated_node; */
-    /*         switch(self_node->tid) { */
-    /*         case TK_Call_Expr: */
-    /*                 updated_node */
-    /*                     = sealark_target_rm_binding_for_int(self_node, */
-    /*                                                         s7_integer(lval)); */
-    /*             break; */
-    /*         case TK_Package: */
-    /*             struct node_s *updated_tgt = */
-    /*                 sealark_target_rm_binding_for_int(self_node, */
-    /*                                                   s7_integer(lval)); */
-    /*             if (updated_tgt) */
-    /*                 return self; */
-    /*             else */
-    /*                 return handle_errno(s7, errno, s7_cdr(args)); */
-    /*             break; */
-    /*         default: */
-    /*             ; */
-    /*         } */
-    /*         if (updated_node) */
-    /*                 return self; */
-    /*         else */
-    /*             return handle_errno(s7, errno, s7_cdr(args)); */
-    /*     } */
-
-    /*         log_error("Cannot replace binding with %s", */
-    /*                   s7_object_to_c_string(s7, update_val)); */
-    /*         return(s7_error(s7, */
-    /*                         s7_make_symbol(s7, "invalid_argument"), */
-    /*                         s7_list(s7, 2, s7_make_string(s7, */
-    /*                     "Cannot replace binding with: ~A"), */
-    /*                                 update_val))); */
-
-    /*     /\* can't get here? *\/ */
-    /*     /\* lval must be a binding selector *\/ */
-    /*     if (s7_is_integer(lval) || s7_is_symbol(lval)) { */
-    /*         get_path = s7_append(s7, get_path, */
-    /*                              s7_list(s7, 1, lval)); */
-    /*         lval  = s7_nil(s7); */
-    /*     } else { */
-    /*         log_error("get_path terminates in :@; lval: %s", */
-    /*                   s7_object_to_c_string(s7, lval)); */
-    /*         return(s7_error(s7, */
-    /*                         s7_make_symbol(s7, "invalid_argument"), */
-    /*                         s7_list(s7, 2, s7_make_string(s7, */
-    /*                                                       "Cannot set! a binding like this (?) ~A"), */
-    /*                                 get_path))); */
-    /*         return NULL; */
-    /*     } */
-    /* } */
-
-    /* can't get here???? */
-
-    log_debug("FALLTHRU xxxxxxxxxxxxxxxx");
-
     s7_pointer context = sunlark_node_object_applicator(s7, s7_cons(s7, self, get_path));
     struct node_s *context_node = s7_c_object_value(context);
 
@@ -257,7 +160,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
     /* log_debug("RESOLVED context:"); */
     /* sunlark_debug_print_node(s7, context_node); */
     /* sealark_debug_print_node_starlark(context_node, true); // crush */
-    /* sealark_debug_print_ast_outline(context_node, true); // crush */
+    /* sealark_debug_log_ast_outline(context_node, true); // crush */
 #endif
 
     /* switch(self_node->tid) { */
@@ -305,7 +208,11 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
         log_debug("CASE SET! context: TK_Binding");
 #endif
         if (lval == KW(key)) {
-            /* log_debug("replacing lval: key"); */
+            log_debug("replacing lval: key");
+            if (update_val == KW(null)) {
+                log_error("Cannot delete key of binding");
+                return handle_errno(s7, EINVALID_REMOVE, s7_cdr(args));
+            }
             if (s7_is_symbol(update_val)) {
                 const char *newstring = s7_symbol_name(update_val);
                 int len = strlen(newstring);
@@ -329,7 +236,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
                 =  sunlark_mutate_binding_value(s7, context_node, update_val);
             if (newb) {
                 log_debug("after replacement:");
-                sealark_debug_print_ast_outline(newb, true); // crush
+                sealark_debug_log_ast_outline(newb, true); // crush
                 return sunlark_node_new(s7, newb);
                 /* return s7_values(s7, s7_nil(s7)); */
             } else {
@@ -356,6 +263,19 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
         else
             return s7_unspecified(s7);
         break;
+
+    case TK_Dict_Expr:
+#if defined(DEBUG_SET)
+        log_debug("set! context: TK_Dict_Expr");
+#endif
+        struct node_s *mu
+            = sunlark_mutate_dict_expr(s7, context_node, lval, update_val);
+        if (mu)
+            return context;
+        else
+            return handle_errno(s7, errno, s7_cdr(args));
+        break;
+
     case TK_ID:                 /* Booleans, True or False */
 #if defined(DEBUG_SET)
         log_debug("CASE: SET! on context TK_ID");
@@ -384,7 +304,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
 
         if (s7_is_keyword(lval)) {
             if (lval == KW(*)) {
-                log_error("Removing all items from :value list");
+                log_debug("Removing all items from :value list");
                 struct node_s *exl = utarray_eltptr(context_node->subnodes, 1);
                 utarray_clear(exl->subnodes);
                 return context;
@@ -426,7 +346,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
                                                   s7_string(lval));
             sealark_update_vector_items(items,
                                         s7_string(update_val));
-            /* sealark_debug_print_ast_outline(items, true); // crush */
+            /* sealark_debug_log_ast_outline(items, true); // crush */
             return nodelist_to_s7_list(s7, items);
         }
 
@@ -442,7 +362,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
             switch(r->tid) {
             case TK_List_Expr:  /* (myvec) */
                 updated =sunlark_mutate_vector(s7, r, update_val);
-                /* sealark_debug_print_ast_outline(r, 4); */
+                /* sealark_debug_log_ast_outline(r, 4); */
                 break;
             /* path indexed into vector */
             case TK_STRING:
@@ -511,7 +431,7 @@ LOCAL struct node_s *_mutate_arglist(s7_scheme *s7,
               s7_object_to_c_string(s7, lval),
               s7_object_to_c_string(s7, update_val));
 #endif
-    /* sealark_debug_print_ast_outline(context_node, 0); */
+    /* sealark_debug_log_ast_outline(context_node, 0); */
 
     assert(context_node->tid == TK_Arg_List);
 

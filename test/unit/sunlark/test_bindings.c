@@ -23,6 +23,21 @@ s7_scheme *s7;
 static s7_pointer ast;
 struct node_s *root;
 
+int main(void) {
+    UNITY_BEGIN();
+    RUN_TEST(test_forall_targets_forall_bindings);
+    RUN_TEST(test_binding_lists);
+    RUN_TEST(test_bindings_foreach);
+    RUN_TEST(test_binding_srcs);
+    RUN_TEST(test_binding_key);
+    RUN_TEST(test_binding_value_selectors);
+    RUN_TEST(test_binding_value_selector_dollar);
+    RUN_TEST(test_binding_value_vector);
+    RUN_TEST(test_binding_predicate);
+    return UNITY_END();
+}
+
+/* **************************************************************** */
 void setUp(void) {
     s7 = sunlark_init();
     init_s7_syms(s7);
@@ -329,18 +344,4 @@ void test_binding_predicate(void) {
 
     struct node_s *item_node = s7_c_object_value(item);
     TEST_ASSERT( item_node->tid == TK_STRING );
-}
-
-int main(void) {
-    UNITY_BEGIN();
-    RUN_TEST(test_forall_targets_forall_bindings);
-    RUN_TEST(test_binding_lists);
-    RUN_TEST(test_bindings_foreach);
-    RUN_TEST(test_binding_srcs);
-    RUN_TEST(test_binding_key);
-    RUN_TEST(test_binding_value_selectors);
-    RUN_TEST(test_binding_value_selector_dollar);
-    RUN_TEST(test_binding_value_vector);
-    RUN_TEST(test_binding_predicate);
-    return UNITY_END();
 }

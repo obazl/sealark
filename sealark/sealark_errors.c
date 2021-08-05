@@ -21,6 +21,9 @@
 #define EINVALID_UPDATE -19
 #define EINDEX_TYPE_ERR -20
 #define EINVALID_REMOVE -21
+#define EINVALID_INT_INDEX -22
+#define EUNEXPECTED_STATE -23
+#define EKW_NOT_NBR -24
 
 #endif
 

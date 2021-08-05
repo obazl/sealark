@@ -33,7 +33,7 @@ struct node_s *sunlark_binding_dispatcher(s7_scheme *s7,
               s7_object_to_c_string(s7, path_args));
 #endif
 #if defined(DEBUG_AST)
-    sealark_debug_print_ast_outline(binding, 0);
+    sealark_debug_log_ast_outline(binding, 0);
 #endif
 
     /* struct node_s *binding = s7_c_object_value(_binding); */
@@ -129,7 +129,7 @@ s7_pointer sunlark_bindings_list_dispatcher(s7_scheme *s7,
 #if defined (DEBUG_TRACE) || defined(DEBUG_PATHS)
     log_debug("sunlark_binding_dispatchers_list: %s",
               s7_object_to_c_string(s7, path_args));
-    /* sealark_debug_print_ast_outline(s7_c_object_value(_bindings), 0); */
+    /* sealark_debug_log_ast_outline(s7_c_object_value(_bindings), 0); */
 #endif
 
     struct node_s *bindings_node = s7_c_object_value(_bindings);
@@ -201,7 +201,7 @@ static s7_pointer _list_expr_to_s7_vector(s7_scheme *s7,
 #if defined(DEBUG_TRACE) || defined(DEBUG_BINDINGS)
     log_debug("_list_expr_to_s7_vector, tid: %d %s",
               list_expr->tid, TIDNAME(list_expr));
-    /* sealark_debug_print_ast_outline(binding, 0); */
+    /* sealark_debug_log_ast_outline(binding, 0); */
 #endif
     /*
       :list-expr > :lbrack, :expr-list, :rbrack
@@ -237,7 +237,7 @@ s7_pointer deprecate_sunlark_value_for_binding(s7_scheme *s7,
               binding->tid, token_name[binding->tid][0]);
 #endif
 #if defined(DEBUG_BINDINGS)
-    sealark_debug_print_ast_outline(binding, 0);
+    sealark_debug_log_ast_outline(binding, 0);
 #endif
     /* :binding > :id, :eq, (:list-expr | :string | ...) */
     struct node_s *valnode = utarray_eltptr(binding->subnodes, 2);
@@ -411,7 +411,7 @@ _merge_binding_list(UT_array *bindings, struct node_s *bindings_list)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_PATHS)
     log_debug("_merge_binding_list"); /* = TK_Arg_List */
-    /* sealark_debug_print_ast_outline(bindings_list, true); */
+    /* sealark_debug_log_ast_outline(bindings_list, true); */
 #endif
 
     struct node_s *binding = NULL;
@@ -522,11 +522,12 @@ s7_pointer sunlark_forall_targets_forall_bindings(s7_scheme *s7,
 }
 
 /* component: :key or :val (idx | fld)? */
-s7_pointer _binding_component(s7_scheme *s7, struct node_s *binding,
-                              s7_pointer path_args)
+//FIXME return struct node_s *, let caller handler final :$ op
+s7_pointer sunlark_binding_component(s7_scheme *s7, struct node_s *binding,
+                                     s7_pointer path_args)
 {
 #ifdef DEBUG_TRACE
-    log_debug("_binding_component: %s",
+    log_debug("sunlark_binding_component: %s",
               s7_object_to_c_string(s7, path_args));
 #endif
 
@@ -534,11 +535,13 @@ s7_pointer _binding_component(s7_scheme *s7, struct node_s *binding,
 
     int op_count = s7_list_length(s7, path_args);
     /* log_debug("op_count: %d", op_count); */
-    if (op_count > 2)
-        return(s7_error(s7,
-                        s7_make_symbol(s7, "invalid_argument"),
-                        s7_list(s7, 2, s7_make_string(s7,
-                           "Too many args: ~S"), path_args)));
+    /* if (op_count > 2) { */
+    /*     log_error("Too many args: %s", s7_object_to_c_string(s7, path_args)); */
+    /*     return(s7_error(s7, */
+    /*                     s7_make_symbol(s7, "invalid_argument"), */
+    /*                     s7_list(s7, 2, s7_make_string(s7, */
+    /*                        "Too many args: ~S"), path_args))); */
+    /* } */
 
     s7_pointer op = s7_car(path_args);
 
@@ -554,45 +557,54 @@ s7_pointer _binding_component(s7_scheme *s7, struct node_s *binding,
 
     if (op == s7_make_keyword(s7,"$") || op == KW(value)) {
         struct node_s *val = utarray_eltptr(binding->subnodes, 2);
-        /* sealark_debug_print_ast_outline(val, 0); */
         if (op_count == 1)
             return sunlark_node_new(s7, val);
 
-        if (val->tid != TK_List_Expr) {
-            log_error("Trying to index into a non-list: %d %s s=%s",
-                      val->tid, TIDNAME(val), val->s);
-            return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
-                            s7_list(s7, 4, s7_make_string(s7,
-                          "Cannot index into non-list value ~A[~D]: ~A"),
-                                    s7_make_string(s7, TIDNAME(val)),
-                                    s7_make_integer(s7, val->tid),
-                                    s7_make_string(s7, val->s))));
+        if (val->tid == TK_Dict_Expr) {
+            struct node_s *r
+                = sunlark_dict_value_dispatch(s7, val, s7_cdr(path_args));
+            if (r)
+                return sunlark_node_new(s7, r);
+            else
+                return handle_errno(s7, errno, path_args);
         }
 
-        s7_pointer idx = s7_cadr(path_args);
-        if (s7_is_integer(idx)) {
-            /* struct node_s *expr_list = utarray_eltptr(val->subnodes, 1); */
-            /* struct node_s *item = utarray_eltptr(expr_list->subnodes, */
-            /*                                      2 * s7_integer(idx)); */
-            struct node_s *item = sealark_vector_item_for_int(val,
-                                                              s7_integer(idx));
-            return sunlark_node_new(s7,item);
+        if (val->tid == TK_List_Expr) {
+            // return sunlark_vector_dispatch(s7, val, s7_cdr(path_args));
+            s7_pointer idx = s7_cadr(path_args);
+            if (s7_is_integer(idx)) {
+                /* struct node_s *expr_list = utarray_eltptr(val->subnodes, 1); */
+                /* struct node_s *item = utarray_eltptr(expr_list->subnodes, */
+                /*                                      2 * s7_integer(idx)); */
+                struct node_s *item = sealark_vector_item_for_int(val,
+                                                                  s7_integer(idx));
+                return sunlark_node_new(s7,item);
+            }
+            if (s7_is_string(idx)) {
+                /* sealark_debug_log_ast_outline(val, 0); */
+                UT_array *items     /* list of item nodes */
+                    = sealark_vector_items_for_string(val, s7_string(idx));
+                /* s7_pointer ilist = intlist_to_s7_list(s7, items); */
+                /* utarray_free(items); */
+                /* s7_pointer ilist = vec_entries_to_s7_list(s7, items); */
+                // utarray_free(items); /* FIXME: leak */
+                return nodelist_to_s7_list(s7, items);
+            }
+            return(s7_error(s7,
+                            s7_make_symbol(s7, "invalid_argument"),
+                            s7_list(s7, 3, s7_make_string(s7,
+                                                          "Bad arg ~S (of type ~A); :value may only be followed by int or string"),
+                                    idx, s7_type_of(s7, idx))));
         }
-        if (s7_is_string(idx)) {
-            /* sealark_debug_print_ast_outline(val, 0); */
-            UT_array *items     /* list of item nodes */
-                = sealark_vector_items_for_string(val, s7_string(idx));
-            /* s7_pointer ilist = intlist_to_s7_list(s7, items); */
-            /* utarray_free(items); */
-            /* s7_pointer ilist = vec_entries_to_s7_list(s7, items); */
-            // utarray_free(items); /* FIXME: leak */
-            return nodelist_to_s7_list(s7, items);
-        }
-        return(s7_error(s7,
-                        s7_make_symbol(s7, "invalid_argument"),
-                        s7_list(s7, 3, s7_make_string(s7,
-                  "Bad arg ~S (of type ~A); :value may only be followed by int or string"),
-                                idx, s7_type_of(s7, idx))));
+
+        log_error("Trying to index into a non-list: %d %s s=%s",
+                  val->tid, TIDNAME(val), val->s);
+        return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
+                        s7_list(s7, 4, s7_make_string(s7,
+                                                      "Cannot index into non-list value ~A[~D]: ~A"),
+                                s7_make_string(s7, TIDNAME(val)),
+                                s7_make_integer(s7, val->tid),
+                                s7_make_string(s7, val->s))));
     }
     log_error("Bad arg %s; only :key or :value valid in this context",
               s7_object_to_c_string(s7, op));

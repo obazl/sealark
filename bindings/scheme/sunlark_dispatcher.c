@@ -23,6 +23,16 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
     /* dispatch on tid; the tid handlers will dispatch on op */
     /* data is either a node or an s7 list of nodes  */
 
+    //FIXME: handle final :$ here, so that subroutines can return
+    //struct node_s *
+    s7_pointer rev = s7_reverse(s7, path_args);
+    s7_pointer last = s7_car(rev);
+    s7_pointer but_last = s7_reverse(s7, s7_cdr(rev));
+    if (last == s7_make_keyword(s7, "$")) {
+        path_args = but_last;
+    /* } else { */
+    }
+
     int data_tid;
     if (s7_is_list(s7, data)) {
         // return sunlark_dispatch_on_list ??
@@ -273,7 +283,7 @@ LOCAL s7_pointer sunlark_dispatch_on_list_expr(s7_scheme *s7,
               s7_object_to_c_string(s7, path_args));
 #endif
 #if defined(DEBUG_AST)
-    sealark_debug_print_ast_outline(s7_c_object_value(data), 0);
+    sealark_debug_log_ast_outline(s7_c_object_value(data), 0);
 #endif
 
     int op_count = s7_list_length(s7, path_args);

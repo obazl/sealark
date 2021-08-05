@@ -246,7 +246,7 @@ struct node_s *sunlark_mutate_binding_value(s7_scheme *s7,
     }
 
     struct node_s *oldval = utarray_eltptr(binding->subnodes, 2);
-    sealark_debug_print_ast_outline(binding, true); // crush
+    sealark_debug_log_ast_outline(binding, true); // crush
 
 #if defined(DEBUG_SET)
     log_debug("replacing %d %s with value of type %s",

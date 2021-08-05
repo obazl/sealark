@@ -103,7 +103,7 @@ EXPORT void sunlark_augment_load_path(s7_scheme *s7, char *path)
 {
     if (path == NULL) return;
 
-    log_debug("sunlark_augment_load_path %s", path);
+    /* log_debug("sunlark_augment_load_path %s", path); */
 
     s7_pointer newlp =  s7_add_to_load_path(s7, path);
     /* lp = s7_load_path(s7); */

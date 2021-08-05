@@ -7,12 +7,12 @@
 #include "sealark.h"
 #include "sunlark.h"
 
-#include "test_binding_set_value.h"
+#include "test_bool_set.h"
 
 UT_string *buf;
 UT_string *test_s;
 
-char *build_file = "test/unit/sunlark/BUILD.binding_set_value";
+char *build_file = "test/unit/sunlark/BUILD.binding_set";
 
 s7_scheme *s7;
 
@@ -26,13 +26,6 @@ int main(void) {
 
     /* RUN_TEST(test_set_bool_to_string); */
     /* RUN_TEST(test_set_bool_to_string_list1); */
-
-    /* RUN_TEST(test_set_string_to_bool); */
-    /* RUN_TEST(test_set_string_to_int); */
-    /* RUN_TEST(test_set_string_to_int_list); */
-    /* RUN_TEST(test_set_string_to_string); */
-
-    RUN_TEST(test_set_string_list_to_bool);
     return UNITY_END();
 }
 
@@ -189,21 +182,4 @@ void test_set_bool_to_int_list4(void) {
     item = s7_apply_function(s7, val, s7_eval_c_string(s7, "'(6)"));
     item = s7_apply_function(s7, item, s7_eval_c_string(s7, "'(:$)"));
     TEST_ASSERT_EQUAL_INT( 44, s7_integer(item));
-}
-
-/* **************************************************************** */
-void test_set_string_list_to_bool(void) {
-    /* int_list = [1, 2, 3], */
-    char *cmd = "(set! (ast :> 0 :@ 'int_list :value) #t)";
-    s7_pointer r = s7_eval_c_string(s7, cmd);
-    log_debug("r: %s", s7_object_to_c_string(s7, r));
-    s7_pointer path = s7_eval_c_string(s7, "'(:> 0 :@ int_list)");
-    s7_pointer binding = s7_apply_function(s7, ast, path);
-    log_debug("binding: %s", s7_object_to_c_string(s7, binding));
-    s7_pointer valnode= s7_apply_function(s7, binding,
-                                          s7_eval_c_string(s7, "'(:value)"));
-    s7_pointer val= s7_apply_function(s7, valnode,
-                                      s7_eval_c_string(s7, "'(:$)"));
-    TEST_ASSERT( s7_t(s7) == val );
-    TEST_ASSERT_EQUAL_INT( 1, s7_boolean(s7, val));
 }

@@ -93,7 +93,7 @@ s7_pointer sunlark_package_dispatcher(s7_scheme *s7,
         return NULL;
     }
     if (op == KW(definitions)) {
-        /* sealark_debug_print_ast_outline(pkg, 0); */
+        /* sealark_debug_log_ast_outline(pkg, 0); */
         UT_array *defns = sealark_definitions(pkg);
         return nodelist_to_s7_list(s7, defns);
     }
@@ -154,7 +154,7 @@ s7_pointer sunlark_package_dispatcher(s7_scheme *s7,
     /*         return NULL; */
     /*     } */
     /*     if (op == KW(definitions)) { */
-    /*         /\* sealark_debug_print_ast_outline(pkg, 0); *\/ */
+    /*         /\* sealark_debug_log_ast_outline(pkg, 0); *\/ */
     /*         UT_array *defns = sealark_definitions(pkg); */
     /*         return nodelist_to_s7_list(s7, defns); */
     /*     } */
@@ -248,8 +248,8 @@ LOCAL s7_pointer _pkg_target_dispatcher(s7_scheme *s7,
             = sealark_target_for_name(pkg, s7_string(op));
 
         if (tgt_node == NULL) {
-            errno = ENOT_FOUND;
-            return NULL;
+            /* errno = ENOT_FOUND; */
+            return handle_errno(s7, errno, path_args);
         }
 
         if ( s7_is_null(s7, s7_cdr(path_args)) ) { /* e.g. (:> "mylib") */

@@ -49,7 +49,7 @@ EXPORT s7_scheme *sunlark_init(void)
 
     export_token_tables(s7);
 
-    _redefine_define(s7);
+    /* _redefine_define(s7); */
 
     register_binding_ctor_macro(s7);
 

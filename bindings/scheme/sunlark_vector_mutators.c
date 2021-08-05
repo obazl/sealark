@@ -24,7 +24,7 @@ struct node_s *sunlark_mutate_vector(s7_scheme *s7,
               s7_object_to_c_string(s7, new_vec));
 #endif
 #if defined(DEBUG_AST)
-    sealark_debug_print_ast_outline(old_vec, 4);
+    sealark_debug_log_ast_outline(old_vec, 4);
 #endif
 
     assert(old_vec->tid == TK_List_Expr);
@@ -589,7 +589,7 @@ s7_pointer sunlark_vector_replace_item(s7_scheme *s7,
     assert(list_expr->tid == TK_List_Expr);
 
 #if defined(DEBUG_AST)
-    sealark_debug_print_ast_outline(list_expr, 0);
+    sealark_debug_log_ast_outline(list_expr, 0);
 #endif
 
     struct node_s *vector = utarray_eltptr(list_expr->subnodes, 1);

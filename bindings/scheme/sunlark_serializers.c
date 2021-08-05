@@ -22,6 +22,50 @@ char *display_ptr;
 
 int indent = 2;
 
+/* **************************************************************** */
+#if INTERFACE
+#define SUNLARK_TO_STRING_HELP "(sunlark->string ast_node <syntax>) where <sytax> is one of :starlark, :scheme, :repl, :debug"
+#endif
+
+/* args is always an s7 list.
+
+   arg1: object to print
+   arg2: optional style kw, :squeeze, :crush
+
+ */
+EXPORT s7_pointer sunlark_to_string(s7_scheme *s7, s7_pointer args)
+{
+/* #if defined(DEBUG_SERIALIZERS) */
+    log_debug(">>>>>>>>>>>>>>>> sunlark_to_string <<<<<<<<<<<<<<<<");
+    log_debug("args: %s", s7_object_to_c_string(s7, args));
+/* #endif */
+
+    s7_pointer obj = s7_car(args);
+    s7_pointer syntax;
+    if (s7_cadr(args) == KW(ast)) {
+        UT_string *buf = sealark_debug_display_ast_outline(s7_c_object_value(obj), 0);
+        s7_pointer disp = s7_make_string(s7, utstring_body(buf));
+        utstring_free(buf);
+        return disp;
+    }
+    if (s7_cadr(args) == KW(starlark)) {
+        s7_pointer _args;
+        if (s7_list_length(s7, args) == 3) {
+            _args = s7_list(s7, 2, s7_car(args), s7_caddr(args));
+        } else {
+            _args = s7_list(s7, 1, s7_car(args));
+        }
+        return sunlark_to_starlark(s7, _args);
+    }
+    if (s7_cadr(args) == KW(scheme)) {
+        return s7_make_string(s7, "SCHEME");
+    }
+    log_error("Syntax specifier not recognizable: %s",
+              s7_object_to_c_string(s7, s7_cadr(args)));
+    return NULL;
+}
+
+/* **************************************************************** */
 void sunlark_register_to_string_entry_pt(s7_scheme *s7)
 {
     s7_c_type_set_to_string(s7, ast_node_t, sunlark_display);
@@ -56,7 +100,7 @@ LOCAL s7_pointer sunlark_display(s7_scheme *s7, s7_pointer args)
     char *descr;
     obj = s7_car(args);
     /* sealark_display_node(s7_c_object_value(obj), buffer, 0); */
-    /* sealark_debug_print_ast_outline(s7_c_object_value(obj), 0); */
+    /* sealark_debug_log_ast_outline(s7_c_object_value(obj), 0); */
 
     if (s7_is_pair(s7_cdr(args)))
         choice = s7_cadr(args);
@@ -187,10 +231,11 @@ char *sunlark_node_display_readably(s7_scheme *s7, void *value)
  */
 EXPORT s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
 {
-#if defined(DEBUG_SERIALIZERS)
+/* #if defined(DEBUG_SERIALIZERS) */
     log_debug(">>>>>>>>>>>>>>>> sunlark_to_starlark <<<<<<<<<<<<<<<<");
+    log_debug("args: %s", s7_object_to_c_string(s7, args));
     log_debug("args type: %s", s7_object_to_c_string(s7, s7_type_of(s7, args)));
-#endif
+/* #endif */
 
     UT_string *buf;
     utstring_new(buf);
@@ -411,7 +456,7 @@ LOCAL void _display_binding_node(struct node_s *nd,
                     /* (level==0)? "" : " "); */
     struct node_s *key = utarray_eltptr(nd->subnodes, 0);
     assert(key->tid == TK_ID);
-    utstring_printf(buffer, "%s . ", key->s);
+    utstring_printf(buffer, "%s ", key->s);
     /* skip TK_EQ */
     struct node_s *val = utarray_eltptr(nd->subnodes, 2);
     _display_binding_value(val, buffer, level);
@@ -469,6 +514,7 @@ LOCAL void _display_call_expr(struct node_s *nd,
 #endif
 
     assert(nd->tid == TK_Call_Expr);
+    /* sealark_debug_log_ast_outline(nd, 0); */
 
     struct node_s *id = utarray_eltptr(nd->subnodes, 0);
     if ( (strncmp(id->s, "package", 7) == 0)
@@ -508,6 +554,114 @@ LOCAL void _display_call_expr(struct node_s *nd,
             _display_funcall_attr(nd, buffer, level);
         }
     }
+}
+
+/* **************** */
+/*
+ 0: TK_Dict_Entry[103] @7:13
+  1: TK_STRING[79] @7:13    "akey1"
+  1: TK_COLON[14] @7:20
+  1: TK_STRING[79] @7:22    "aval1"
+
+ 0: TK_Dict_Entry[103] @26:8
+  1: TK_STRING[79] @26:8    "a"
+  1: TK_COLON[14] @26:11
+  1: TK_INT[40] @26:13        100
+*/
+LOCAL void _display_dict_entry(struct node_s *nd,
+                               UT_string *buffer,
+                               int level)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug("sunlark_display_dict_entry");
+#endif
+    assert(nd->tid == TK_Dict_Entry);
+
+    struct node_s *key = utarray_eltptr(nd->subnodes, 0);
+    sunlark_display_node(key, buffer, level);
+    utstring_printf(buffer, ": ");
+
+    struct node_s *val = utarray_eltptr(nd->subnodes, 2);
+    sunlark_display_node(val, buffer, level);
+}
+
+/* **************** */
+/*
+ 0: TK_Dict_Entry_List[104] @7:13
+  1: TK_Dict_Entry[103] @7:13
+    2: TK_STRING[79] @7:13    "akey1"
+    2: TK_COLON[14] @7:20
+    2: TK_STRING[79] @7:22    "aval1"
+  1: TK_COMMA[15] @7:29
+  ...
+*/
+LOCAL void _display_dict_entry_list(struct node_s *nd,
+                                    UT_string *buffer,
+                                    int level)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug("sunlark_display_dict_entry");
+#endif
+    assert(nd->tid == TK_Dict_Entry_List);
+
+    int len = utarray_len(nd->subnodes);
+    int i = 0;
+
+    struct node_s *sub = NULL;
+    while( (sub=(struct node_s*)utarray_next(nd->subnodes, sub)) ) {
+        if (sub->tid == TK_COMMA) {i++; continue;}
+        sunlark_display_node(sub, buffer, level);
+        if (len - i > 1) {
+            utstring_printf(buffer, ", ");
+        }
+        i++;
+    }
+}
+
+/* ****************************************************************
+
+ 4: TK_Dict_Expr[105] @11:12
+   5: TK_LBRACE[48] @11:12
+   5: TK_Dict_Entry_List[104] @12:8
+     6: TK_Dict_Entry[103] @12:8
+       7: TK_STRING[79] @12:8    "ckey1"
+       7: TK_COLON[14] @12:15
+       7: TK_STRING[79] @12:17    "cval1"
+     6: TK_COMMA[15] @12:24
+     6: TK_Dict_Entry[103] @13:8
+       7: TK_STRING[79] @13:8    "ckey2"
+       7: TK_COLON[14] @13:15
+       7: TK_STRING[79] @13:17    "cval2"
+     6: TK_COMMA[15] @13:24
+     6: TK_Dict_Entry[103] @14:8
+       7: TK_STRING[79] @14:8    "ckey3"
+       7: TK_COLON[14] @14:15
+       7: TK_STRING[79] @14:17    "cval3"
+   5: TK_RBRACE[68] @15:4
+ */
+
+LOCAL void _display_dict_expr(struct node_s *nd,
+                                    UT_string *buffer,
+                                    int level)
+{
+#ifdef DEBUG_SERIALIZERS
+    log_debug("_display_dict_expr");
+#endif
+    assert(nd->tid == TK_Dict_Expr);
+
+    /* sealark_debug_log_ast_outline(nd, 0); */
+
+    utstring_printf(buffer, "{");
+    /* utstring_printf(buffer, "%*s(dict ", */
+    /*                 (level==0)? 0 : level*indent+4, */
+    /*                 (level==0)? "" : " "); */
+    /*                 /\* (level==0)? 0 : (level+1)*indent+level+1, *\/ */
+    /*                 /\* (level==0)? "" : " "); *\/ */
+
+    struct node_s *key = utarray_eltptr(nd->subnodes, 1);
+    sunlark_display_node(key, buffer, level);
+
+    utstring_printf(buffer, "}");
 }
 
 /* **************** */
@@ -841,7 +995,7 @@ LOCAL void _display_vector(struct node_s *nd,
     int len = utarray_len(expr_list->subnodes);
     bool split = (len/2 > 4)? true : false;
 
-    utstring_printf(buffer, "#(%s", split? "\n" : "");
+    utstring_printf(buffer, "[%s", split? "\n" : "");
 
     struct node_s *sub = NULL;
     int i = 0;
@@ -860,7 +1014,7 @@ LOCAL void _display_vector(struct node_s *nd,
         }
         i++;
     }
-    utstring_printf(buffer, ")");
+    utstring_printf(buffer, "]");
 }
 
 /* **************************************************************** */
@@ -897,6 +1051,15 @@ void sunlark_display_node(// s7_scheme *s7,
     case TK_Call_Sfx:
         _display_call_sfx(nd, buffer, level);
         break;
+    case TK_Dict_Entry:
+        _display_dict_entry(nd, buffer, level);
+        break;
+    case TK_Dict_Entry_List:
+        _display_dict_entry_list(nd, buffer, level);
+        break;
+    case TK_Dict_Expr:
+        _display_dict_expr(nd, buffer, level);
+        break;
     case TK_Expr_List:
         _display_expr_list(nd, buffer, level);
         break;
@@ -911,7 +1074,6 @@ void sunlark_display_node(// s7_scheme *s7,
     }
         break;
     case TK_INT:
-log_debug("0 xxxxxxxxxxxxxxxx");
         utstring_printf(buffer, "%s", nd->s);
         break;
     case TK_List_Expr:
@@ -938,6 +1100,9 @@ log_debug("0 xxxxxxxxxxxxxxxx");
     }
         break;
     case TK_COMMA:
+    case TK_COLON:
+    case TK_LBRACE:
+    case TK_RBRACE:
     case TK_LBRACK:
     case TK_RBRACK:
     case TK_LPAREN:

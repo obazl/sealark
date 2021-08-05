@@ -1,4 +1,4 @@
-(display "hello from .sunlark.d/ast_walk.scm")
+(display "hello from sunlark/scm/ast_walk.scm")
 (newline)
 
 ;; handler: match predicate, edit selector, action
@@ -94,3 +94,5 @@
        (node :subnodes)))
   (set! indent (- indent 2))
   )
+(display "goodbye from sunlark/scm/ast_walk.scm")
+(newline)

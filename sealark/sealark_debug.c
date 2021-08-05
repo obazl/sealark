@@ -19,11 +19,75 @@ void print_stacktrace()
 }
 
 /* ******************************** */
-/* recursively print outline */
-EXPORT void sealark_debug_print_ast_outline(struct node_s *node, int level)
+//FIXME: consolidate debug_print and debug_display to write to single port?
+/* recursively print outline to string */
+EXPORT UT_string *sealark_debug_display_ast_outline(struct node_s *node, int level)
 {
 #if defined(DEBUG_SERIALIZER)
-    log_debug("sealark_debug_print_ast_outline");
+    log_debug("sealark_debug_display_ast_outline");
+#endif
+
+    UT_string *buf;
+    utstring_new(buf);
+
+    _debug_display_ast_outline(node, buf, level);
+
+    return buf;
+}
+
+LOCAL void _debug_display_ast_outline(struct node_s *node,
+                                      UT_string *buf,
+                                      int level)
+{
+#if defined(DEBUG_SERIALIZER)
+    log_debug("_debug_display_ast_outline");
+#endif
+
+    switch(node->tid) {
+    case TK_STRING: {
+        char *br = SEALARK_STRTYPE(node->qtype);
+        char *q = sealark_quote_type(node);
+        /* utstring_printf(buf, "%s%s%s%s", */
+        /*                 br, q, node->s, q); */
+
+        // [idx: %d]",
+        utstring_printf(buf, "%*.s%d: %s[%d] @%d:%d    %s%s%s%s\n",
+                  2*level, " ", level, TIDNAME(node), node->tid,
+                  node->line, node->col,
+                  br, q, node->s, q);
+                  /* node->index); */
+    }
+        break;
+    case TK_INT:
+        utstring_printf(buf, "%*.s%d: %s[%d] @%d:%d        %s\n",
+                  2*level, " ", level, TIDNAME(node), node->tid,
+                  node->line, node->col, node->s);
+        break;
+    case TK_ID:
+        utstring_printf(buf, "%*.s%d: %s[%d] @%d:%d    %s\n",
+                  2*level, " ", level, TIDNAME(node), node->tid,
+                  node->line, node->col, node->s);
+        break;
+    default:
+        utstring_printf(buf, "%*.s%d: %s[%d] @%d:%d\n",
+                  2*level, " ", level, TIDNAME(node), node->tid,
+                  node->line, node->col);
+        if (node->subnodes) {
+            struct node_s *subnode = NULL;
+            while((subnode=(struct node_s*)utarray_next(node->subnodes,
+                                                        subnode))) {
+                _debug_display_ast_outline(subnode, buf, level+1);
+            }
+        }
+    }
+}
+
+/* ******************************** */
+/* recursively print outline to stdout */
+EXPORT void sealark_debug_log_ast_outline(struct node_s *node, int level)
+{
+#if defined(DEBUG_SERIALIZER)
+    log_debug("sealark_debug_log_ast_outline");
 #endif
 
     /* print_stacktrace(); */
@@ -61,7 +125,7 @@ EXPORT void sealark_debug_print_ast_outline(struct node_s *node, int level)
             struct node_s *subnode = NULL;
             while((subnode=(struct node_s*)utarray_next(node->subnodes,
                                                         subnode))) {
-                sealark_debug_print_ast_outline(subnode, level+1);
+                sealark_debug_log_ast_outline(subnode, level+1);
             }
         }
     }

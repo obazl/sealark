@@ -133,12 +133,13 @@ EXPORT s7_pointer sunlark_target_dispatcher(s7_scheme *s7,
 /* ******************************** */
 /* resolved path: (:> x :@) */
 /* EXPORT s7_pointer sunlark_resolve_binding_path_on_target(s7_scheme *s7, */
+//FIXME return struct node_s *
 LOCAL s7_pointer _target_binding_dispatcher(s7_scheme *s7,
                                             struct node_s *target,
                                             s7_pointer path_args)
 {
 #ifdef DEBUG_TRACE
-    log_debug("sunlark_resolve_binding_path_on_target: %s",
+    log_debug("_target_binding_dispatcher: %s",
               s7_object_to_c_string(s7, path_args));
 #endif
 
@@ -169,7 +170,7 @@ LOCAL s7_pointer _target_binding_dispatcher(s7_scheme *s7,
                 return sunlark_node_new(s7, binding);
             } else {
                 /* if (s7_list_length(s7, rest) == 1) */
-                return _binding_component(s7, binding, rest);
+                return sunlark_binding_component(s7, binding, rest);
                 /* else { */
                 /*     log_error("Too many args: %s", */
                 /*               s7_object_to_c_string(s7, path_args)); */
@@ -180,16 +181,17 @@ LOCAL s7_pointer _target_binding_dispatcher(s7_scheme *s7,
                 /* } */
             }
         } else {
-            if (errno = -1) {
-                log_error("Binding not found for key: %s", s7_symbol_name(op));
-                return(s7_error(s7,
-                                s7_make_symbol(s7, "not_found"),
-                                s7_list(s7, 2, s7_make_string(s7,
-                                "Binding not found for key: ~A"), op)));
-            } else {
-                log_error("wtf 2 ????????????????");
-                return NULL;
-            }
+            return handle_errno(s7, errno, path_args);
+           /* if (errno = -1) { */
+           /*      log_error("Binding not found for key: %s", s7_symbol_name(op)); */
+           /*      return(s7_error(s7, */
+           /*                      s7_make_symbol(s7, "not_found"), */
+           /*                      s7_list(s7, 2, s7_make_string(s7, */
+           /*                      "Binding not found for key: ~A"), op))); */
+           /*  } else { */
+           /*      log_error("wtf 2 ????????????????"); */
+           /*      return NULL; */
+           /*  } */
         }
     }
 
@@ -199,7 +201,7 @@ LOCAL s7_pointer _target_binding_dispatcher(s7_scheme *s7,
             if (s7_is_null(s7, rest)) {
                 return sunlark_node_new(s7, binding);
             } else {
-                return _binding_component(s7, binding, rest);
+                return sunlark_binding_component(s7, binding, rest);
                 /* else { */
                 /*     log_error("Too many args: %s", */
                 /*               s7_object_to_c_string(s7, path_args)); */

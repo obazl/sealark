@@ -82,7 +82,7 @@ EXPORT struct node_s *sealark_value_for_binding(struct node_s *binding)
               binding->tid, token_name[binding->tid][0]);
 #endif
 #if defined(DEBUG_BINDINGS)
-    sealark_debug_print_ast_outline(binding, 0);
+    sealark_debug_log_ast_outline(binding, 0);
 #endif
     /* :binding > :id, :eq, (:list-expr | :string | ...) */
     struct node_s *valnode = utarray_eltptr(binding->subnodes, 2);
@@ -129,9 +129,9 @@ EXPORT struct node_s *sealark_target_binding_for_key(struct node_s *call_expr, c
         }
     }
 #if defined(DEBUG_UTARRAYS)
-                log_debug("no match: %s", key);
+    log_debug("no match: %s", key);
 #endif
-    errno = -1;
+    errno = ENOT_FOUND_BINDING;
     return NULL;
 }
 
@@ -142,7 +142,7 @@ EXPORT struct node_s *sealark_target_binding_for_index(struct node_s *call_expr,
     log_debug("sealark_target_binding_for_index: %d", index);
 #endif
 
-    sealark_debug_print_ast_outline(call_expr, 0);
+    sealark_debug_log_ast_outline(call_expr, 0);
     /* :call-expr[1] > :call-sfx[1] > :arg-list */
     /* then search arg-list children for arg-named/name=str */
     /* :arg-named[0] = :id */
@@ -162,7 +162,7 @@ EXPORT struct node_s *sealark_target_binding_for_index(struct node_s *call_expr,
         } else {
             index = args_item_ct + index;
             // do we need to recur?
-            return sealark_target_binding_for_index(call_expr, index);
+            /* return sealark_target_binding_for_index(call_expr, index); */
         }
     }
 
@@ -211,7 +211,7 @@ EXPORT struct node_s *sealark_bindings_binding_for_index(struct node_s *bindings
 {
 #if defined(DEBUG_BINDINGS)
     log_debug("sealark_bindings_binding_for_index: %d", index);
-    sealark_debug_print_ast_outline(bindings, 0);
+    sealark_debug_log_ast_outline(bindings, 0);
 #endif
 
     assert(bindings->tid == TK_Arg_List);

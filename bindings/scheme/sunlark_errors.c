@@ -42,7 +42,7 @@ s7_pointer handle_errno(s7_scheme *s7, int errorno, s7_pointer path_args)
                                 (path_args))));
         break;
     case ENOT_FOUND_BINDING:
-        return(s7_error(s7, s7_make_symbol(s7, "not_found"),
+        return(s7_error(s7, s7_make_symbol(s7, "binding_not_found"),
                         s7_list(s7, 2, s7_make_string(s7,
                            "Binding not found for: ~A"),
                                 (path_args))));
@@ -59,10 +59,16 @@ s7_pointer handle_errno(s7_scheme *s7, int errorno, s7_pointer path_args)
                         "Attempting to index a non-sequece: ~A"),
                                 (path_args))));
         break;
+    case EINVALID_INT_INDEX:
+        return(s7_error(s7, s7_make_symbol(s7, "invalid_index"),
+                        s7_list(s7, 2, s7_make_string(s7,
+                 "~A - integer indexing not supported, please use keywordized int, like :2"),
+                                (path_args))));
+        break;
     case EINVALID_REMOVE:
         return(s7_error(s7, s7_make_symbol(s7, "invalid_remove"),
                         s7_list(s7, 2, s7_make_string(s7,
-                 "set! :null not allowed in this context: ~A"),
+                 "Deletion (set! (...) :null) not allowed in this context: ~A"),
                                 (path_args))));
         break;
     case EINVALID_UPDATE:
@@ -70,6 +76,12 @@ s7_pointer handle_errno(s7_scheme *s7, int errorno, s7_pointer path_args)
                         s7_list(s7, 2, s7_make_string(s7,
                  "Invalid update value: ~A"),
                                 (path_args))));
+        break;
+    case EINVALID_ARG:
+        return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
+                        s7_list(s7, 2, s7_make_string(s7,
+                        "Invalid arg ~A"),
+                                path_args)));
         break;
     case EINVALID_ARG_LOAD:
         return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
