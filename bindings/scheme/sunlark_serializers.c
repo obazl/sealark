@@ -37,10 +37,15 @@ EXPORT s7_pointer sunlark_to_string(s7_scheme *s7, s7_pointer args)
 {
 /* #if defined(DEBUG_SERIALIZERS) */
     log_debug(">>>>>>>>>>>>>>>> sunlark_to_string <<<<<<<<<<<<<<<<");
-    log_debug("args: %s", s7_object_to_c_string(s7, args));
+    /* log_debug("args: %s", s7_object_to_c_string(s7, args)); */
 /* #endif */
 
+
     s7_pointer obj = s7_car(args);
+    if (!s7_is_c_object(obj)) {
+        return NULL;
+    }
+
     s7_pointer syntax;
     if (s7_cadr(args) == KW(ast)) {
         UT_string *buf = sealark_debug_display_ast_outline(s7_c_object_value(obj), 0);

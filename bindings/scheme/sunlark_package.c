@@ -229,7 +229,7 @@ LOCAL s7_pointer _pkg_target_dispatcher(s7_scheme *s7,
                                         s7_pointer path_args)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_TARGETS)
-    log_debug("sunlark_pkg_target_dispatcher: %s",
+    log_debug("_pkg_target_dispatcher: %s",
               s7_object_to_c_string(s7, path_args));
 #endif
 

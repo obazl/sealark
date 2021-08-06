@@ -10,32 +10,37 @@
 
 #include "test_targets.h"
 
-UT_string *buf;
-UT_string *test_s;
-
-char *build_file;
-
-s7_scheme *s7;
-
-struct parse_state_s *parse_state;
-struct node_s *root;
-
 static s7_pointer tgt;
 
-void setUp(void) {
-    s7 = sunlark_init();
-    init_s7_syms(s7);
-    s7_pointer pkg = sunlark_parse_build_file(s7,
-                                   s7_list(s7, 1,
-                                           s7_make_string(s7, build_file)));
-    root = s7_c_object_value(pkg);
-    s7_pointer path = s7_eval_c_string(s7, "'(:target \"hello-lib\")");
-    tgt = s7_apply_function(s7, pkg, path);
-}
+int main(void) {
+    build_file = "test/unit/sunlark/BUILD.targets";
 
-void tearDown(void) {
-    sealark_parse_state_free(parse_state);
-    s7_quit(s7);
+    UNITY_BEGIN();
+    RUN_TEST(test_target);      /* verify setUp worked */
+    RUN_TEST(test_tgt_rule);        /* (:rule) */
+    RUN_TEST(test_tgt_name);        /* (:name) */
+
+    RUN_TEST(test_tgt_attr_sym);    /* (:attr srcs) */
+    RUN_TEST(test_tgt_binding_sym); /* (:binding srcs) */
+    RUN_TEST(test_tgt_at_sym);      /* (:@ srcs) */
+
+    RUN_TEST(test_tgt_at_sym_key);      /* (:@ srcs :key) */
+    RUN_TEST(test_tgt_at_sym_value);    /* (:@ srcs :value) */
+
+    RUN_TEST(test_tgt_at_sym_value_i);    /* (:@ srcs :value 0) */
+    RUN_TEST(test_tgt_at_int_value_i);    /* (:@ 1 :value 0) */
+    RUN_TEST(test_tgt_at_int_dollar_i);    /* (:@ 1 :$ 0) */
+
+    RUN_TEST(test_tgt_attr_sym_value_string); /* (:attr srcs :value "hello-lib.cc") */
+    RUN_TEST(test_tgt_attr_sym_dollar_string); /* (:attr srcs :$ "hello-lib.cc") */
+
+    RUN_TEST(test_tgt_at_sym_dollar_string); /* (:@ srcs :value "hello-lib.cc") */
+    RUN_TEST(test_tgt_at_sym_dollar_string); /* (:@ srcs :$ "hello-lib.cc") */
+
+    RUN_TEST(test_tgt_at_int_value_string); /* (:@ 1 :value "hello-lib.cc") */
+    RUN_TEST(test_tgt_at_int_dollar_string); /* (:@ 1 :$ "hello-lib.cc") */
+
+    return UNITY_END();
 }
 
 /* **************************************************************** */
@@ -147,7 +152,7 @@ void test_tgt_at_sym_value(void) {
 
     /* whose 0 item is "hello-lib.cc" */
     s7_pointer item = s7_apply_function(s7, val_node,
-                             s7_eval_c_string(s7, "'(0)"));
+                             s7_eval_c_string(s7, "'(:0)"));
     /* which is a string node */
     pred = s7_apply_function(s7, item,
                              s7_eval_c_string(s7, "'(:string?)"));
@@ -159,7 +164,7 @@ void test_tgt_at_sym_value(void) {
 }
 
 void test_tgt_at_sym_value_i(void) {
-    s7_pointer path = s7_eval_c_string(s7, "'(:@ srcs :value 0)");
+    s7_pointer path = s7_eval_c_string(s7, "'(:@ srcs :value :0)");
     s7_pointer item = s7_apply_function(s7, tgt, path);
     s7_pointer pred = s7_apply_function(s7, item,
                                         s7_eval_c_string(s7, "'(:string?)"));
@@ -171,7 +176,7 @@ void test_tgt_at_sym_value_i(void) {
 }
 
 void test_tgt_at_int_value_i(void) {
-    s7_pointer path = s7_eval_c_string(s7, "'(:@ 1 :value 0)");
+    s7_pointer path = s7_eval_c_string(s7, "'(:@ 1 :value :0)");
     s7_pointer item = s7_apply_function(s7, tgt, path);
     s7_pointer pred = s7_apply_function(s7, item,
                                         s7_eval_c_string(s7, "'(:string?)"));
@@ -183,7 +188,7 @@ void test_tgt_at_int_value_i(void) {
 }
 
 void test_tgt_at_int_dollar_i(void) {
-    s7_pointer path = s7_eval_c_string(s7, "'(:@ 1 :$ 0)");
+    s7_pointer path = s7_eval_c_string(s7, "'(:@ 1 :$ :0)");
     s7_pointer item = s7_apply_function(s7, tgt, path);
     s7_pointer pred = s7_apply_function(s7, item,
                                         s7_eval_c_string(s7, "'(:string?)"));
@@ -246,33 +251,29 @@ void _validate_value_string(s7_pointer item_list)
 }
 
 /* **************************************************************** */
-int main(void) {
-    build_file = "test/unit/sunlark/BUILD.targets";
+UT_string *buf;
+UT_string *test_s;
 
-    UNITY_BEGIN();
-    RUN_TEST(test_target);      /* verify setUp worked */
-    RUN_TEST(test_tgt_rule);        /* (:rule) */
-    RUN_TEST(test_tgt_name);        /* (:name) */
+char *build_file;
 
-    RUN_TEST(test_tgt_attr_sym);    /* (:attr srcs) */
-    RUN_TEST(test_tgt_binding_sym); /* (:binding srcs) */
-    RUN_TEST(test_tgt_at_sym);      /* (:@ srcs) */
+s7_scheme *s7;
 
-    RUN_TEST(test_tgt_at_sym_key);      /* (:@ srcs :key) */
-    RUN_TEST(test_tgt_at_sym_value);    /* (:@ srcs :value) */
+struct parse_state_s *parse_state;
+struct node_s *root;
 
-    RUN_TEST(test_tgt_at_sym_value_i);    /* (:@ srcs :value 0) */
-    RUN_TEST(test_tgt_at_int_value_i);    /* (:@ 1 :value 0) */
-    RUN_TEST(test_tgt_at_int_dollar_i);    /* (:@ 1 :$ 0) */
-
-    RUN_TEST(test_tgt_attr_sym_value_string); /* (:attr srcs :value "hello-lib.cc") */
-    RUN_TEST(test_tgt_attr_sym_dollar_string); /* (:attr srcs :$ "hello-lib.cc") */
-
-    RUN_TEST(test_tgt_at_sym_dollar_string); /* (:@ srcs :value "hello-lib.cc") */
-    RUN_TEST(test_tgt_at_sym_dollar_string); /* (:@ srcs :$ "hello-lib.cc") */
-
-    RUN_TEST(test_tgt_at_int_value_string); /* (:@ 1 :value "hello-lib.cc") */
-    RUN_TEST(test_tgt_at_int_dollar_string); /* (:@ 1 :$ "hello-lib.cc") */
-
-    return UNITY_END();
+void setUp(void) {
+    s7 = sunlark_init();
+    init_s7_syms(s7);
+    s7_pointer pkg = sunlark_parse_build_file(s7,
+                                   s7_list(s7, 1,
+                                           s7_make_string(s7, build_file)));
+    root = s7_c_object_value(pkg);
+    s7_pointer path = s7_eval_c_string(s7, "'(:target \"hello-lib\")");
+    tgt = s7_apply_function(s7, pkg, path);
 }
+
+void tearDown(void) {
+    sealark_parse_state_free(parse_state);
+    s7_quit(s7);
+}
+

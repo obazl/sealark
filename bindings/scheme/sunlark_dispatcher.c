@@ -49,7 +49,35 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
 #endif
 
     s7_pointer op = s7_car(path_args);
-    struct node_s *result_node;
+    struct node_s *resnode;
+
+    log_debug("path adjusted: %s", s7_object_to_c_string(s7, path_args));
+    log_debug("last arg: %s", s7_object_to_c_string(s7, last));
+
+    if (s7_is_null(s7, path_args)) {
+        /* if adjusted path is () then we should have last == :$ */
+        /* (we cannot arrive here with () args) */
+        if (last == s7_make_keyword(s7, "$")) {
+            /* struct node_s *ob = s7_c_object_value(data); */
+            /* switch(ob->tid) { */
+            /* case TK_List_Expr: { */
+            /*     struct node_s *vr */
+            /*         = sunlark_vector_dispatcher(s7, s7_c_object_value(data), */
+            /*                                     s7_list(s7, 1, last)); */
+            /*     /\* if (vr) *\/ */
+            /*     return sunlark_node_new(s7, vr); */
+            /* } */
+            /*     break; */
+            /* case TK_Dict_Expr: */
+            /*     break; */
+            /* default: */
+                return node_to_scheme(s7, s7_c_object_value(data));
+            /* } */
+        }else {
+            log_error("Expected :$, got %s", s7_object_to_c_string(s7, last));
+            return handle_errno(s7, EUNEXPECTED_STATE, path_args);
+        }
+    }
 
     switch( data_tid ) {
 
@@ -57,7 +85,12 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
 #if defined(DEBUG_TRACE)
         log_debug("dispatching on TK_Package");
 #endif
-        return sunlark_package_dispatcher(s7, data, path_args);
+        s7_pointer p = sunlark_package_dispatcher(s7, data, path_args);
+        if (last == s7_make_keyword(s7, "$")) {
+            return node_to_scheme(s7, s7_c_object_value(p));
+        } else {
+            return p;
+        }
         break;
 
     case TK_Load_Stmt:
@@ -102,29 +135,76 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
                                                   s7_c_object_value(data));
         } else {
             errno = 0;
-            struct node_s *r = sunlark_binding_dispatcher(s7,
+            resnode = sunlark_binding_dispatcher(s7,
                                               s7_c_object_value(data),
                                               path_args);
-            if (r)
-                return sunlark_node_new(s7, r);
+            if (resnode)
+                return sunlark_node_new(s7, resnode);
             else
                 if (errno == EUNKNOWN_KW) {
                     log_debug("unknown kw");
                     return sunlark_common_property_lookup(s7,
-                                                          s7_c_object_value(data), op);
+                                          s7_c_object_value(data), op);
                 } else {
                     return handle_errno(s7, errno,
                                         s7_list(s7, 2, data, path_args));
                 }
         }
         /* FIXME: type of result? */
-        return sunlark_node_new(s7, result_node);
+        log_error("wtf ????????????????");
+        return sunlark_node_new(s7, resnode);
     }
+        break;
+
+    case TK_Dict_Entry:
+#if defined(DEBUG_TRACE)
+        log_debug("dispatching on TK_Dict_Entry");
+#endif
+        errno = 0;
+        resnode
+            = sunlark_dict_entry_dispatcher(s7, s7_c_object_value(data),
+                                            path_args);
+        if (resnode)
+            return sunlark_node_new(s7, resnode);
+        else
+            if (errno == 0) {
+                s7_pointer op;
+                if (s7_is_list(s7,path_args))
+                    op = s7_car(path_args);
+                else
+                    op = path_args;
+                errno = 0;
+                s7_pointer result
+                    = sunlark_common_property_lookup(s7,
+                                                     s7_c_object_value(data),
+                                                     op);
+                if (result)
+                    return result;
+                else
+                    return handle_errno(s7, errno, path_args);
+            } else {
+                return handle_errno(s7, errno, path_args);
+            }
+        break;
+
+    case TK_Dict_Expr:
+#if defined(DEBUG_TRACE)
+        log_debug("dispatching on TK_Dict_Expr");
+#endif
+        errno = 0;
+        resnode
+            = sunlark_dict_expr_dispatcher(s7, s7_c_object_value(data),
+                                           path_args);
+        if (resnode)
+            return sunlark_node_new(s7, resnode);
+        else
+            return handle_errno(s7, errno, path_args);
         break;
 
     case TK_ID:
 #if defined(DEBUG_TRACE)
-        log_debug("dispatching on TK_ID");
+        log_debug("dispatching on TK_ID, path: %s",
+                  s7_object_to_c_string(s7, path_args));
 #endif
         return _dispatch_on_id(s7, data, path_args);
         break;
@@ -147,7 +227,30 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
 #if defined(DEBUG_TRACE)
         log_debug("dispatching on TK_List_Expr");
 #endif
-        return sunlark_dispatch_on_list_expr(s7, data, path_args);
+        resnode = sunlark_vector_dispatcher(s7,
+                                      s7_c_object_value(data), path_args);
+        if (resnode)
+            return sunlark_node_new(s7, resnode);
+        else
+            if (errno == 0) {
+                s7_pointer op;
+                if (s7_is_list(s7,path_args))
+                    op = s7_car(path_args);
+                else
+                    op = path_args;
+                errno = 0;
+                s7_pointer result
+                    = sunlark_common_property_lookup(s7,
+                                                     s7_c_object_value(data),
+                                                     op);
+                if (result)
+                    return result;
+                else
+                    return handle_errno(s7, errno, path_args);
+            } else {
+                return handle_errno(s7, errno, path_args);
+            }
+        /* return sunlark_dispatch_on_list_expr(s7, data, path_args); */
         break;
 
     default:
@@ -262,9 +365,8 @@ LOCAL s7_pointer _dispatch_on_id(s7_scheme *s7,
 
     s7_pointer kw = s7_car(path_args);
 
-    s7_pointer result = sunlark_common_property_lookup(s7,
-                                                       s7_c_object_value(node),
-                                                       kw);
+    s7_pointer result
+        = sunlark_common_property_lookup(s7, s7_c_object_value(node), kw);
     return result;
 }
 
@@ -274,78 +376,6 @@ LOCAL s7_pointer _dispatch_on_id(s7_scheme *s7,
   punctuation (commas, etc.) and delimiters. to index we need to skip
   those.
  */
-LOCAL s7_pointer sunlark_dispatch_on_list_expr(s7_scheme *s7,
-                                            s7_pointer data,
-                                            s7_pointer path_args)
-{
-#if defined (DEBUG_TRACE) || defined(DEBUG_PROPERTIES)
-    log_debug("sunlark_dispatch_on_list_expr: %s",
-              s7_object_to_c_string(s7, path_args));
-#endif
-#if defined(DEBUG_AST)
-    sealark_debug_log_ast_outline(s7_c_object_value(data), 0);
-#endif
-
-    int op_count = s7_list_length(s7, path_args);
-    log_debug("op count: %d", op_count);
-
-    if (op_count == 0)
-        return data;
-
-    /* vector ops:  int index, ? :print, :tid, etc. */
-    if (op_count > 1) {
-        //error, :s, :tid etc. allowed
-        log_error("FIXME, only one op allowed here");
-    }
-    s7_pointer op;
-    if (s7_is_list(s7,path_args))
-        op = s7_car(path_args);
-    else
-        op = path_args;
-
-    // :list-expr > :lbrack, :expr-list, :rbrack
-    //  :expr-list > :string, :comma, etc.
-    struct node_s *list_expr = s7_c_object_value(data);
-    struct node_s *vector = utarray_eltptr(list_expr->subnodes, 1);
-
-    /* tid: TK_Expr-List */
-    log_debug("vector tid %d %s", vector->tid, TIDNAME(vector));
-
-    // Let Bazel enforce list homogeneity in BUILD files
-    /* treat first non-sym item as prototype, giving list type */
-    /* struct node_s *prototype = utarray_eltptr(vector->subnodes, 0); */
-    /* int item_type = prototype->tid; */
-    /* log_debug("item_type: %d", item_type); */
-
-    int item_ct = 0;
-
-    if (s7_is_integer(op)) {
-        int idx = s7_integer(op);
-        log_debug("indexing on %d", idx);
-        int len = utarray_len(vector->subnodes);
-        if (idx > len) {
-            log_error("index out of bounds: % > %", idx, len);
-            return NULL;
-        }
-        /* index by (semantic) items, skipping metadata */
-        struct node_s *node = NULL;
-        while( (node
-                =(struct node_s*)utarray_next(vector->subnodes, node)) ) {
-            /* if (node->tid == item_type) { */
-                if (item_ct == idx)
-                    return sunlark_node_new(s7, node);
-                item_ct++;
-            /* } */
-        }
-        //FIXME: handle index out of bounds
-        return s7_unspecified(s7);
-    } else {
-        s7_pointer result
-            = sunlark_common_property_lookup(s7, list_expr, op);
-        return result;
-    }
-}
-
 /* **************** */
 LOCAL s7_pointer sunlark_dispatch_on_any(s7_scheme *s7,
                                          s7_pointer node,

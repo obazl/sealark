@@ -51,7 +51,7 @@ void test_loadstmt_props(void) {
     char *path = "'(:load \"@rules_cc//cc:defs.bzl\")";
     s7_pointer path_node = s7_eval_c_string(s7, path);
     s7_pointer loadstmt = s7_apply_function(s7, pkg, path_node);
-    sealark_debug_print_ast_outline(s7_c_object_value(loadstmt), 0);
+    /* sealark_debug_log_ast_outline(s7_c_object_value(loadstmt), 0); */
 
     s7_pointer pred = s7_apply_function(s7, loadstmt,
                                         s7_eval_c_string(s7, "'(:node?)"));
@@ -131,7 +131,7 @@ void test_loadstmt_args_props(void) {
     char *path = "'(:load \"@rules_cc//cc:defs.bzl\")";
     s7_pointer path_node = s7_eval_c_string(s7, path);
     s7_pointer args = s7_apply_function(s7, pkg, path_node);
-    sealark_debug_print_ast_outline(s7_c_object_value(args), 0);
+    /* sealark_debug_log_ast_outline(s7_c_object_value(args), 0); */
 
     /* s7_pointer pred = s7_apply_function(s7, args, */
     /*                                     s7_eval_c_string(s7, "'(:node?)")); */

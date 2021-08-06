@@ -140,6 +140,10 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
               s7_object_to_c_string(s7, update_val));
 #endif
 
+    if (s7_car(get_path) == s7_make_keyword(s7, "$")) {
+        return self;
+    }
+
     struct node_s *node;
     s7_int typ;
     s7_pointer key;
@@ -356,7 +360,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
         }
 
         /* lval is compound expr */
-        struct node_s *r = sunlark_vector_dispatcher(s7, context, lval);
+        struct node_s *r = sunlark_vector_dispatcher(s7, context_node, lval);
         struct node_s *updated;
         if (r) {
             switch(r->tid) {

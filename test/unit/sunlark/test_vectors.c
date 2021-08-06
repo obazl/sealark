@@ -69,7 +69,7 @@ void test_vector_properties(void) {
     TEST_ASSERT( 3 == s7_integer(count) );
 
     /* first item */
-    s7_pointer path = s7_eval_c_string(s7, "'(0)");
+    s7_pointer path = s7_eval_c_string(s7, "'(:0)");
     s7_pointer item = s7_apply_function(s7, vec, path);
     TEST_ASSERT( s7_is_c_object(item) );
     TEST_ASSERT( sunlark_node_tid(s7, item) == TK_INT );

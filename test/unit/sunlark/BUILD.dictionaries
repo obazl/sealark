@@ -2,22 +2,39 @@ package(default_visibility = ["//visibility:public"])
 
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
 
-dict_library(
-    name = "stringdict",
+## BUILD file target attrs may use:
+##   label_keyed_string_dict: keys are labels, values are strings
+##   string_dict: keys and vals are strings
+##   string_list_dict: keys are strings, vals are string lists
 
-    adict = {"akey1": "aval1", akey2: "aval2", "akey3": "aval3"},
+mock_dicts(
+    name = "label-keyed-string-dict",
+
+    adict = {"//akey1": "aval1",
+             "//akey2": "aval2",
+             "//akey3": "aval3"},
     bdict = {
-        "bkey1": "bval1", "bkey2": "bval2", "bkey3": "bval3"
+        "@brepo//bkey1": "bval1",
+        "@brepo//bkey2": "bval2",
+        "@brepo//bkey3": "bval3"
     },
     cdict = {
-        "ckey1": "cval1",
-        "ckey2": "cval2",
-        "ckey3": "cval3"
+        "cpkg:ckey1": "cval1",
+        "cpkg:ckey2": "cval2",
+        "cpkg:ckey3": "cval3"
     }
 )
 
 dict_test(
-    name = "stringlist-dict",
+    name = "string-dict",
+
+    adict = { "akey1": "aval1", "akey2": "aval2", "akey3": "aval3" },
+
+    bdict = { "bkey1": "bval1", "bkey2": "bval2", "bkey3": "bval3" },
+)
+
+dict_test(
+    name = "string-list-dict",
 
     adict = {
         "akey1": ["astr11", "astr12", "astr13"],
@@ -32,9 +49,9 @@ dict_test(
     },
 )
 
-## comment line
-dict_test(
-    name = "intdict",
+################################################################
+mock_dicts(
+    name = "int-dict",
     adict = {1: 10, 2: 20, 3: 30},
     avec  = [11, 12, 13],
     bdict = {
@@ -46,3 +63,5 @@ dict_test(
         "c": 300
     }
 )
+
+

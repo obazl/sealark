@@ -25,15 +25,15 @@ struct node_s *root;
 
 int main(void) {
     UNITY_BEGIN();
-    RUN_TEST(test_forall_targets_forall_bindings);
-    RUN_TEST(test_binding_lists);
-    RUN_TEST(test_bindings_foreach);
-    RUN_TEST(test_binding_srcs);
-    RUN_TEST(test_binding_key);
-    RUN_TEST(test_binding_value_selectors);
+    /* RUN_TEST(test_forall_targets_forall_bindings); */
+    /* RUN_TEST(test_binding_lists); */
+    /* RUN_TEST(test_bindings_foreach); */
+    /* RUN_TEST(test_binding_srcs); */
+    /* RUN_TEST(test_binding_key); */
+    /* RUN_TEST(test_binding_value_selectors); */
     RUN_TEST(test_binding_value_selector_dollar);
-    RUN_TEST(test_binding_value_vector);
-    RUN_TEST(test_binding_predicate);
+    /* RUN_TEST(test_binding_value_vector); */
+    /* RUN_TEST(test_binding_predicate); */
     return UNITY_END();
 }
 
@@ -138,7 +138,7 @@ void test_binding_lists(void) {
                                       s7_list(s7, 1, bindings1));
     TEST_ASSERT_EQUAL_INT( 3, s7_integer(ct) );
 
-    sealark_debug_print_ast_outline(s7_c_object_value(bindings1), 0);
+    /* sealark_debug_log_ast_outline(s7_c_object_value(bindings1), 0); */
     /* (bindings1 :arg-list?) =? #t */
     s7_pointer pred = s7_apply_function(s7, bindings1,
                              s7_eval_c_string(s7, "'(:arg-list?)"));
@@ -230,7 +230,7 @@ void test_binding_srcs(void) {
 
     /* in this case val is a vector; index into it */
     s7_pointer item = s7_apply_function(s7, val,
-                                        s7_cons(s7, s7_make_integer(s7, 0),
+                                        s7_cons(s7, s7_make_keyword(s7, "0"),
                                                 s7_nil(s7)));
     TEST_ASSERT( s7_is_c_object(item) );
     TEST_ASSERT( sunlark_node_tid(s7, item) == TK_STRING );
@@ -240,11 +240,8 @@ void test_binding_srcs(void) {
     TEST_ASSERT( s7_is_string(sval) );
     TEST_ASSERT_EQUAL_STRING( "\"hello-world.cc\"", s7_string(sval) );
 
-    /* second item uses single quotes. index 2, accounting for comma */
     item = s7_apply_function(s7, val,
-                             s7_list(s7,1,s7_make_integer(s7, 2)));
-    log_debug("ITEM xxx");
-    sealark_debug_print_ast_outline(s7_c_object_value(item), 0);
+                             s7_list(s7,1,s7_make_keyword(s7, "1")));
     TEST_ASSERT( s7_is_c_object(item) );
     TEST_ASSERT( sunlark_node_tid(s7, item) == TK_STRING );
 
@@ -297,7 +294,7 @@ void test_binding_value_selectors(void) {
     TEST_ASSERT_EQUAL(2, s7_integer(blen));
 
     path = bvalue = blen = NULL;
-    path = s7_eval_c_string(s7, "'(:> 1 :@ srcs :value 1)");
+    path = s7_eval_c_string(s7, "'(:> 1 :@ srcs :value :1)");
     bvalue = s7_apply_function(s7, ast, path);
     s7_pointer pred = s7_apply_function(s7, bvalue,
                                         s7_eval_c_string(s7, "'(:string?)"));
@@ -321,7 +318,7 @@ void test_binding_value_selector_dollar(void) {
     TEST_ASSERT_EQUAL(2, s7_integer(blen));
 
     path = bvalue = blen = NULL;
-    path = s7_eval_c_string(s7, "'(:> 1 :@ srcs :$ 1)");
+    path = s7_eval_c_string(s7, "'(:> 1 :@ srcs :$ :1)");
     bvalue = s7_apply_function(s7, ast, path);
     s7_pointer pred = s7_apply_function(s7, bvalue,
                                         s7_eval_c_string(s7, "'(:string?)"));

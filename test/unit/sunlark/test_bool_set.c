@@ -138,8 +138,7 @@ void test_set_bool_to_int_list2(void) {
     item = s7_apply_function(s7, item, s7_eval_c_string(s7, "'(:$)"));
     TEST_ASSERT_EQUAL_INT( 31, s7_integer(item));
 
-    /* index 2, accounting for comma */
-    item = s7_apply_function(s7, val, s7_eval_c_string(s7, "'(2)"));
+    item = s7_apply_function(s7, val, s7_eval_c_string(s7, "'(:1)"));
     item = s7_apply_function(s7, item, s7_eval_c_string(s7, "'(:$)"));
     TEST_ASSERT_EQUAL_INT( 32, s7_integer(item));
 }
@@ -173,13 +172,13 @@ void test_set_bool_to_int_list4(void) {
     item = s7_apply_function(s7, val, s7_eval_c_string(s7, "'(0)"));
     item = s7_apply_function(s7, item, s7_eval_c_string(s7, "'(:$)"));
     TEST_ASSERT_EQUAL_INT( 41, s7_integer(item));
-    item = s7_apply_function(s7, val, s7_eval_c_string(s7, "'(2)"));
+    item = s7_apply_function(s7, val, s7_eval_c_string(s7, "'(:1)"));
     item = s7_apply_function(s7, item, s7_eval_c_string(s7, "'(:$)"));
     TEST_ASSERT_EQUAL_INT( 42, s7_integer(item));
-    item = s7_apply_function(s7, val, s7_eval_c_string(s7, "'(4)"));
+    item = s7_apply_function(s7, val, s7_eval_c_string(s7, "'(:2)"));
     item = s7_apply_function(s7, item, s7_eval_c_string(s7, "'(:$)"));
     TEST_ASSERT_EQUAL_INT( 43, s7_integer(item));
-    item = s7_apply_function(s7, val, s7_eval_c_string(s7, "'(6)"));
+    item = s7_apply_function(s7, val, s7_eval_c_string(s7, "'(:3)"));
     item = s7_apply_function(s7, item, s7_eval_c_string(s7, "'(:$)"));
     TEST_ASSERT_EQUAL_INT( 44, s7_integer(item));
 }

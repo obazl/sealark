@@ -32,12 +32,12 @@
    5: TK_RBRACE[68] @15:4
  */
 
-struct node_s *sunlark_dict_value_dispatch(s7_scheme *s7,
-                                       struct node_s *dict,
-                                       s7_pointer path_args)
+struct node_s *sunlark_dict_expr_dispatcher(s7_scheme *s7,
+                                            struct node_s *dict,
+                                            s7_pointer path_args)
 {
 #ifdef DEBUG_TRACE
-    log_debug("sunlark_dict_value_dispatch %d %s: %s",
+    log_debug("sunlark_dict_expr_dispatcher %d %s: %s",
               dict->tid, TIDNAME(dict),
               s7_object_to_c_string(s7, path_args));
 #endif
@@ -166,6 +166,36 @@ struct node_s *sunlark_dict_value_dispatch(s7_scheme *s7,
     log_error("Invalid arg: %s",
               s7_object_to_c_string(s7, path_args));
     errno = EINVALID_ARG;
+    return NULL;
+}
+
+/* **************************************************************** */
+struct node_s *sunlark_dict_entry_dispatcher(s7_scheme *s7,
+                                            struct node_s *dentry,
+                                            s7_pointer path_args)
+{
+#ifdef DEBUG_TRACE
+    log_debug("sunlark_dict_entry_dispatcher %d %s: %s",
+              dentry->tid, TIDNAME(dentry),
+              s7_object_to_c_string(s7, path_args));
+#endif
+
+    assert(dentry->tid == TK_Dict_Entry);
+
+    int path_len = s7_list_length(s7, path_args);
+    s7_pointer op = s7_car(path_args);
+
+    if (op == KW(key)) {
+        return utarray_eltptr(dentry->subnodes, 0);
+    }
+
+    if (op == KW(value) || op == s7_make_keyword(s7, "$")) {
+        return utarray_eltptr(dentry->subnodes, 2);
+    }
+
+    /* log_error("Invalid arg for dict-entry: %s", */
+    /*           s7_object_to_c_string(s7, path_args)); */
+    errno = 0; //EINVALID_ARG;
     return NULL;
 }
 

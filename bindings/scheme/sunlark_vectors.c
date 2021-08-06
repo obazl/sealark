@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -12,32 +13,118 @@
 #include "sunlark_vectors.h"
 
 struct node_s *sunlark_vector_dispatcher(s7_scheme *s7,
-                                           s7_pointer self,
+                                         struct node_s *datum,
                                            s7_pointer path_args)
+/* LOCAL s7_pointer sunlark_dispatch_on_list_expr(s7_scheme *s7, */
+/*                                             s7_pointer datum, */
+/*                                             s7_pointer path_args) */
 {
-#ifdef DEBUG_TRACE
-    log_debug("sunlark_vector_dispatcher: %s",
+#if defined (DEBUG_TRACE) || defined(DEBUG_PROPERTIES)
+    log_debug("sunlark_vector_dispatcher %s",
               s7_object_to_c_string(s7, path_args));
 #endif
+#if defined(DEBUG_AST)
+    sealark_debug_log_ast_outline(datum, 0);
+#endif
 
-    struct node_s *vec = s7_c_object_value(self);
-    assert(vec->tid == TK_List_Expr);
+    assert(datum->tid == TK_List_Expr);
 
-    if ( !s7_is_list(s7, path_args) ) {
-        log_error("Expected list of path_args, %s",
-                  s7_object_to_c_string(s7, path_args));
-        return NULL;
+    int op_count = s7_list_length(s7, path_args);
+    log_debug("op count: %d", op_count);
+
+    if (op_count == 0)
+        return datum;
+
+    /* vector ops:  int index, ? :print, :tid, etc. */
+    if (op_count > 1) {
+        //error, :s, :tid etc. allowed
+        log_error("FIXME, only one op allowed here");
     }
-    int path_ct = s7_list_length(s7, path_args);
-    switch(path_ct) {
-    case 0:
-        return s7_c_object_value(self);
-        break;
-    default:
-        log_error("Not yet implemented");
-        return NULL;
+    s7_pointer op;
+    if (s7_is_list(s7,path_args))
+        op = s7_car(path_args);
+    else
+        op = path_args;
+
+    // :list-expr > :lbrack, :expr-list, :rbrack
+    //  :expr-list > :string, :comma, etc.
+    /* struct node_s *list_expr = s7_c_object_value(datum); */
+    struct node_s *vector = utarray_eltptr(datum->subnodes, 1);
+
+    /* tid: TK_Expr-List */
+    log_debug("vector tid %d %s", vector->tid, TIDNAME(vector));
+
+    // Let Bazel enforce list homogeneity in BUILD files
+    /* treat first non-sym item as prototype, giving list type */
+    /* struct node_s *prototype = utarray_eltptr(vector->subnodes, 0); */
+    /* int item_type = prototype->tid; */
+    /* log_debug("item_type: %d", item_type); */
+
+    int item_ct = 0;
+
+    /* sunlark uses keywordized numbers to index, but s7 uses ints for
+       thingslike iterations, so we need to support both. */
+    bool int_idx = false;
+    int idx = sunlark_is_nbr_kw(s7,op);
+    if (errno == 0) // op is a keywordized number
+        int_idx = true;
+    else {
+        if (s7_is_integer(op)) {
+            idx = s7_integer(op);
+            int_idx = true;
+        }
     }
+    if (int_idx) {
+        /* int idx = s7_integer(op); */
+        log_debug("indexing on %d", idx);
+        return sealark_vector_item_for_int(datum, idx);
+        /* int len = utarray_len(vector->subnodes); */
+        /* if (idx > len) { */
+        /*     log_error("index out of bounds: % > %", idx, len); */
+        /*     return NULL; */
+        /* } */
+        /* /\* index by (semantic) items, skipping metadata *\/ */
+        /* struct node_s *node = NULL; */
+        /* while( (node */
+        /*         =(struct node_s*)utarray_next(vector->subnodes, node)) ) { */
+        /*     /\* if (node->tid == item_type) { *\/ */
+        /*         if (item_ct == idx) */
+        /*             return node; // sunlark_node_new(s7, node); */
+        /*         item_ct++; */
+        /*     /\* } *\/ */
+        /* } */
+        /* errno = ENOT_FOUND; */
+        /* return NULL; */
+    }
+    errno = 0;
+    return NULL;
 }
+
+
+/* { */
+/* #ifdef DEBUG_TRACE */
+/*     log_debug("sunlark_vector_dispatcher: %s", */
+/*               s7_object_to_c_string(s7, path_args)); */
+/* #endif */
+
+/*     /\* struct node_s *vec = s7_c_object_value(self); *\/ */
+/*     assert(vec->tid == TK_List_Expr); */
+
+/*     if ( !s7_is_list(s7, path_args) ) { */
+/*         log_error("Expected list of path_args, %s", */
+/*                   s7_object_to_c_string(s7, path_args)); */
+/*         return NULL; */
+/*     } */
+/*     int path_ct = s7_list_length(s7, path_args); */
+/*     switch(path_ct) { */
+/*     case 0: */
+/*         return vec; //s7_c_object_value(self); */
+/*         break; */
+/*     default: */
+/*         log_error("Not yet implemented"); */
+/*         return NULL; */
+/*     } */
+/* } */
 
 /* **************** */
 int sunlark_infer_vector_type_from_list(s7_scheme *s7, s7_pointer new_vec)

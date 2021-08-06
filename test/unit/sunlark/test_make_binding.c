@@ -14,15 +14,28 @@ s7_scheme *s7;
 
 static s7_pointer tgt;
 
-void setUp(void) {
-    s7 = sunlark_init();
-    init_s7_syms(s7);
-}
+int main(void) {
+    UNITY_BEGIN();
+    RUN_TEST(test_with_true);
+    RUN_TEST(test_with_false);
 
-void tearDown(void) {
-    s7_quit(s7);
-}
+    RUN_TEST(test_with_int);
+    RUN_TEST(test_with_int_list);
+    RUN_TEST(test_with_int_vector);
 
+    RUN_TEST(test_with_string);
+    RUN_TEST(test_with_string_list);
+    RUN_TEST(test_with_string_vector);
+
+    RUN_TEST(test_with_symbol);
+    RUN_TEST(test_with_symbol_list);
+    RUN_TEST(test_with_symbol_vector);
+
+    RUN_TEST(test_with_mixed_list);
+    RUN_TEST(test_with_mixed_vector);
+
+    return UNITY_END();
+}
 /* **************************************************************** */
 /* **************************************************************** */
 void _validate_key(s7_pointer binding)
@@ -182,6 +195,7 @@ void test_with_int_list(void) {
     s7_pointer str = s7_apply_function(s7, key, s7_eval_c_string(s7, "'(:$)"));
     TEST_ASSERT( s7_is_symbol(str) );
     TEST_ASSERT_EQUAL_STRING( "akey", s7_symbol_name(str) );
+
     /* check underlying c object */
     struct node_s *id_node = utarray_eltptr(binding_node->subnodes, 0);
     TEST_ASSERT( id_node->tid == TK_ID );
@@ -195,50 +209,50 @@ void test_with_int_list(void) {
                                     s7_nil(s7)));
     TEST_ASSERT( s7_is_c_object(val) );
     TEST_ASSERT( sunlark_node_tid(s7, val) == TK_List_Expr );
-
+    /* sealark_debug_log_ast_outline(s7_c_object_value(val), 0); */
     s7_pointer vlen
         = s7_apply_function(s7, s7_name_to_value(s7, "length"),
                             s7_list(s7, 1, val));
     TEST_ASSERT_EQUAL(3, s7_integer(vlen));
 
-    /* verify type of each item */
+    /* /\* verify type of each item *\/ */
     s7_pointer pred;
     s7_pointer iter = s7_make_iterator(s7, val);
     s7_pointer item = s7_iterate(s7, iter);
-    int i = 0;
-    while ( ! s7_iterator_is_at_end(s7, iter) ) {
-        TEST_ASSERT( s7_is_c_object(item) );
-        TEST_ASSERT( !s7_is_list(s7, item) );
-        TEST_ASSERT( !s7_is_integer(item) );
-        if ( i % 2 == 0) {
-            pred = s7_apply_function(s7, item,
-                                     s7_eval_c_string(s7, "'(:int?)"));
-            TEST_ASSERT( pred == s7_t(s7) );
-        }
-        item = s7_iterate(s7, iter);
-        i++;
-    }
+    /* int i = 0; */
+    /* while ( ! s7_iterator_is_at_end(s7, iter) ) { */
+    /*     TEST_ASSERT( s7_is_c_object(item) ); */
+    /*     TEST_ASSERT( !s7_is_list(s7, item) ); */
+    /*     TEST_ASSERT( !s7_is_integer(item) ); */
+    /*     if ( i % 2 == 0) { */
+    /*         pred = s7_apply_function(s7, item, */
+    /*                                  s7_eval_c_string(s7, "'(:int?)")); */
+    /*         TEST_ASSERT( pred == s7_t(s7) ); */
+    /*     } */
+    /*     item = s7_iterate(s7, iter); */
+    /*     i++; */
+    /* } */
 
-    /* index into list */
-    for (int i = 0; i < 3; i++) {
-        item = NULL;
-        item = s7_apply_function(s7, val, /* (list i) == list[i] */
-                                 s7_list(s7, 1, s7_make_integer(s7, i)));
-        TEST_ASSERT( s7_is_c_object(item) );
-        TEST_ASSERT( !s7_is_integer(item) ); /* not a Scheme int */
-        if ( i % 2 == 0) { /* skip commas */
-            TEST_ASSERT( sunlark_node_tid(s7, item) == TK_INT );
-            pred = s7_apply_function(s7, item, /* but it is an int node */
-                                     s7_eval_c_string(s7, "'(:int?)"));
-            TEST_ASSERT( pred == s7_t(s7) );
-            /* whose value is 1 */
-            s7_pointer sval = s7_apply_function(s7, item,
-                                                s7_eval_c_string(s7, "'(:$)"));
-            TEST_ASSERT( !s7_is_c_object(sval) );
-            TEST_ASSERT( s7_is_integer(sval) );
-            TEST_ASSERT_EQUAL_INT( i/2+1, s7_integer(sval) );
-        }
-    }
+    /* /\* index into list *\/ */
+    /* for (int i = 0; i < 3; i++) { */
+    /*     item = NULL; */
+    /*     item = s7_apply_function(s7, val, /\* (list i) == list[i] *\/ */
+    /*                              s7_list(s7, 1, s7_make_integer(s7, i))); */
+    /*     TEST_ASSERT( s7_is_c_object(item) ); */
+    /*     TEST_ASSERT( !s7_is_integer(item) ); /\* not a Scheme int *\/ */
+    /*     if ( i % 2 == 0) { /\* skip commas *\/ */
+    /*         TEST_ASSERT( sunlark_node_tid(s7, item) == TK_INT ); */
+    /*         pred = s7_apply_function(s7, item, /\* but it is an int node *\/ */
+    /*                                  s7_eval_c_string(s7, "'(:int?)")); */
+    /*         TEST_ASSERT( pred == s7_t(s7) ); */
+    /*         /\* whose value is 1 *\/ */
+    /*         s7_pointer sval = s7_apply_function(s7, item, */
+    /*                                             s7_eval_c_string(s7, "'(:$)")); */
+    /*         TEST_ASSERT( !s7_is_c_object(sval) ); */
+    /*         TEST_ASSERT( s7_is_integer(sval) ); */
+    /*         TEST_ASSERT_EQUAL_INT( i/2+1, s7_integer(sval) ); */
+    /*     } */
+    /* } */
 }
 
 void test_with_int_vector(void) {
@@ -303,18 +317,16 @@ void test_with_int_vector(void) {
                                  s7_list(s7, 1, s7_make_integer(s7, i)));
         TEST_ASSERT( s7_is_c_object(item) );
         TEST_ASSERT( !s7_is_integer(item) ); /* not a Scheme int */
-        if ( i % 2 == 0 ) { // skip commas
-            TEST_ASSERT( sunlark_node_tid(s7, item) == TK_INT );
-            pred = s7_apply_function(s7, item, /* but it is an int node */
-                                     s7_eval_c_string(s7, "'(:int?)"));
-            TEST_ASSERT( pred == s7_t(s7) );
-            /* whose value is 1 */
-            s7_pointer sval = s7_apply_function(s7, item,
-                                                s7_eval_c_string(s7, "'(:$)"));
-            TEST_ASSERT( !s7_is_c_object(sval) );
-            TEST_ASSERT( s7_is_integer(sval) );
-            TEST_ASSERT_EQUAL_INT( i/2+1, s7_integer(sval) );
-        }
+        TEST_ASSERT( sunlark_node_tid(s7, item) == TK_INT );
+        pred = s7_apply_function(s7, item, /* but it is an int node */
+                                 s7_eval_c_string(s7, "'(:int?)"));
+        TEST_ASSERT( pred == s7_t(s7) );
+        /* whose value is 1 */
+        s7_pointer sval = s7_apply_function(s7, item,
+                                            s7_eval_c_string(s7, "'(:$)"));
+        TEST_ASSERT( !s7_is_c_object(sval) );
+        TEST_ASSERT( s7_is_integer(sval) );
+        TEST_ASSERT_EQUAL_INT( i+1, s7_integer(sval) );
     }
 }
 
@@ -399,7 +411,7 @@ void _validate_stringlist_abc(s7_pointer binding)
                                  s7_list(s7, 1, s7_make_integer(s7, i)));
         TEST_ASSERT( s7_is_c_object(item) );
         TEST_ASSERT( !s7_is_string(item) ); /* not a Scheme string */
-        if ( i % 2 == 0) {
+        /* if ( i % 2 == 0) { */
             TEST_ASSERT( sunlark_node_tid(s7, item) == TK_STRING );
             pred = s7_apply_function(s7, item, /* but it is an string node */
                                      s7_eval_c_string(s7, "'(:string?)"));
@@ -410,11 +422,11 @@ void _validate_stringlist_abc(s7_pointer binding)
             TEST_ASSERT( !s7_is_c_object(sval) );
             TEST_ASSERT( s7_is_string(sval) );
             TEST_ASSERT_EQUAL_STRING((i==0)? "\"astring\""
-                                     : (i==2)? "\"bstring\""
-                                     : (i==4)? "\"cstring\""
+                                     : (i==1)? "\"bstring\""
+                                     : (i==2)? "\"cstring\""
                                      : "foo",
                                      s7_string(sval) );
-        }
+        /* } */
     }
 }
 
@@ -514,7 +526,6 @@ void _validate_symlist_abc(s7_pointer binding)
                                  s7_list(s7, 1, s7_make_integer(s7, i)));
         TEST_ASSERT( s7_is_c_object(item) );
         TEST_ASSERT( !s7_is_symbol(item) ); /* not a Scheme symbol */
-        if ( i % 2 == 0 ) {
             TEST_ASSERT( sunlark_node_tid(s7, item) == TK_ID );
             pred = s7_apply_function(s7, item, /* but it is a symbol node */
                                      s7_eval_c_string(s7, "'(:symbol?)"));
@@ -525,11 +536,10 @@ void _validate_symlist_abc(s7_pointer binding)
             TEST_ASSERT( !s7_is_c_object(sval) );
             TEST_ASSERT( s7_is_symbol(sval) );
             TEST_ASSERT_EQUAL_STRING((i==0)? "asym"
-                                     : (i==2)? "bsym"
-                                     : (i==4)? "csym"
+                                     : (i==1)? "bsym"
+                                     : (i==2)? "csym"
                                      : "ERROR!!!",
                                      s7_symbol_name(sval) );
-        }
     }
 }
 
@@ -589,12 +599,12 @@ void _validate_mixed_list(s7_pointer binding)
                                      s7_eval_c_string(s7, "'(:int?)"));
             TEST_ASSERT( pred == s7_t(s7) );
         } else {
-            if (i == 2) { // counting commas
+            if (i == 1) { // counting commas
                 pred = s7_apply_function(s7, item,
                                     s7_eval_c_string(s7, "'(:string?)"));
                 TEST_ASSERT( pred == s7_t(s7) );
             } else {
-                if (i == 4) { // counting commas
+                if (i == 2) { // counting commas
                     pred = s7_apply_function(s7, item,
                                              s7_eval_c_string(s7, "'(:symbol?)"));
                     TEST_ASSERT( pred == s7_t(s7) );
@@ -608,8 +618,7 @@ void _validate_mixed_list(s7_pointer binding)
         i++;
     }
 
-    /* index into list - 5 elts including commas */
-    for (int i = 0; i < 5; i+=2) {
+    for (int i = 0; i < 3; i++) {
         item = NULL;
         item = s7_apply_function(s7, val, /* list[i] */
                                  s7_list(s7, 1, s7_make_integer(s7, i)));
@@ -623,13 +632,13 @@ void _validate_mixed_list(s7_pointer binding)
                                      s7_eval_c_string(s7, "'(:int?)"));
             TEST_ASSERT( pred == s7_t(s7) );
         } else {
-            if (i==2) { // counting first item plus comma
+            if (i==1) {
                 pred = s7_apply_function(s7, item,
                                s7_eval_c_string(s7, "'(:string?)"));
                 TEST_ASSERT( pred == s7_t(s7) );
             } else {
                 /* symbol */
-                if (i==4) { // counting commas
+                if (i==2) {
                     pred = s7_apply_function(s7, item,
                                   s7_eval_c_string(s7, "'(:symbol?)"));
                     TEST_ASSERT( pred == s7_t(s7) );
@@ -645,7 +654,7 @@ void _validate_mixed_list(s7_pointer binding)
             TEST_ASSERT( s7_is_integer(sval) );
             TEST_ASSERT_EQUAL_INT( 1, s7_integer(sval) );
         } else {
-            if (i==2) {
+            if (i==1) {
                 TEST_ASSERT( s7_is_string(sval) );
                 TEST_ASSERT_EQUAL_STRING( "\"bstring\"", s7_string(sval) );
             } else {
@@ -679,25 +688,12 @@ void test_with_mixed_vector(void) {
 }
 
 /* **************************************************************** */
-int main(void) {
-    UNITY_BEGIN();
-    RUN_TEST(test_with_true);
-    RUN_TEST(test_with_false);
-
-    RUN_TEST(test_with_int);
-    RUN_TEST(test_with_int_list);
-    RUN_TEST(test_with_int_vector);
-
-    RUN_TEST(test_with_string);
-    RUN_TEST(test_with_string_list);
-    RUN_TEST(test_with_string_vector);
-
-    RUN_TEST(test_with_symbol);
-    RUN_TEST(test_with_symbol_list);
-    RUN_TEST(test_with_symbol_vector);
-
-    RUN_TEST(test_with_mixed_list);
-    RUN_TEST(test_with_mixed_vector);
-
-    return UNITY_END();
+void setUp(void) {
+    s7 = sunlark_init();
+    init_s7_syms(s7);
 }
+
+void tearDown(void) {
+    s7_quit(s7);
+}
+

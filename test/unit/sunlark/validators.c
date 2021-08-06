@@ -61,7 +61,6 @@ cc_library(
 */
 
 void validate_hello_world_target(s7_pointer target) {
-    sealark_debug_print_ast_outline(s7_c_object_value(target), 0);
     TEST_ASSERT( s7_is_c_object(target) );
     TEST_ASSERT( sunlark_node_tid(s7, target) == TK_Call_Expr );
     s7_pointer is_target
@@ -168,7 +167,7 @@ void validate_attr_srcs(s7_pointer attr) {
 
     /* whose 0 item is "hello-lib.cc" */
     s7_pointer item = s7_apply_function(s7, val_node,
-                             s7_eval_c_string(s7, "'(0)"));
+                             s7_eval_c_string(s7, "'(:0)"));
     /* which is a string node */
     pred = s7_apply_function(s7, item,
                              s7_eval_c_string(s7, "'(:string?)"));

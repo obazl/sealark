@@ -9,8 +9,8 @@
 
 #include "test_binding_set.h"
 
-UT_string *buf;
-UT_string *test_s;
+/* UT_string *buf; */
+/* UT_string *test_s; */
 
 char *build_file = "test/unit/sunlark/BUILD.binding_set";
 
@@ -30,10 +30,10 @@ int main(void) {
 /* struct parse_state_s *parse_state; */
 
 static s7_pointer pkg;
-struct node_s *root;
+/* struct node_s *root; */
 
 static s7_pointer result;
-static s7_pointer item, val, count;
+static s7_pointer item, count;
 
 void test_remove_binding_by_int(void) {
     /* remove bool_attr attrib */
@@ -75,7 +75,7 @@ void test_remove_binding_by_int(void) {
                             s7_eval_c_string(s7, "'(:length)"));
     TEST_ASSERT_EQUAL_INT( 16, s7_integer(len) );
 
-    /* sealark_debug_print_ast_outline(s7_c_object_value(target), 0); */
+    /* sealark_debug_log_ast_outline(s7_c_object_value(target), 0); */
 
 
     /* s7_pointer target = s7_apply_function(s7, pkg, path); */
@@ -142,16 +142,11 @@ void test_local_remove_binding_by_int(void)
     char *rm = "(set! (bb :$ :0) :null)";
     s7_pointer set = s7_eval_c_string(s7, rm);
 
-    s7_pointer vec = s7_apply_function(s7, binding,
-                                       s7_eval_c_string(s7, "'(:value)"));
-    s7_pointer len = s7_apply_function(s7, vec,
-                            s7_eval_c_string(s7, "'(:length)"));
-    TEST_ASSERT_EQUAL_INT( 2, s7_integer(len) );
-
-    /* bstr = "(pkg :> \"bindings-test-1\" :@ 'bool_attr)"; */
-    /* binding = s7_eval_c_string(s7, bstr); */
-    /* TEST_ASSERT( ! s7_is_c_object(binding)); */
-    /* TEST_ASSERT( binding == s7_make_symbol(s7,"binding_not_found") ); */
+    /* s7_pointer vec = s7_apply_function(s7, binding, */
+    /*                                    s7_eval_c_string(s7, "'(:value)")); */
+    /* s7_pointer len = s7_apply_function(s7, vec, */
+    /*                         s7_eval_c_string(s7, "'(:length)")); */
+    /* TEST_ASSERT_EQUAL_INT( 2, s7_integer(len) ); */
 }
 
 /* **************************************************************** */
@@ -163,7 +158,7 @@ void setUp(void) {
                                    s7_list(s7, 1,
                                            s7_make_string(s7, build_file)));
     s7_define_variable(s7, "pkg", pkg);
-    root = s7_c_object_value(pkg);
+    /* root = s7_c_object_value(pkg); */
 }
 
 void tearDown(void) {

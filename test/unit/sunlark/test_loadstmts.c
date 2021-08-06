@@ -131,7 +131,7 @@ void test_pkg_load_src_args(void) {
     s7_pointer iter = s7_make_iterator(s7, args);
     s7_pointer arg = s7_iterate(s7, iter);
     while ( ! s7_iterator_is_at_end(s7, iter) ) {
-        sealark_debug_print_ast_outline(s7_c_object_value(arg), 0);
+        /* sealark_debug_log_ast_outline(s7_c_object_value(arg), 0); */
         TEST_ASSERT( !s7_is_list(s7, arg) );
         TEST_ASSERT( s7_is_c_object(arg) );
         pred = s7_apply_function(s7, arg,
@@ -176,7 +176,7 @@ void test_pkg_load_int_args(void) {
     s7_pointer iter = s7_make_iterator(s7, args);
     s7_pointer arg = s7_iterate(s7, iter);
     while ( ! s7_iterator_is_at_end(s7, iter) ) {
-        sealark_debug_print_ast_outline(s7_c_object_value(arg), 0);
+        /* sealark_debug_log_ast_outline(s7_c_object_value(arg), 0); */
         TEST_ASSERT( !s7_is_list(s7, arg) );
         TEST_ASSERT( s7_is_c_object(arg) );
         pred = s7_apply_function(s7, arg,
@@ -203,7 +203,7 @@ void test_pkg_load_int_bindings(void) {
     s7_pointer iter = s7_make_iterator(s7, args);
     s7_pointer arg = s7_iterate(s7, iter);
     while ( ! s7_iterator_is_at_end(s7, iter) ) {
-        sealark_debug_print_ast_outline(s7_c_object_value(arg), 0);
+        /* sealark_debug_log_ast_outline(s7_c_object_value(arg), 0); */
         TEST_ASSERT( !s7_is_list(s7, arg) );
         TEST_ASSERT( s7_is_c_object(arg) );
         pred = s7_apply_function(s7, arg,
@@ -230,7 +230,7 @@ void test_loadstmt_args(void) {
     s7_pointer iter = s7_make_iterator(s7, args);
     s7_pointer arg = s7_iterate(s7, iter);
     while ( ! s7_iterator_is_at_end(s7, iter) ) {
-        sealark_debug_print_ast_outline(s7_c_object_value(arg), 0);
+        /* sealark_debug_log_ast_outline(s7_c_object_value(arg), 0); */
         TEST_ASSERT( !s7_is_list(s7, arg) );
         TEST_ASSERT( s7_is_c_object(arg) );
         pred = s7_apply_function(s7, arg,
@@ -299,7 +299,7 @@ void test_pkg_load_src_bindings(void) {
     s7_pointer iter = s7_make_iterator(s7, bindings);
     s7_pointer binding = s7_iterate(s7, iter);
     while ( ! s7_iterator_is_at_end(s7, iter) ) {
-        sealark_debug_print_ast_outline(s7_c_object_value(binding), 0);
+        /* sealark_debug_log_ast_outline(s7_c_object_value(binding), 0); */
         TEST_ASSERT( !s7_is_list(s7, binding) );
         TEST_ASSERT( s7_is_c_object(binding) );
         pred = s7_apply_function(s7, binding,

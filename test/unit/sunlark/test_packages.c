@@ -362,7 +362,7 @@ void test_target_string_parse(void) {
     defines = DEFINES\n\
 )\n";
     s7_pointer target = sunlark_parse_string(s7, s7_make_string(s7, s));
-    /* sealark_debug_print_ast_outline(s7_c_object_value(target), 0); */
+    /* sealark_debug_log_ast_outline(s7_c_object_value(target), 0); */
 
     /* to see the structure of target_node: */
     struct node_s *target_node = s7_c_object_value(target);

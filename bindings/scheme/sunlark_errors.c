@@ -56,7 +56,7 @@ s7_pointer handle_errno(s7_scheme *s7, int errorno, s7_pointer path_args)
     case EINDEX_TYPE_ERR:
         return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
                         s7_list(s7, 2, s7_make_string(s7,
-                        "Attempting to index a non-sequece: ~A"),
+                        "Attempting to index a non-sequence: ~A"),
                                 (path_args))));
         break;
     case EINVALID_INT_INDEX:

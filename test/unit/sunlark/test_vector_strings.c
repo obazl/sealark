@@ -96,7 +96,7 @@ void test_string_vector(void) {
     /* (svector 1) => sunlark :string */
     s7_pointer item1 = s7_apply_function(s7, svector,
                                      s7_cons(s7,
-                                             s7_make_integer(s7, 1),
+                                             s7_make_keyword(s7, "1"),
                                              s7_nil(s7)));
     TEST_ASSERT( s7_is_c_object(item1) );
     /* (item1 :string?) => #t */

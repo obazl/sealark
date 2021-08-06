@@ -7,16 +7,17 @@ test_suite(
         ":binding_set",
         ":bool_set",
         ":common_props",
+        ":dictionaries",
         # ":definitions",
         ":loadstmts",
         ":make_binding",
         ":packages",
-        ":strings",
         ":string_props",
         ":string_set",
+        ":strings",
         ":targets",
-        ":vectors",
         ":vector_strings",
+        ":vectors",
     ])
 
 COPTS = select({

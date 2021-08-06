@@ -87,7 +87,7 @@ LOCAL void _debug_display_ast_outline(struct node_s *node,
 EXPORT void sealark_debug_log_ast_outline(struct node_s *node, int level)
 {
 #if defined(DEBUG_SERIALIZER)
-    log_debug("sealark_debug_log_ast_outline");
+    log_debug("sealark_debug_log_ast_outline %p", node);
 #endif
 
     /* print_stacktrace(); */
