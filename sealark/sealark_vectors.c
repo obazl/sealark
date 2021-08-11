@@ -90,10 +90,10 @@ EXPORT struct node_s *sealark_vector_item_for_int(struct node_s *list_expr,
     }
 
     //FIXME: support negative index
-    log_debug("indexing %d", index);
+    /* log_debug("indexing %d", index); */
 
     struct node_s *item = utarray_eltptr(expr_list->subnodes, index*2);
-    log_debug("found: %s", item->s);
+    /* log_debug("found: %s", item->s); */
     return item;
 
     log_error("UNEXPECTED");
@@ -108,7 +108,7 @@ EXPORT UT_array *sealark_vector_items_for_string(struct node_s *vector,
 #if defined(DEBUG_TRACE)
     log_debug("sealark_vector_items_for_string: %s", selector);
 #endif
-    log_debug("vector tid: %d %s", vector->tid, TIDNAME(vector));
+    /* log_debug("vector tid: %d %s", vector->tid, TIDNAME(vector)); */
     assert(vector->tid == TK_List_Expr);
 
     int selector_len = strlen(selector);
@@ -150,7 +150,7 @@ EXPORT UT_array *sealark_vector_items_for_string(struct node_s *vector,
             i++;
         }
     }
-    log_debug("matched items: %d", utarray_len(items));
+    /* log_debug("matched items: %d", utarray_len(items)); */
     return items;
 }
 
@@ -184,7 +184,7 @@ EXPORT UT_array *sealark_vector_items_for_int_val(struct node_s *vector,
         }
     }
     int ct = utarray_len(items);
-    log_debug("matched items: %d", ct);
+    /* log_debug("matched items: %d", ct); */
     return items;
 }
 
@@ -196,7 +196,7 @@ EXPORT void sealark_update_vector_items(UT_array *items,
     log_debug("sealark_update_vector_items: %s", newval);
 #endif
 
-    log_debug("found %d items", utarray_len(items));
+    /* log_debug("found %d items", utarray_len(items)); */
 
     int newval_len = strlen(newval);
 
@@ -267,7 +267,7 @@ EXPORT struct node_s *sealark_vector_remove_item(struct node_s *vector,
         i++;
     }
     /* we should always match desired index */
-    log_debug("removing item at %d, subnode %d", index, i);
+    /* log_debug("removing item at %d, subnode %d", index, i); */
 
     /* if last item, back up one to remove preceding comma */
     i = ((subnode_ct - i) > 1)? i : i-1;

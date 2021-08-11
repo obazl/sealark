@@ -24,7 +24,7 @@ EXPORT struct node_s *sealark_set_int(struct node_s *node,
     char buf[128];
     snprintf(buf, 128, "%d", newint);
     int len = strlen(buf);
-    log_debug("new val: %d", newint);
+    /* log_debug("new val: %d", newint); */
     node->tid = TK_INT;
     node->s = calloc(len, sizeof(char));
     strncpy(node->s, buf, len);
@@ -49,7 +49,7 @@ EXPORT struct node_s *sealark_set_string(struct node_s *node,
     }
     node->tid = TK_STRING;
     node->qtype = qtype; //(qmark | qqq | qtype);
-    log_debug("qtype: %#04x", node->qtype);
+    /* log_debug("qtype: %#04x", node->qtype); */
 
     int len = strlen(newstr);
     node->s = calloc(len, sizeof(char));
@@ -72,7 +72,7 @@ EXPORT struct node_s *sealark_set_string_c_object(struct node_s *node,
     }
     node->tid = TK_STRING;
     node->qtype = newstr->qtype;
-    log_debug("qtype: %#04x", node->qtype);
+    /* log_debug("qtype: %#04x", node->qtype); */
 
     int len = strlen(newstr->s);
     node->s = calloc(len, sizeof(char));

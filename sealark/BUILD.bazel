@@ -71,13 +71,13 @@ cc_library(
         "-pedantic-errors",
         "-I", ".",
         "-I", "$(GENDIR)/sealark",
-        "-I", "$(GENDIR)/external/moonlark/sealark",
+        "-I", "$(GENDIR)/external/sealark/sealark",
 
         "-I", "vendored/uthash",
-        "-I", "external/moonlark/vendored/uthash",
+        "-I", "external/sealark/vendored/uthash",
 
         "-I", "vendored/logc",
-        "-I", "external/moonlark/vendored/logc",
+        "-I", "external/sealark/vendored/logc",
     ],
     deps = [
         ":lexis",
@@ -113,13 +113,13 @@ cc_library(
         "-I", ".",              # syntaxis.h
 
         "-I", "$(GENDIR)/sealark",
-        "-I", "$(GENDIR)/external/moonlark/sealark",
+        "-I", "$(GENDIR)/external/sealark/sealark",
 
         "-I", "vendored/logc",
-        "-I", "external/moonlark/vendored/logc",
+        "-I", "external/sealark/vendored/logc",
 
         "-I", "vendored/uthash",
-        "-I", "external/moonlark/vendored/uthash",
+        "-I", "external/sealark/vendored/uthash",
 
         "-U", "NDEBUG"
     ],
@@ -174,13 +174,13 @@ cc_library(
         "-I", "src",
 
         "-I", "$(GENDIR)/sealark",
-        "-I", "$(GENDIR)/external/moonlark/sealark",
+        "-I", "$(GENDIR)/external/sealark/sealark",
 
         "-I", "vendored/uthash",
-        "-I", "external/moonlark/vendored/uthash",
+        "-I", "external/sealark/vendored/uthash",
 
         "-I", "vendored/logc",
-        "-I", "external/moonlark/vendored/logc",
+        "-I", "external/sealark/vendored/logc",
     ],
     defines = select({
         "//bzl/host:debug": [],
