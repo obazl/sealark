@@ -190,9 +190,7 @@ struct node_s {
     int tid;
     int line, col;
 
-    //HACK! if 1 in TK_List_Expr, then list items are (i . val) pairs
-    // set to list index for elts of such a list
-    /* int index; */
+    char *fname; // until we come up with a better solution
 
     bool trailing_newline; // FIXME: do we need to retain this?
     enum quote_type_e qtype;

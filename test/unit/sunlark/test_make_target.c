@@ -17,7 +17,7 @@ static s7_pointer tgt;
 int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_with_null_attrs);
-    RUN_TEST(test_macro_with_null_attrs);
+    /* RUN_TEST(test_macro_with_null_attrs); */
 
     RUN_TEST(test_with_3_attrs);
     /* RUN_TEST(test_macro_with_3_attrs); */

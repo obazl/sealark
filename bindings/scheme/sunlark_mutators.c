@@ -264,7 +264,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
             = sunlark_arglist_mutate(s7, context_node, selector, update_val);
         if (new) {
             /* sealark_format_normalize(new); */
-            sealark_format_rm_trailing_commas(s7_c_object_value(self));
+            /* sealark_format_rm_trailing_commas(s7_c_object_value(self)); */
             return context;
         } else
             return handle_errno(s7, errno, s7_cdr(args));

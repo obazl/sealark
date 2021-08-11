@@ -13,19 +13,15 @@
 #include "sunlark_package.h"
 
 s7_pointer sunlark_package_dispatcher(s7_scheme *s7,
-                                         s7_pointer data,
-                                         s7_pointer path_args)
+                                      s7_pointer data,
+                                      s7_pointer path_args)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_PATHS)
     log_debug(">> sunlark_package_dispatcher, args: %s",
               s7_object_to_c_string(s7, path_args));
 #endif
     struct node_s *pkg = s7_c_object_value(data);
-    if (pkg->tid != TK_Package) {
-        log_error("Expected node tid %d, got %d %s", TK_Package,
-                  pkg->tid, TIDNAME(pkg));
-        exit(EXIT_FAILURE);     /* FIXME */
-    }
+    assert(pkg->tid == TK_Package);
 
     int op_count = s7_list_length(s7, path_args);
     /* log_debug("op count: %d", op_count); */
@@ -111,6 +107,20 @@ s7_pointer sunlark_package_dispatcher(s7_scheme *s7,
     if (op == KW(format)) {
         sealark_pkg_format_force(pkg);
         return s7_unspecified(s7);
+    }
+
+    if (op == KW(filename)) {
+        char *fname = sealark_pkg_filename(pkg);
+        return s7_make_string(s7, fname);
+    }
+
+    if (op == KW(save)) {
+        errno = 0;
+        sealark_pkg_save(pkg);
+        if (errno == 0)
+            return s7_unspecified(s7);
+        else
+            return handle_errno(s7, errno, s7_make_string(s7, pkg->fname));
     }
 
     /* common properties */

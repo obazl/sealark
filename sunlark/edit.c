@@ -151,8 +151,8 @@ int main(int argc, char *argv[]) // , char **envp)
     /* s7_pointer ast = sunlark_ast2scm(s7, parse_state); */
 
     s7_pointer ast = sunlark_parse_build_file(s7,
-                                              s7_list(s7, 1,
-                                                      s7_make_string(s7, build_file)));
+                                      s7_list(s7, 1,
+                                      s7_make_string(s7, build_file)));
 
     s7_pointer args =  s7_list(s7, 1, ast);
 

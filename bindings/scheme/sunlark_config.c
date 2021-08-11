@@ -53,6 +53,7 @@ EXPORT s7_scheme *sunlark_init(void)
 
     register_binding_ctor_macro(s7);
 
+    //FIXME: error handling
     /* look for error messages */
     errmsg = s7_get_output_string(s7, s7_current_error_port(s7));
 

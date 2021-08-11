@@ -11,6 +11,34 @@
 #include "sealark_package.h"
 
 /* **************************************************************** */
+EXPORT char *sealark_pkg_filename(struct node_s *pkg)
+{
+    return pkg->fname;
+}
+
+/* **************************************************************** */
+EXPORT void sealark_pkg_save(struct node_s *pkg)
+{
+    UT_string *buffer;
+    utstring_new(buffer);
+    sealark_node_to_starlark(pkg, buffer);
+    int len = utstring_len(buffer);
+
+    FILE *outfile;
+    errno = 0;
+    outfile = fopen(pkg->fname, "w+");
+    if (outfile == NULL) return;
+
+    errno = 0;
+    fputs(utstring_body(buffer), outfile);
+    int e = errno;
+    utstring_free(buffer);
+    fclose(outfile);
+    errno = e;
+    return;
+}
+
+/* **************************************************************** */
 EXPORT struct node_s *sealark_pkg_remove_all_targets(struct node_s *pkg)
 {
 #if defined(DEBUG_TRACE) || defined(DEBUG_MUTATE)
@@ -619,22 +647,20 @@ EXPORT void _pkg_format_toplevel(struct node_s *tl_nd, int *mrl, int *mrc)
     struct node_s *sub = NULL;
     if (tl_nd->line < 0) {
         /* unformatted */
-        *mrl += 2;
+        *mrl += format.leading;
         tl_nd->line = *mrl;
-        tl_nd->col  = col;
+        tl_nd->col  = *mrc;
         while( (sub=(struct node_s*)utarray_next(tl_nd->subnodes, sub)) ) {
-            sealark_format_dirty_node(sub, mrl, &col);
+            sealark_format_dirty_node(sub, mrl, mrc);
         }
     } else {
-        /* int delta = *mrl - tl_nd->line; */
-        /* log_debug("DELTA %d", delta); */
-        /* if (delta < 0) */
-        /*     return; */
-
-
         if (tl_nd->line < *mrl) {
             tl_nd->line = *mrl + format.leading;
             *mrl = tl_nd->line;
+        } else {
+            if (tl_nd->line == *mrl) {
+
+            }
         }
 
         while( (sub=(struct node_s*)utarray_next(tl_nd->subnodes, sub)) ) {

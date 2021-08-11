@@ -19,10 +19,11 @@
 #include "log.h"
 #if EXPORT_INTERFACE
 #include "utarray.h"
+#include "uthash.h"
 #include "utstring.h"
 #endif
 
-#include "parse.h"
+#include "sealark_parsers.h"
 
 /* UT_string *package; */
 
@@ -30,10 +31,19 @@ int line;
 int col;
 
 #if EXPORT_INTERFACE
+struct parsed_pkg_s {
+    char          *fname;
+    struct node_s *pkg_node;
+    UT_hash_handle hh;
+};
+#endif
+struct parsed_pkg_s *parsed_pkgs = NULL;    /* important! initialize to NULL */
+
+#if EXPORT_INTERFACE
 struct parse_state_s {
-    /* char *fname; */
+    char *fname;
     struct bf_lexer_s *lexer;
-    struct node_s     *root;
+    struct node_s     *root; //FIXME: rename pkg (TK_Package)
 };
 #endif
 
@@ -60,6 +70,7 @@ EXPORT void parser_free(parse_state_s *parser)
     // log_debug("parser_free %s", parser->lexer->fname);
     lexer_free(parser->lexer);
     sealark_node_free(parser->root);
+    free(parser);
 }
 
 EXPORT UT_array *sealark_lex_string(const char *buffer)
@@ -238,7 +249,7 @@ EXPORT struct node_s *sealark_parse_string(const char *buffer)
     return parse_state->root;
 }
 
-EXPORT struct parse_state_s *sealark_parse_file(const char *fname)
+EXPORT struct node_s *sealark_parse_file(const char *fname)
 {
     log_set_quiet(false);
 
@@ -246,6 +257,12 @@ EXPORT struct parse_state_s *sealark_parse_file(const char *fname)
     log_info("sealark_parse_file: %s", fname);
 #endif
     FILE *f, *ftrace;
+
+    struct parsed_pkg_s *pkg = NULL;
+    HASH_FIND_STR(parsed_pkgs, fname, pkg);
+    if (pkg) { /* already parsed */
+        return pkg->pkg_node;
+    }
 
     /* log_debug("CWD: %s", getcwd(NULL, 0)); */
 
@@ -361,7 +378,16 @@ EXPORT struct parse_state_s *sealark_parse_file(const char *fname)
     /* dump_node(parse_state->root); */
 
     free(buffer);
-    return parse_state;
+
+    pkg = calloc(1, sizeof(struct parsed_pkg_s));
+    int len = strlen(fname);
+    pkg->fname = calloc(len, sizeof(char));
+    strncpy(pkg->fname, fname, len);
+    pkg->pkg_node = parse_state->root;
+    pkg->pkg_node->fname = pkg->fname;
+    HASH_ADD_KEYPTR(hh, parsed_pkgs, fname, len, pkg);
+
+    return parse_state->root;
 }
 
 EXPORT void sealark_parse_state_free(struct parse_state_s *ps)
