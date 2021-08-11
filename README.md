@@ -1,7 +1,8 @@
 # Sealark - tools for Starlark parsing and editing
 Sealark is a collection of tools for working with Starlark code,
 written in C (get it, C-lark?). `libsealark` is a Starlark parser;
-Moonlark is a Lua binding; Sunlark is a Scheme binding.
+[Sunlark](https://github.com/obazl/sunlark) is a Scheme binding;
+[Moonlark](https://github.com/obazl/moonlark) is a Lua binding;
 
 [List of lark species](https://en.wikipedia.org/wiki/List_of_lark_species). Sunlark is actually a [species](https://en.wikipedia.org/wiki/Sun_lark).
 
