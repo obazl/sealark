@@ -24,7 +24,7 @@ s7_pointer sunlark_update_binding_name(s7_scheme *s7,
               sunlark_node_tid(s7, node_s7));
 #endif
 
-    log_debug("updating attr-name");
+    /* log_debug("updating attr-name"); */
     const char *tmp_name;
     if (s7_is_string(val)) {
         tmp_name = s7_string(val);
@@ -40,7 +40,7 @@ s7_pointer sunlark_update_binding_name(s7_scheme *s7,
     }
     /* strings from s7 must not be freed? so... */
     int len = strlen(tmp_name) + 1; /* add one for newline */
-    log_debug("TMP NAME: %d, %s", len, tmp_name);
+    /* log_debug("TMP NAME: %d, %s", len, tmp_name); */
     char *new_name = calloc(len, sizeof(char));
     snprintf(new_name, len, "%s", tmp_name);
 
@@ -67,7 +67,7 @@ s7_pointer sunlark_update_binding_value(s7_scheme *s7,
     /* 3rd subnode of attrib is attr-value */
     struct node_s *target = utarray_eltptr(node->subnodes, 2);
     if (target->tid == TK_STRING) {
-        log_debug("updating string value");
+        /* log_debug("updating string value"); */
         const char *tmp_value;
         if (s7_is_string(val)) {
             tmp_value = s7_string(val);
@@ -89,10 +89,10 @@ s7_pointer sunlark_update_binding_value(s7_scheme *s7,
                 }
             }
         }
-        log_debug("updating string value");
+        /* log_debug("updating string value"); */
         /* strings from s7 must not be freed? so... */
         int len = strlen(tmp_value) + 1;
-        log_debug("TMP VALUE: %d, %s", len, tmp_value);
+        /* log_debug("TMP VALUE: %d, %s", len, tmp_value); */
         char *new_value = calloc(len, sizeof(char));
         snprintf(new_value, len, "%s", tmp_value);
 
@@ -102,11 +102,11 @@ s7_pointer sunlark_update_binding_value(s7_scheme *s7,
     }
 
     if (target->tid == TK_List_Expr) {
-        log_debug("updating list valued attrib");
+        /* log_debug("updating list valued attrib"); */
         // for now, replacement
         if (s7_is_list(s7, val)) {
-            log_debug("set! val is list: %s",
-                      s7_object_to_c_string(s7, val));
+            /* log_debug("set! val is list: %s", */
+            /*           s7_object_to_c_string(s7, val)); */
             errno = 0;
             struct node_s *result = sunlark_update_list_value(s7, target, key, val);
             if (result == NULL) {
@@ -152,7 +152,7 @@ s7_pointer sunlark_update_binding_value(s7_scheme *s7,
     }
 
     if (target->tid == TK_Dict_Expr) {
-        log_debug("updating dict value (not yet)");
+        log_error("updating dict value (not yet)");
         return(s7_error(s7, s7_make_symbol(s7, "not yet implemented"),
                     s7_list(s7, 2, s7_make_string(s7, "node type dict not yet supported for value update"), key)));
 
@@ -260,7 +260,7 @@ struct node_s *sunlark_mutate_binding_value(s7_scheme *s7,
 
     if (oldval->tid == TK_List_Expr) {
         if (s7_is_list(s7, newval)) {
-            log_debug("replacing list with list");
+            /* log_debug("replacing list with list"); */
             return sunlark_mutate_vector(s7, oldval, newval);
         }
     }
@@ -326,7 +326,7 @@ struct node_s *sunlark_mutate_binding_value(s7_scheme *s7,
 
     if (s7_is_string(newval)) {
         const char *s = s7_string(newval);
-        log_debug("new val: %s", s);
+        /* log_debug("new val: %s", s); */
         int len = strlen(s);
         oldval->tid = TK_STRING;
         oldval->s = calloc(len, sizeof(char));
@@ -336,7 +336,7 @@ struct node_s *sunlark_mutate_binding_value(s7_scheme *s7,
 
     if (s7_is_symbol(newval)) {
         const char *s = s7_symbol_name(newval);
-        log_debug("new val: %s", s);
+        /* log_debug("new val: %s", s); */
         int len = strlen(s);
         oldval->tid = TK_ID;
         oldval->s = calloc(len, sizeof(char));
@@ -349,7 +349,7 @@ struct node_s *sunlark_mutate_binding_value(s7_scheme *s7,
         char buf[128];
         snprintf(buf, 128, "%d", d);
         int len = strlen(buf);
-        log_debug("new val: %d", d);
+        /* log_debug("new val: %d", d); */
         oldval->tid = TK_INT;
         oldval->s = calloc(len, sizeof(char));
         strncpy(oldval->s, buf, len);
@@ -357,7 +357,7 @@ struct node_s *sunlark_mutate_binding_value(s7_scheme *s7,
     }
 
     if (s7_is_boolean(newval)) {
-        log_debug("new val: %s", s7_object_to_c_string(s7, newval));
+        /* log_debug("new val: %s", s7_object_to_c_string(s7, newval)); */
         oldval->tid = TK_ID;
         if (newval == s7_t(s7)) {
             oldval->s = calloc(4, sizeof(char));
@@ -404,7 +404,7 @@ struct node_s *Xsunlark_mutate_binding_value(s7_scheme *s7,
     if (s7_is_list(s7, newval)) {
         s7_pointer action = s7_car(newval);
         if (action == KW(append)) {
-            log_debug("ACTION: append");
+            /* log_debug("ACTION: append"); */
             /* return _vector_append(s7, _list_expr, index, s7_cdr(newval)); */
             return NULL;
         }
@@ -414,7 +414,7 @@ struct node_s *Xsunlark_mutate_binding_value(s7_scheme *s7,
 
     if (oldval->tid == TK_List_Expr) {
         if (s7_is_list(s7, newval)) {
-            log_debug("replacing list with list");
+            /* log_debug("replacing list with list"); */
             return sunlark_mutate_vector(s7, oldval, newval);
         }
     }
@@ -470,7 +470,7 @@ struct node_s *Xsunlark_mutate_binding_value(s7_scheme *s7,
 
     if (s7_is_string(newval)) {
         const char *s = s7_string(newval);
-        log_debug("new val: %s", s);
+        /* log_debug("new val: %s", s); */
         int len = strlen(s);
         oldval->tid = TK_STRING;
         oldval->s = calloc(len, sizeof(char));
@@ -480,7 +480,7 @@ struct node_s *Xsunlark_mutate_binding_value(s7_scheme *s7,
 
     if (s7_is_symbol(newval)) {
         const char *s = s7_symbol_name(newval);
-        log_debug("new val: %s", s);
+        /* log_debug("new val: %s", s); */
         int len = strlen(s);
         oldval->tid = TK_ID;
         oldval->s = calloc(len, sizeof(char));
@@ -493,7 +493,7 @@ struct node_s *Xsunlark_mutate_binding_value(s7_scheme *s7,
         char buf[128];
         snprintf(buf, 128, "%d", d);
         int len = strlen(buf);
-        log_debug("new val: %d", d);
+        /* log_debug("new val: %d", d); */
         oldval->tid = TK_INT;
         oldval->s = calloc(len, sizeof(char));
         strncpy(oldval->s, buf, len);
@@ -501,7 +501,7 @@ struct node_s *Xsunlark_mutate_binding_value(s7_scheme *s7,
     }
 
     if (s7_is_boolean(newval)) {
-        log_debug("new val: %s", s7_object_to_c_string(s7, newval));
+        /* log_debug("new val: %s", s7_object_to_c_string(s7, newval)); */
         oldval->tid = TK_ID;
         if (newval == s7_t(s7)) {
             oldval->s = calloc(4, sizeof(char));
@@ -533,7 +533,7 @@ LOCAL struct node_s *sunlark_mutate_arglist_at_int(s7_scheme *s7,
     index = sealark_normalize_index(arg_list, index);
 
     if (update_val == KW(null)) {
-        log_debug("Removing binding at %d", index);
+        /* log_debug("Removing binding at %d", index); */
         errno = 0;
         struct node_s *updated_node;
         updated_node
@@ -567,18 +567,18 @@ LOCAL struct node_s *sunlark_mutate_arglist_at_int(s7_scheme *s7,
     if (s7_is_c_object(update_val)) {
         if (s7_c_object_type(update_val) == ast_node_t) {
             struct node_s *nd = s7_c_object_value(update_val);
-            log_debug("update val is node: %d %s",
-                      nd->tid, TIDNAME(nd));
+            /* log_debug("update val is node: %d %s", */
+            /*           nd->tid, TIDNAME(nd)); */
             if (nd->tid == TK_Binding) {
                 return sealark_arglist_replace_binding_at_int(arg_list,
                                                               index, nd);
             } else {
-            log_debug("update val is unknown c_object");
+            log_error("update val is unknown c_object");
             errno = ENOT_IMPLEMENTED;
             return NULL;
             }
         } else {
-            log_debug("update val is unknown c_object");
+            log_error("update val is unknown c_object");
             errno = ENOT_IMPLEMENTED;
             return NULL;
         }
@@ -618,10 +618,10 @@ struct node_s *sunlark_arglist_mutate(s7_scheme *s7,
                                                  idx, update_val);
         } else {
             if (errno == ENOT_A_KW) {
-                log_debug("not a KW, continuing");
+                ; // log_debug("not a KW, continuing");
             } else {
                 if (lval == KW(*)) {
-                    log_debug("removing all bindings");
+                    /* log_debug("removing all bindings"); */
                     struct node_s *r
                         = sealark_target_bindings_rm_all(arglist);
                     if (r)
@@ -639,8 +639,8 @@ struct node_s *sunlark_arglist_mutate(s7_scheme *s7,
 
     if (s7_is_integer(lval)) {
         if (update_val == KW(null)) {
-            log_debug("Removing binding at %s",
-                      s7_object_to_c_string(s7, lval));
+            /* log_debug("Removing binding at %s", */
+            /*           s7_object_to_c_string(s7, lval)); */
             errno = 0;
             struct node_s *updated_node;
             updated_node
@@ -654,7 +654,7 @@ struct node_s *sunlark_arglist_mutate(s7_scheme *s7,
         }
 
         if (s7_is_list(s7, update_val)) {
-            log_debug("update val is list");
+            log_error("update val is list");
             errno = ENOT_IMPLEMENTED;
             return NULL;
         }
@@ -672,22 +672,22 @@ struct node_s *sunlark_arglist_mutate(s7_scheme *s7,
                 errno = ENOT_FOUND_BINDING;
                 return NULL;
             } else {
-                log_debug("found %s at index %d (subnode %d)",
-                          s7_symbol_name(lval),
-                          idx/2, idx);
+                /* log_debug("found %s at index %d (subnode %d)", */
+                /*           s7_symbol_name(lval), */
+                /*           idx/2, idx); */
             }
 
             if (update_val == KW(null)) {
-                log_info("removing sym %s from bindings",
-                         s7_object_to_c_string(s7, lval));
+                /* log_info("removing sym %s from bindings", */
+                /*          s7_object_to_c_string(s7, lval)); */
                 sealark_remove_binding_at_index(arglist, idx);
                 return arglist;
             }
 
             if (s7_is_c_object(update_val)) {
-                log_debug("context: c-object");
+                /* log_debug("context: c-object"); */
                 if (s7_c_object_type(update_val) != ast_node_t) {
-                    log_debug("update val is unknown c_object");
+                    log_error("update val is unknown c_object");
                     errno = ENOT_IMPLEMENTED;
                     return NULL;
                 } else {
@@ -698,7 +698,7 @@ struct node_s *sunlark_arglist_mutate(s7_scheme *s7,
                         errno = ESUNLARK_ARG_TYPE_ERR;
                         return NULL;
                     } else {
-                        log_error("updating with new binding at idx %d", idx);
+                        /* log_error("updating with new binding at idx %d", idx); */
                         /* struct node_s *binding */
                         /*     = sealark_bindings_binding_for_index(arglist, */
                         /*                                          idx); */
@@ -732,9 +732,9 @@ struct node_s *sunlark_mutate_binding(s7_scheme *s7,
     assert(binding->tid == TK_Binding);
 
     if (s7_is_c_object(new_binding)) {
-        log_debug("new binding....");
+        /* log_debug("new binding...."); */
         if (s7_c_object_type(new_binding) == ast_node_t) {
-            log_debug("new ast node");
+            /* log_debug("new ast node"); */
             struct node_s *b = s7_c_object_value(new_binding);
             if (b->tid != TK_Binding) {
                 log_error("Invalid type %s %s for mutating binding",
@@ -761,7 +761,7 @@ struct node_s *sunlark_mutate_binding(s7_scheme *s7,
     }
 
     if (s7_is_list(s7, new_binding)) {
-        log_debug("replacing binding");
+        /* log_debug("replacing binding"); */
         if ( !sunlark_new_binding_is_valid(s7, new_binding) ) {
             log_error("failed: sunlark_new_binding_is_valid");
             exit(EXIT_FAILURE); /* FIXME: s7_error */
@@ -803,9 +803,12 @@ struct node_s *sunlark_mutate_binding(s7_scheme *s7,
     } else {
         if (s7_is_string(new_binding)) {
             log_error("Cannot replace binding with string");
-            exit(EXIT_FAILURE); /* FIXME: s7_error */
+            errno = EINVALID_UPDATE;
+            return NULL;
         } else {
-            log_debug("xxxxxxxxxxxxxxxx");
+            log_error("Unexpected state");
+            errno = EUNEXPECTED_STATE;
+            return NULL;
         }
     }
 }
@@ -828,9 +831,9 @@ LOCAL struct node_s *_binding_splice_list(s7_scheme *s7,
     }
 
     index = sealark_normalize_index(bindings, index);
-    log_debug("normalized index: %d", index);
-    log_debug("splicing %s at locn: %d", s7_object_to_c_string(s7, splice),
-              index);
+    /* log_debug("normalized index: %d", index); */
+    /* log_debug("splicing %s at locn: %d", s7_object_to_c_string(s7, splice), */
+    /*           index); */
 
     int len = s7_list_length(s7, splice);
     struct node_s *new_binding_nd;
@@ -846,12 +849,12 @@ LOCAL struct node_s *_binding_splice_list(s7_scheme *s7,
             errno = ESPLICE_BINDING_ARG;
             return NULL;
         }
-        log_debug("splicing binding %d: %s",
-                  i, s7_object_to_c_string(s7, new_binding));
+        /* log_debug("splicing binding %d: %s", */
+        /*           i, s7_object_to_c_string(s7, new_binding)); */
         new_binding_nd = s7_c_object_value(new_binding);
         /* new_binding_nd->line = -1; // mark as unformatted */
-        log_debug("new_binding_nd %d %s",
-                  new_binding_nd->tid, TIDNAME(new_binding_nd));
+        /* log_debug("new_binding_nd %d %s", */
+        /*           new_binding_nd->tid, TIDNAME(new_binding_nd)); */
         /* item must be binding */
         if (new_binding_nd->tid == TK_Binding) {
             errno = 0;
@@ -860,6 +863,7 @@ LOCAL struct node_s *_binding_splice_list(s7_scheme *s7,
                                                   new_binding_nd);
             if (errno != 0) {
                 log_error("Error splicing...%d", errno);
+                errno = ESPLICE_BINDING_ARG;
                 return NULL;
             }
         } else {
@@ -888,20 +892,21 @@ LOCAL struct node_s *_binding_splice_vector(s7_scheme *s7,
     if ( !s7_is_vector(splice)) {
         log_error("Expected vector, got %s",
                   s7_object_to_c_string(s7, splice));
+        errno = EINVALID_ARG;
         return NULL;
     }
 
     index = sealark_normalize_index(bindings, index);
-    log_debug("normalized index: %d", index);
-    log_debug("splicing %s at locn: %d", s7_object_to_c_string(s7, splice),
-              index);
+    /* log_debug("normalized index: %d", index); */
+    /* log_debug("splicing %s at locn: %d", s7_object_to_c_string(s7, splice), */
+    /*           index); */
 
     int len = s7_vector_length(splice);
     s7_pointer new_binding;
     struct node_s *new_binding_nd;
 
     for (int i=0; i < len; i++) {
-        log_debug("v xxxxxxxxxxxxxxxx");
+        /* log_debug("v xxxxxxxxxxxxxxxx"); */
         new_binding = s7_vector_ref(s7, splice, i);
         if ( !s7_is_c_object(new_binding)) {
             log_error("Binding :splice only accepts :binding nodes; got: %s of type %s",
@@ -910,11 +915,11 @@ LOCAL struct node_s *_binding_splice_vector(s7_scheme *s7,
             errno = ESPLICE_BINDING_ARG;
             return NULL;
         }
-        log_debug("splicing binding %d: %s",
-                  i, s7_object_to_c_string(s7, new_binding));
+        /* log_debug("splicing binding %d: %s", */
+        /*           i, s7_object_to_c_string(s7, new_binding)); */
         new_binding_nd = s7_c_object_value(new_binding);
-        log_debug("new_binding_nd %d %s",
-                  new_binding_nd->tid, TIDNAME(new_binding_nd));
+        /* log_debug("new_binding_nd %d %s", */
+        /*           new_binding_nd->tid, TIDNAME(new_binding_nd)); */
         /* item must be binding */
         if (new_binding_nd->tid == TK_Binding) {
             errno = 0;
@@ -923,6 +928,7 @@ LOCAL struct node_s *_binding_splice_vector(s7_scheme *s7,
                                                   new_binding_nd);
             if (errno != 0) {
                 log_error("Error splicing...%d", errno);
+                errno = ESPLICE_ERR;
                 return NULL;
             }
 

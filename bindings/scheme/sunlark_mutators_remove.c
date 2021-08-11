@@ -20,11 +20,11 @@ s7_pointer sunlark_remove(s7_scheme *s7, s7_pointer self,
     log_debug(">> sunlark_remove path: %s, selector %s",
               s7_object_to_c_string(s7, get_path),
               s7_object_to_c_string(s7, selector));
-    struct node_s *self_node = s7_c_object_value(self);
-    log_debug("self: %d %s", self_node->tid, TIDNAME(self_node));
 #endif
 
     int path_len = s7_list_length(s7, get_path);
+
+    struct node_s *self_node = s7_c_object_value(self);
 
     struct node_s *result;
 

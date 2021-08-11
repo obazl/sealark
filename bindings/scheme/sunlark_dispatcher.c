@@ -51,8 +51,8 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
     s7_pointer op = s7_car(path_args);
     struct node_s *resnode;
 
-    log_debug("path adjusted: %s", s7_object_to_c_string(s7, path_args));
-    log_debug("last arg: %s", s7_object_to_c_string(s7, last));
+    /* log_debug("path adjusted: %s", s7_object_to_c_string(s7, path_args)); */
+    /* log_debug("last arg: %s", s7_object_to_c_string(s7, last)); */
 
     if (s7_is_null(s7, path_args)) {
         /* if adjusted path is () then we should have last == :$ */
@@ -258,6 +258,7 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
 #if defined(DEBUG_TRACE)
         log_debug("dispatching on TK_List_Expr");
 #endif
+        {
         s7_pointer vec = sunlark_vector_dispatcher(s7,
                                    s7_c_object_value(data), path_args);
         if (vec)
@@ -282,6 +283,7 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
                 return handle_errno(s7, errno, path_args);
             }
         /* return sunlark_dispatch_on_list_expr(s7, data, path_args); */
+        }
         break;
 
     default:

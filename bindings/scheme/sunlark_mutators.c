@@ -28,7 +28,6 @@ s7_pointer sunlark_node_set_generic(s7_scheme *s7, s7_pointer args)
     if (s7_list_length(s7, msg) == 2) {
         s7_pointer op  = s7_cdr(msg);
         if (op == KW(>>)) {
-            log_debug("xxxxxxxxxxxxxxxx");
         } else {
 
         }
@@ -216,8 +215,8 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
                                                                 self,
                                                                 get_path));
     struct node_s *context_node = s7_c_object_value(context);
-    log_debug("object_applicator returned context node: %d %s",
-              context_node->tid, TIDNAME(context_node));
+    /* log_debug("object_applicator returned context node: %d %s", */
+    /*           context_node->tid, TIDNAME(context_node)); */
 
 #if defined(DEBUG_SET)
     log_debug("getter self: %d %s", self_node->tid, TIDNAME(self_node));
@@ -276,7 +275,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
         log_debug("CASE SET! context: TK_Binding");
 #endif
         if (selector == KW(key)) {
-            log_debug("replacing selector: key");
+            /* log_debug("replacing selector: key"); */
             if (update_val == KW(null)) {
                 log_error("Cannot delete key of binding");
                 return handle_errno(s7, EINVALID_REMOVE, s7_cdr(args));
@@ -298,12 +297,12 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
         }
 
         if (selector == s7_make_keyword(s7, "$") || selector == KW(value)) {
-            log_debug("replacing selector: :value");
+            /* log_debug("replacing selector: :value"); */
             errno = 0;
             struct node_s *newb
                 =  sunlark_mutate_binding_value(s7, context_node, update_val);
             if (newb) {
-                log_debug("after replacement:");
+                /* log_debug("after replacement:"); */
                 /* sealark_debug_log_ast_outline(newb, true); // crush */
                 return sunlark_new_node(s7, newb);
                 /* return s7_values(s7, s7_nil(s7)); */
@@ -398,7 +397,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
 
         if (s7_is_keyword(selector)) {
             if (selector == KW(*)) {
-                log_debug("Removing all items from :value list");
+                /* log_debug("Removing all items from :value list"); */
                 struct node_s *exl = utarray_eltptr(context_node->subnodes, 1);
                 utarray_clear(exl->subnodes);
                 return context;
@@ -438,7 +437,8 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
         }
 
         if (s7_is_symbol(selector)) { /* find symbol value in list */
-            log_debug("NOT YET indexing list by sym value");
+            log_debug("NOT YET IMPLEMENTED: indexing list by sym value");
+            errno = ENOT_IMPLEMENTED;
             return NULL;
         }
 
@@ -503,8 +503,8 @@ s7_pointer sunlark_remove_bang(s7_scheme *s7, s7_pointer args)
     log_debug(">>>>>>>>>>>>>>>> sunlark_remove_bang <<<<<<<<<<<<<<<<");
 #endif
 
-    log_debug("args: %s", s7_object_to_c_string(s7, args));
-    log_debug("car %s", s7_object_to_c_string(s7, s7_car(args)));
+    /* log_debug("args: %s", s7_object_to_c_string(s7, args)); */
+    /* log_debug("car %s", s7_object_to_c_string(s7, s7_car(args))); */
     return NULL;
 }
 
@@ -529,12 +529,12 @@ LOCAL struct node_s *sunlark_set_id(s7_scheme *s7,
 {
 #if defined(DEBUG_TRACE) || defined(DEBUG_MUTATE)
     log_debug("sunlark_set_id: %s", s7_object_to_c_string(s7, newval));
+    log_debug("selector: %s", s7_object_to_c_string(s7, selector));
+    log_debug("newval: %s", s7_object_to_c_string(s7, newval));
 #endif
 
     assert(context_node->tid == TK_ID);
 
-    log_debug("selector: %s", s7_object_to_c_string(s7, selector));
-    log_debug("newval: %s", s7_object_to_c_string(s7, newval));
 
     /* NB: in this case selector should be '() - nothing to select */
     if ( s7_is_null(s7, selector) ) { //FIXME

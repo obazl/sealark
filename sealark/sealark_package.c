@@ -234,9 +234,9 @@ EXPORT struct node_s *sealark_pkg_splice_target_at_int(struct node_s *pkg,
             maybe_call = utarray_eltptr(node->subnodes, 0);
             if (maybe_call->tid == TK_Call_Expr) {
                 if (sealark_call_expr_is_target(maybe_call)) {
-                    log_debug("target %d", target_idx);
+                    /* log_debug("target %d", target_idx); */
                     if (target_idx == index) {
-                        log_debug("HIT - splicing at %d", i);
+                        /* log_debug("HIT - splicing at %d", i); */
                         struct node_s *nd = sealark_new_node(TK_Expr_List,
                                                              with_subnodes);
                         utarray_push_back(nd->subnodes, newtgt);
@@ -245,7 +245,7 @@ EXPORT struct node_s *sealark_pkg_splice_target_at_int(struct node_s *pkg,
                         return pkg;
                     } else {
                         if (target_idx == target_ct - 1) {
-                            log_debug("appending");
+                            /* log_debug("appending"); */
                             struct node_s *nd = sealark_new_node(TK_Expr_List,
                                                                  with_subnodes);
                             utarray_push_back(nd->subnodes, newtgt);
@@ -347,17 +347,17 @@ EXPORT struct node_s *sealark_pkg_remove_loadstmt_at_int(struct node_s *pkg,
     int delta = (index < 0)? 0 : toplevel_ct;
     /* int stop  = (index < 0)? 0 : toplevel_ct; */
     int j = 0;
-    log_debug("loadstmt_ct: %d, delta: %d; j: %d",
-              loadstmt_ct, delta, j);
+    /* log_debug("loadstmt_ct: %d, delta: %d; j: %d", */
+    /*           loadstmt_ct, delta, j); */
 
     for (int i = 0; i < toplevel_ct; i++) {
-        log_debug("i: %d", i);
+        /* log_debug("i: %d", i); */
         j = (index < 0)? toplevel_ct - i - 1 : i;
-        log_debug("j: %d, tgt ct: %d", j, loadstmt_ct);
+        /* log_debug("j: %d, tgt ct: %d", j, loadstmt_ct); */
         node = utarray_eltptr(small_stmt_list->subnodes, j);
         if (node->tid == TK_Load_Stmt) {
             if (loadstmt_ct == index) {
-                log_debug("HIT");
+                /* log_debug("HIT"); */
                 utarray_erase(small_stmt_list->subnodes, j, 1);
                 return pkg;
             }
@@ -400,7 +400,7 @@ EXPORT struct node_s *sealark_pkg_remove_loadstmt_at_key(struct node_s *pkg,
             key_node = utarray_eltptr(node->subnodes, 2);
             if ( (strncmp(key_node->s, key, keylen) == 0)
                  && strlen(key_node->s) == keylen ) {
-                log_debug("HIT");
+                /* log_debug("HIT"); */
                 utarray_erase(small_stmt_list->subnodes, i, 1);
                 return pkg;
             }
@@ -502,15 +502,15 @@ EXPORT void sealark_pkg_format(struct node_s *pkg)
     struct node_s *sub = NULL;
     for (int i = 0; i < toplevel_ct; i++) {
         sub = utarray_eltptr(small_stmts->subnodes, i);
-        log_debug("toplevel: %d %s, mrl: %d", sub->tid, TIDNAME(sub), mrl);
+        /* log_debug("toplevel: %d %s, mrl: %d", sub->tid, TIDNAME(sub), mrl); */
         if (dirty)
             _pkg_format_toplevel(sub, &mrl, &mrc);
         else {
             if (sub->line < 0) {
-                log_debug("1 xxxxxxxxxxxxxxxx");
+                /* log_debug("1 xxxxxxxxxxxxxxxx"); */
                 dirty = true;
                 mrl = _most_recent_line(small_stmts, i);
-                log_debug("mrl: %d", mrl);
+                /* log_debug("mrl: %d", mrl); */
                 _pkg_format_toplevel(sub, &mrl, &mrc);
             }
         }

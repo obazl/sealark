@@ -47,7 +47,7 @@ EXPORT void sealark_format_dirty_node(struct node_s *nd, int *mrl, int *mrc)
 
     switch(nd->tid) {
     case TK_Call_Expr:
-        log_debug("formatting TK_Call_Expr");
+        /* log_debug("formatting TK_Call_Expr"); */
         /* nd->line = *mrl; */
         /* nd->col  = *mrc; */
         sealark_format_call_expr(nd, mrl, mrc);
@@ -118,11 +118,11 @@ EXPORT void sealark_format_clean_node(struct node_s *nd,
 #endif
 
     if (nd->line < *mrl) {
-        log_error("xxxxxxxxxxxxxxxx nd->line %d < *mrl %d",
-                  nd->line, *mrl);
+        /* log_error("xxxxxxxxxxxxxxxx nd->line %d < *mrl %d", */
+        /*           nd->line, *mrl); */
         int delta;
         if (nd->line < 0) {
-            log_error("DIRTY %d %s", nd->tid, TIDNAME(nd));
+            /* log_error("DIRTY %d %s", nd->tid, TIDNAME(nd)); */
             /* *mrl += format.leading; */
             nd->line = *mrl;
             nd->col  = *mrc;

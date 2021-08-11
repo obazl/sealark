@@ -25,7 +25,7 @@ struct node_s *root;
 
 int main(void) {
     UNITY_BEGIN();
-    /* RUN_TEST(test_forall_targets_forall_bindings); */
+    RUN_TEST(test_forall_targets_forall_bindings);
     /* RUN_TEST(test_binding_lists); */
     /* RUN_TEST(test_bindings_foreach); */
     /* RUN_TEST(test_binding_srcs); */

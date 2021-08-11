@@ -43,7 +43,7 @@ s7_pointer sunlark_package_dispatcher(s7_scheme *s7,
     }
 
     if (op == KW(>) || op == KW(target)) {
-        log_debug("dispatching on pkg for target");
+        /* log_debug("dispatching on pkg for target"); */
         result_list //= sunlark_targets_for_buildfile(s7, pkg);
             = _pkg_target_dispatcher(s7, pkg, s7_cdr(path_args));
             return result_list;
@@ -70,8 +70,9 @@ s7_pointer sunlark_package_dispatcher(s7_scheme *s7,
         /* UT_array *loads = sealark_loadstmts(pkg); */
         if (loads)
             return nodelist_to_s7_list(s7, loads);
-        else
+        else {
             log_debug("ERROR: ...fixme...");
+        }
     }
 
     if (op == KW(package)) {
@@ -167,7 +168,7 @@ LOCAL s7_pointer _pkg_target_dispatcher(s7_scheme *s7,
     s7_pointer result;
 
     if (op_count == 0) {
-        log_debug("TARGET");
+        /* log_debug("TARGET"); */
         /* UT_array *targets = sealark_targets_for_pkg(pkg); */
         /* return nodelist_to_s7_list(s7, targets); */
         return handle_errno(s7, EINVALID_ARG, path_args);
@@ -250,7 +251,7 @@ struct node_s *sunlark_pkg_target_mutate(s7_scheme *s7,
             }
         }
         if (s7_is_vector(update_val)) {
-            log_debug("splicing after...");
+            /* log_debug("splicing after..."); */
             result = _pkg_splice_targets_at_int(s7, pkg,
                                                 idx, update_val);
             if (result) {
@@ -262,7 +263,7 @@ struct node_s *sunlark_pkg_target_mutate(s7_scheme *s7,
             }
         }
         if (s7_is_list(s7, update_val)) {
-            log_debug("splicing at...");
+            /* log_debug("splicing at..."); */
             result = _pkg_splice_targets_at_int(s7, pkg,
                                                 idx, update_val);
             if (result) {
@@ -273,10 +274,10 @@ struct node_s *sunlark_pkg_target_mutate(s7_scheme *s7,
                 return NULL;
             }
         } else {
-            log_error("ZZZZZZZZZZZZZZZZ");
+            log_error("37 FIXME xxxxxxxxxxxxxxxx");
         }
     } else {
-        log_error("52 xxxxxxxxxxxxxxxx");
+        log_error("52 FIXME xxxxxxxxxxxxxxxx");
     }
     return NULL;
 }
@@ -295,13 +296,13 @@ LOCAL struct node_s *_pkg_splice_targets_at_int(s7_scheme *s7,
     //FIXME efficiency: sealark_normalize_index also counts targets
     int target_ct = sealark_pkg_targets_count(pkg);
     int index = sealark_normalize_index(pkg, _index);
-    log_debug("normalized index: %d", index);
+    /* log_debug("normalized index: %d", index); */
 
     s7_pointer t;               /* target from list */
     struct node_s *tnode;
 
     if (s7_is_list(s7, update_val)) {
-        log_debug("splicing list...");
+        /* log_debug("splicing list..."); */
         while ( !s7_is_null(s7, update_val) ) {
             t = s7_car(update_val);
             if ( !s7_is_c_object(t) ) {
@@ -320,12 +321,12 @@ LOCAL struct node_s *_pkg_splice_targets_at_int(s7_scheme *s7,
                                                    index++, tnode);
         loop:
             update_val = s7_cdr(update_val);
-            log_warn("loop %s", s7_object_to_c_string(s7, update_val));
+            /* log_warn("loop %s", s7_object_to_c_string(s7, update_val)); */
         }
     }
 
     if (s7_is_vector(update_val)) {
-        log_debug("splicing vector...");
+        /* log_debug("splicing vector..."); */
         int len = s7_vector_length(update_val);
         for (int i = 0; i < len; i++) {
             t = s7_vector_ref(s7, update_val, i);

@@ -9,6 +9,8 @@
 #include "utarray.h"
 #include "sunlark.h"
 
+char *history = ".history.txt";
+
 void completion(const char *buf, linenoiseCompletions *lc) {
     if (buf[0] == 'h') {
         linenoiseAddCompletion(lc,"hello");
@@ -48,6 +50,7 @@ int main(int argc, char **argv) {
             exit(1);
         }
     }
+    linenoiseSetMultiLine(1);   /* always support multiline */
 
     char *callback_script_file = "edit.scm";
 
@@ -64,7 +67,7 @@ int main(int argc, char **argv) {
 
     /* Load history from file. The history file is just a plain text file
      * where entries are separated by newlines. */
-    linenoiseHistoryLoad("history.txt"); /* Load the history at startup */
+    linenoiseHistoryLoad(history); /* Load the history at startup */
 
     /* Now this is the main loop of the typical linenoise-based application.
      * The call to linenoise() will block as long as the user types something
@@ -85,7 +88,7 @@ int main(int argc, char **argv) {
             printf("%s", "\n");
 
             linenoiseHistoryAdd(line); /* Add to the history. */
-            linenoiseHistorySave("history.txt"); /* Save the history on disk. */
+            linenoiseHistorySave(history); /* Save the history on disk. */
         } else if (!strncmp(line,"/historylen",11)) {
             /* The "/historylen" command will change the history len. */
             int len = atoi(line+11);

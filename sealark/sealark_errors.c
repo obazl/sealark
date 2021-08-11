@@ -32,6 +32,7 @@
 #define EINVALID_GET_SELECTOR -30
 #define EINVALID_ACTION -31
 #define EINVALID_SERIALIZE_ARG -32
+#define ESPLICE_ERR -33
 
 #endif
 
