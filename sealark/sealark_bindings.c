@@ -93,7 +93,7 @@ EXPORT struct node_s *sealark_value_for_binding(struct node_s *binding)
 EXPORT struct node_s *sealark_target_binding_for_key(struct node_s *call_expr, const char *key)
 {
 #if defined(DEBUG_TRACE)
-    log_debug("sealark_target_binding_for_key: %s", key);
+    /* log_debug("sealark_target_binding_for_key: %s", key); */
 #endif
 
     assert(call_expr->tid == TK_Call_Expr);
@@ -144,7 +144,7 @@ EXPORT struct node_s *sealark_target_binding_for_index(struct node_s *call_expr,
     log_debug("sealark_target_binding_for_index: %d", index);
 #endif
 
-    sealark_debug_log_ast_outline(call_expr, 0);
+    /* sealark_debug_log_ast_outline(call_expr, 0); */
     /* :call-expr[1] > :call-sfx[1] > :arg-list */
     /* then search arg-list children for arg-named/name=str */
     /* :arg-named[0] = :id */
@@ -213,7 +213,7 @@ EXPORT struct node_s *sealark_bindings_binding_for_index(struct node_s *bindings
 {
 #if defined(DEBUG_BINDINGS)
     log_debug("sealark_bindings_binding_for_index: %d", index);
-    sealark_debug_log_ast_outline(bindings, 0);
+    /* sealark_debug_log_ast_outline(bindings, 0); */
 #endif
 
     assert(bindings->tid == TK_Arg_List);
@@ -286,6 +286,7 @@ EXPORT int sealark_binding_index_for_key(struct node_s *bindings,
     struct node_s *bkey;
     struct node_s *bnode = NULL;
     int i = 0;
+
     while((bnode=(struct node_s*)utarray_next(bindings->subnodes,
                                                      bnode))) {
 #if defined(DEBUG_UTARRAYS)
@@ -300,31 +301,10 @@ EXPORT int sealark_binding_index_for_key(struct node_s *bindings,
 #if defined(DEBUG_UTARRAYS)
                 log_debug("MATCHED key: %s", key);
 #endif
-                return i;
+                return i / 2;
             }
         }
         i++;
     }
     return -1;
-}
-
-/* ******************************** */
-EXPORT
-struct node_s *sealark_remove_binding_at_index(struct node_s *bindings,
-                                               int index)
-{
-#if defined(DEBUG_BINDINGS) || defined(DEBUG_SET)
-    log_debug("sealark_remove_binding_at_index: %d", index);
-#endif
-
-    assert(bindings->tid == TK_Arg_List);
-
-    int len = utarray_len(bindings->subnodes);
-
-    if ( (len - index) > 1 ) {
-        utarray_erase(bindings->subnodes, index, 2);
-    } else {
-        utarray_erase(bindings->subnodes, index, 1);
-    }
-    return bindings;
 }

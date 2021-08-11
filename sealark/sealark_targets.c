@@ -11,14 +11,15 @@
 
 #include "sealark_targets.h"
 
-EXPORT UT_array *sealark_targets_for_buildfile(struct node_s *buildfile_node)
+EXPORT UT_array *sealark_targets_for_pkg(struct node_s *pkg)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
-    log_debug("sealark_targets_for_buildfile");
+    log_debug("sealark_targets_for_pkg");
 #endif
+    assert(pkg->tid == TK_Package);
     // :package > :stmt-list :smallstmt-list > expr-list > call-expr
 
-    struct node_s *stmt_list = utarray_eltptr(buildfile_node->subnodes, 0);
+    struct node_s *stmt_list = utarray_eltptr(pkg->subnodes, 0);
     struct node_s *small_list = utarray_eltptr(stmt_list->subnodes, 0);
     /* log_debug("small_list child ct: %d", utarray_len(small_list->subnodes)); */
 
@@ -79,6 +80,7 @@ struct node_s *sealark_target_for_name(struct node_s *package,
 }
 
 /* ********************************** */
+//FIXME: rename sealark_pkg_target_for_int
 EXPORT
 struct node_s *sealark_target_for_index(struct node_s *package, int i)
 {
@@ -227,40 +229,13 @@ LOCAL struct node_s *_target_for_predicate(struct node_s *package,
 }
 
 
-EXPORT UT_array *sealark_target_bindings_to_utarray(struct node_s *target)
-{
-#if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
-    log_debug("sealark_target_bindings");
-#endif
-
-    log_debug("target tid: %d %s", target->tid, TIDNAME(target));
-
-    /* :call-expr[1] => :call-sfx[1] => :arg-list */
-    struct node_s *call_sfx = utarray_eltptr(target->subnodes, 1);
-    struct node_s *arg_list = utarray_eltptr(call_sfx->subnodes, 1);
-
-#if defined(DEBUG_AST)
-    sealark_debug_log_ast_outline(arg_list, 0);
-#endif
-    UT_array *attribs;
-    utarray_new(attribs, &node_icd);
-
-    struct node_s *nd=NULL;
-    while( (nd=(struct node_s*)utarray_next(arg_list->subnodes, nd)) ) {
-        if (nd->tid == TK_Binding)
-            utarray_push_back(attribs, nd);
-    }
-    log_debug("found %d bindings (named args)", utarray_len(attribs));
-    return attribs;
-}
-
 EXPORT int sealark_target_bindings_count(struct node_s *target)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
     log_debug("sealark_target_bindings_count");
 #endif
 
-    UT_array *bindings = sealark_target_bindings_to_utarray(target);
+    UT_array *bindings = sealark_proc_bindings_to_utarray(target);
     int ct = utarray_len(bindings);
     utarray_free(bindings);
     return ct;

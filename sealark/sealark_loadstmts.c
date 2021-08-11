@@ -265,10 +265,10 @@ struct node_s *sealark_loadstmt_binding_for_sym(struct node_s *loadstmt,
 
 /* **************** */
 EXPORT
-char *sealark_loadstmt_src_node(struct node_s *loadstmt)
+char *sealark_loadstmt_src_string(struct node_s *loadstmt)
 {
-#if defined (DEBUG_TRACE) || defined(DEBUG_LOADS)
-    log_debug("sealark_loadstmt_src_node");
+#if defined(DEBUG_LOADS)
+    log_debug("sealark_loadstmt_src_string");
 #endif
 
     assert(loadstmt->tid == TK_Load_Stmt);

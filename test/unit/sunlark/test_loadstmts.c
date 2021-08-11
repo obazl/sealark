@@ -17,8 +17,8 @@ UT_string *test_s;
 char *build_file = "test/unit/sunlark/BUILD.loadstmts";
 
 s7_scheme *s7;
-static s7_pointer old_port, result;
-static int gc_loc = -1;
+/* static s7_pointer old_port, result; */
+/* static int gc_loc = -1; */
 
 LOCAL s7_pointer _error_handler(s7_scheme *sc, s7_pointer args)
 {

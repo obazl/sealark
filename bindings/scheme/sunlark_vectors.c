@@ -12,7 +12,8 @@
 
 #include "sunlark_vectors.h"
 
-struct node_s *sunlark_vector_dispatcher(s7_scheme *s7,
+/* struct node_s * */
+s7_pointer sunlark_vector_dispatcher(s7_scheme *s7,
                                          struct node_s *datum,
                                            s7_pointer path_args)
 /* LOCAL s7_pointer sunlark_dispatch_on_list_expr(s7_scheme *s7, */
@@ -33,7 +34,7 @@ struct node_s *sunlark_vector_dispatcher(s7_scheme *s7,
     log_debug("op count: %d", op_count);
 
     if (op_count == 0)
-        return datum;
+        return sunlark_new_node(s7, datum);
 
     /* vector ops:  int index, ? :print, :tid, etc. */
     if (op_count > 1) {
@@ -45,6 +46,9 @@ struct node_s *sunlark_vector_dispatcher(s7_scheme *s7,
         op = s7_car(path_args);
     else
         op = path_args;
+
+    if (op == s7_make_keyword(s7, "list-expr?"))
+        return s7_t(s7);
 
     // :list-expr > :lbrack, :expr-list, :rbrack
     //  :expr-list > :string, :comma, etc.
@@ -65,19 +69,22 @@ struct node_s *sunlark_vector_dispatcher(s7_scheme *s7,
     /* sunlark uses keywordized numbers to index, but s7 uses ints for
        thingslike iterations, so we need to support both. */
     bool int_idx = false;
+log_debug("68 xxxxxxxxxxxxxxxx");
     int idx = sunlark_is_nbr_kw(s7,op);
-    if (errno == 0) // op is a keywordized number
+    if (errno == 0) { // op is a keywordized number
         int_idx = true;
-    else {
+    } else {
         if (s7_is_integer(op)) {
             idx = s7_integer(op);
             int_idx = true;
         }
     }
     if (int_idx) {
+
         /* int idx = s7_integer(op); */
         log_debug("indexing on %d", idx);
-        return sealark_vector_item_for_int(datum, idx);
+        struct node_s *nd = sealark_vector_item_for_int(datum, idx);
+        return sunlark_new_node(s7, nd);
         /* int len = utarray_len(vector->subnodes); */
         /* if (idx > len) { */
         /*     log_error("index out of bounds: % > %", idx, len); */
@@ -89,7 +96,7 @@ struct node_s *sunlark_vector_dispatcher(s7_scheme *s7,
         /*         =(struct node_s*)utarray_next(vector->subnodes, node)) ) { */
         /*     /\* if (node->tid == item_type) { *\/ */
         /*         if (item_ct == idx) */
-        /*             return node; // sunlark_node_new(s7, node); */
+        /*             return node; // sunlark_new_node(s7, node); */
         /*         item_ct++; */
         /*     /\* } *\/ */
         /* } */

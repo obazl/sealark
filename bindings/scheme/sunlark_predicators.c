@@ -50,13 +50,13 @@ s7_pointer sunlark_node_satisfies_kw_pred(s7_scheme *s7, s7_pointer kw, struct n
     const char *pred = s7_symbol_name(sym);
 
     if ( (strncmp("node?", pred, 5) == 0) && (strlen(pred) == 5) ) {
-        s7_pointer n = sunlark_node_new(s7, self);
+        s7_pointer n = sunlark_new_node(s7, self);
         return sunlark_is_node(s7,
                                s7_list(s7, 1, n));
     }
 
     if ( (strncmp("printable?", pred, 10) == 0) && (strlen(pred) == 10) ) {
-        bool is_printable = sunlark_node_new(s7, self);
+        bool is_printable = sunlark_new_node(s7, self);
         return s7_make_boolean(s7, is_printable);
     }
 

@@ -128,7 +128,7 @@ EXPORT s7_pointer sunlark_make_target(s7_scheme *s7, s7_pointer args)
 
     log_debug("new target: %d %s",
               target->tid, TIDNAME(target));
-    sealark_debug_log_ast_outline(target, 0);
+    /* sealark_debug_log_ast_outline(target, 0); */
 
     s7_pointer new_ast_node_s7 = s7_make_c_object(s7, ast_node_t,
                                                   (void *)target);
@@ -255,7 +255,7 @@ EXPORT s7_pointer sunlark_make_binding(s7_scheme *s7, s7_pointer args)
 
     log_debug("new binding: %d %s, %s",
               binding->tid, TIDNAME(binding), binding->s);
-    sealark_debug_log_ast_outline(binding, 0);
+    /* sealark_debug_log_ast_outline(binding, 0); */
 
     s7_pointer new_ast_node_s7 = s7_make_c_object(s7, ast_node_t,
                                                   (void *)binding);
@@ -416,6 +416,23 @@ struct node_s *_make_list_from_vector(s7_scheme *s7,
             buf[0] = '\0';
             snprintf(buf, 64, "%s", s7_symbol_name(v));
             /* log_debug("buf: %s, i: %d", buf, i); */
+
+            nd->s = calloc(strlen(buf)+1, sizeof(char));
+            snprintf(nd->s, strlen(buf)+1, "%s", buf);
+            utarray_push_back(expr_list->subnodes, nd);
+            log_debug("vector_len: %d, i: %d", vector_len, i);
+            if ((vector_len - i) > 1) {
+                nd = sealark_new_node(TK_COMMA, without_subnodes);
+                utarray_push_back(expr_list->subnodes, nd);
+            }
+        }
+        if (s7_is_boolean(v)) {
+            nd = sealark_new_node(TK_ID, without_subnodes);
+            buf[0] = '\0';
+            if (v == s7_t(s7))
+                snprintf(buf, 5, "%s", "True");
+            else
+                snprintf(buf, 6, "%s", "False");
 
             nd->s = calloc(strlen(buf)+1, sizeof(char));
             snprintf(nd->s, strlen(buf)+1, "%s", buf);

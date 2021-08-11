@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -366,16 +367,18 @@ EXPORT struct node_s *sealark_package(struct node_s *buildfile_node)
 /* ******************************** */
 /* FIXME won't work for proc_id "target" since that's a pseudo id
  */
-EXPORT UT_array *sealark_procs_for_id(struct node_s *buildfile_node,
+EXPORT UT_array *sealark_procs_for_id(struct node_s *pkg,
                                       char *proc_id)
 {
 #ifdef DEBUG_QUERY
     log_debug("sealark_procs_for_id: %s", proc_id);
 #endif
 
+    assert(pkg->tid == TK_Package);
+
     //FIXME: verify that package nodes always start with
     //  :package > :stmt_list : :small-stmt-list
-    struct node_s *stmt_list = utarray_eltptr(buildfile_node->subnodes, 0);
+    struct node_s *stmt_list = utarray_eltptr(pkg->subnodes, 0);
     struct node_s *small_list = utarray_eltptr(stmt_list->subnodes, 0);
 
     //FIXME: verify assumption:
@@ -397,7 +400,7 @@ EXPORT UT_array *sealark_procs_for_id(struct node_s *buildfile_node,
     struct node_s *call_expr, *call_id;
 
     /* log_debug(" bf %d %s", */
-    /*               buildfile_node->tid, TIDNAME(buildfile_node)); */
+    /*               pkg->tid, TIDNAME(pkg)); */
 
     struct node_s *subnode = NULL;
     while((subnode=(struct node_s*)utarray_next(small_list->subnodes,
@@ -405,10 +408,11 @@ EXPORT UT_array *sealark_procs_for_id(struct node_s *buildfile_node,
         /* log_debug("  subnode %d %s", */
         /*           subnode->tid, TIDNAME(subnode)); */
 
-        if (get_loads)
+        if (get_loads) {
             if (subnode->tid == TK_Load_Stmt) {
                 utarray_push_back(procs, subnode);
             }
+        }
 
         if (subnode->tid == TK_Expr_List) {
             call_expr = utarray_eltptr(subnode->subnodes, 0);
@@ -430,7 +434,7 @@ EXPORT UT_array *sealark_procs_for_id(struct node_s *buildfile_node,
 
 /* ******************************** */
 /* returns all "procs": loads, package, targets, fn applications */
-EXPORT UT_array *sealark_procs(struct node_s *buildfile_node)
+EXPORT UT_array *sealark_procs(struct node_s *pkg)
 {
 #ifdef DEBUG_QUERY
     log_debug("sealark_procs");
@@ -438,7 +442,7 @@ EXPORT UT_array *sealark_procs(struct node_s *buildfile_node)
 
     // :package > :assign-stmt
 
-    struct node_s *stmt_list = utarray_eltptr(buildfile_node->subnodes, 0);
+    struct node_s *stmt_list = utarray_eltptr(pkg->subnodes, 0);
     struct node_s *small_list = utarray_eltptr(stmt_list->subnodes, 0);
 
     struct node_s *call_expr;
@@ -464,13 +468,13 @@ EXPORT UT_array *sealark_procs(struct node_s *buildfile_node)
 
 /* ******************************** */
 /* returns all procs and definitions */
-EXPORT UT_array *sealark_directives(struct node_s *buildfile_node)
+EXPORT UT_array *sealark_directives(struct node_s *pkg)
 {
 #ifdef DEBUG_QUERY
     log_debug("sealark_directives");
 #endif
 
-    struct node_s *stmt_list = utarray_eltptr(buildfile_node->subnodes, 0);
+    struct node_s *stmt_list = utarray_eltptr(pkg->subnodes, 0);
     struct node_s *small_list = utarray_eltptr(stmt_list->subnodes, 0);
 
     struct node_s *call_expr;

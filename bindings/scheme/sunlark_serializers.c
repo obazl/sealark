@@ -35,15 +35,17 @@ int indent = 2;
  */
 EXPORT s7_pointer sunlark_to_string(s7_scheme *s7, s7_pointer args)
 {
-/* #if defined(DEBUG_SERIALIZERS) */
+#if defined(DEBUG_SERIALIZERS)
     log_debug(">>>>>>>>>>>>>>>> sunlark_to_string <<<<<<<<<<<<<<<<");
     /* log_debug("args: %s", s7_object_to_c_string(s7, args)); */
-/* #endif */
-
+#endif
 
     s7_pointer obj = s7_car(args);
     if (!s7_is_c_object(obj)) {
-        return NULL;
+        log_error("sunlark->string can only serialize sunlark nodes; got arg of type %s",
+                  s7_object_to_c_string(s7, s7_type_of(s7, obj)));
+        return handle_errno(s7, EINVALID_SERIALIZE_ARG,
+                            s7_type_of(s7, obj));
     }
 
     s7_pointer syntax;
@@ -60,7 +62,8 @@ EXPORT s7_pointer sunlark_to_string(s7_scheme *s7, s7_pointer args)
         } else {
             _args = s7_list(s7, 1, s7_car(args));
         }
-        return sunlark_to_starlark(s7, _args);
+        s7_pointer p = sunlark_to_starlark(s7, _args);
+        return p;
     }
     if (s7_cadr(args) == KW(scheme)) {
         return s7_make_string(s7, "SCHEME");
@@ -236,11 +239,11 @@ char *sunlark_node_display_readably(s7_scheme *s7, void *value)
  */
 EXPORT s7_pointer sunlark_to_starlark(s7_scheme *s7, s7_pointer args)
 {
-/* #if defined(DEBUG_SERIALIZERS) */
+#if defined(DEBUG_SERIALIZERS)
     log_debug(">>>>>>>>>>>>>>>> sunlark_to_starlark <<<<<<<<<<<<<<<<");
     log_debug("args: %s", s7_object_to_c_string(s7, args));
     log_debug("args type: %s", s7_object_to_c_string(s7, s7_type_of(s7, args)));
-/* #endif */
+#endif
 
     UT_string *buf;
     utstring_new(buf);
@@ -884,7 +887,7 @@ LOCAL void _display_load_stmt(struct node_s *nd,
 
     assert(nd->tid == TK_Load_Stmt);
 
-    char *src = sealark_loadstmt_src_node(nd);
+    char *src = sealark_loadstmt_src_string(nd);
 
     utstring_printf(buffer, "%*s(def-load :src \"%s\"\n",
                     level*indent, " ", src);

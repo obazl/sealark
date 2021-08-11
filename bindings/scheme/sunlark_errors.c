@@ -35,6 +35,23 @@ s7_pointer handle_errno(s7_scheme *s7, int errorno, s7_pointer path_args)
                                                       "~A: missing selector after :arg"),
                                 path_args)));
         break;
+    case EMISSING_GET_SELECTOR:
+        return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
+                        s7_list(s7, 1, s7_make_string(s7,
+                        "Getter is missing selector"))));
+        break;
+    case EINVALID_GET_SELECTOR:
+        return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
+                        s7_list(s7, 2, s7_make_string(s7,
+                        "Selector ~A in getter expr is invalid  here."),
+                                path_args)));
+        break;
+    case EINVALID_SERIALIZE_ARG:
+        return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
+                        s7_list(s7, 2, s7_make_string(s7,
+                        "Can only serialize sunlark nodes; got arg of type: ~A"),
+                                path_args)));
+        break;
     case ENOT_FOUND:
         return(s7_error(s7, s7_make_symbol(s7, "not_found"),
                         s7_list(s7, 2, s7_make_string(s7,
@@ -77,6 +94,12 @@ s7_pointer handle_errno(s7_scheme *s7, int errorno, s7_pointer path_args)
                  "Invalid update value: ~A"),
                                 (path_args))));
         break;
+    case EINVALID_ACTION:
+        return(s7_error(s7, s7_make_symbol(s7, "invalid_action"),
+                        s7_list(s7, 2, s7_make_string(s7,
+                        "Action ~A for set! is invalid in this context."),
+                                path_args)));
+        break;
     case EINVALID_ARG:
         return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
                         s7_list(s7, 2, s7_make_string(s7,
@@ -93,6 +116,18 @@ s7_pointer handle_errno(s7_scheme *s7, int errorno, s7_pointer path_args)
         return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
                         s7_list(s7, 2, s7_make_string(s7,
                         "Cannot set :value of binding to null: ~A"),
+                                path_args)));
+        break;
+    case ESPLICE_ARG:
+        return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
+                        s7_list(s7, 2, s7_make_string(s7,
+               ":splice must be followed by vector, got: ~A"),
+                                path_args)));
+        break;
+    case ESPLICE_BINDING_ARG:
+        return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
+                        s7_list(s7, 2, s7_make_string(s7,
+               "Binding :splice only accepts :binding nodes; got ~A"),
                                 path_args)));
         break;
     default:

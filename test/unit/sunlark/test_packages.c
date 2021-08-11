@@ -10,32 +10,69 @@
 
 #include "test_packages.h"
 
-UT_string *buf;
-UT_string *test_s;
+int main(void) {
+    UNITY_BEGIN();
+    RUN_TEST(test_pkg_targets); /* (pkg :targets) */
+    RUN_TEST(test_pkg_targets_attrs); /* (pkg :targets :attrs) */
+    RUN_TEST(test_pkg_targets_bindings); /* (pkg :targets :bindings) */
+    RUN_TEST(test_pkg_targets_atat); /* (pkg :targets :atat) */
 
-char *build_file = "test/unit/sunlark/BUILD.package";
+    RUN_TEST(test_pkg_tgts);          /* (pkg :>>) */
+    RUN_TEST(test_pkg_target_int);    /* (pkg :target 0) */
+    RUN_TEST(test_pkg_tgt_int);       /* (pkg :> 0) */
+    RUN_TEST(test_pkg_target_string); /* (pkg :target "hello-lib") */
+    RUN_TEST(test_pkg_tgt_string);    /* (pkg :> "hello-lib")  */
 
-s7_scheme *s7;
+    RUN_TEST(test_pkg_target_string_rule); /* (pkg :> "hello-lib" :rule)*/
+    RUN_TEST(test_pkg_target_int_rule);    /* (pkg :> 0 :rule) */
 
-struct parse_state_s *parse_state;
+    RUN_TEST(test_pkg_target_string_name); /*(pkg :> "hello-lib" :name)*/
+    RUN_TEST(test_pkg_target_int_name);    /* (pkg :> 0 name)  */
 
-static s7_pointer pkg;
-struct node_s *root;
+    RUN_TEST(test_pkg_target_string_attrs);/*(pkg :> "hello-lib" :attrs)*/
+    /* (pkg :> "hello-lib" :bindings) */
+    RUN_TEST(test_pkg_target_string_bindings);
+    RUN_TEST(test_pkg_target_string_atat); /* (pkg :> "hello-lib" :@@) */
 
-void setUp(void) {
-    s7 = sunlark_init();
-    init_s7_syms(s7);
-    pkg = sunlark_parse_build_file(s7,
-                                   s7_list(s7, 1,
-                                           s7_make_string(s7, build_file)));
-    root = s7_c_object_value(pkg);
+    RUN_TEST(test_pkg_target_int_attrs);    /* (pkg :> 0 :attrs)  */
+    RUN_TEST(test_pkg_target_int_bindings); /* (pkg :> 0 :bindings)  */
+    RUN_TEST(test_pkg_target_int_atat);     /* (pkg :> 0 :@@)  */
+
+    /* (pkg :target "hello-lib" :attr 'srcs) */
+    RUN_TEST(test_pkg_target_string_attr_sym);
+    /* (pkg :> "hello-lib" :attr 'srcs) */
+    RUN_TEST(test_pkg_tgt_string_attr_sym);
+
+    /* (pkg :target "hello-lib" :binding 'srcs) */
+    RUN_TEST(test_pkg_target_string_binding_sym);
+    /* (pkg :> "hello-lib" :binding 'srcs) */
+    RUN_TEST(test_pkg_tgt_string_binding_sym);
+
+    /* (pkg :target "hello-lib" :@ 'srcs) */
+    RUN_TEST(test_pkg_target_string_at_sym);
+    /* (pkg :> "hello-lib" :@ 'srcs) */
+    RUN_TEST(test_pkg_tgt_string_at_sym);
+
+    /* (pkg :target 0 :attr 'srcs) */
+    RUN_TEST(test_pkg_target_int_attr_sym);
+    /* (pkg :> 0 :attr 'srcs) */
+    RUN_TEST(test_pkg_tgt_int_attr_sym);
+
+    /* (pkg :target 0 :binding 'srcs) */
+    RUN_TEST(test_pkg_target_int_binding_sym);
+    /* (pkg :> 0 :binding 'srcs) */
+    RUN_TEST(test_pkg_tgt_int_binding_sym);
+
+    /* (pkg :target 0 :@ 'srcs) */
+    RUN_TEST(test_pkg_target_int_at_sym);
+    /* (pkg :> 0 :@ 'srcs) */
+    RUN_TEST(test_pkg_tgt_int_at_sym);
+
+    RUN_TEST(test_target_string_parse);
+    return UNITY_END();
 }
 
-void tearDown(void) {
-    sealark_parse_state_free(parse_state);
-    s7_quit(s7);
-}
-
+/* **************************************************************** */
 void _validate_pkg_targets(s7_pointer targets) {
     TEST_ASSERT( !s7_is_c_object(targets) );
     TEST_ASSERT( s7_is_list(s7, targets) );
@@ -60,7 +97,7 @@ void _validate_pkg_targets(s7_pointer targets) {
         TEST_ASSERT( s7_is_c_object(target) );
         TEST_ASSERT( s7_c_object_type(target) == AST_NODE_T );
         /* (sunlark-node? target) => #t */
-        s7_pointer is_node = s7_apply_function(s7, is_sunlark_node_s7,
+        s7_pointer is_node = s7_apply_function(s7, is_sunlark_node_proc,
                                                s7_cons(s7, target,
                                                        s7_nil(s7)));
         TEST_ASSERT( is_node == s7_t(s7) );
@@ -420,64 +457,26 @@ void test_target_string_parse(void) {
     TEST_ASSERT_EQUAL_INT( 4, s7_integer(bindings_ct) );
 }
 
-int main(void) {
-    UNITY_BEGIN();
-    RUN_TEST(test_pkg_targets); /* (pkg :targets) */
-    RUN_TEST(test_pkg_targets_attrs); /* (pkg :targets :attrs) */
-    RUN_TEST(test_pkg_targets_bindings); /* (pkg :targets :bindings) */
-    RUN_TEST(test_pkg_targets_atat); /* (pkg :targets :atat) */
+/* **************************************************************** */
+UT_string *buf;
+UT_string *test_s;
 
-    RUN_TEST(test_pkg_tgts);          /* (pkg :>>) */
-    RUN_TEST(test_pkg_target_int);    /* (pkg :target 0) */
-    RUN_TEST(test_pkg_tgt_int);       /* (pkg :> 0) */
-    RUN_TEST(test_pkg_target_string); /* (pkg :target "hello-lib") */
-    RUN_TEST(test_pkg_tgt_string);    /* (pkg :> "hello-lib")  */
+char *build_file = "test/unit/sunlark/BUILD.package";
 
-    RUN_TEST(test_pkg_target_string_rule); /* (pkg :> "hello-lib" :rule)*/
-    RUN_TEST(test_pkg_target_int_rule);    /* (pkg :> 0 :rule) */
+s7_scheme *s7;
 
-    RUN_TEST(test_pkg_target_string_name); /*(pkg :> "hello-lib" :name)*/
-    RUN_TEST(test_pkg_target_int_name);    /* (pkg :> 0 name)  */
+struct parse_state_s *parse_state;
 
-    RUN_TEST(test_pkg_target_string_attrs);/*(pkg :> "hello-lib" :attrs)*/
-    /* (pkg :> "hello-lib" :bindings) */
-    RUN_TEST(test_pkg_target_string_bindings);
-    RUN_TEST(test_pkg_target_string_atat); /* (pkg :> "hello-lib" :@@) */
-
-    RUN_TEST(test_pkg_target_int_attrs);    /* (pkg :> 0 :attrs)  */
-    RUN_TEST(test_pkg_target_int_bindings); /* (pkg :> 0 :bindings)  */
-    RUN_TEST(test_pkg_target_int_atat);     /* (pkg :> 0 :@@)  */
-
-    /* (pkg :target "hello-lib" :attr 'srcs) */
-    RUN_TEST(test_pkg_target_string_attr_sym);
-    /* (pkg :> "hello-lib" :attr 'srcs) */
-    RUN_TEST(test_pkg_tgt_string_attr_sym);
-
-    /* (pkg :target "hello-lib" :binding 'srcs) */
-    RUN_TEST(test_pkg_target_string_binding_sym);
-    /* (pkg :> "hello-lib" :binding 'srcs) */
-    RUN_TEST(test_pkg_tgt_string_binding_sym);
-
-    /* (pkg :target "hello-lib" :@ 'srcs) */
-    RUN_TEST(test_pkg_target_string_at_sym);
-    /* (pkg :> "hello-lib" :@ 'srcs) */
-    RUN_TEST(test_pkg_tgt_string_at_sym);
-
-    /* (pkg :target 0 :attr 'srcs) */
-    RUN_TEST(test_pkg_target_int_attr_sym);
-    /* (pkg :> 0 :attr 'srcs) */
-    RUN_TEST(test_pkg_tgt_int_attr_sym);
-
-    /* (pkg :target 0 :binding 'srcs) */
-    RUN_TEST(test_pkg_target_int_binding_sym);
-    /* (pkg :> 0 :binding 'srcs) */
-    RUN_TEST(test_pkg_tgt_int_binding_sym);
-
-    /* (pkg :target 0 :@ 'srcs) */
-    RUN_TEST(test_pkg_target_int_at_sym);
-    /* (pkg :> 0 :@ 'srcs) */
-    RUN_TEST(test_pkg_tgt_int_at_sym);
-
-    RUN_TEST(test_target_string_parse);
-    return UNITY_END();
+void setUp(void) {
+    s7 = sunlark_init();
+    init_s7_syms(s7);
+    pkg = sunlark_parse_build_file(s7,
+                                   s7_list(s7, 1,
+                                           s7_make_string(s7, build_file)));
 }
+
+void tearDown(void) {
+    sealark_parse_state_free(parse_state);
+    s7_quit(s7);
+}
+

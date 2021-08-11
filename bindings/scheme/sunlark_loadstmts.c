@@ -156,7 +156,7 @@ s7_pointer sunlark_loadstmt_arg_dispatcher(s7_scheme *s7,
             = sealark_loadstmt_arg_for_int(loadstmt, s7_integer(op));
         if (s7_is_null(s7, s7_cdr(path_args))) {
             if (arg) {
-                return sunlark_node_new(s7, arg);
+                return sunlark_new_node(s7, arg);
             } else {
                 /* errno set by sealark */
                 return NULL;
@@ -188,7 +188,7 @@ s7_pointer sunlark_loadstmt_arg_dispatcher(s7_scheme *s7,
             = sealark_loadstmt_arg_for_string(loadstmt, s7_string(op));
         if (s7_is_null(s7, s7_cdr(path_args))) {
             if (arg) {
-                return sunlark_node_new(s7, arg);
+                return sunlark_new_node(s7, arg);
             } else {
                 /* errno set by sealark */
                 return NULL;
@@ -254,7 +254,7 @@ LOCAL s7_pointer _loadstmt_binding_dispatcher(s7_scheme *s7,
             = sealark_loadstmt_binding_for_int(loadstmt, s7_integer(op));
         if (binding) {
             if (s7_is_null(s7, s7_cdr(path_args))) {
-                return sunlark_node_new(s7, binding);
+                return sunlark_new_node(s7, binding);
             } else {
                 if (s7_list_length(s7, path_args) > 2) {
                     log_error("Too many args: %s",
@@ -265,10 +265,11 @@ LOCAL s7_pointer _loadstmt_binding_dispatcher(s7_scheme *s7,
                     s7_pointer sel = s7_cadr(path_args);
                     if (sel == KW(key)) {
                         log_debug("project key");
-                        struct node_s *k
+                        /* struct node_s *k */
+                        s7_pointer k
                             = sunlark_binding_dispatcher(s7, binding,
                                                          s7_cdr(path_args));
-                        return sunlark_node_new(s7, k);
+                        return k; //sunlark_new_node(s7, k);
                     }
                     if (sel == KW(value)) {
                         log_debug("project value");
@@ -295,7 +296,7 @@ LOCAL s7_pointer _loadstmt_binding_dispatcher(s7_scheme *s7,
             = sealark_loadstmt_binding_for_sym(loadstmt, s7_symbol_name(op));
         if (binding) {
             if (s7_is_null(s7, s7_cdr(path_args))) {
-                return sunlark_node_new(s7, binding);
+                return sunlark_new_node(s7, binding);
             } else {
                 if (s7_list_length(s7, path_args) > 2) {
                     log_error("Too many args: %s",
@@ -306,8 +307,10 @@ LOCAL s7_pointer _loadstmt_binding_dispatcher(s7_scheme *s7,
                     s7_pointer sel = s7_cadr(path_args);
                     if (sel == KW(key)) {
                         log_debug("projecting key");
-                        struct node_s *k
+                        /* struct node_s *k */
+                        s7_pointer k
                             = sunlark_binding_dispatcher(s7, binding, sel);
+                        return k;
                     }
                     if (sel == KW(value)) {
                         log_debug("project value");
@@ -351,7 +354,7 @@ s7_pointer sunlark_pkg_loadstmt_dispatch(s7_scheme *s7,
                                                  s7_pointer path_args)
 {
 #if defined (DEBUG_TRACE) || defined(DEBUG_LOADS)
-    log_debug("sunlark_pkg_loadstmt_dispatch %s",
+    log_debug(">> sunlark_pkg_loadstmt_dispatch %s",
               s7_object_to_c_string(s7, path_args));
 #endif
 
@@ -365,7 +368,7 @@ s7_pointer sunlark_pkg_loadstmt_dispatch(s7_scheme *s7,
             = sealark_pkg_loadstmt_for_src(pkg, s7_string(op));
         if (loadstmt) {
             if (s7_is_null(s7, s7_cdr(path_args))) {
-                return sunlark_node_new(s7, loadstmt);
+                return sunlark_new_node(s7, loadstmt);
             } else {
                 s7_pointer result
                     = _loadstmt_dispatch(s7, loadstmt, s7_cdr(path_args));
@@ -382,7 +385,7 @@ s7_pointer sunlark_pkg_loadstmt_dispatch(s7_scheme *s7,
             = sealark_pkg_loadstmt_for_int(pkg, s7_integer(op));
         if (loadstmt)
             if (s7_is_null(s7, s7_cdr(path_args))) {
-                return sunlark_node_new(s7, loadstmt);
+                return sunlark_new_node(s7, loadstmt);
             } else {
                 s7_pointer result
                     = _loadstmt_dispatch(s7, loadstmt, s7_cdr(path_args));

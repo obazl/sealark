@@ -65,7 +65,7 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
             /*         = sunlark_vector_dispatcher(s7, s7_c_object_value(data), */
             /*                                     s7_list(s7, 1, last)); */
             /*     /\* if (vr) *\/ */
-            /*     return sunlark_node_new(s7, vr); */
+            /*     return sunlark_new_node(s7, vr); */
             /* } */
             /*     break; */
             /* case TK_Dict_Expr: */
@@ -85,11 +85,13 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
 #if defined(DEBUG_TRACE)
         log_debug("dispatching on TK_Package");
 #endif
-        s7_pointer p = sunlark_package_dispatcher(s7, data, path_args);
-        if (last == s7_make_keyword(s7, "$")) {
-            return node_to_scheme(s7, s7_c_object_value(p));
-        } else {
-            return p;
+        {
+            s7_pointer p = sunlark_package_dispatcher(s7, data, path_args);
+            if (last == s7_make_keyword(s7, "$")) {
+                return node_to_scheme(s7, s7_c_object_value(p));
+            } else {
+                return p;
+            }
         }
         break;
 
@@ -104,15 +106,43 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
 #if defined(DEBUG_TRACE)
         log_debug("dispatching on TK_Call_Expr");
 #endif
-        s7_pointer r = sunlark_target_dispatcher(s7,
-                                                 s7_c_object_value(data),
-                                                 /* data, */
-                                                 path_args);
-        if (r)
-            return r;
-        else {
-            /* r = sunlark_common_property_lookup(s7, data, op); */
-            /* return r; */
+        {
+            bool p = sunlark_op_is_predicate(s7, op);
+            if (p) {
+                return sunlark_node_satisfies_kw_pred(s7, op,
+                                                      s7_c_object_value(data));
+            } else {
+                errno = 0;
+                s7_pointer r = sunlark_target_dispatcher(s7,
+                                                         s7_c_object_value(data),
+                                                         /* data, */
+                                                         path_args);
+                if (last == s7_make_keyword(s7, "$")) {
+                    return node_to_scheme(s7, s7_c_object_value(r));
+                } else {
+                    if (r)
+                        return r;
+                    else {
+                        if (errno == EUNKNOWN_KW) {
+                            log_debug("unknown kw");
+                            return sunlark_common_property_lookup(s7,
+                                                                  s7_c_object_value(data), op);
+                        } else {
+                            return handle_errno(s7, errno,
+                                                s7_list(s7, 2, data, path_args));
+                        }
+                    }
+                }
+                /* FIXME: type of result? */
+                log_error("wtf ????????????????");
+                return sunlark_new_node(s7, resnode);
+            }
+            /* if (r) */
+            /*     return r; */
+            /* else { */
+            /*     /\* r = sunlark_common_property_lookup(s7, data, op); *\/ */
+            /*     /\* return r; *\/ */
+            /* } */
         }
         break;
 
@@ -125,21 +155,22 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
     }
         break;
 
-    case TK_Binding: {
+    case TK_Binding:
 #if defined(DEBUG_TRACE)
         log_debug("dispatching on TK_Binding");
 #endif
+        {
         bool p = sunlark_op_is_predicate(s7, op);
         if (p) {
             return sunlark_node_satisfies_kw_pred(s7, op,
                                                   s7_c_object_value(data));
         } else {
             errno = 0;
-            resnode = sunlark_binding_dispatcher(s7,
+            s7_pointer res = sunlark_binding_dispatcher(s7,
                                               s7_c_object_value(data),
                                               path_args);
-            if (resnode)
-                return sunlark_node_new(s7, resnode);
+            if (res)
+                return res; //sunlark_new_node(s7, res);
             else
                 if (errno == EUNKNOWN_KW) {
                     log_debug("unknown kw");
@@ -152,7 +183,7 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
         }
         /* FIXME: type of result? */
         log_error("wtf ????????????????");
-        return sunlark_node_new(s7, resnode);
+        return sunlark_new_node(s7, resnode);
     }
         break;
 
@@ -161,11 +192,11 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
         log_debug("dispatching on TK_Dict_Entry");
 #endif
         errno = 0;
-        resnode
+        s7_pointer d
             = sunlark_dict_entry_dispatcher(s7, s7_c_object_value(data),
                                             path_args);
-        if (resnode)
-            return sunlark_node_new(s7, resnode);
+        if (d)
+            return d; //sunlark_new_node(s7, resnode);
         else
             if (errno == 0) {
                 s7_pointer op;
@@ -192,13 +223,13 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
         log_debug("dispatching on TK_Dict_Expr");
 #endif
         errno = 0;
-        resnode
-            = sunlark_dict_expr_dispatcher(s7, s7_c_object_value(data),
+        /* resnode */
+        return sunlark_dict_expr_dispatcher(s7, s7_c_object_value(data),
                                            path_args);
-        if (resnode)
-            return sunlark_node_new(s7, resnode);
-        else
-            return handle_errno(s7, errno, path_args);
+        /* if (resnode) */
+        /*     return sunlark_new_node(s7, resnode); */
+        /* else */
+        /*     return handle_errno(s7, errno, path_args); */
         break;
 
     case TK_ID:
@@ -227,10 +258,10 @@ s7_pointer sunlark_dispatch(s7_scheme *s7,
 #if defined(DEBUG_TRACE)
         log_debug("dispatching on TK_List_Expr");
 #endif
-        resnode = sunlark_vector_dispatcher(s7,
-                                      s7_c_object_value(data), path_args);
-        if (resnode)
-            return sunlark_node_new(s7, resnode);
+        s7_pointer vec = sunlark_vector_dispatcher(s7,
+                                   s7_c_object_value(data), path_args);
+        if (vec)
+            return vec; // sunlark_new_node(s7, resnode);
         else
             if (errno == 0) {
                 s7_pointer op;

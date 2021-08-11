@@ -19,134 +19,54 @@ s7_scheme *s7;
 /**************/
 int main(void) {
     UNITY_BEGIN();
-    RUN_TEST(test_remove_binding_by_int);
-    RUN_TEST(test_remove_binding_by_int2);
-
-    RUN_TEST(test_local_remove_binding_by_int);
+    RUN_TEST(test_binding_replace);
 
     return UNITY_END();
 }
 
-/* struct parse_state_s *parse_state; */
+/* **************************************************************** */
+void test_binding_replace(void)
+{
+    form = "'(:> \"bindings-set-1\")";
+    path = s7_eval_c_string(s7, form);
+    target = s7_apply_function(s7, pkg, path);
+    TEST_ASSERT( s7_is_c_object(target) );
+    TEST_ASSERT( sunlark_node_tid(s7, target) == TK_Call_Expr );
 
-static s7_pointer pkg;
-/* struct node_s *root; */
-
-static s7_pointer result;
-static s7_pointer item, count;
-
-void test_remove_binding_by_int(void) {
-    /* remove bool_attr attrib */
-    char *s = "'(:> \"bindings-test-1\")";
-    s7_pointer path = s7_eval_c_string(s7, s);
-    s7_pointer target = s7_apply_function(s7, pkg, path);
-    s7_pointer pred= s7_apply_function(s7, target,
-                                       s7_eval_c_string(s7, "'(:target?)"));
-    TEST_ASSERT( pred == s7_t(s7) );
-    s7_pointer attrs = s7_apply_function(s7, target,
-                                         s7_eval_c_string(s7, "'(:@@)"));
-    s7_pointer len = s7_apply_function(s7, attrs,
-                            s7_eval_c_string(s7, "'(:length)"));
-    TEST_ASSERT_EQUAL_INT( 17, s7_integer(len) );
-
-    s7_pointer binding = s7_apply_function(s7, target,
-                                      s7_eval_c_string(s7, "'(:@ 1)"));
-    pred= s7_apply_function(s7, binding,
-                            s7_eval_c_string(s7, "'(:binding?)"));
-    TEST_ASSERT( pred == s7_t(s7) );
-
-    /* char *rm = "'(set! (pkg :> \"bindings-test-1\" :@ 1) :null)"; */
-    char *rm = "'(set! (pkg :> \"bindings-test-1\" :@ 1) :null)";
-    /* s7_pointer result = s7_eval_c_string(s7, rm); */
-
-    s7_pointer getter = s7_list(s7, 3, target,
-                                s7_make_keyword(s7,"@"),
-                                s7_make_integer(s7,1));
-
-    s7_pointer res = s7_apply_function(s7, set_bang,
-                                       s7_list(s7, 2,
-                                               getter,
-                                               s7_make_keyword(s7,"null")));
-    attrs = NULL;
-    attrs = s7_apply_function(s7, target,
-                                         s7_eval_c_string(s7, "'(:@@)"));
-    len = NULL;
-    len = s7_apply_function(s7, attrs,
-                            s7_eval_c_string(s7, "'(:length)"));
-    TEST_ASSERT_EQUAL_INT( 16, s7_integer(len) );
-
+    /* log_debug("Before set!"); */
     /* sealark_debug_log_ast_outline(s7_c_object_value(target), 0); */
 
+    dentry = s7_apply_function(s7, target,
+                               s7_eval_c_string(s7, "'(:@ binding2)"));
+    TEST_ASSERT( s7_is_c_object(dentry) );
+    TEST_ASSERT( sunlark_node_tid(s7, dentry) == TK_Binding );
 
-    /* s7_pointer target = s7_apply_function(s7, pkg, path); */
+    /* (set! (pkg :> "bindings-set-1" :@ 'int_list)
+              #@(newb "new str binding")) */
+    getter = s7_list(s7, 1, dentry);
+                     /* s7_make_keyword(s7, "value"), */
+                     /* s7_make_keyword(s7, "0")); */
 
-    /* pred = NULL; */
-    /* pred= s7_apply_function(s7, binding, */
-    /*                         s7_eval_c_string(s7, "'(:binding?)")); */
-    /* TEST_ASSERT( pred == s7_t(s7) ); */
+    s7_pointer newb = s7_eval_c_string(s7,
+                             "(make-binding 'newb \"new str binding\")");
 
-    /* result = s7_apply_function(s7, set_bang, */
-    /*                            s7_list(s7, 2, getter, */
-    /*                                    s7_make_keyword(s7, "null"))); */
+    sealark_debug_log_ast_outline(s7_c_object_value(newb), 0);
 
-    /* val = s7_apply_function(s7, result, s7_eval_c_string(s7, "'(:$)")); */
-    /* val = s7_apply_function(s7, val, s7_eval_c_string(s7, "'(:$)")); */
-    /* TEST_ASSERT_EQUAL_INT( 99, s7_integer(val)); */
-}
+    s7_pointer result = s7_apply_function(s7, set_bang,
+                                          s7_list(s7, 2,
+                                                  getter,
+                                                  newb));
+    log_debug("xxxxxxxxxxxxxxxx %s", s7_object_to_c_string(s7, result));
+    errmsg = s7_get_output_string(s7, s7_current_error_port(s7));
+    if ((errmsg) && (*errmsg))
+            log_error("ERROR [%s]", errmsg);
 
-void test_remove_binding_by_int2(void) {
-    /* remove bool_attr attrib */
-    char *bstr = "(pkg :> \"bindings-test-1\" :@ 'bool_attr)";
-    s7_pointer binding = s7_eval_c_string(s7, bstr);
-    TEST_ASSERT( s7_is_c_object(binding));
-
-    bstr = "(pkg :> \"bindings-test-1\" :@@)"; // NB: no quote!
-    s7_pointer bindings = s7_eval_c_string(s7, bstr);
-    s7_pointer len = s7_apply_function(s7, s7_name_to_value(s7,"length"),
-                                       s7_list(s7, 1, bindings));
-    TEST_ASSERT_EQUAL_INT( 17, s7_integer(len) );
-
-    /* NB: no quote on (set! ...) */
-    char *rm = "(set! (pkg :> \"bindings-test-1\" :@ 'bool_attr) :null)";
-    s7_pointer set = s7_eval_c_string(s7, rm);
-
-    len = NULL;
-    len = s7_apply_function(s7, s7_name_to_value(s7,"length"),
-                                       s7_list(s7, 1, bindings));
-    TEST_ASSERT_EQUAL_INT( 16, s7_integer(len) );
-
-    bstr = "(pkg :> \"bindings-test-1\" :@ 'bool_attr)";
-    binding = s7_eval_c_string(s7, bstr);
-    TEST_ASSERT( ! s7_is_c_object(binding));
-    TEST_ASSERT( binding == s7_make_symbol(s7,"binding_not_found") );
-}
-
-/* **************************************************************** */
-void test_local_remove_binding_by_int(void)
-{
-    char *s = "(define bb (make-binding 'akey '(1 2 3)))";
-    s7_pointer binding = s7_eval_c_string(s7, s);
-    s7_pointer pred= s7_apply_function(s7, binding,
-                                       s7_eval_c_string(s7, "'(:binding?)"));
-    TEST_ASSERT( pred == s7_t(s7) );
-
-    /* s7_pointer getter = s7_list(s7, 3, */
-    /*                             binding, */
-    /*                             s7_make_keyword(s7, "value"), */
-    /*                             s7_make_keyword(s7, "0")); */
-
-    /* s7_pointer result = s7_apply_function(s7, set_bang, */
-    /*                                       s7_list(s7, 2, getter, */
-    /*                                       s7_make_keyword(s7, "null"))); */
-
-    char *rm = "(set! (bb :$ :0) :null)";
-    s7_pointer set = s7_eval_c_string(s7, rm);
-
-    /* s7_pointer vec = s7_apply_function(s7, binding, */
-    /*                                    s7_eval_c_string(s7, "'(:value)")); */
-    /* s7_pointer len = s7_apply_function(s7, vec, */
-    /*                         s7_eval_c_string(s7, "'(:length)")); */
-    /* TEST_ASSERT_EQUAL_INT( 2, s7_integer(len) ); */
+    log_debug("After set!");
+    sealark_debug_log_ast_outline(s7_c_object_value(target), 0);
+    /* form = "'(:> \"string-list-dict\" :@ bdict)"; */
+    /* path = s7_eval_c_string(s7, form); */
+    /* result = s7_apply_function(s7, pkg, path); */
+    /* sealark_debug_log_ast_outline(s7_c_object_value(target), 0); */
 }
 
 /* **************************************************************** */
@@ -154,11 +74,15 @@ void setUp(void) {
     s7 = sunlark_init();
     init_s7_syms(s7);
 
+    /* trap error messages */
+    old_port = s7_set_current_error_port(s7, s7_open_output_string(s7));
+    if (old_port != s7_nil(s7))
+        gc_loc = s7_gc_protect(s7, old_port);
+
     pkg = sunlark_parse_build_file(s7,
                                    s7_list(s7, 1,
                                            s7_make_string(s7, build_file)));
     s7_define_variable(s7, "pkg", pkg);
-    /* root = s7_c_object_value(pkg); */
 }
 
 void tearDown(void) {

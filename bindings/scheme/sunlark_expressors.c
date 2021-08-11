@@ -23,7 +23,7 @@ s7_pointer sunlark_targets_for_buildfile(s7_scheme *s7,
         return s7_unspecified(s7);
     }
 
-    UT_array *target_list = sealark_targets_for_buildfile(buildfile_node);
+    UT_array *target_list = sealark_targets_for_pkg(buildfile_node);
 
     log_debug("found %d targets", utarray_len(target_list));
 
@@ -48,7 +48,7 @@ s7_pointer nodelist_to_s7_list(s7_scheme *s7, UT_array *target_list)
     int i = 0;
     while( (nd=(struct node_s*)utarray_next(target_list, nd)) ) {
         /* log_debug("wrapping TID: %d %s", nd->tid, TIDNAME(nd)); */
-        item = sunlark_node_new(s7, nd);
+        item = sunlark_new_node(s7, nd);
         s7_list_set(s7, node_list, i, item);
         /* node_list = s7_cons(s7, item, node_list); */
         i++;
@@ -76,7 +76,7 @@ s7_pointer vec_entries_to_s7_list(s7_scheme *s7, UT_array *target_list)
     int i = 0;
     while( (nd=(struct node_s*)utarray_next(target_list, nd)) ) {
         /* log_debug("wrapping TID: %d %s", nd->tid, TIDNAME(nd)); */
-        item = sunlark_node_new(s7, nd);
+        item = sunlark_new_node(s7, nd);
         s7_list_set(s7, node_list, i, item);
         /* node_list = s7_cons(s7, item, node_list); */
         i++;
@@ -132,7 +132,7 @@ LOCAL s7_pointer _get_attr_for_name_unique(s7_scheme *s7,
                 && strlen(id->s) == name_len ){
 
                 /* log_debug("MATCH"); */
-                return sunlark_node_new(s7, arg_node);
+                return sunlark_new_node(s7, arg_node);
 
                 /* name matches, now test value */
                 /* val = utarray_eltptr(arg_node->subnodes, 2); */

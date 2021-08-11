@@ -1,0 +1,34 @@
+sunlark_test(
+    name = "string-vectors",
+
+    string_veca = ["a0", "a1", "a2"],
+    string_vecb = [
+        "b0", "b1", "b2"
+    ],
+    string_vecc = [
+        "c0",
+        "c1",
+        "c2"
+    ]
+)
+
+sunlark_test(
+    name = "int-vectors",
+
+    int_veca = [1, 2, 3],
+    int_vecb = [
+        10, 20, 30
+    ],
+    int_vecc = [
+        100,
+        200,
+        300
+    ]
+)
+
+sunlark_test(
+    name = "dup-entries",
+
+    dup_veca = [1, 2, 1],
+    dup_vecb = ["a", "b", "a"]
+)

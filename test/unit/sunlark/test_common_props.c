@@ -12,30 +12,38 @@
 
 #include "test_common_props.h"
 
-UT_string *buf;
-UT_string *test_s;
+int main(int argc, char *argv[])
+{
+    int opt;
+    /* char *build_file = NULL; */
 
-char *build_file;
+    while ((opt = getopt(argc, argv, "f:")) != -1) {
+        switch (opt) {
+        case 'f':
+            /* BUILD.bazel or BUILD file */
+            /* log_info("build file: %s", optarg); */
+            build_file = optarg;
+            break;
+        default:
+            log_error("Usage: bazel test test/unit/sunlark:common_props -- -f buildfile");
+            exit(EXIT_FAILURE);
+        }
+    }
 
-s7_scheme *s7;
+    if (build_file == NULL) {
+        log_error("-f <buildfile> must be provided.");
+        exit(EXIT_FAILURE);
+    }
 
-struct parse_state_s *parse_state;
-struct node_s *root;
+    UNITY_BEGIN();
+    /* RUN_TEST(test_loadstmt_props); */
+    RUN_TEST(test_loadstmt_args_props);
 
-static s7_pointer pkg;
-
-void setUp(void) {
-    s7 = sunlark_init();
-    init_s7_syms(s7);
-    pkg = sunlark_parse_build_file(s7,
-                                   s7_list(s7, 1,
-                                           s7_make_string(s7, build_file)));
-    root = s7_c_object_value(pkg);
-}
-
-void tearDown(void) {
-    sealark_parse_state_free(parse_state);
-    s7_quit(s7);
+    /* RUN_TEST(test_target_props); */
+    /* RUN_TEST(test_target_arg_list_props); */
+    /* RUN_TEST(test_binding_props); */
+    /* RUN_TEST(test_binding_val_props); */
+    return UNITY_END();
 }
 
 /* **************************************************************** */
@@ -533,36 +541,27 @@ void test_binding_val_props(void) {
 }
 
 /* **************************************************************** */
-int main(int argc, char *argv[])
-{
-    int opt;
-    /* char *build_file = NULL; */
+UT_string *buf;
+UT_string *test_s;
 
-    while ((opt = getopt(argc, argv, "f:")) != -1) {
-        switch (opt) {
-        case 'f':
-            /* BUILD.bazel or BUILD file */
-            /* log_info("build file: %s", optarg); */
-            build_file = optarg;
-            break;
-        default:
-            log_error("Usage: bazel test test/unit/sunlark:common_props -- -f buildfile");
-            exit(EXIT_FAILURE);
-        }
-    }
+char *build_file;
 
-    if (build_file == NULL) {
-        log_error("-f <buildfile> must be provided.");
-        exit(EXIT_FAILURE);
-    }
+s7_scheme *s7;
 
-    UNITY_BEGIN();
-    /* RUN_TEST(test_loadstmt_props); */
-    RUN_TEST(test_loadstmt_args_props);
+struct parse_state_s *parse_state;
+struct node_s *root;
 
-    /* RUN_TEST(test_target_props); */
-    /* RUN_TEST(test_target_arg_list_props); */
-    /* RUN_TEST(test_binding_props); */
-    /* RUN_TEST(test_binding_val_props); */
-    return UNITY_END();
+void setUp(void) {
+    s7 = sunlark_init();
+    init_s7_syms(s7);
+    pkg = sunlark_parse_build_file(s7,
+                                   s7_list(s7, 1,
+                                           s7_make_string(s7, build_file)));
+    root = s7_c_object_value(pkg);
 }
+
+void tearDown(void) {
+    sealark_parse_state_free(parse_state);
+    s7_quit(s7);
+}
+

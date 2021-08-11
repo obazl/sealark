@@ -1,10 +1,10 @@
 sunlark_test(
-    name = "bindings-set-1",
+    name = "binding-rm-1",
     binding1 = True,
     binding2 = 3,
-    binding3 = [1, 2, 3],
+    binding3 = [1, 2, 3,],
     binding4 = "I am a plain double-quoted string",
-    binding5 = ["a0", "a1", "a2"]
+    binding5 = ["a0", "a1", "a2",],
 )
 
 sunlark_test(

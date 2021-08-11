@@ -30,9 +30,24 @@
 
 /*
 */
+EXPORT int sealark_dict_expr_length(struct node_s *dict_expr)
+{
+#if defined (DEBUG_TRACE) || defined(DEBUG_VECTORS)
+    log_debug("sealark_dict_expr_length");
+#endif
+
+    struct node_s *dentries = utarray_eltptr(dict_expr->subnodes, 1);
+    int ct = utarray_len(dentries->subnodes);
+    ct = (ct + 1) / 2;
+    return ct;
+}
+
+/*
+*/
 EXPORT struct node_s *sealark_dict_entry_for_int(struct node_s *dict_expr,
                                                   int index)
 {
+
 #if defined (DEBUG_TRACE) || defined(DEBUG_VECTORS)
     log_debug("sealark_dict_entry_for_int: %d", index);
 #endif
@@ -111,6 +126,43 @@ EXPORT struct node_s *sealark_dict_entry_for_string_key(struct node_s *dict_expr
         }
         i++;
     }
+    errno = ENOT_FOUND;
+    return NULL;
+}
+
+int sealark_dict_index_for_string_key(struct node_s *dict_expr,
+                                      const char *key)
+{
+#if defined (DEBUG_TRACE) || defined(DEBUG_VECTORS)
+    log_debug("sealark_dict_index_for_string_key: %s", key);
+#endif
+
+    assert(dict_expr->tid == TK_Dict_Expr);
+
+    struct node_s *entry_list = utarray_eltptr(dict_expr->subnodes, 1);
+
+    int key_len = strlen(key);
+
+    int list_ct = utarray_len(entry_list->subnodes);
+    int item_ct = (list_ct + 1) / 2;
+
+    struct node_s *ekey;
+    struct node_s *sub = NULL;
+    int i = 0;
+    while( (sub=(struct node_s*)utarray_next(entry_list->subnodes, sub)) ) {
+        if (sub->tid == TK_Dict_Entry) {
+            ekey = utarray_eltptr(sub->subnodes, 0);
+
+            if (ekey->tid == TK_STRING) {
+                if ( (strncmp(ekey->s, key, key_len) == 0)
+                     && (strlen(ekey->s) == key_len) ) {
+                    /* match */
+                    return i;
+                }
+            }
+        }
+        i++;
+    }
 
     log_error("UNEXPECTED");
     exit(EXIT_FAILURE);
@@ -118,14 +170,14 @@ EXPORT struct node_s *sealark_dict_entry_for_string_key(struct node_s *dict_expr
 
 /* **************************************************************** */
 /* NB: returns list of mapentries (idx .item) */
-EXPORT UT_array *sealark_dict_items_for_string(struct node_s *vector,
+EXPORT UT_array *sealark_dict_items_for_string(struct node_s *dexpr,
                                                  const char *selector)
 {
 #if defined(DEBUG_TRACE)
     log_debug("sunlark_dict_items_for_string: %s", selector);
 #endif
-    log_debug("vector tid: %d %s", vector->tid, TIDNAME(vector));
-    assert(vector->tid == TK_Dict_Expr);
+    log_debug("dexpr tid: %d %s", dexpr->tid, TIDNAME(dexpr));
+    assert(dexpr->tid == TK_Dict_Expr);
 
     int selector_len = strlen(selector);
 
@@ -142,12 +194,12 @@ EXPORT UT_array *sealark_dict_items_for_string(struct node_s *vector,
     utarray_new(items, &node_icd);
     /* struct node_s *comma; */
 
-    struct node_s *expr_list = utarray_eltptr(vector->subnodes, 1);
-    int item_ct = utarray_len(expr_list->subnodes);
+    struct node_s *dentry_list = utarray_eltptr(dexpr->subnodes, 1);
+    int item_ct = utarray_len(dentry_list->subnodes);
 
     struct node_s *sub = NULL;
     int i = 0;
-    while( (sub=(struct node_s*)utarray_next(expr_list->subnodes, sub)) ) {
+    while( (sub=(struct node_s*)utarray_next(dentry_list->subnodes, sub)) ) {
         if (sub->tid == TK_ID) i++;
         if (sub->tid == TK_STRING) {
             if ((strncmp(sub->s, selector, selector_len) == 0)
@@ -204,16 +256,19 @@ EXPORT void sealark_update_dict_items(UT_array *items,
 }
 
 /* **************************************************************** */
-EXPORT struct node_s *sealark_dict_remove_item(struct node_s *vector,
-                                            int index)
+EXPORT struct node_s *sealark_dexpr_rm_entry_for_int(struct node_s *dexpr,
+                                                        int index)
 {
 #if defined(DEBUG_TRACE)
-    log_debug("sealark_dict_remove_item: %d", index);
+    log_debug("sealark_dexpr_rm_entry_for_int: %d", index);
 #endif
 
-    assert(vector->tid == TK_Expr_List);
+    assert(dexpr->tid == TK_Dict_Expr);
 
-    int subnode_ct = utarray_len(vector->subnodes);
+    struct node_s *dentries = utarray_eltptr(dexpr->subnodes, 1);
+    assert(dentries->tid == TK_Dict_Entry_List);
+
+    int subnode_ct = utarray_len(dentries->subnodes);
     /* each item except the last followed by comma */
     int item_ct = (subnode_ct + 1) / 2;
 
@@ -225,7 +280,6 @@ EXPORT struct node_s *sealark_dict_remove_item(struct node_s *vector,
             return NULL;
         } else {
             index = item_ct + index;
-            // do we need to recur?
         }
     }
 
@@ -234,25 +288,43 @@ EXPORT struct node_s *sealark_dict_remove_item(struct node_s *vector,
         errno = EINDEX_OUT_OF_BOUNDS;
         return NULL;
     }
+    int n;
+    if (index == item_ct - 1)
+        n = item_ct - 2; // back up one to prevent trailing comma
+    else
+        n = 2;
 
-    int i = 0;
-    int item_idx = 0;
-    struct node_s *sub = NULL;
-    while( (sub=(struct node_s*)utarray_next(vector->subnodes, sub)) ) {
-        if (sub->tid == TK_COMMA) {
-            i++;
-            continue;
-        }
-        if (index == item_idx) break;
-        item_idx++;
-        i++;
-    }
-    /* we should always match desired index */
-    log_debug("removing item at %d, subnode %d", index, i);
+    utarray_erase(dentries->subnodes, index, n);
 
-    /* if last item, back up one to remove preceding comma */
-    i = ((subnode_ct - i) > 1)? i : i-1;
-    utarray_erase(vector->subnodes, i, 2);
-    return vector;
+    return dexpr;
+}
+
+/* **************************************************************** */
+EXPORT struct node_s *sealark_dexpr_rm_entry_for_string(struct node_s *dexpr,
+                                                        const char* s)
+{
+#if defined(DEBUG_TRACE)
+    log_debug("sealark_dexpr_rm_entry_for_string: %s", s);
+#endif
+
+    assert(dexpr->tid == TK_Dict_Expr);
+
+    struct node_s *dentries = utarray_eltptr(dexpr->subnodes, 1);
+    assert(dentries->tid == TK_Dict_Entry_List);
+
+    int subnode_ct = utarray_len(dentries->subnodes);
+    /* each item except the last followed by comma */
+    int item_ct = (subnode_ct + 1) / 2;
+
+    int index = sealark_dict_index_for_string_key(dexpr, s);
+    int n;
+    if (index == item_ct - 1)
+        n = item_ct - 2; // back up one to prevent trailing comma
+    else
+        n = 2;
+
+    utarray_erase(dentries->subnodes, index, n);
+
+    return dexpr;
 }
 

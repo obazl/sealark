@@ -8,22 +8,7 @@
 #include "sealark.h"
 #include "sunlark.h"
 
-#include "test_vectors.h"
-
-UT_string *buf;
-UT_string *test_s;
-
-/* char *build_file = "test/unit/sunlark/BUILD.vectors"; */
-
-s7_scheme *s7;
-
-/* struct parse_state_s *parse_state; */
-
-static s7_pointer ast;
-struct node_s *root;
-
-s7_pointer is_eq_s7;
-s7_pointer is_equal_s7;
+#include "test_vector_get.h"
 
 int main(void) {
     UNITY_BEGIN();
@@ -38,19 +23,6 @@ int main(void) {
 }
 
 /* **************************************************************** */
-void setUp(void) {
-    s7 = sunlark_init();
-    init_s7_syms(s7);
-    /* ast = sunlark_parse_build_file(s7, */
-    /*                                s7_list(s7, 1, */
-    /*                                        s7_make_string(s7, build_file))); */
-    /* root = s7_c_object_value(ast); */
-}
-
-void tearDown(void) {
-    s7_quit(s7);
-}
-
 void test_vector_properties(void) {
     s7_pointer vec = sunlark_parse_string(s7, s7_make_string(s7, "[1, 2, 3]\n"));
     s7_pointer is_sunlark_node = s7_name_to_value(s7, "sunlark-node?");
@@ -65,7 +37,7 @@ void test_vector_properties(void) {
     TEST_ASSERT( 3 == s7_integer(count) );
     /* (vec :length) */
     count = NULL;
-    count = s7_apply_function(s7, length_s7, s7_list(s7, 1, vec));
+    count = s7_apply_function(s7, length_op, s7_list(s7, 1, vec));
     TEST_ASSERT( 3 == s7_integer(count) );
 
     /* first item */
@@ -116,11 +88,11 @@ void test_vector_properties(void) {
 
 void test_vector_meta_properties(void) {
     char *bf = "test/unit/sunlark/BUILD.vectors";
-    s7_pointer ast = sunlark_parse_build_file(s7,
+    s7_pointer pkg = sunlark_parse_build_file(s7,
                                    s7_list(s7, 1, s7_make_string(s7, bf)));
 
     s7_pointer path = s7_eval_c_string(s7, "'(:> 1 :@ 1)");
-    s7_pointer bnode = s7_apply_function(s7, ast, path);
+    s7_pointer bnode = s7_apply_function(s7, pkg, path);
     TEST_ASSERT( s7_is_c_object(bnode) );
     TEST_ASSERT( !s7_is_list(s7, bnode) );
     /* bnode is binding expr "int_veca = [1, 2, 3]", at posn 17:4 */
@@ -196,9 +168,13 @@ void test_int_vector(void) {
 /* labels are syntactically same strings, but just in case we add
    label-aware ops */
 void test_label_vector(void) {
+    char *bf = "test/unit/sunlark/BUILD.vectors";
+    s7_pointer pkg = sunlark_parse_build_file(s7,
+                                   s7_list(s7, 1, s7_make_string(s7, bf)));
+
     s7_pointer path = s7_eval_c_string(s7,
                        "'(:targets 0 :bindings string_vec :value)");
-    s7_pointer bvalue = s7_apply_function(s7, ast, path);
+    s7_pointer bvalue = s7_apply_function(s7, pkg, path);
 
     log_debug("bvalue:\n%s", s7_object_to_c_string(s7, bvalue));
 
@@ -300,3 +276,28 @@ void test_set_vector(void) {
                                                  s7_make_symbol(s7, "avar")));
     TEST_ASSERT( is_eq == s7_t(s7) );
 }
+
+/* **************************************************************** */UT_string *buf;
+UT_string *test_s;
+
+s7_scheme *s7;
+
+/* static s7_pointer pkg; */
+/* struct node_s *root; */
+
+/* s7_pointer is_eq_s7; */
+/* s7_pointer is_equal_s7; */
+
+void setUp(void) {
+    s7 = sunlark_init();
+    init_s7_syms(s7);
+    /* ast = sunlark_parse_build_file(s7, */
+    /*                                s7_list(s7, 1, */
+    /*                                        s7_make_string(s7, build_file))); */
+    /* root = s7_c_object_value(ast); */
+}
+
+void tearDown(void) {
+    s7_quit(s7);
+}
+

@@ -24,6 +24,38 @@ node1 116 TK_List_Expr    <==== vector
     node3 79 TK_STRING: b3
   node2 69 TK_RBRACK
 */
+/* prereq: index is normalized */
+EXPORT void sealark_vector_insert_int_at_index(struct node_s *list_expr,
+                                                  int val,
+                                                  int index)
+{
+#if defined (DEBUG_TRACE) || defined(DEBUG_VECTORS)
+    log_debug("sealark_vector_insert_int_at_index: %d @ %d", val, index);
+#endif
+
+    assert(list_expr->tid == TK_List_Expr);
+
+    struct node_s *expr_list = utarray_eltptr(list_expr->subnodes, 1);
+
+    int list_ct = utarray_len(expr_list->subnodes);
+    int item_ct = (list_ct + 1) / 2;
+
+    /* NB: when appending, index will be > length of current list */
+
+    log_debug("index: %d", index);
+    struct node_s *new = sealark_new_int_node(val);
+    struct node_s *comma = sealark_new_node(TK_COMMA, without_subnodes);
+
+    if ( index == item_ct ) {
+        /* appending after end */
+        utarray_push_back(expr_list->subnodes, comma);
+        utarray_push_back(expr_list->subnodes, new);
+    } else {
+        utarray_insert(expr_list->subnodes, comma, index*2);
+        utarray_insert(expr_list->subnodes, new, index*2);
+    }
+}
+
 EXPORT struct node_s *sealark_vector_item_for_int(struct node_s *list_expr,
                                                   int index)
 {
@@ -57,16 +89,12 @@ EXPORT struct node_s *sealark_vector_item_for_int(struct node_s *list_expr,
         return NULL;
     }
 
-    /* struct node_s *expr_list = utarray_eltptr(list_expr->subnodes, 1); */
-    /* item_ct = utarray_len(expr_list->subnodes); */
-    /* if (index*2 > item_ct) { */
-    /*     log_error("index out of bounds: %d", index); */
-    /*     return NULL; */
-    /* } */
-
     //FIXME: support negative index
+    log_debug("indexing %d", index);
 
-    return utarray_eltptr(expr_list->subnodes, index*2);
+    struct node_s *item = utarray_eltptr(expr_list->subnodes, index*2);
+    log_debug("found: %s", item->s);
+    return item;
 
     log_error("UNEXPECTED");
     exit(EXIT_FAILURE);
@@ -78,7 +106,7 @@ EXPORT UT_array *sealark_vector_items_for_string(struct node_s *vector,
                                                  const char *selector)
 {
 #if defined(DEBUG_TRACE)
-    log_debug("sunlark_vector_items_for_string: %s", selector);
+    log_debug("sealark_vector_items_for_string: %s", selector);
 #endif
     log_debug("vector tid: %d %s", vector->tid, TIDNAME(vector));
     assert(vector->tid == TK_List_Expr);
@@ -122,6 +150,41 @@ EXPORT UT_array *sealark_vector_items_for_string(struct node_s *vector,
             i++;
         }
     }
+    log_debug("matched items: %d", utarray_len(items));
+    return items;
+}
+
+/* **************************************************************** */
+/* NB: returns list of mapentries (idx .item) */
+EXPORT UT_array *sealark_vector_items_for_int_val(struct node_s *vector,
+                                                  int val)
+{
+#if defined(DEBUG_TRACE)
+    log_debug("sealark_vector_items_for_int_val: %d", val);
+#endif
+    assert(vector->tid == TK_List_Expr);
+
+    UT_array *items;
+    utarray_new(items, &node_icd);
+    /* struct node_s *comma; */
+
+    struct node_s *expr_list = utarray_eltptr(vector->subnodes, 1);
+    int item_ct = utarray_len(expr_list->subnodes);
+
+    int item_val;
+    struct node_s *sub = NULL;
+    int i = 0;
+    while( (sub=(struct node_s*)utarray_next(expr_list->subnodes, sub)) ) {
+        if (sub->tid == TK_ID) i++;
+        if (sub->tid == TK_INT) {
+            item_val = atoi(sub->s);
+            if (item_val == val)
+                utarray_push_back(items, sub);
+            i++;
+        }
+    }
+    int ct = utarray_len(items);
+    log_debug("matched items: %d", ct);
     return items;
 }
 
@@ -161,7 +224,7 @@ EXPORT void sealark_update_vector_items(UT_array *items,
 
 /* **************************************************************** */
 EXPORT struct node_s *sealark_vector_remove_item(struct node_s *vector,
-                                            int index)
+                                                 int index)
 {
 #if defined(DEBUG_TRACE)
     log_debug("sealark_vector_remove_item: %d", index);

@@ -368,7 +368,6 @@ s7_pointer sunlark_node_object_applicator(s7_scheme *s7, s7_pointer args)
     log_debug("\tSELF tid: %d %s",
               sunlark_node_tid(s7, s7_car(args)),
               token_name[sunlark_node_tid(s7, s7_car(args))][0]);
-    /* debug_print_s7(s7, "\tAPPLICATOR ARGS: ", s7_cdr(args)); */
     log_debug("\targs: %s",
               s7_object_to_c_string(s7, s7_cdr(args)));
 #endif
@@ -806,10 +805,10 @@ s7_pointer sunlark_node_init_from_s7(s7_scheme *s7, struct node_s *cs, s7_pointe
 }
 
 /* **************************************************************** */
-EXPORT s7_pointer sunlark_node_new(s7_scheme *s7, struct node_s *node)
+EXPORT s7_pointer sunlark_new_node(s7_scheme *s7, struct node_s *node)
 {
 #if defined(DEBUG_MEM)
-    log_debug("sunlark_node_new");
+    log_debug("sunlark_new_node");
 #endif
 
     //FIXME: maybe use s7_make_c_object_without_gc ???

@@ -8,13 +8,13 @@
 #include "sealark.h"
 #include "sunlark.h"
 
-#include "test_bindings.h"
+#include "test_binding_get.h"
 
 UT_string *buf;
 UT_string *test_s;
 /* UT_array  *result; */
 
-char *build_file = "test/unit/sunlark/BUILD.bindings";
+char *build_file = "test/unit/sunlark/BUILD.binding_get";
 
 s7_scheme *s7;
 
@@ -82,7 +82,7 @@ void test_forall_targets_forall_bindings(void) {
         TEST_ASSERT( s7_is_c_object(target) );
         TEST_ASSERT( s7_c_object_type(target) == AST_NODE_T );
         /* (sunlark-node? target) => #t */
-        s7_pointer is_node = s7_apply_function(s7, is_sunlark_node_s7,
+        s7_pointer is_node = s7_apply_function(s7, is_sunlark_node_proc,
                                                s7_cons(s7, target,
                                                        s7_nil(s7)));
         TEST_ASSERT( is_node == s7_t(s7) );
@@ -115,7 +115,7 @@ void test_map_over_bindings(void) {
         TEST_ASSERT( s7_is_c_object(target) );
         TEST_ASSERT( s7_c_object_type(target) == AST_NODE_T );
         /* (sunlark-node? target) => #t */
-        s7_pointer is_node = s7_apply_function(s7, is_sunlark_node_s7,
+        s7_pointer is_node = s7_apply_function(s7, is_sunlark_node_proc,
                                                s7_cons(s7, target,
                                                        s7_nil(s7)));
         TEST_ASSERT( is_node == s7_t(s7) );

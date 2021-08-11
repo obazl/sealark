@@ -571,15 +571,16 @@ struct node_s *sunlark_remove_attr_list_items(s7_scheme *s7,
 }
 
 /* **************** */
+/* action: replace or splice */
 /* selector: key int, or val (string or symbol) */
-s7_pointer sunlark_vector_replace_item(s7_scheme *s7,
+s7_pointer sunlark_vector_mutate_item(s7_scheme *s7,
                                        s7_pointer _list_expr,
                                        int index,
                                        /* s7_pointer selector, */
                                        s7_pointer newval)
 {
 #if defined(DEBUG_TRACE) || defined(DEBUG_MUTATORS)
-    log_debug("sunlark_vector_replace_item @ %d => %s",
+    log_debug("sunlark_vector_mutate_item @ %d => %s",
               index,
               /* s7_object_to_c_string(s7, selector), */
               s7_object_to_c_string(s7, newval));
@@ -596,6 +597,119 @@ s7_pointer sunlark_vector_replace_item(s7_scheme *s7,
     assert(vector->tid == TK_Expr_List);
     int vec_type = sunlark_infer_expr_list_type(vector);
     log_debug("vec_type %d %s", vec_type, token_name[vec_type][0]);
+
+    if (s7_is_procedure(newval)) {
+        log_debug("ACTION: procedure");
+        return NULL;
+    }
+
+    if (s7_is_list(s7, newval)) {
+        s7_pointer action = s7_car(newval);
+        if (action == KW(splice)) {
+            return _vector_splice(s7, _list_expr, index, s7_cdr(newval));
+        }
+        if (action == KW(append)) {
+            log_debug("0 xxxxxxxxxxxxxxxx");
+            /* return _vector_append(s7, _list_expr, index, s7_cdr(newval)); */
+        }
+        return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
+                        s7_list(s7, 2, s7_make_string(s7,
+                       "Invalid mutate action: ~A. Only :splice supported"),
+                                newval)));
+    } else {
+        return _vector_mutate_item_at_index(s7,_list_expr, index, newval);
+    }
+}
+
+/* **************** */
+LOCAL s7_pointer _vector_splice(s7_scheme *s7,
+                                       s7_pointer _list_expr,
+                                       int index,
+                                        s7_pointer _splice)
+{
+#if defined(DEBUG_TRACE) || defined(DEBUG_MUTATORS)
+    log_debug(">> _vector_splice @ %d => %s",
+              index, s7_object_to_c_string(s7, _splice));
+#endif
+
+    struct node_s *list_expr = s7_c_object_value(_list_expr);
+    assert(list_expr->tid == TK_List_Expr);
+
+    if ( !s7_is_list(s7, _splice)) {
+        log_error("Expected list, got %s", s7_object_to_c_string(s7, _splice));
+        return NULL;
+    }
+
+    s7_pointer splice = s7_car(_splice);
+    if ( !s7_is_vector(splice) ) {
+        log_error("Expected vector, got %s",
+                  s7_object_to_c_string(s7, splice));
+        return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
+                        s7_list(s7, 2, s7_make_string(s7,
+                        ":splice must be followed by vector, got: ~A"),
+                                splice)));
+    }
+
+    index = sealark_normalize_index(list_expr, index);
+    log_debug("normalized index: %d", index);
+
+    log_debug("splicing %s at locn: %d", s7_object_to_c_string(s7, splice),
+              index);
+
+    int len = s7_vector_length(splice);
+    for (int i=0; i < len; i++) {
+        s7_pointer item = s7_vector_ref(s7, splice, i);
+        log_debug("splicing item %d: %s", i, s7_object_to_c_string(s7, item));
+        /* item could be any supported type */
+        if (s7_is_integer(item)) {
+            errno = 0;
+            sealark_vector_insert_int_at_index(list_expr,
+                                               s7_integer(item),
+                                               index + i);
+            if (errno != 0) {
+                log_error("Error splicing...");
+            }
+        }
+    }
+}
+
+/* **************** */
+LOCAL s7_pointer _vector_mutate_item_at_index(s7_scheme *s7,
+                                       s7_pointer _list_expr,
+                                       int index,
+                                       /* s7_pointer selector, */
+                                       s7_pointer newval)
+{
+#if defined(DEBUG_TRACE) || defined(DEBUG_MUTATORS)
+    log_debug(">> _vector_mutate_item_at_index @ %d => %s",
+              index, s7_object_to_c_string(s7, newval));
+#endif
+
+    struct node_s *list_expr = s7_c_object_value(_list_expr);
+    assert(list_expr->tid == TK_List_Expr);
+
+#if defined(DEBUG_AST)
+    sealark_debug_log_ast_outline(list_expr, 0);
+#endif
+
+    struct node_s *vector = utarray_eltptr(list_expr->subnodes, 1);
+    assert(vector->tid == TK_Expr_List);
+    int vec_type = sunlark_infer_expr_list_type(vector);
+    log_debug("vec_type %d %s", vec_type, token_name[vec_type][0]);
+
+    if (s7_is_list(s7, newval)) {
+        s7_pointer action = s7_car(newval);
+        if (action == KW(splice)) {
+            log_debug("ACTION: splice");
+        } else {
+            return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
+                            s7_list(s7, 2, s7_make_string(s7,
+                    "Invalid mutate action: ~A. Only :splice supported"),
+                                    newval)));
+        }
+    } else {
+        log_debug("ACTION: replace");
+    }
 
     /* get the item to update */
     struct node_s *item;
@@ -685,7 +799,21 @@ s7_pointer sunlark_vector_replace_item(s7_scheme *s7,
                 }
             }
         }
+
         if (s7_is_list(s7, newval)) {
+            if (KW(splice) == s7_car(newval)) {
+                s7_pointer lst = s7_cadr(newval);
+                if ( ! s7_is_vector(lst) ) {
+                    return(s7_error(s7,
+                                    s7_make_symbol(s7, "invalid_argument"),
+                                    s7_list(s7, 3, s7_make_string(s7,
+         ":splice must be followed by a vector; found: ~A of type ~A"),
+                                            lst,
+                    s7_type_of(s7, lst))));
+                }
+                log_debug("splicing: %s", s7_object_to_c_string(s7, lst));
+                log_debug("item: %d %s", item->tid, TIDNAME(item));
+            }
             if (KW(remove!) == s7_car(newval)) {
                 struct node_s *newitem
                     = sunlark_remove_attr_list_items(s7, item, s7_cdr(newval));
@@ -752,7 +880,7 @@ struct node_s *sunlark_update_list_value(s7_scheme *s7,
         struct node_s *new_expr_list
             = _add_attr_list_item(s7, expr_list, edits);
         return new_expr_list;
-        /* return sunlark_node_new(s7, new_expr_list); */
+        /* return sunlark_new_node(s7, new_expr_list); */
     }
     if (action == s7_make_keyword(s7, "replace")) {
         log_debug("ACTION REPLACE");
@@ -769,7 +897,7 @@ struct node_s *sunlark_update_list_value(s7_scheme *s7,
             /* errno already set, msg printed */
             return NULL;
         }
-        /* return sunlark_node_new(s7, new_expr_list); */
+        /* return sunlark_new_node(s7, new_expr_list); */
         return new_expr_list;
    }
     if (action == s7_make_keyword(s7, "remove!")) {
@@ -787,7 +915,7 @@ struct node_s *sunlark_update_list_value(s7_scheme *s7,
             /* errno already set, msg printed */
             return NULL;
         }
-        /* return sunlark_node_new(s7, new_expr_list); */
+        /* return sunlark_new_node(s7, new_expr_list); */
         return new_expr_list;
     }
     log_error("ERROR: action must be one of :add :replace :remove; got %s",

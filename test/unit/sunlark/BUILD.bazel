@@ -3,21 +3,26 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 test_suite(
     name = "sunlark",
     tests = [
-        ":bindings",
+        ":binding_get",
+        ":binding_rm",
         ":binding_set",
         ":bool_set",
         ":common_props",
-        ":dictionaries",
+        ":dictionary_get",
+        ":dictionary_set",
         # ":definitions",
         ":loadstmts",
         ":make_binding",
+        ":make_target",
         ":packages",
         ":string_props",
         ":string_set",
         ":strings",
         ":targets",
         ":vector_strings",
-        ":vectors",
+        ":vector_get",
+        ":vector_rm",
+        ":vector_set",
     ])
 
 COPTS = select({
@@ -57,9 +62,18 @@ DEPS = [
 ]
 
 cc_test(
-    name = "bindings",
-    srcs = ["test_bindings.c", "test_bindings.h"],
-    data = [":BUILD.bindings"],
+    name = "binding_get",
+    srcs = ["test_binding_get.c", "test_binding_get.h"],
+    data = [":BUILD.binding_get"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
+    name = "binding_rm",
+    srcs = ["test_binding_rm.c", "test_binding_rm.h"],
+    data = [":BUILD.binding_rm"],
     copts = COPTS,
     deps = DEPS,
     linkstatic = 1
@@ -77,7 +91,7 @@ cc_test(
 cc_test(
     name = "bool_set",
     srcs = ["test_bool_set.c", "test_bool_set.h"],
-    data = [":BUILD.binding_set"],
+    data = [":BUILD.bool_set"],
     copts = COPTS,
     deps = DEPS,
     linkstatic = 1
@@ -103,8 +117,17 @@ cc_test(
 )
 
 cc_test(
-    name = "dictionaries",
-    srcs = ["test_dictionaries.c", "test_dictionaries.h"],
+    name = "dictionary_get",
+    srcs = ["test_dictionary_get.c", "test_dictionary_get.h"],
+    data = [":BUILD.dictionaries"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
+    name = "dictionary_set",
+    srcs = ["test_dictionary_set.c", "test_dictionary_set.h"],
     data = [":BUILD.dictionaries"],
     copts = COPTS,
     deps = DEPS,
@@ -123,6 +146,14 @@ cc_test(
 cc_test(
     name = "make_binding",
     srcs = ["test_make_binding.c", "test_make_binding.h"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
+    name = "make_target",
+    srcs = ["test_make_target.c", "test_make_target.h"],
     copts = COPTS,
     deps = DEPS,
     linkstatic = 1
@@ -183,9 +214,27 @@ cc_test(
 )
 
 cc_test(
-    name = "vectors",
-    srcs = ["test_vectors.c", "test_vectors.h"],
-    data = [":BUILD.vectors"],
+    name = "vector_get",
+    srcs = ["test_vector_get.c", "test_vector_get.h"],
+    data = [":BUILD.vector_get"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
+    name = "vector_rm",
+    srcs = ["test_vector_rm.c", "test_vector_rm.h"],
+    data = [":BUILD.vector_set"],
+    copts = COPTS,
+    deps = DEPS,
+    linkstatic = 1
+)
+
+cc_test(
+    name = "vector_set",
+    srcs = ["test_vector_set.c", "test_vector_set.h"],
+    data = [":BUILD.vector_set"],
     copts = COPTS,
     deps = DEPS,
     linkstatic = 1
@@ -227,31 +276,39 @@ genrule(
     srcs = [
         "common.c",
         "validators.c",
-        "test_bindings.c",
+        "test_binding_get.c",
+        "test_binding_rm.c",
         "test_binding_set.c",
         "test_bool_set.c",
         "definitions.c",
         "test_common_props.c",
-        "test_dictionaries.c",
+        "test_dictionary_get.c",
+        "test_dictionary_set.c",
         "test_loadstmts.c",
         "test_make_binding.c",
+        "test_make_target.c",
         "test_packages.c",
         "test_string_set.c",
         "test_strings.c",
         "test_string_props.c",
         "test_vector_strings.c",
         "test_targets.c",
-        "test_vectors.c"
+        "test_vector_get.c",
+        "test_vector_rm.c",
+        "test_vector_set.c"
     ],
     outs = [
         "test_binding_set.h",
-        "test_bindings.h",
+        "test_binding_rm.h",
+        "test_binding_get.h",
         "test_bool_set.h",
         "definitions.h",
         "test_common_props.h",
-        "test_dictionaries.h",
+        "test_dictionary_get.h",
+        "test_dictionary_set.h",
         "test_loadstmts.h",
         "test_make_binding.h",
+        "test_make_target.h",
         "test_packages.h",
         "test_string_set.h",
         "test_strings.h",
@@ -260,7 +317,9 @@ genrule(
         "common.h",
         "validators.h",
         "test_targets.h",
-        "test_vectors.h"
+        "test_vector_get.h",
+        "test_vector_rm.h",
+        "test_vector_set.h"
     ],
     cmd = "\n".join([
         "SRC1=$(location definitions.c)",
@@ -273,16 +332,21 @@ genrule(
         "    $(location test_common_props.c) \\",
         "    $(location test_loadstmts.c) \\",
         "    $(location test_make_binding.c) \\",
+        "    $(location test_make_target.c) \\",
         "    $(location test_packages.c) \\",
         "    $(location test_binding_set.c) \\",
-        "    $(location test_bindings.c) \\",
+        "    $(location test_binding_rm.c) \\",
+        "    $(location test_binding_get.c) \\",
         "    $(location test_bool_set.c) \\",
         "    $(location test_string_set.c) \\",
         "    $(location test_strings.c) \\",
         "    $(location test_string_props.c) \\",
-        "    $(location test_dictionaries.c) \\",
+        "    $(location test_dictionary_get.c) \\",
+        "    $(location test_dictionary_set.c) \\",
         "    $(location test_targets.c) \\",
-        "    $(location test_vectors.c)",
+        "    $(location test_vector_get.c) \\",
+        "    $(location test_vector_rm.c) \\",
+        "    $(location test_vector_set.c)",
         "cp $${SRCDIR1}/*.h $(@D)",
     ]),
     tools = ["//vendored/makeheaders"],

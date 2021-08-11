@@ -18,9 +18,21 @@ s7_pointer sunlark_node_set_generic(s7_scheme *s7, s7_pointer args)
 {
 #ifdef DEBUG_TRACE
     log_debug(">>>>>>>>>>>>>>>> sunlark_node_set_generic <<<<<<<<<<<<<<<<");
-    /* log_debug("args: %s", s7_object_to_c_string(s7, args)); */
+    struct node_s *self = s7_c_object_value(s7_car(args));
+    log_debug("self: %d %s", self->tid, TIDNAME(self));
+    /* log_debug("args: %s", s7_object_to_c_string(s7, s7_cdr(args))); */
     /* debug_print_s7(s7, "args", args); */
 #endif
+
+    s7_pointer msg = s7_cdr(args);
+    if (s7_list_length(s7, msg) == 2) {
+        s7_pointer op  = s7_cdr(msg);
+        if (op == KW(>>)) {
+            log_debug("xxxxxxxxxxxxxxxx");
+        } else {
+
+        }
+    }
     return sunlark_set_bang(s7, args);
 }
 
@@ -63,13 +75,17 @@ s7_pointer sunlark_node_set_specialized(s7_scheme *s7, s7_pointer args)
 s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
 {
 #if defined(DEBUG_TRACE)
-    log_debug("sunlark_set_bang");
+    log_debug(">> sunlark_set_bang");
     /* log_debug("\t(car args): %s", s7_object_to_c_string(s7, s7_car(args))); */
-    log_debug("\tcdr args: %s", s7_object_to_c_string(s7, s7_cdr(args)));
+    /* log_debug("\tcdr args: %s", s7_object_to_c_string(s7, s7_cdr(args))); */
 #endif
 
     s7_pointer self = s7_car(args);
     struct node_s *self_node = s7_c_object_value(self);
+
+    /* s7_pointer last_arg = s7_car(s7_reverse(s7,s7_cdr(args))); */
+    /* s7_pointer ev = s7_eval(s7, last_arg, s7_nil(s7)); */
+    /* log_debug("EV: %s", s7_object_to_c_string(s7, ev)); */
 
 #ifdef DEBUG_AST
     /* sealark_debug_log_ast_outline(self_node, 0); */
@@ -114,17 +130,17 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
     /* assumption: path has at least 2 elements? */
     s7_pointer get_path = s7_reverse(s7, s7_cdr(args));
     s7_pointer update_val = s7_car(get_path);
-    s7_pointer lval;
+    s7_pointer selector;
     if (s7_is_null(s7, s7_cdr(get_path))) {
-        lval = s7_nil(s7);
+        selector = s7_nil(s7);
         get_path = s7_nil(s7);
     } else {
-        lval = s7_cadr(get_path);
+        selector = s7_cadr(get_path);
         get_path = s7_reverse(s7, s7_cddr(get_path));
     }
 
 #if defined (DEBUG_SET)
-    log_debug("get_path: %s", s7_object_to_c_string(s7, get_path));
+    /* log_debug("get_path: %s", s7_object_to_c_string(s7, get_path)); */
 
     /* bool dollar = false; // FIXME: name */
     /* if (s7_make_keyword(s7,"$") == s7_car(get_path)) { */
@@ -132,23 +148,19 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
     /*     get_path = s7_cdr(get_path); */
     /* } */
 
-    log_debug("set! self: %d %s; get_path: %s; lval: %s; new val: %s",
+    log_debug("set! self: %d %s; get_path: %s; selector: %s; new val: %s",
               sunlark_node_tid(s7, self),
               token_name[sunlark_node_tid(s7, self)][0],
               s7_object_to_c_string(s7, get_path),
-              s7_object_to_c_string(s7, lval),
+              s7_object_to_c_string(s7, selector),
               s7_object_to_c_string(s7, update_val));
 #endif
-
-    if (s7_car(get_path) == s7_make_keyword(s7, "$")) {
-        return self;
-    }
 
     struct node_s *node;
     s7_int typ;
     s7_pointer key;
 
-    /* qua procedure, check type of first arg */
+    /* qa procedure, check type of first arg */
     typ = s7_c_object_type(self);
     if (typ != ast_node_t)
         return(s7_wrong_type_arg_error(s7, "ast-node-set!", 1, self, "a ast_node"));
@@ -156,11 +168,59 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
     if (s7_is_immutable(self))
         return(s7_wrong_type_arg_error(s7, "ast-node-set!", 1, self, "a mutable ast_node"));
 
-    s7_pointer context = sunlark_node_object_applicator(s7, s7_cons(s7, self, get_path));
+    struct node_s *result;
+
+    /* getter (pkg :> sel): get_path :>, sel: sel */
+    if (s7_list_length(s7, get_path) < 2) {
+        if (self_node->tid == TK_Package) {
+            if (update_val == KW(null)) {
+                /* case: (set! (pkg :>>) :null) - rm all targets */
+                /* case: (set! (pkg :> :*) :null) - rm all targets */
+                /* case: (set! (pkg :> "hello-lib") :null) - rm target */
+                /* case: (set! (pkg :> :0) :null) - rm target */
+                /* ditto for :load, :loads */
+                if (s7_is_null(s7, selector)) {
+                    log_error("Getter must include a selector");
+                    return handle_errno(s7, EMISSING_GET_SELECTOR, s7_nil(s7));
+                    return NULL;
+                }
+                return sunlark_remove(s7, self, get_path, selector);
+            }
+            /* case: (set! (pkg :> :0) #>(newtarg ...f)) - replace target */
+            if (s7_car(get_path) == KW(>)) {
+                result = sunlark_pkg_target_mutate(s7, self_node,
+                                                    selector,
+                                                    update_val);
+                /* sealark_debug_log_ast_outline(result, 0); */
+                if (result)
+                    return sunlark_new_node(s7, result);
+                else
+                    return handle_errno(s7, ENOT_IMPLEMENTED, s7_cdr(args));
+            }
+        }
+    }
+
+    /* resolve context */
+
+
+    /* getter (pkg :> tsel :@ asel ...): len(get_path) > 1 */
+
+    /* if self == TK_Call_Expr (i.e. :target) */
+    /* let (t (pkg :> "hello-lib")) */
+    /* getter (t): get_path (), sel () */
+    /* case: (set! (t) :null) - illegal */
+    /* case: (set! (t :@) :null) */
+
+    s7_pointer context = sunlark_node_object_applicator(s7,
+                                                        s7_cons(s7,
+                                                                self,
+                                                                get_path));
     struct node_s *context_node = s7_c_object_value(context);
+    log_debug("object_applicator returned context node: %d %s",
+              context_node->tid, TIDNAME(context_node));
 
 #if defined(DEBUG_SET)
-    log_debug("self_node %d %s", self_node->tid, TIDNAME(self_node));
+    log_debug("getter self: %d %s", self_node->tid, TIDNAME(self_node));
     /* log_debug("RESOLVED context:"); */
     /* sunlark_debug_print_node(s7, context_node); */
     /* sealark_debug_print_node_starlark(context_node, true); // crush */
@@ -173,13 +233,13 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
 #if defined(DEBUG_SET)
         log_debug("case set! on context TK_STRING");
 #endif
-        /* NB: in this case lval should be '() - nothing to select */
-        if ( s7_is_null(s7, lval) ) { //FIXME
+        /* NB: in this case selector should be '() - nothing to select */
+        if ( s7_is_null(s7, selector) ) { //FIXME
             if (s7_is_c_object(update_val)) {
                 struct node_s *newitem
                     = sealark_set_string_c_object(context_node,
                                   s7_c_object_value(update_val));
-                return sunlark_node_new(s7,newitem);
+                return sunlark_new_node(s7,newitem);
             } else {
                 struct node_s *newitem
                     = sealark_set_string(context_node, 0,
@@ -195,24 +255,28 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
         /* (set! (pkg :> "string-vectors" :@ 0) :null) */
         /* (set! (pkg :> "string-vectors" :@ 0) "foo") */
         /* (set! (pkg :> "string-vectors" :@ 'string_vecb) "foo") */
-        /* context: bindings list; lval: index */
+        /* context: bindings list; selector: index */
 #if defined(DEBUG_SET)
         log_debug("set! context: TK_Arg_List (bindings)");
 #endif
+        {
         struct node_s *new
-            = _mutate_arglist(s7, context_node, lval, update_val);
-        if (new)
+            = sunlark_arglist_mutate(s7, context_node, selector, update_val);
+        if (new) {
+            /* sealark_format_normalize(new); */
+            sealark_format_rm_trailing_commas(s7_c_object_value(self));
             return context;
-        else
+        } else
             return handle_errno(s7, errno, s7_cdr(args));
+        }
         break;
 
     case TK_Binding:
 #if defined(DEBUG_SET)
         log_debug("CASE SET! context: TK_Binding");
 #endif
-        if (lval == KW(key)) {
-            log_debug("replacing lval: key");
+        if (selector == KW(key)) {
+            log_debug("replacing selector: key");
             if (update_val == KW(null)) {
                 log_error("Cannot delete key of binding");
                 return handle_errno(s7, EINVALID_REMOVE, s7_cdr(args));
@@ -233,15 +297,15 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
             }
         }
 
-        if (lval == s7_make_keyword(s7, "$") || lval == KW(value)) {
-            log_debug("replacing lval: :value");
+        if (selector == s7_make_keyword(s7, "$") || selector == KW(value)) {
+            log_debug("replacing selector: :value");
             errno = 0;
             struct node_s *newb
                 =  sunlark_mutate_binding_value(s7, context_node, update_val);
             if (newb) {
                 log_debug("after replacement:");
-                sealark_debug_log_ast_outline(newb, true); // crush
-                return sunlark_node_new(s7, newb);
+                /* sealark_debug_log_ast_outline(newb, true); // crush */
+                return sunlark_new_node(s7, newb);
                 /* return s7_values(s7, s7_nil(s7)); */
             } else {
                 return handle_errno(s7, errno, s7_cdr(args));
@@ -259,25 +323,50 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
 #if defined(DEBUG_SET)
             log_debug("REPLACING BINDING");
 #endif
-        struct node_s *result = s7_c_object_value(context);
+        result = s7_c_object_value(context);
 
-        struct node_s *res = _mutate_binding(s7, result, update_val);
+        struct node_s *res = sunlark_mutate_binding(s7, result, update_val);
         if (res)
             return s7_unspecified(s7);
         else
             return s7_unspecified(s7);
         break;
 
+    case TK_Call_Expr:
+#if defined(DEBUG_SET)
+        log_debug("set! context: TK_Call_Expr, selector: %s; update: %s",
+                  s7_object_to_c_string(s7, selector),
+                  s7_object_to_c_string(s7, update_val));
+#endif
+        result = sunlark_target_mutate(s7, context_node,
+                                       selector,
+                                                      update_val);
+        if (result)
+            return s7_unspecified(s7);
+        else
+            return handle_errno(s7, errno, s7_nil(s7));
+        break;
+
+    case TK_Dict_Entry:
+#if defined(DEBUG_SET)
+        log_debug("set! context: TK_Dict_Entry");
+        log_debug("selector: %s; update: %s", s7_object_to_c_string(s7, selector),
+                  s7_object_to_c_string(s7, update_val));
+#endif
+        break;
+
     case TK_Dict_Expr:
 #if defined(DEBUG_SET)
         log_debug("set! context: TK_Dict_Expr");
 #endif
+        {
         struct node_s *mu
-            = sunlark_mutate_dict_expr(s7, context_node, lval, update_val);
+            = sunlark_mutate_dict_expr(s7, context_node, selector, update_val);
         if (mu)
             return context;
         else
             return handle_errno(s7, errno, s7_cdr(args));
+        }
         break;
 
     case TK_ID:                 /* Booleans, True or False */
@@ -289,9 +378,9 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
             return handle_errno(s7, EINVALID_REMOVE, args);
         }
         result
-            = sunlark_set_id(s7, context_node, lval, update_val);
+            = sunlark_set_id(s7, context_node, selector, update_val);
         if (result)
-            return sunlark_node_new(s7, result);
+            return sunlark_new_node(s7, result);
         else {
             log_error("set! TK_ID error");
             return NULL;
@@ -299,70 +388,65 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
         break;
     case TK_List_Expr:          /* vector */
 
-        /* return _set_list_expr(s7, context_node, lval, update_val); */
+        /* return _set_list_expr(s7, context_node, selector, update_val); */
         /* updated =sunlark_mutate_vector(s7, result, update_val); */
 #if defined(DEBUG_SET)
-        log_debug("set! context: list-expr");
-        log_debug("lval: %s", s7_object_to_c_string(s7, lval));
+        log_debug("set! context: list-expr, selector: %s; newval: %s",
+                  s7_object_to_c_string(s7, selector),
+                  s7_object_to_c_string(s7, update_val));
 #endif
 
-        if (s7_is_keyword(lval)) {
-            if (lval == KW(*)) {
+        if (s7_is_keyword(selector)) {
+            if (selector == KW(*)) {
                 log_debug("Removing all items from :value list");
                 struct node_s *exl = utarray_eltptr(context_node->subnodes, 1);
                 utarray_clear(exl->subnodes);
                 return context;
             }
-            s7_pointer sym = s7_keyword_to_symbol(s7, lval);
-            const char *kw = s7_symbol_name(sym);
-            int len = strlen(kw); // very unlikely to be more than 2
-            int i = (kw[0] == '-')? 1 : 0;
-            for ( ; i < len; i++) {
-                if ( !isdigit( (int)kw[i] ) ) {
-                    log_debug("Indexing keyword must be ':' followed by digit(s); got: %s", kw);
-                    return(s7_error(s7,
-                                    s7_make_symbol(s7, "invalid_argument"),
-                                    s7_list(s7, 2, s7_make_string(s7,
-                  "Bad arg ~A - indexing keyword must be ':' followed by digit(s)."),
-                                            lval)));
-                }
+
+            int idx = sunlark_kwindex_to_int(s7, selector);
+            if (errno == 0) {// we got an int
+                return sunlark_vector_mutate_item(s7, context,
+                                                   idx, //selector,
+                                                   update_val);
+            } else {
+                return(s7_error(s7,
+                                s7_make_symbol(s7, "invalid_argument"),
+                                s7_list(s7, 2, s7_make_string(s7,
+            "Bad arg ~A - indexing keyword must be ':' followed by digit(s)."),
+                                        selector)));
             }
-            int idx = atoi(kw);
-            return sunlark_vector_replace_item(s7, context,
-                                               idx, //lval,
-                                               update_val);
         }
-        if (s7_is_integer(lval)) {
+        if (s7_is_integer(selector)) {
             /* indexing int list by int value */
             log_error("Use int keywords (e.g. :%d) to index lists",
-                      s7_integer(lval));
+                      s7_integer(selector));
             return(s7_error(s7, s7_make_symbol(s7, "invalid_argument"),
                             s7_list(s7, 3, s7_make_string(s7,
              "Use :~A instead of ~A to index a list"),
-                                    lval, lval)));
-
-            /* return sunlark_vector_replace_item(s7, context, lval, update_val); */
+                                    selector, selector)));
         }
-        if (s7_is_string(lval)) {
+        if (s7_is_string(selector)) {
             /* indexing string list by string value */
             UT_array *items
                 = sealark_vector_items_for_string(s7_c_object_value(context),
-                                                  s7_string(lval));
+                                                  s7_string(selector));
             sealark_update_vector_items(items,
                                         s7_string(update_val));
             /* sealark_debug_log_ast_outline(items, true); // crush */
             return nodelist_to_s7_list(s7, items);
         }
 
-        if (s7_is_symbol(lval)) { /* find symbol value in list */
+        if (s7_is_symbol(selector)) { /* find symbol value in list */
             log_debug("NOT YET indexing list by sym value");
             return NULL;
         }
 
-        /* lval is compound expr */
-        struct node_s *r = sunlark_vector_dispatcher(s7, context_node, lval);
+        /* selector is compound expr */
+        s7_pointer v = sunlark_vector_dispatcher(s7, context_node, selector);
         struct node_s *updated;
-        if (r) {
+        if (v) {
+            struct node_s *r = s7_c_object_value(v);
             switch(r->tid) {
             case TK_List_Expr:  /* (myvec) */
                 updated =sunlark_mutate_vector(s7, r, update_val);
@@ -373,7 +457,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
                 updated = sunlark_set_string(s7, r, update_val);
                 break;
             case TK_ID:
-                updated = sunlark_set_id(s7, r, lval, update_val);
+                updated = sunlark_set_id(s7, r, selector, update_val);
                 break;
             case TK_INT:
                 updated = sealark_set_int(r, s7_integer(update_val));
@@ -382,7 +466,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
                 ;
             }
             if (updated)
-                return sunlark_node_new(s7, updated);
+                return sunlark_new_node(s7, updated);
             else
                 //FIXME: error
                 return s7_unspecified(s7);
@@ -402,7 +486,7 @@ s7_pointer sunlark_set_bang(s7_scheme *s7, s7_pointer args)
     //implementation-specified?
     return s7_unspecified(s7);
 
-    /* return sunlark_node_new(set_target); */
+    /* return sunlark_new_node(set_target); */
 }
 
 /* **************************************************************** */
@@ -424,140 +508,6 @@ s7_pointer sunlark_remove_bang(s7_scheme *s7, s7_pointer args)
     return NULL;
 }
 
-/* **************************************************************** */
-LOCAL struct node_s *_mutate_arglist(s7_scheme *s7,
-                                     struct node_s *context_node,
-                                     s7_pointer lval,
-                                     s7_pointer update_val)
-{
-#if defined(DEBUG_TRACE) || defined(DEBUG_MUTATE)
-    log_debug("_mutate_arglist: %s => %s",
-              s7_object_to_c_string(s7, lval),
-              s7_object_to_c_string(s7, update_val));
-#endif
-    /* sealark_debug_log_ast_outline(context_node, 0); */
-
-    assert(context_node->tid == TK_Arg_List);
-
-    if (s7_is_string(lval)) {
-        log_error("context: string, not yet");
-        return NULL;
-    }
-
-    if (s7_is_integer(lval)) {
-        if (update_val == KW(null)) {
-            log_debug("Removing binding at %s",
-                      s7_object_to_c_string(s7, lval));
-            errno = 0;
-            struct node_s *updated_node;
-            updated_node
-                = sealark_arglist_rm_binding_for_int(context_node,
-                                                     s7_integer(lval));
-            if (updated_node) {
-                return updated_node;
-            } else {
-                return NULL; // errno set by subroutine
-            }
-        }
-
-        if (s7_is_list(s7, update_val)) {
-            log_debug("update val is list");
-            errno = ENOT_IMPLEMENTED;
-            return NULL;
-        }
-        log_error("Invalid update for binding: %s",
-                  s7_object_to_c_string(s7, update_val));
-        errno = EINVALID_UPDATE;
-        return NULL;
-    }
-
-    if (s7_is_symbol(lval)) {
-        if (update_val == KW(null)) {
-            log_info("removing sym %s from bindings",
-                      s7_object_to_c_string(s7, lval));
-            int idx = sealark_binding_index_for_key(context_node,
-                                                    s7_symbol_name(lval));
-            if (idx < 0) {
-                log_error("key not found: %s", s7_symbol_name(lval));
-                errno = ENOT_FOUND_BINDING;
-                return NULL;
-            } else {
-                log_debug("found %s at index %d (subnode %d)",
-                          s7_symbol_name(lval),
-                          idx/2, idx);
-                sealark_remove_binding_at_index(context_node, idx);
-                return context_node;
-            }
-        } else {
-            log_error("update context: symbol, not yet");
-            return NULL;
-        }
-    }
-
-    log_error("Invalid lval for arglist: %s",
-              s7_object_to_c_string(s7, lval));
-    errno = EINVALID_ARG;
-    return NULL;
-}
-
-/* **************************************************************** */
-LOCAL struct node_s *_mutate_binding(s7_scheme *s7, struct node_s *binding, s7_pointer new_binding)
-{
-#if defined(DEBUG_TRACE) || defined(DEBUG_MUTATE)
-    log_debug("_mutate_binding, new_binding: %s",
-              s7_object_to_c_string(s7, new_binding));
-#endif
-    if (s7_is_list(s7, new_binding)) {
-        log_debug("replacing binding");
-        if ( !sunlark_new_binding_is_valid(s7, new_binding) )
-            exit(EXIT_FAILURE); /* FIXME: s7_error */
-        if (binding->tid != TK_Binding) {
-            log_error("Expected TK_Binding node, got %d  %s",
-                      binding->tid, TIDNAME(binding));
-            exit(EXIT_FAILURE); /* FIXME: s7_error */
-        }
-        /* new_binding is valid */
-
-        /* mutate key */
-        struct node_s *bid = utarray_eltptr(binding->subnodes, 0);
-        const char *new_key;
-        if (s7_is_string(s7_car(new_binding))) {
-            new_key = s7_string(s7_car(new_binding));
-        } else {
-            if (s7_is_symbol(s7_car(new_binding))) {
-                new_key = s7_symbol_name(s7_car(new_binding));
-            } else {
-                // should not happen, has been validated above
-            }
-        }
-        int len = strlen(new_key);
-        free(bid->s);
-        bid->s = calloc(len, sizeof(char));
-        strncpy(bid->s, new_key, len);
-
-        /* mutate value */
-        struct node_s *old_value = utarray_eltptr(binding->subnodes, 2);
-        s7_pointer new_value = s7_cadr(new_binding);
-
-        if (s7_is_list(s7, new_value)) {
-            if (old_value->tid == TK_List_Expr) {
-                /* update existing vector */
-                sunlark_mutate_vector(s7, old_value, new_value);
-            } else {
-                /* replace */
-                sealark_node_free(old_value);
-                old_value = sealark_new_node(TK_List_Expr, without_subnodes);
-            }
-        }
-        return binding;
-    } else {
-        if (s7_is_string(new_binding)) {
-            log_error("Cannot replace binding with string");
-            exit(EXIT_FAILURE); /* FIXME: s7_error */
-        }
-    }
-}
-
 /* **************** */
 LOCAL struct node_s *sunlark_set_string(s7_scheme *s7,
                                         struct node_s *old_vec,
@@ -574,7 +524,7 @@ LOCAL struct node_s *sunlark_set_string(s7_scheme *s7,
 /* **************** */
 LOCAL struct node_s *sunlark_set_id(s7_scheme *s7,
                                     struct node_s *context_node,
-                                    s7_pointer lval,
+                                    s7_pointer selector,
                                     s7_pointer newval)
 {
 #if defined(DEBUG_TRACE) || defined(DEBUG_MUTATE)
@@ -583,11 +533,11 @@ LOCAL struct node_s *sunlark_set_id(s7_scheme *s7,
 
     assert(context_node->tid == TK_ID);
 
-    log_debug("lval: %s", s7_object_to_c_string(s7, lval));
+    log_debug("selector: %s", s7_object_to_c_string(s7, selector));
     log_debug("newval: %s", s7_object_to_c_string(s7, newval));
 
-    /* NB: in this case lval should be '() - nothing to select */
-    if ( s7_is_null(s7, lval) ) { //FIXME
+    /* NB: in this case selector should be '() - nothing to select */
+    if ( s7_is_null(s7, selector) ) { //FIXME
         struct node_s *newitem;
         if (s7_is_c_object(newval)) {
             newitem = sealark_set_string_c_object(context_node,
@@ -630,6 +580,26 @@ struct node_s *sunlark_convert_node_to_list_expr(s7_scheme *s7,
     struct node_s *lbrack = sealark_new_node(TK_LBRACK, without_subnodes);
     utarray_push_back(node->subnodes, lbrack);
 
+    struct node_s *ls;
+    if (s7_is_list(s7, list))
+        ls = _new_vec_from_list(s7, list);
+    else
+        if (s7_is_vector(list))
+            ls = _new_vec_from_vector(s7, list);
+
+    utarray_push_back(node->subnodes, ls);
+
+    struct node_s *rbrack = (struct node_s*)calloc(1, sizeof(struct node_s));
+    rbrack->tid = TK_RBRACK;
+    utarray_push_back(node->subnodes, rbrack);
+    return node;
+}
+
+struct node_s *_new_vec_from_list(s7_scheme *s7, s7_pointer list)
+{
+#if defined(DEBUG_TRACE) || defined(DEBUG_SET)
+    log_debug("_new_vec_from_list");
+#endif
     struct node_s *vec = sealark_new_node(TK_Expr_List, with_subnodes);
     struct node_s *new, *comma;
     int len = s7_list_length(s7, list);
@@ -669,7 +639,6 @@ struct node_s *sunlark_convert_node_to_list_expr(s7_scheme *s7,
         }
 
     loop:
-        log_debug("1 xxxxxxxxxxxxxxxx");
         utarray_push_back(vec->subnodes, new);
         if (len-i > 1) {
             comma = (struct node_s*)calloc(1, sizeof(struct node_s));
@@ -679,10 +648,59 @@ struct node_s *sunlark_convert_node_to_list_expr(s7_scheme *s7,
         i++;
         list = s7_cdr(list);
     }
-    utarray_push_back(node->subnodes, vec);
+    return vec;
+}
 
-    struct node_s *rbrack = (struct node_s*)calloc(1, sizeof(struct node_s));
-    rbrack->tid = TK_RBRACK;
-    utarray_push_back(node->subnodes, rbrack);
-    return node;
+struct node_s *_new_vec_from_vector(s7_scheme *s7, s7_pointer vector)
+{
+#if defined(DEBUG_TRACE) || defined(DEBUG_SET)
+    log_debug("_new_vec_from_vector");
+#endif
+    struct node_s *vec = sealark_new_node(TK_Expr_List, with_subnodes);
+    struct node_s *new, *comma;
+    int len = s7_vector_length(vector);
+    char ibuf[256]; // for int to string conversion
+    const char *sbuf;
+    int  slen;
+    int i = 0;
+    for(int i = 0; i < len; i++) {
+        ibuf[0] = '\0';
+        s7_pointer arg = s7_vector_ref(s7, vector, i);
+        new = sealark_new_node(0, without_subnodes);
+
+        if (s7_is_integer(arg)) {
+            int i = s7_integer(arg);
+            snprintf(ibuf, 256, "%d", i);
+            slen = strlen(ibuf) + 1;
+            new->s = calloc(slen, sizeof(char));
+            strncpy(new->s, ibuf, slen);
+            new->tid = TK_INT;
+            goto loop;
+        }
+        /* new->s = (char*)calloc(8, sizeof(char)); */
+        /* snprintf(new->s, 2, "%d", i); */
+        /* log_debug("new int: %s", new->s); */
+
+        if (s7_is_string(arg)) {
+            new->tid = TK_STRING;
+            sbuf = s7_string(arg);
+            slen = strlen(sbuf) + 1;
+            new->s = calloc(slen, sizeof(char));
+            strncpy(new->s, sbuf, slen);
+            goto loop;
+        }
+
+        if (s7_is_c_object(arg)) {
+            /* FIXME: handle sunlark-make-string */
+        }
+
+    loop:
+        utarray_push_back(vec->subnodes, new);
+        if (len-i > 1) {
+            comma = (struct node_s*)calloc(1, sizeof(struct node_s));
+            comma->tid = TK_COMMA;
+            utarray_push_back(vec->subnodes, comma);
+        }
+    }
+    return vec;
 }

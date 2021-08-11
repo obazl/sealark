@@ -423,12 +423,13 @@ EXPORT struct node_s *sealark_new_node(int type, bool init_subnodes)
     log_debug("sealark_new_node");
 #endif
 
-    struct node_s *n = (struct node_s *)calloc(1, sizeof(struct node_s));
-    n->tid = type;
+    struct node_s *nd = (struct node_s *)calloc(1, sizeof(struct node_s));
+    nd->line = nd->col = -1;
+    nd->tid = type;
     /* if tid is printable, no subnodes, else init subnodes */
     if (init_subnodes)
-        utarray_new(n->subnodes, &node_icd);
-    return n;
+        utarray_new(nd->subnodes, &node_icd);
+    return nd;
 }
 
 EXPORT struct node_s *sealark_new_node_s(int type, const char *str)
@@ -437,6 +438,7 @@ EXPORT struct node_s *sealark_new_node_s(int type, const char *str)
     log_debug("sealark_new_node");
 #endif
     struct node_s *nd = (struct node_s *)calloc(1, sizeof(struct node_s));
+    nd->line = nd->col = -1;
     nd->tid = type;
     int len = strlen(str);
     nd->s = calloc(len, sizeof(char));
@@ -444,11 +446,27 @@ EXPORT struct node_s *sealark_new_node_s(int type, const char *str)
     return nd;
 }
 
+EXPORT struct node_s *sealark_new_int_node(int i)
+{
+#if defined(DEBUG_MEM)
+    log_debug("sealark_new_int_node: %d", i);
+#endif
+    struct node_s *nd = (struct node_s *)calloc(1, sizeof(struct node_s));
+    nd->line = nd->col = -1;
+    nd->tid = TK_INT;
+    char buf[64]; //FIXME how much is enough in practice?
+    snprintf(buf, 64, "%d", i);
+    int len = strlen(buf);
+    nd->s = calloc(len, sizeof(char));
+    strncpy(nd->s, buf, len+1);
+    return nd;
+}
+
 /* **** */
 EXPORT struct node_s *sealark_new_list_expr(void)
 {
 #if defined(DEBUG_MEM)
-    log_debug("sealark_new_node");
+    log_debug("sealark_new_list_expr");
 #endif
     struct node_s *newlist
         = (struct node_s *)calloc(1, sizeof(struct node_s));

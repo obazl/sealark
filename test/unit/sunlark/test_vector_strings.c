@@ -4,27 +4,12 @@
 #include "unity.h"
 #include "s7.h"
 
-/* we need both APIs for test validation */
 #include "sealark.h"
 #include "sunlark.h"
 
 #include "test_vector_strings.h"
 
-UT_string *buf;
-UT_string *test_s;
-
 char *build_file = "test/unit/sunlark/BUILD.vectors";
-
-s7_scheme *s7;
-
-/* struct parse_state_s *parse_state; */
-
-static s7_pointer ast;
-struct node_s *root;
-
-s7_pointer is_eq_s7;
-s7_pointer is_equal_s7;
-
 
 int main(void) {
     UNITY_BEGIN();
@@ -35,24 +20,10 @@ int main(void) {
 }
 
 /* **************************************************************** */
-void setUp(void) {
-    s7 = sunlark_init();
-    is_eq_s7 = s7_name_to_value(s7, "eq?");
-    is_equal_s7 = s7_name_to_value(s7, "equal?");
-    ast = sunlark_parse_build_file(s7,
-                                   s7_list(s7, 1,
-                                           s7_make_string(s7, build_file)));
-    root = s7_c_object_value(ast);
-}
-
-void tearDown(void) {
-    s7_quit(s7);
-}
-
 void test_int_vector(void) {
     s7_pointer path = s7_eval_c_string(s7,
                        "'(:targets 0 :bindings string_vec :value)");
-    s7_pointer bvalue = s7_apply_function(s7, ast, path);
+    s7_pointer bvalue = s7_apply_function(s7, pkg, path);
 
     log_debug("bvalue:\n%s", s7_object_to_c_string(s7, bvalue));
 
@@ -69,7 +40,7 @@ void test_int_vector(void) {
 void test_label_vector(void) {
     s7_pointer path = s7_eval_c_string(s7,
                        "'(:targets 0 :bindings string_vec :value)");
-    s7_pointer bvalue = s7_apply_function(s7, ast, path);
+    s7_pointer bvalue = s7_apply_function(s7, pkg, path);
 
     log_debug("bvalue:\n%s", s7_object_to_c_string(s7, bvalue));
 
@@ -85,7 +56,7 @@ void test_string_vector(void) {
     /* access a string-vector value */
     s7_pointer path = s7_eval_c_string(s7,
         "'(:target \"string-vectors\" :binding string_veca :value)");
-    s7_pointer svector = s7_apply_function(s7, ast, path);
+    s7_pointer svector = s7_apply_function(s7, pkg, path);
 
     log_debug("svector:\n%s", s7_object_to_c_string(s7, svector));
 
@@ -120,4 +91,17 @@ void test_string_vector(void) {
 
     /* metadata: line, col */
 
+}
+
+/* **************************************************************** */
+void setUp(void) {
+    s7 = sunlark_init();
+    init_s7_syms(s7);
+    pkg = sunlark_parse_build_file(s7,
+                                   s7_list(s7, 1,
+                                           s7_make_string(s7, build_file)));
+}
+
+void tearDown(void) {
+    s7_quit(s7);
 }

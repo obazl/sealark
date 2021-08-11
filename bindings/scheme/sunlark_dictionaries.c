@@ -32,9 +32,9 @@
    5: TK_RBRACE[68] @15:4
  */
 
-struct node_s *sunlark_dict_expr_dispatcher(s7_scheme *s7,
-                                            struct node_s *dict,
-                                            s7_pointer path_args)
+s7_pointer sunlark_dict_expr_dispatcher(s7_scheme *s7,
+                                        struct node_s *dict,
+                                        s7_pointer path_args)
 {
 #ifdef DEBUG_TRACE
     log_debug("sunlark_dict_expr_dispatcher %d %s: %s",
@@ -57,13 +57,14 @@ struct node_s *sunlark_dict_expr_dispatcher(s7_scheme *s7,
         errno = EINVALID_INT_INDEX;
         return NULL;
     }
+
     if (s7_is_string(idx)) {
         /* string key lookup */
         errno = 0;
         struct node_s *entry;
         entry = sealark_dict_entry_for_string_key(dict, s7_string(idx));
         if (entry == NULL)
-            return NULL;
+            return handle_errno(s7, errno, path_args);
         assert(entry->tid == TK_Dict_Entry);
 
         if (path_len == 0) {
@@ -73,7 +74,7 @@ struct node_s *sunlark_dict_expr_dispatcher(s7_scheme *s7,
         }
 
         if (path_len == 1) {    /* e.g. ("akey") */
-            return entry;
+            return sunlark_new_node(s7, entry);
         }
 
         /* path_len must be > 1 */
@@ -88,7 +89,8 @@ struct node_s *sunlark_dict_expr_dispatcher(s7_scheme *s7,
                 errno = ETOO_MANY_ARGS;
                 return NULL;
             }
-            return utarray_eltptr(entry->subnodes, 0);
+            struct node_s *nd = utarray_eltptr(entry->subnodes, 0);
+            return sunlark_new_node(s7, nd);
         } else {
             if (arg2 == KW(value) || arg2 == s7_make_keyword(s7, "$")) {
                 val = utarray_eltptr(entry->subnodes, 2);
@@ -100,42 +102,44 @@ struct node_s *sunlark_dict_expr_dispatcher(s7_scheme *s7,
             }
         }
 
-        if (path_len == 2) return val;
+        if (path_len == 2) return sunlark_new_node(s7, val);
 
         if (path_len == 3) {    /* e.g. ("akey" :value :0) */
+            assert(val->tid = TK_List_Expr);
+            log_debug("0 xxxxxxxxxxxxxxxx");
             s7_pointer arg3 = s7_caddr(path_args);
-            errno = 0;
-            int idx = sunlark_is_nbr_kw(s7, arg3);
-            if (errno != 0) {
-                errno = EINVALID_ARG;
-                return NULL;
+            if (s7_is_string(arg3)) {
+
             } else {
-                assert(val->tid = TK_List_Expr);
-                struct node_s *item =
-                    sealark_vector_item_for_int(val, idx);
-                if (item)
-                    return item;
-                else
+                errno = 0;
+                int idx = sunlark_is_nbr_kw(s7, arg3);
+                if (errno != 0) {
+                    errno = EINVALID_ARG;
                     return NULL;
+                } else {
+                    struct node_s *item =
+                        sealark_vector_item_for_int(val, idx);
+                    if (item)
+                        return sunlark_new_node(s7, item);
+                    else
+                        return NULL;
+                }
             }
         }
         errno = ETOO_MANY_ARGS;
         return NULL;
     }
 
-    /* e.g. (:0 :value), (:1 :key), etc. */
-    /* if (s7_is_keyword(idx)) { */
-    int i;
-    if ((i = sunlark_is_nbr_kw(s7, idx)) < 0) {
-        log_error("bad kw arg");
-    } else {
+    /* not string, not int */
+    int i = sunlark_kwindex_to_int(s7, idx);
+    if (errno == 0) {// we got an int
         log_debug("indexing at %d", i);
         errno = 0;
         struct node_s *dict_entry
             = sealark_dict_entry_for_int(dict, i);
         if (arg_ct == 1) {
             if (dict_entry)
-                return dict_entry;
+                return sunlark_new_node(s7, dict_entry);
             else
                 return NULL;
         }
@@ -143,34 +147,35 @@ struct node_s *sunlark_dict_expr_dispatcher(s7_scheme *s7,
         s7_pointer entry_ref = s7_cadr(path_args);
         if (entry_ref == KW(key)) {
             struct node_s *k = utarray_eltptr(dict_entry->subnodes, 0);
-            return k;
+            return sunlark_new_node(s7, k);
         }
         if (entry_ref == KW(value) || entry_ref == s7_make_keyword(s7,"$")) {
             struct node_s *v = utarray_eltptr(dict_entry->subnodes, 2);
-            return v;
+            return sunlark_new_node(s7, v);
+        }
+
+    } else {
+        if (idx == KW(length)) {
+            int l  = sealark_dict_expr_length(dict);
+            return s7_make_integer(s7, l);
+        } else {
+            s7_pointer result
+                = sunlark_common_property_lookup(s7, dict, idx);
+            log_debug("0 xxxxxxxxxxxxxxxx %s", s7_object_to_c_string(s7, result));
+
+            if (result) {
+                errno = 0;
+                return result;
+            } else
+                return handle_errno(s7, errno, path_args);
         }
     }
-
-    if (s7_is_string(idx)) {
-        /* sealark_debug_print_ast_outline(dict, 0); */
-        UT_array *items     /* list of item nodes */
-            = sealark_vector_items_for_string(dict, s7_string(idx));
-        /* s7_pointer ilist = intlist_to_s7_list(s7, items); */
-        /* utarray_free(items); */
-        /* s7_pointer ilist = vec_entries_to_s7_list(s7, items); */
-        // utarray_free(items); /* FIXME: leak */
-        log_error("FIXME!!!!!!!!!!!!!!!!");
-        /* return nodelist_to_s7_list(s7, items); */
-        return NULL;
-    }
-    log_error("Invalid arg: %s",
-              s7_object_to_c_string(s7, path_args));
-    errno = EINVALID_ARG;
     return NULL;
 }
 
 /* **************************************************************** */
-struct node_s *sunlark_dict_entry_dispatcher(s7_scheme *s7,
+/* struct node_s * */
+s7_pointer sunlark_dict_entry_dispatcher(s7_scheme *s7,
                                             struct node_s *dentry,
                                             s7_pointer path_args)
 {
@@ -186,11 +191,40 @@ struct node_s *sunlark_dict_entry_dispatcher(s7_scheme *s7,
     s7_pointer op = s7_car(path_args);
 
     if (op == KW(key)) {
-        return utarray_eltptr(dentry->subnodes, 0);
+        struct node_s *r = utarray_eltptr(dentry->subnodes, 0);
+        return sunlark_new_node(s7, r);
     }
 
     if (op == KW(value) || op == s7_make_keyword(s7, "$")) {
-        return utarray_eltptr(dentry->subnodes, 2);
+        struct node_s *v = utarray_eltptr(dentry->subnodes, 2);
+        if (path_len == 1)
+            return sunlark_new_node(s7, v);
+        else {
+            /* next arg must be an index e.g. :0 */
+            if (path_len == 2) {
+                s7_pointer idx = s7_cadr(path_args);
+                switch(v->tid) {
+                case TK_List_Expr:
+                    return sunlark_vector_dispatcher(s7, v,
+                                                     s7_list(s7,1,idx));
+                    break;
+                case TK_Dict_Expr:
+                    /* should not happen for BUILD files */
+                    log_error("Found dict value in dict");
+                    break;
+                default:
+                    log_error("Trying to index a non-list: %d %s",
+                              v->tid, TIDNAME(v));
+                    errno = EINVALID_ARG;
+                    return NULL;
+                }
+            } else {
+                log_error("Too many args: %s",
+                          s7_object_to_c_string(s7, path_args));
+                errno = ETOO_MANY_ARGS;
+                return NULL;
+            }
+        }
     }
 
     /* log_error("Invalid arg for dict-entry: %s", */
@@ -200,18 +234,38 @@ struct node_s *sunlark_dict_entry_dispatcher(s7_scheme *s7,
 }
 
 /* **************************************************************** */
-struct node_s *sunlark_mutate_dict_expr(s7_scheme *s7, struct node_s *node,
+struct node_s *sunlark_mutate_dict_expr(s7_scheme *s7,
+                                        struct node_s *dict_expr,
                                         s7_pointer lval,
                                         s7_pointer update_val)
 {
 #ifdef DEBUG_TRACE
-    log_debug("sunlark_mutate_dict_expr; lval %s; update: %s",
-              node->tid, TIDNAME(node),
+    log_debug("sunlark_mutate_dict_expr");
+    log_debug("lval %s; update: %s",
               s7_object_to_c_string(s7, lval),
               s7_object_to_c_string(s7, update_val));
 #endif
+    assert(dict_expr->tid == TK_Dict_Expr);
 
-    assert(node->tid == TK_Dict_Expr);
-
-    return node;
+    if (update_val == KW(null)) {
+        int idx = sunlark_kwindex_to_int(s7, lval);
+        if (errno == 0) // we got an int
+            return sealark_dexpr_rm_entry_for_int(dict_expr, idx);
+        else {
+            if (s7_is_string(lval)) {
+                return sealark_dexpr_rm_entry_for_string(dict_expr,
+                                                         s7_string(lval));
+            }
+            if (s7_is_symbol(lval)) {
+                return sealark_dexpr_rm_entry_for_string(dict_expr,
+                                                  s7_symbol_name(lval));
+            }
+            log_error("Invalid dict index: %s",
+                      s7_object_to_c_string(s7, lval));
+            errno = EINVALID_INDEX;
+            return NULL;
+        }
+    }
+    log_debug("FIXME");
+    return dict_expr;
 }

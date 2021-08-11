@@ -51,7 +51,7 @@ s7_pointer sunlark_target_property_lookup(s7_scheme *s7,
         /* log_debug("matched :attrs"); */
         struct node_s *attrs = sunlark_get_attrs_list(s7, self);
         log_debug("got attrs: %d %s", attrs->tid, token_name[attrs->tid][0]);
-        return sunlark_node_new(s7, self);
+        return sunlark_new_node(s7, self);
 
         /* } else { */
         /*     /\* the only propert :attr-list understands is :<attrname> *\/ */
@@ -62,7 +62,7 @@ s7_pointer sunlark_target_property_lookup(s7_scheme *s7,
     if (prop_kw == KW(rule)) {
         /* struct node_s *node = s7_c_object_value(self); */
         struct node_s *rulename = sealark_ruleid_for_target(self);
-        return sunlark_node_new(s7, rulename); /* tid :id */
+        return sunlark_new_node(s7, rulename); /* tid :id */
     }
 
     /* common */
@@ -95,13 +95,13 @@ s7_pointer sunlark_binding_property_lookup(s7_scheme *s7,
 
     if ( strncmp(key, "name", 4) == 0 ) {
         c_result = utarray_eltptr(attr_node->subnodes, 0);
-        return sunlark_node_new(s7, c_result);
+        return sunlark_new_node(s7, c_result);
         /* return sunlark_update_binding_name(s7, node_s7, key, val); */
     }
 
     if ( strncmp(key, "value", 5) == 0) {
         c_result = utarray_eltptr(attr_node->subnodes, 2);
-        return sunlark_node_new(s7, c_result);
+        return sunlark_new_node(s7, c_result);
         /* return sunlark_update_binding_value(s7, node_s7, key, val); */
     }
 
@@ -173,7 +173,7 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
     if (kw == KW(starlark)) {
         return sunlark_to_starlark(s7,
                             s7_list(s7, 2,
-                                    sunlark_node_new(s7,ast_node),
+                                    sunlark_new_node(s7,ast_node),
                                     KW(crush)));
         /* UT_string *buf; */
         /* utstring_new(buf); */
@@ -231,7 +231,7 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
     }
 
     if (kw == KW(tid->kw)) {
-        /* log_debug("tid: %d", ast_node->tid); */
+        log_debug("tid: %d %s", ast_node->tid, TIDNAME(ast_node));
         char *s = sealark_tid_to_string(ast_node->tid);
         return s7_make_keyword(s7, s);
     }
@@ -342,8 +342,6 @@ s7_pointer sunlark_common_property_lookup(s7_scheme *s7,
             /* } */
         }
     }
-
-    /* s7 hash-table-ref returns #f if key not found */
-    /* but that just seems confusing, since #f is a valid value */
-    return s7_unspecified(s7);
+    log_error("common prop not found: %s", s7_object_to_c_string(s7,kw));
+    return handle_errno(s7, ENOT_FOUND, kw);
 }
