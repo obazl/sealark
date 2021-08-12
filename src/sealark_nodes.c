@@ -430,7 +430,7 @@ EXPORT struct node_s *sealark_new_node(int type, bool init_subnodes)
     return nd;
 }
 
-EXPORT struct node_s *sealark_new_node_s(int type, const char *str)
+EXPORT struct node_s *sealark_new_s_node(int type, const char *str)
 {
 #if defined(DEBUG_MEM)
     log_debug("sealark_new_node");
