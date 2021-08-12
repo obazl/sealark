@@ -17,7 +17,7 @@ cc_binary(
     }) + [
         "-pedantic-errors",
 
-        "-I", "$(GENDIR)/sealark",
+        "-I", "$(GENDIR)/src",
         "-I", "$(GENDIR)/test",
 
         "-I", "vendored/logc",
@@ -28,7 +28,7 @@ cc_binary(
     ],
     defines = ["DEBUG", "DEBUG_TRACE"],
     deps = [
-        "//sealark",
+        "//src:sealark",
         "//vendored/logc",
         "//vendored/uthash",
     ],
@@ -45,7 +45,7 @@ cc_binary(
     srcs  = [
         "parse_file.c",
         "parse_file.h",
-        # "//sealark:sealark_debug.c",
+        # "//src:sealark_debug.c",
     ],
     copts = select({
         # strdup is non-standard, not supported on linux in strict c11 mode
@@ -58,7 +58,7 @@ cc_binary(
         "-I$(GENDIR)/test",
         "-I$(GENDIR)/external/sealark/test",
 
-        "-I$(GENDIR)/sealark",
+        "-I$(GENDIR)/src",
 
         "-Ivendored/logc",
         "-Iexternal/sealark/vendored/logc",
@@ -68,7 +68,7 @@ cc_binary(
     ],
     defines = ["DEBUG", "DEBUG_TRACE"],
     deps = [
-        "//sealark",
+        "//src:sealark",
         "//vendored/logc",
         "//vendored/uthash",
     ],
@@ -81,7 +81,7 @@ genrule(
     srcs = [
         "lex_file.c",
         "parse_file.c",
-        "//sealark:mkhdrs-export",
+        "//src:mkhdrs-export",
     ],
     outs = [
         "lex_file.h",
@@ -91,7 +91,7 @@ genrule(
         "SRC1=$(location lex_file.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "$(location //vendored/makeheaders) \\",
-        "    $(location //sealark:mkhdrs-export) \\",
+        "    $(location //src:mkhdrs-export) \\",
         "    $(location lex_file.c) \\",
         "    $(location parse_file.c)",
         "cp $${SRCDIR1}/*.h $(@D)",

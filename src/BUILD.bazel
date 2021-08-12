@@ -70,8 +70,8 @@ cc_library(
         "-g", "-O0",
         "-pedantic-errors",
         "-I", ".",
-        "-I", "$(GENDIR)/sealark",
-        "-I", "$(GENDIR)/external/sealark/sealark",
+        "-I", "$(GENDIR)/src",
+        "-I", "$(GENDIR)/external/sealark/src",
 
         "-I", "vendored/uthash",
         "-I", "external/sealark/vendored/uthash",
@@ -112,8 +112,8 @@ cc_library(
 
         "-I", ".",              # syntaxis.h
 
-        "-I", "$(GENDIR)/sealark",
-        "-I", "$(GENDIR)/external/sealark/sealark",
+        "-I", "$(GENDIR)/src",
+        "-I", "$(GENDIR)/external/sealark/src",
 
         "-I", "vendored/logc",
         "-I", "external/sealark/vendored/logc",
@@ -173,8 +173,8 @@ cc_library(
 
         "-I", "src",
 
-        "-I", "$(GENDIR)/sealark",
-        "-I", "$(GENDIR)/external/sealark/sealark",
+        "-I", "$(GENDIR)/src",
+        "-I", "$(GENDIR)/external/sealark/src",
 
         "-I", "vendored/uthash",
         "-I", "external/sealark/vendored/uthash",
