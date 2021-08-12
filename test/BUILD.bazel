@@ -55,14 +55,16 @@ cc_binary(
     }) + [
         "-pedantic-errors",
 
-        "-I", "$(GENDIR)/sealark",
-        "-I", "$(GENDIR)/test",
+        "-I$(GENDIR)/test",
+        "-I$(GENDIR)/external/sealark/test",
 
-        "-I", "vendored/logc",
-        # "-I", "external/obazl/vendored/logc",
-        # "-I", "external/tools_obazl/vendored/logc",
+        "-I$(GENDIR)/sealark",
+
+        "-Ivendored/logc",
+        "-Iexternal/sealark/vendored/logc",
 
         "-Ivendored/uthash",
+        "-Iexternal/sealark/vendored/uthash",
     ],
     defines = ["DEBUG", "DEBUG_TRACE"],
     deps = [

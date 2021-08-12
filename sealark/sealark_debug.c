@@ -72,6 +72,13 @@ LOCAL void _debug_display_ast_outline(struct node_s *node,
         utstring_printf(buf, "%*.s%d: %s[%d] @%d:%d\n",
                   2*level, " ", level, TIDNAME(node), node->tid,
                   node->line, node->col);
+        if (node->comments) {
+            struct node_s *subnode = NULL;
+            while((subnode=(struct node_s*)utarray_next(node->comments,
+                                                        subnode))) {
+                _debug_display_ast_outline(subnode, buf, level+1);
+            }
+        }
         if (node->subnodes) {
             struct node_s *subnode = NULL;
             while((subnode=(struct node_s*)utarray_next(node->subnodes,

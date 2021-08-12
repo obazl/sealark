@@ -1,8 +1,1 @@
 load("@repo1//pkg1:tgt1.bzl", "arg1", "arg2")
-
-load("@repo2//pkg2:tgt2.bzl", "arg1", "arg2", key1 = "val1"  )
-
-load(
-    "@repo3//pkg3:tgt3.bzl",
-    "var3"
-)

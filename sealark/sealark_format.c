@@ -29,17 +29,27 @@ struct format_s format = {
 EXPORT void sealark_format_dirty_node(struct node_s *nd, int *mrl, int *mrc)
 {
 #if defined(DEBUG_TRACE) || defined(DEBUG_FORMAT)
-    log_debug("sealark_format_DIRTY_node %d %s @ %d:%d",
-              nd->tid, TIDNAME(nd), *mrl, *mrc);
+    log_debug("sealark_format_DIRTY_node %d %s mrl: %d, mrc: %d | %s",
+              nd->tid, TIDNAME(nd), *mrl, *mrc, nd->s);
+    sealark_debug_log_ast_outline(nd, 0);
 #endif
 
+    if ( (nd->tid == TK_BLANK)
+         ||  (nd->tid == TK_COMMENT) ){
+        if (nd->line <= *mrl) {
+            nd->line = *mrl + 1;
+        }
+        *mrl = nd->line;
+        return;
+    }
+
     if (sealark_is_printable(nd)) {
-        log_debug("formatting %d %s", nd->tid, TIDNAME(nd));
+        /* log_debug("formatting %d %s", nd->tid, TIDNAME(nd)); */
         nd->line = *mrl;
         nd->col  = *mrc;
         char *s = sealark_node_printable_string(nd);
-        *mrc += strlen(s);
-        if (nd->tid == TK_COMMA) (*mrc)++; //???
+        *mrc += strlen(s) + 1;
+        /* if (nd->tid == TK_COMMA) (*mrc)++; //??? */
         return;
     }
 
@@ -75,7 +85,9 @@ EXPORT void sealark_format_dirty_node(struct node_s *nd, int *mrl, int *mrc)
     /*     } */
     /*     break; */
     case TK_Binding:
+#if defined(DEBUG_FORMAT)
         log_debug("formatting TK_Binding");
+#endif
         nd->line = (*mrl)++;
         nd->col  = *mrc;
         sub = NULL;
@@ -85,20 +97,28 @@ EXPORT void sealark_format_dirty_node(struct node_s *nd, int *mrl, int *mrc)
         /* } */
         break;
     case TK_Load_Stmt:
+#if defined(DEBUG_FORMAT)
         log_debug("formatting TK_Load_Stmt");
+#endif
         nd->line = *mrl;
         nd->col  = *mrc;
         *mrc = *mrc + 4;
         /* recur on subnodes */
         break;
     case TK_Expr_List:
+#if defined(DEBUG_FORMAT)
         log_debug("formatting TK_Expr_List");
+#endif
         break;
     case TK_List_Expr:
-        log_debug("formatting TK_List_Expr");
+        nd->line = *mrl;
+        nd->col  = *mrc;
+        _format_list_expr(nd, mrl, mrc);
         break;
     case TK_Assign_Stmt:
+#if defined(DEBUG_FORMAT)
         log_debug("formatting TK_Assign_Stmt");
+#endif
         break;
     default:
         log_error("formatting other %d %s", nd->tid, TIDNAME(nd));
@@ -112,34 +132,86 @@ EXPORT void sealark_format_clean_node(struct node_s *nd,
                                       int *mrl, int *mrc)
                                      /* int delta) */
 {
-#if defined(DEBUG_TRACE) || defined(DEBUG_FORMAT)
-    /* log_debug("sealark_format_CLEAN_node %d %s, delta %d", */
-    /*           nd->tid, TIDNAME(nd), rml); */
+#if defined(DEBUG_FORMAT)
+    log_debug("sealark_format_CLEAN_node: %d %s @%d:%d; mrl %d, mrc %d | %s",
+              nd->tid, TIDNAME(nd),
+              nd->line, nd->col,
+              *mrl, *mrc,
+              nd->s);
 #endif
 
+    if ( (nd->tid == TK_BLANK)
+         ||  (nd->tid == TK_COMMENT) ){
+        if (nd->line <= *mrl) {
+            nd->line = *mrl + 1;
+        }
+        *mrl = nd->line;
+        return;
+    }
+
     if (nd->line < *mrl) {
-        /* log_error("xxxxxxxxxxxxxxxx nd->line %d < *mrl %d", */
-        /*           nd->line, *mrl); */
+#if defined(DEBUG_FORMAT)
+        log_error("\tOUT OF PLACE %d %s: nd->line %d < *mrl %d",
+                  nd->tid, TIDNAME(nd),
+                  nd->line, *mrl);
+#endif
         int delta;
         if (nd->line < 0) {
-            /* log_error("DIRTY %d %s", nd->tid, TIDNAME(nd)); */
+#if defined(DEBUG_FORMAT)
+            log_error("\tNEW NODE %d %s", nd->tid, TIDNAME(nd));
+#endif
             /* *mrl += format.leading; */
+            if (nd->tid == TK_Call_Expr) {
+                (*mrl)++;
+                sealark_format_call_expr(nd, mrl, mrc);
+                return;
+            }
+            if (nd->tid == TK_Binding) {
+                (*mrl)++;
+                *mrc = format.indent;
+            }
             nd->line = *mrl;
             nd->col  = *mrc;
-            struct node_s *sub = NULL;
-            while( (sub=(struct node_s*)utarray_next(nd->subnodes, sub)) ) {
-                sealark_format_dirty_node(sub, mrl, mrc);
+            struct node_s *sub;
+            if (nd->comments) {
+                sub = NULL;
+                while((sub=(struct node_s*)utarray_next(nd->comments,sub))) {
+                    sealark_format_dirty_node(sub, mrl, mrc);
+                }
             }
-            if (nd->tid == TK_Arg_List) {
-                log_warn("END ARG LIST");
-                *mrl += 1;
+            if (nd->subnodes) {
+                sub = NULL;
+                while( (sub=(struct node_s*)utarray_next(nd->subnodes, sub)) ) {
+                    sealark_format_dirty_node(sub, mrl, mrc);
+                }
+                if (nd->tid == TK_Arg_List) {
+                    log_warn("END ARG LIST");
+                    *mrl += 1;
+                }
+            } else {
+                char *s = sealark_node_printable_string(nd);
+                *mrc += strlen(s);
             }
             return;
         } else {
+#if defined(DEBUG_FORMAT)
+            log_error("\tOLD NODE %d %s", nd->tid, TIDNAME(nd));
+#endif
             delta = *mrl - nd->line;
+            if (nd->tid == TK_Binding) {
+                delta++; //FIXME?
+            }
             nd->line += delta;
+            *mrl = nd->line;
+            struct node_s *sub;
+            if (nd->comments) {
+                sub = NULL;
+                while((sub=(struct node_s*)utarray_next(nd->comments,sub))){
+                    _vformat(sub, delta);
+                }
+            }
             if (nd->subnodes) {
-                struct node_s *sub = NULL;
+                sub = NULL;
                 while((sub=(struct node_s*)utarray_next(nd->subnodes, sub))){
                     _vformat(sub, delta);
                 }
@@ -173,7 +245,21 @@ EXPORT void sealark_format_clean_node(struct node_s *nd,
         /* } */
     }
 
+    if (nd->tid == TK_RPAREN) {
+        if (nd->col == 0) {
+            nd->line = (*mrl) + 1;
+        }
+        *mrl = nd->line;
+    }
+
     *mrl = nd->line;
+    *mrc = nd->col;
+    if (nd->comments) {
+        struct node_s *sub = NULL;
+        while( (sub=(struct node_s*)utarray_next(nd->comments, sub)) ) {
+            sealark_format_clean_node(sub, mrl, mrc);
+        }
+    }
     if (nd->subnodes) {
         struct node_s *sub = NULL;
         while( (sub=(struct node_s*)utarray_next(nd->subnodes, sub)) ) {
@@ -187,11 +273,17 @@ EXPORT void sealark_format_clean_node(struct node_s *nd,
 EXPORT void sealark_format_call_expr(struct node_s *call_expr,
                                   int *mrl, int *mrc)
 {
-#if defined(DEBUG_TRACE) || defined(DEBUG_FORMAT)
-    log_debug("sealark_format_call_expr @ %d:%d", *mrl, *mrc);
+#if defined(DEBUG_FORMAT)
+    log_debug("sealark_format_call_expr @ %d:%d, rl: %d:%d",
+              call_expr->tid, TIDNAME(call_expr),
+              *mrl, *mrc);
 #endif
 
     assert(call_expr->tid == TK_Call_Expr);
+
+    if (call_expr->line <= *mrl) {
+        (*mrl)++;
+    }
 
     call_expr->line = *mrl;
     call_expr->col = *mrc = 0;
@@ -217,13 +309,20 @@ EXPORT void sealark_format_call_expr(struct node_s *call_expr,
     rparen->line = ++(*mrl);
     rparen->col  = 0;
     *mrc = 0;
+    if (rparen->comments) {
+        struct node_s *sub = NULL;
+        while((sub=(struct node_s*)utarray_next(rparen->comments,sub))) {
+            sealark_format_dirty_node(sub, mrl, mrc);
+        }
+    }
+    (*mrl)++; //FIXME
 }
 
 /* **************************************************************** */
 LOCAL void _format_arg_list(struct node_s *arg_list,
                             int *mrl, int *mrc)
 {
-#if defined(DEBUG_TRACE) || defined(DEBUG_FORMAT)
+#if defined(DEBUG_FORMAT)
     log_debug("sealark_format_arg_list @ %d:%d (mr: %d:%d)",
               arg_list->line, arg_list->col,
               *mrl, *mrc);
@@ -273,7 +372,7 @@ LOCAL void _format_arg_list(struct node_s *arg_list,
 
 LOCAL int _format_binding(struct node_s *binding, int *mrl, int *mrc)
 {
-#if defined(DEBUG_TRACE) || defined(DEBUG_FORMAT)
+#if defined(DEBUG_FORMAT)
     log_debug("_format_binding @ %d:%d", *mrl, *mrc);
 #endif
     int blen = 0;
@@ -326,38 +425,42 @@ LOCAL int _format_binding(struct node_s *binding, int *mrl, int *mrc)
 LOCAL void _format_list_expr(struct node_s *list_expr,
                             int *mrl, int *mrc)
 {
+#if defined(DEBUG_FORMAT)
+    log_debug("_format_list_expr @ %d:%d", *mrl, *mrc);
+#endif
     struct node_s *lbrack = utarray_eltptr(list_expr->subnodes, 0);
     lbrack->line = *mrl; //list_expr->line;
-    /* lbrack->col  = *mrc; //list_expr->col; */
+    lbrack->col  = (*mrc)++; //list_expr->col;
 
     struct node_s *expr_list = utarray_eltptr(list_expr->subnodes, 1);
     expr_list->line = *mrl; // lbrack->line;
-    /* expr_list->col  = ++(*mrc); // lbrack->col + 1; */
+    expr_list->col  = *mrc; // lbrack->col + 1;
 
     /* int col = expr_list->col; */
     struct node_s *sub = NULL;
     while( (sub=(struct node_s*)utarray_next(expr_list->subnodes, sub)) ) {
         if (sub->tid == TK_INT) {
             sub->line = *mrl;
-            /* sub->col  = *mrc; */
-            *mrc += strlen(sub->s);
+            sub->col  = *mrc;
+            *mrc += strlen(sub->s) + 1;
             continue;
         }
         if (sub->tid == TK_STRING) {
+            //FIXME: account for number of quotes
             sub->line = *mrl;
-            /* sub->col  = *mrc; */
-            *mrc += strlen(sub->s);
+            sub->col  = *mrc;
+            *mrc += strlen(sub->s) + 2; // 2 for quotes
             continue;
         }
         if (sub->tid == TK_ID) {
             sub->line = *mrl;
-            /* sub->col  = *mrc; */
-            *mrc += strlen(sub->s);
+            sub->col  = *mrc;
+            *mrc += strlen(sub->s) + 1;
             continue;
         }
         if (sub->tid == TK_COMMA) {
             sub->line = *mrl;
-            /* sub->col  = *mrc; */
+            sub->col  = *mrc;
             *mrc += 2;
             continue;
         }
@@ -376,7 +479,7 @@ LOCAL void _format_list_expr(struct node_s *list_expr,
 EXPORT void sealark_vformat_call_expr(struct node_s *call_expr,
                                       int *mrl, int *mrc)
 {
-#if defined(DEBUG_TRACE) || defined(DEBUG_FORMAT)
+#if defined(DEBUG_FORMAT)
     log_debug("sealark_format_call_expr @ %d:%d", *mrl, *mrc);
 #endif
 
@@ -390,7 +493,6 @@ EXPORT void sealark_vformat_call_expr(struct node_s *call_expr,
     call_expr->col = *mrc = 0;
 
     struct node_s *tgt_id = utarray_eltptr(call_expr->subnodes, 0);
-    log_debug("CCCC call_expr: %s", tgt_id->s);
     tgt_id->line += delta;
     tgt_id->col  = *mrc;
 
@@ -411,13 +513,20 @@ EXPORT void sealark_vformat_call_expr(struct node_s *call_expr,
     rparen->line += delta;
     rparen->col  = 0;
     *mrc = 0;
+    if (rparen->comments) {
+        struct node_s *sub = NULL;
+        while((sub=(struct node_s*)utarray_next(rparen->comments,sub))) {
+            sealark_format_dirty_node(sub, mrl, mrc);
+        }
+    }
+    (*mrl)++; //FIXME
 }
 
 /* **************************************************************** */
 LOCAL void _vformat_arg_list(struct node_s *arg_list,
                             int *mrl, int *mrc)
 {
-#if defined(DEBUG_TRACE) || defined(DEBUG_FORMAT)
+#if defined(DEBUG_FORMAT)
     log_debug("sealark_vformat_arg_list @ %d:%d (mr: %d:%d)",
               arg_list->line, arg_list->col,
               *mrl, *mrc);
@@ -467,7 +576,7 @@ LOCAL void _vformat_arg_list(struct node_s *arg_list,
 
 LOCAL int _vformat(struct node_s *node, int delta)
 {
-/* #if defined(DEBUG_TRACE) || defined(DEBUG_FORMAT) */
+/* #if defined(DEBUG_FORMAT) */
 /*     log_debug("_vformat %d", delta); */
 /* #endif */
 
@@ -483,7 +592,7 @@ LOCAL int _vformat(struct node_s *node, int delta)
 /* **************************************************************** */
 EXPORT struct node_s *sealark_format_pkg_normalize(struct node_s *pkg)
 {
-#if defined(DEBUG_TRACE) || defined(DEBUG_FORMAT)
+#if defined(DEBUG_FORMAT)
     log_debug("sealark_format_normalize");
 #endif
     assert(pkg->tid == TK_Package);
@@ -504,7 +613,7 @@ EXPORT struct node_s *sealark_format_pkg_normalize(struct node_s *pkg)
 LOCAL struct node_s *_format_normalize(struct node_s *nd,
                                        int *line, int *col)
 {
-#if defined(DEBUG_TRACE) || defined(DEBUG_FORMAT)
+#if defined(DEBUG_FORMAT)
     log_debug("_format_normalize");
 #endif
 
@@ -520,7 +629,7 @@ LOCAL struct node_s *_format_normalize(struct node_s *nd,
 
 EXPORT struct node_s *sealark_format_rm_trailing_commas(struct node_s *node)
 {
-#if defined(DEBUG_TRACE) || defined(DEBUG_FORMAT)
+#if defined(DEBUG_FORMAT)
     log_debug("sealark_format_rm_trailing_commas %d %s",
               node->tid, TIDNAME(node));
 #endif

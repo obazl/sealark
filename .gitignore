@@ -2,6 +2,7 @@ test.BUILD.bazel
 *.log
 tmp/
 test/data/tmp
+.sunlark.d
 user.bazelrc
 
 GPATH

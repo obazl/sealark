@@ -253,7 +253,7 @@ UT_array *split_small_stmt_list(struct node_s *iblock,
                 utarray_push_back(instmts, node);
             } else {
                 if (node->col > block_indent) {
-                    log_warn("EXTRA INDENTATION at line %d", node->line);
+                    /* log_warn("EXTRA INDENTATION at line %d", node->line); */
                     utarray_push_back(instmts, node);
                 } else {
                     if (node->col > indent) {
@@ -280,7 +280,7 @@ UT_array *split_small_stmt_list(struct node_s *iblock,
 
 UT_array *split_stmt_list(struct node_s* iblock, int indent)
 {
-    // log_debug("split_stmt_list, indent: %d", indent);
+    log_debug("split_stmt_list, indent: %d", indent);
     log_error("NOT YET SUPPORTED");
     exit(EXIT_FAILURE);
 }
@@ -387,7 +387,7 @@ EXPORT int sealark_kw_to_tid(char *kw)
             }
         }
     }
-    log_debug("sealark_kw_to_tid: %s", tag);
+    /* log_debug("sealark_kw_to_tid: %s", tag); */
 
     /* the C names use _ but scheme uses - so we have to convert */
     /* fix me: make a static table so we don't have to do all this computing */
@@ -603,8 +603,8 @@ EXPORT int sealark_subnode_count(struct node_s *node,
             else
                 if (all_printables) {
                     if (sealark_is_printable(subnode)) {
-                        log_debug("is printable: %d, %s",
-                                  subnode->tid, TIDNAME(subnode));
+                        /* log_debug("is printable: %d, %s", */
+                        /*           subnode->tid, TIDNAME(subnode)); */
                         ct++;
                     }
                 } else {

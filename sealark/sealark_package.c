@@ -478,7 +478,7 @@ EXPORT int sealark_pkg_targets_count(struct node_s *pkg)
 /* **************************************************************** */
 EXPORT void sealark_pkg_format(struct node_s *pkg)
 {
-#if defined(DEBUG_TRACE) || defined(DEBUG_FORMAT)
+#if defined(DEBUG_FORMAT)
     log_debug("sealark_pkg_format");
 #endif
 
@@ -520,7 +520,7 @@ EXPORT void sealark_pkg_format(struct node_s *pkg)
 /* **************************************************************** */
 EXPORT void sealark_pkg_format_force(struct node_s *pkg)
 {
-#if defined(DEBUG_TRACE) || defined(DEBUG_FORMAT)
+#if defined(DEBUG_FORMAT)
     log_debug("sealark_pkg_format_force");
 #endif
 
@@ -543,7 +543,6 @@ EXPORT void sealark_pkg_format_force(struct node_s *pkg)
     struct node_s *sub = NULL;
     for (int i = 0; i < toplevel_ct; i++) {
         sub = utarray_eltptr(small_stmts->subnodes, i);
-        log_debug("toplevel: %d %s, mrl: %d", sub->tid, TIDNAME(sub), mrl);
         _pkg_format_toplevel(sub, &mrl, &mrc);
     }
 }
@@ -551,7 +550,7 @@ EXPORT void sealark_pkg_format_force(struct node_s *pkg)
 /* **************************************************************** */
 EXPORT int _most_recent_line(struct node_s *small_stmts, int index)
 {
-#if defined(DEBUG_TRACE) || defined(DEBUG_FORMAT)
+#if defined(DEBUG_FORMAT)
     log_debug("_most_recent_line");
 #endif
 
@@ -587,7 +586,7 @@ EXPORT int _most_recent_line(struct node_s *small_stmts, int index)
 
 EXPORT int _last_line(struct node_s *nd)
 {
-#if defined(DEBUG_TRACE) || defined(DEBUG_FORMAT)
+#if defined(DEBUG_FORMAT)
     /* log_debug("_last_line %d %s", nd->tid, TIDNAME(nd)); */
 #endif
 
@@ -638,7 +637,7 @@ EXPORT int _last_line(struct node_s *nd)
 /* **************************************************************** */
 EXPORT void _pkg_format_toplevel(struct node_s *tl_nd, int *mrl, int *mrc)
 {
-#if defined(DEBUG_TRACE) || defined(DEBUG_FORMAT)
+#if defined(DEBUG_FORMAT)
     log_debug("_pkg_format_toplevel: %d %s, nd line %d; mrl: %d, mrc: %d",
               tl_nd->tid, TIDNAME(tl_nd),
               tl_nd->line, *mrl, *mrc);
@@ -650,16 +649,27 @@ EXPORT void _pkg_format_toplevel(struct node_s *tl_nd, int *mrl, int *mrc)
         *mrl += format.leading;
         tl_nd->line = *mrl;
         tl_nd->col  = *mrc;
+        if (tl_nd->comments) {
+            while( (sub=(struct node_s*)utarray_next(tl_nd->comments, sub)) ) {
+                sealark_format_dirty_node(sub, mrl, mrc);
+            }
+        }
         while( (sub=(struct node_s*)utarray_next(tl_nd->subnodes, sub)) ) {
             sealark_format_dirty_node(sub, mrl, mrc);
         }
     } else {
-        if (tl_nd->line < *mrl) {
+        if (tl_nd->line <= *mrl) {
             tl_nd->line = *mrl + format.leading;
             *mrl = tl_nd->line;
         } else {
             if (tl_nd->line == *mrl) {
-
+                (*mrl) += format.leading;
+                tl_nd->line = *mrl;
+            }
+        }
+        if (tl_nd->comments) {
+            while((sub=(struct node_s*)utarray_next(tl_nd->comments, sub))) {
+                sealark_format_clean_node(sub, mrl, mrc);
             }
         }
 

@@ -1,3 +1,4 @@
+#include <assert.h>
 #if INTERFACE
 #include <stdbool.h>
 #endif
@@ -37,7 +38,25 @@ struct parsed_pkg_s {
     UT_hash_handle hh;
 };
 #endif
-struct parsed_pkg_s *parsed_pkgs = NULL;    /* important! initialize to NULL */
+struct parsed_pkg_s *parsed_pkgs = NULL; /* important! initialize to NULL */
+
+EXPORT void sealark_dispose(struct node_s *node)
+{
+    assert(node->tid == TK_Package);
+
+    log_debug("disposing of %s", node->fname);
+    struct parsed_pkg_s *pkg = NULL;
+    HASH_FIND_STR(parsed_pkgs, node->fname, pkg);
+    if (pkg) {
+        log_debug("FOUND parsed pkg %s", node->fname);
+        HASH_DEL(parsed_pkgs, pkg);
+        free(pkg->fname);
+        /* do not delete pkg->pkg_node? s7 gc will dispose of it? */
+        free(pkg);
+    } else {
+        log_error("???? parsed pkg %s not found", node->fname);
+    }
+}
 
 #if EXPORT_INTERFACE
 struct parse_state_s {
