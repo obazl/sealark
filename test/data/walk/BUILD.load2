@@ -1,0 +1,5 @@
+load("@rules_cc//cc:defs.bzl",
+     bin="cc_binary",
+     lib="cc_library",
+     tst="cc_test"
+)

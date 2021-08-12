@@ -1,0 +1,29 @@
+load(
+    "@obazl_rules_ocaml//ocaml:rules.bzl",
+    "ocaml_archive",
+    "ocaml_executable",
+    "ocaml_module",
+)
+
+ocaml_executable(
+    name = "hello",
+    main = ":main",
+    # deps = [":main"]
+)
+
+ocaml_module(
+    name = "main",
+    struct = "main.ml",
+    deps = [":archive"],
+)
+
+ocaml_module(
+    name = "easy",
+    struct = "easy.ml",
+)
+
+ocaml_module(
+    foo,
+    name = "simple",
+    struct = "simple.ml",
+)

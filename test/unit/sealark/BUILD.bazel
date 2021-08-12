@@ -1,0 +1,66 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+test_suite(
+    name = "sealark",
+    tests = [
+    ])
+
+cc_test(
+    name = "buildfile_expressors",
+    srcs = [
+        "buildfile_expressors.c",
+        "buildfile_expressors.h",
+    ],
+    data = [
+        "//test/data/cc:BUILD.test"
+    ],
+    copts = select({
+        "//bzl/host:macos": ["-std=c11"],
+        "//bzl/host:linux": ["-std=gnu11"],
+        "//conditions:default": ["-std=c11"],
+    }) + [
+        "-pedantic-errors",
+
+        "-I$(GENDIR)/test/unit/sealark",
+        "-I$(GENDIR)/external/moonlark/test/unit/sealark",
+
+        "-I$(GENDIR)/sealark",
+        "-I$(GENDIR)/external/moonlark/sealark",
+
+        "-Ivendored/logc",
+        "-Iexternal/moonlark/vendored/logc",
+        "-Ivendored/unity",
+        "-Iexternal/moonlark/vendored/unity",
+        "-Ivendored/uthash",
+        "-Iexternal/moonlark/vendored/uthash",
+    ],
+    linkstatic = 1,
+    deps = [
+        "//sealark",
+        "//vendored/logc",
+        "//vendored/unity",
+        "//vendored/uthash",
+    ],
+)
+
+################################################################
+genrule(
+    name = "mkhdrs",
+    srcs = [
+        "//sealark:debug.c",
+        "buildfile_expressors.c",
+    ],
+    outs = [
+        "buildfile_expressors.h",
+    ],
+    cmd = "\n".join([
+        "SRC1=$(location buildfile_expressors.c)",
+        "SRCDIR1=`dirname $$SRC1`",
+        "$(location //vendored/makeheaders) \\",
+        "    $(location //sealark:debug.c) \\",
+        "    $(location buildfile_expressors.c)",
+        "cp $${SRCDIR1}/*.h $(@D)",
+    ]),
+    tools = ["//vendored/makeheaders"],
+    visibility = ["//visibility:public"]
+)

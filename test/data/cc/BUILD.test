@@ -1,0 +1,47 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+
+load(
+    "@arepo//apkg:afile.bzl",
+    "arg1c", "arg2c", "arg3c",
+    key1c = "val1c",
+    key2c = "val2c",
+    lastkey3c = "lastval3c",
+)
+
+DEFINES = ["DEBUG", "FOO"]
+
+cc_library(
+    name = "hello-lib",
+    srcs = ["hello-lib.cc", "howdy.cc", "howdy.h"],
+    hdrs = ["hello-lib.h"],
+    defines = DEFINES
+)
+
+cc_binary(
+    name = "hello-world",
+    srcs = ["hello-world.cc"],
+    deps = [":hello-lib-a"],
+)
+
+cc_test(
+    name = "hello-success_test",
+
+
+    srcs = ["hello-world.cc"],
+    deps = [":hello-lib-b"],
+)
+
+cc_test(
+    name = "hello-fail_test",
+    srcs = ["hello-fail.cc"],
+    deps = [":hello-lib-c"],
+)
+
+a,b = "foo", "bar"  # multiple assignment
+
+filegroup(
+    name = "srcs",
+    srcs = glob(["**"]),
+)

@@ -1,0 +1,15 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+
+load("@rules_foo//foo:defs.bzl", "foo_binary", "foo_library", "foo_test")
+
+cc_library(
+    name = "hello-lib",
+    srcs = ["hello-lib.cc"],
+)
+
+cc_binary(
+    name = "hello",
+    deps = [":hello-lib"],
+)

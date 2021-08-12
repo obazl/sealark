@@ -1,0 +1,3 @@
+cc_library( name = "a-lib", srcs=["a.c"])
+cc_library( name = "b-lib", srcs=["bsrc1.c", "bsrc2.c"])
+cc_library( name = "c-lib", srcs=["c.c"])

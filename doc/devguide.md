@@ -163,6 +163,25 @@ The `bazel` table contains fields:
 
 #### Without preconfigured Bazel support:
 
+## Troubleshooting
+
+`/bin/bash: line 9: bindings/scheme/sunlark_properties.c: Permission denied`
+
+This is cause by a syntax error in a :mkhdrs target:
+
+```
+    cmd = "\n".join([
+        "SRC1=$(location libsunlark.c)",
+        "SRCDIR1=`dirname $$SRC1`",
+        "$(location //vendored/makeheaders) \\",
+        ...blah blah...
+        "    $(location ast_node_s7.c) \\",
+        "    $(location ast_nodelist_s7.c)",  <<===== missing // before "
+        "    $(location sunlark_properties.c)",
+        "cp $${SRCDIR1}/*.h $(@D)",
+    ]),
+```
+
 ## CAVEATS
 
 * Bazel behaves erratically when used as a launcher. The RUNFILES env.

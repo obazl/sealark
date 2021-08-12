@@ -6,4 +6,12 @@ build --verbose_failures
 
 test --test_output=all
 
+build --//:debug=ast,s7-api,bindings,paths,queries,vectors,filters,targets,mutators,trace,set,properties,loads
+#,utarrays
+#,serializers
+#,predicates
+#,mem
+
+## in .bazelrc: test --//sealark:yydebug=bindings,dicts,vectors
+
 run -c dbg

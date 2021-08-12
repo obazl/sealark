@@ -20,7 +20,7 @@
 #include "utstring.h"
 #endif
 
-#include "starlark.h"
+#include "sealark.h"
 
 #include "lex_file.h"
 
@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
 {
     int opt;
 
+    UT_string *build_file;
     utstring_new(build_file);
 
     while ((opt = getopt(argc, argv, "f:hv")) != -1) {
@@ -50,9 +51,15 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    UT_array *result = starlark_lex_file(utstring_body(build_file));
+    char *wd = getenv("BUILD_WORKING_DIRECTORY");
+    if (wd) {
+        /* we launched from bazel workspace, cd to launch dir */
+        chdir(wd);
+    }
 
-    /* UT_array *result = starlark_lex_string("'hello'\n#cmt1\n"); */
+    UT_array *result = sealark_lex_file(utstring_body(build_file));
+
+    /* UT_array *result = sealark_lex_string("'hello'\n#cmt1\n"); */
 
     log_debug("main RESULT dump:");
     dump_nodes(result);
