@@ -62,11 +62,11 @@ struct node_s *sealark_remove_binding_at_index(struct node_s *bindings,
 }
 
 /* **************************************************************** */
-EXPORT sealark_arglist_set_binding_for_int(struct node_s *arg_list,
-                                           int index,
-                                           char *newval)
-{
-}
+/* EXPORT sealark_arglist_set_binding_for_int(struct node_s *arg_list, */
+/*                                            int index, */
+/*                                            char *newval) */
+/* { */
+/* } */
 
 /* **************************************************************** */
 /*
