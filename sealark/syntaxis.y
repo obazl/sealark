@@ -1816,6 +1816,32 @@ dict_expr(DictX) ::= LBRACE(LBrace) entry_list(EList) RBRACE(RBrace) .
     utarray_push_back(DictX->subnodes, RBrace);
 }
 
+/* optional trailing comma */
+dict_expr(DictX) ::= LBRACE(LBrace) entry_list(EList) COMMA(Comma) RBRACE(RBrace) .
+{
+    // log_trace(">>dict_expr(DictX) ::= LBRACE entry_list RBRACE");
+    DictX = calloc(sizeof(struct node_s), 1);
+    DictX->tid = TK_Dict_Expr;
+    DictX->line  = LBrace->line;
+    DictX->col   = LBrace->col;
+    DictX->trailing_newline = RBrace->trailing_newline;
+    utarray_new(DictX->subnodes, &node_icd);
+    utarray_push_back(DictX->subnodes, LBrace);
+    /* abstract singleton entry */
+    if (EList->tid != TK_Dict_Entry_List) {
+        log_debug("2 xxxxxxxxxxxxxxxx");
+        struct node_s *Es = calloc(sizeof(struct node_s), 1);
+        Es->tid = TK_Dict_Entry_List;
+        utarray_new(Es->subnodes, &node_icd);
+        utarray_push_back(Es->subnodes, EList);
+        utarray_push_back(DictX->subnodes, Es);
+    } else {
+        utarray_push_back(DictX->subnodes, EList);
+    }
+    utarray_push_back(DictX->subnodes, Comma);
+    utarray_push_back(DictX->subnodes, RBrace);
+}
+
 dict_comp(DictX) ::= LBRACE(LBrace) entry(Entry) comp_clause(DClause) RBRACE(RBrace) .
 {
     // log_trace(">>dict_comp(DictX) ::= LBRACE entry comp_clause RBRACE");
