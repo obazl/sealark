@@ -8,7 +8,6 @@ cc_binary(
     srcs  = [
         "lex_file.c",
         "lex_file.h",
-        "//src/lib/starlark:debug.c",
     ],
     copts = select({
         # strdup is non-standard, not supported on linux in strict c11 mode
@@ -18,7 +17,7 @@ cc_binary(
     }) + [
         "-pedantic-errors",
 
-        "-I", "$(GENDIR)/src/lib/starlark",
+        "-I", "$(GENDIR)/sealark",
         "-I", "$(GENDIR)/test",
 
         "-I", "vendored/logc",
@@ -29,7 +28,7 @@ cc_binary(
     ],
     defines = ["DEBUG", "DEBUG_TRACE"],
     deps = [
-        "//src/lib/starlark:starlark",
+        "//sealark",
         "//vendored/logc",
         "//vendored/uthash",
     ],
@@ -37,6 +36,40 @@ cc_binary(
     #     "//bzl/host:linux": [],
     #     "//bzl/host:macos": ["-framework", "CoreServices"],
     # }),
+    linkstatic = 1
+)
+
+##########
+cc_binary(
+    name  = "parse_file",
+    srcs  = [
+        "parse_file.c",
+        "parse_file.h",
+        # "//sealark:sealark_debug.c",
+    ],
+    copts = select({
+        # strdup is non-standard, not supported on linux in strict c11 mode
+        "//bzl/host:macos": ["-std=c11"],
+        "//bzl/host:linux": ["-std=gnu11"],
+        "//conditions:default": ["-std=c11"],
+    }) + [
+        "-pedantic-errors",
+
+        "-I", "$(GENDIR)/sealark",
+        "-I", "$(GENDIR)/test",
+
+        "-I", "vendored/logc",
+        # "-I", "external/obazl/vendored/logc",
+        # "-I", "external/tools_obazl/vendored/logc",
+
+        "-Ivendored/uthash",
+    ],
+    defines = ["DEBUG", "DEBUG_TRACE"],
+    deps = [
+        "//sealark",
+        "//vendored/logc",
+        "//vendored/uthash",
+    ],
     linkstatic = 1
 )
 
@@ -50,7 +83,7 @@ cc_binary(
 #     srcs  = [
 #         "lua_file.c",
 #         "lua_file.h",
-#         "//src/lib/starlark:debug.c",
+#         "//sealark:sealark_debug.c",
 #     ],
 #     data = [
 #         "//moonlark/lua:edit.lua"
@@ -67,8 +100,8 @@ cc_binary(
 #         "-I", "$(GENDIR)/bindings/lua",
 #         "-I", "$(GENDIR)/external/moonlark/bindings/lua",
 
-#         "-I", "$(GENDIR)/src/lib/starlark",
-#         "-I", "$(GENDIR)/external/moonlark/src/lib/starlark",
+#         "-I", "$(GENDIR)/sealark",
+#         "-I", "$(GENDIR)/external/moonlark/sealark",
 
 #         "-I", "$(GENDIR)/test",
 #         "-I", "$(GENDIR)/external/moonlark/test",
@@ -90,41 +123,6 @@ cc_binary(
 #     linkstatic = 1
 # )
 
-##########
-cc_binary(
-    name  = "parse_file",
-    srcs  = [
-        "parse_file.c",
-        "parse_file.h",
-        "//src/lib/starlark:debug.c",
-    ],
-    copts = select({
-        # strdup is non-standard, not supported on linux in strict c11 mode
-        "//bzl/host:macos": ["-std=c11"],
-        "//bzl/host:linux": ["-std=gnu11"],
-        "//conditions:default": ["-std=c11"],
-    }) + [
-        "-pedantic-errors",
-
-        "-I", "$(GENDIR)/src/lib/starlark",
-        "-I", "$(GENDIR)/test",
-
-        "-I", "vendored/logc",
-        # "-I", "external/obazl/vendored/logc",
-        # "-I", "external/tools_obazl/vendored/logc",
-
-        "-Ivendored/uthash",
-    ],
-    defines = ["DEBUG", "DEBUG_TRACE"],
-    deps = [
-        "//src/lib/starlark",
-        "//vendored/logc",
-        "//vendored/uthash",
-    ],
-    linkstatic = 1
-)
-
-
 ################################################################
 genrule(
     name = "mkhdrs",
@@ -132,10 +130,10 @@ genrule(
         "lex_file.c",
         "lua_file.c",
         "parse_file.c",
-        "//bindings/lua:lbazel.c",
+        # "//bindings/lua:lbazel.c",
         "//bindings/lua:libmoonlark.c",
-        "//src/lib/starlark:debug.c",
-        "//src/lib/starlark:mkhdrs-export",
+        # "//sealark:sealark_debug.c",
+        "//sealark:mkhdrs-export",
     ],
     outs = [
         "lex_file.h",
@@ -146,10 +144,10 @@ genrule(
         "SRC1=$(location lex_file.c)",
         "SRCDIR1=`dirname $$SRC1`",
         "$(location //vendored/makeheaders) \\",
-        "    $(location //bindings/lua:lbazel.c) \\",
+        # "    $(location //bindings/lua:lbazel.c) \\",
         "    $(location //bindings/lua:libmoonlark.c) \\",
-        "    $(location //src/lib/starlark:debug.c) \\",
-        "    $(location //src/lib/starlark:mkhdrs-export) \\",
+        # "    $(location //sealark:sealark_debug.c) \\",
+        "    $(location //sealark:mkhdrs-export) \\",
         "    $(location lex_file.c) \\",
         "    $(location lua_file.c) \\",
         "    $(location parse_file.c)",

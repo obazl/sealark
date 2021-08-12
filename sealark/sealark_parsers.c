@@ -308,7 +308,8 @@ EXPORT struct node_s *sealark_parse_file(const char *fname)
     void* pParser = ParseAlloc (malloc);
     struct parse_state_s *parse_state = parser_init(lexer, root);
 
-    /* tracing */
+    /* tracing - FIXME: add flag */
+#if defined(YYTRACE)
     char *trace_file = "lemontrace.log";
     ftrace = fopen(trace_file, "w");
     if (ftrace == NULL) {
@@ -321,6 +322,7 @@ EXPORT struct node_s *sealark_parse_file(const char *fname)
     }
 
     ParseTrace(ftrace, "debug");
+#endif
 
     /* parser_init(fname, &ast); */
     /* log_debug("parsing %s", ast->fname); */

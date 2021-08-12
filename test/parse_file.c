@@ -72,20 +72,21 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    struct parse_state_s *parse_state = sealark_parse_file(utstring_body(build_file));
-    log_debug("parsed file %s", parse_state->lexer->fname);
-    dump_node(parse_state->root);
+    char *wd = getenv("BUILD_WORKING_DIRECTORY");
+    if (wd) {
+        /* we launched from bazel workspace, cd to launch dir */
+        chdir(wd);
+    }
+
+    struct node_s *pkg_node = sealark_parse_file(utstring_body(build_file));
+    UT_string *buf = sealark_debug_display_ast_outline(pkg_node, 0);
+    printf("%s", utstring_body(buf));
+    utstring_free(buf);
 
     /* serialization routines expect a UT_string, not a char buffer */
     utstring_new(buffer);
-    starlark_node2string(parse_state->root, buffer);
-    /* printf("%s", utstring_body(buffer)); */
-
-    char *wd = getenv("BUILD_WORKING_DIRECTORY");
-    if (wd) {
-        /* log_info("BUILD_WORKING_DIRECTORY: %s", wd); */
-        chdir(wd);
-    }
+    sealark_node_to_starlark(pkg_node, buffer);
+    printf("%s", utstring_body(buffer));
 
     char *outfile = tmpnam(NULL);
     /* printf("serializing to: %s\n", outfile); */
@@ -131,7 +132,7 @@ int main(int argc, char *argv[])
         printf("tmp outfile: %s\n", outfile);
     }
     utstring_free(buffer);
-    free(parse_state->lexer->fname);
-    node_dtor(parse_state->root);
+    /* free(parse_state->lexer->fname); */
+    sealark_node_free(pkg_node);
     return r;
 }

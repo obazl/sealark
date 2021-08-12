@@ -50,7 +50,7 @@ EXPORT char *get_bazel_script_dir(char *scriptfile)
             }
         }
     }
-    log_error("default script dir %s not found", scriptfile);
+    log_error("default script dir for %s not found", scriptfile);
     exit(EXIT_FAILURE);
  exit:
     if (token != NULL) {
