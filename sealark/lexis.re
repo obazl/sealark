@@ -638,7 +638,7 @@ loop:
 
     /* STRING LITERALS */
     /* single-quote */
-    <init> @t1 ([br]|"br"|"rb")? @t2 "'" @s1 ([^'\n] | "\\\n")* @s2 "'"
+    <init> @t1 ([br]|"br"|"rb")? @t2 "'" @s1 ([^'\n] | "\'" | "\\\n")* @s2 "'"
            COMMENTS
         {
             // log_debug("matched SINGLE_QUOTE TK_STRING (%d:%d)",
