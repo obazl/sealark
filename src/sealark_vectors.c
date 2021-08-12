@@ -56,6 +56,38 @@ EXPORT void sealark_vector_insert_int_at_index(struct node_s *list_expr,
     }
 }
 
+/* **************** */
+EXPORT void sealark_vector_insert_string_at_index(struct node_s *list_expr,
+                                                  const char *val,
+                                                  int index)
+{
+#if defined (DEBUG_TRACE) || defined(DEBUG_VECTORS)
+    log_debug("sealark_vector_insert_string_at_index: %s @ %d", val, index);
+#endif
+
+    assert(list_expr->tid == TK_List_Expr);
+
+    struct node_s *expr_list = utarray_eltptr(list_expr->subnodes, 1);
+
+    int list_ct = utarray_len(expr_list->subnodes);
+    int item_ct = (list_ct + 1) / 2;
+
+    /* NB: when appending, index will be > length of current list */
+
+    log_debug("index: %d", index);
+    struct node_s *new = sealark_new_s_node(TK_STRING, val);
+    struct node_s *comma = sealark_new_node(TK_COMMA, without_subnodes);
+
+    if ( index == item_ct ) {
+        /* appending after end */
+        utarray_push_back(expr_list->subnodes, comma);
+        utarray_push_back(expr_list->subnodes, new);
+    } else {
+        utarray_insert(expr_list->subnodes, comma, index*2);
+        utarray_insert(expr_list->subnodes, new, index*2);
+    }
+}
+
 EXPORT struct node_s *sealark_vector_item_for_int(struct node_s *list_expr,
                                                   int index)
 {
@@ -98,6 +130,48 @@ EXPORT struct node_s *sealark_vector_item_for_int(struct node_s *list_expr,
 
     log_error("UNEXPECTED");
     exit(EXIT_FAILURE);
+}
+
+/* **************************************************************** */
+EXPORT int sealark_vector_fst_item_idx_for_string(struct node_s *vector,
+                                                   const char *selector)
+{
+#if defined(DEBUG_TRACE)
+    log_debug("sealark_vector_fst_item_for_string: %s", selector);
+#endif
+    /* log_debug("vector tid: %d %s", vector->tid, TIDNAME(vector)); */
+    assert(vector->tid == TK_List_Expr);
+
+    int selector_len = strlen(selector);
+
+    /* struct node_s *new_list = sealark_new_list_expr(); */
+    /* assert(new_list->tid == TK_List_Expr); */
+    /* new_list->index = 1; */
+    /* struct node_s *new_items = utarray_eltptr(new_list->subnodes, 1); */
+
+    /* UT_array *nodemap; */
+    /* utarray_new(nodemap, &mapentry_icd); // client deletes */
+    /* struct mapentry_s *mapentry; */
+
+    struct node_s *expr_list = utarray_eltptr(vector->subnodes, 1);
+    int item_ct = utarray_len(expr_list->subnodes);
+
+    int i = 0;
+    struct node_s *sub = NULL;
+    while( (sub=(struct node_s*)utarray_next(expr_list->subnodes, sub)) ) {
+        log_debug("item[%d] %d %s: s: %s", i,
+                  sub->tid, TIDNAME(sub), sub->s);
+        /* if (sub->tid == TK_ID) i++; */
+        if (sub->tid == TK_STRING) {
+            if ((strncmp(sub->s, selector, selector_len) == 0)
+                && strlen(sub->s) == selector_len ){
+                return i / 2;
+            }
+        }
+        i++;
+    }
+    errno = ENOT_FOUND;
+    return -1;
 }
 
 /* **************************************************************** */
