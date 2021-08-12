@@ -1,0 +1,20 @@
+
+foo_bar(
+    name = "dqembed",
+    key1 = "abc \"def\" xyz"
+)
+
+foo_bar(
+    name = "dq3embed",
+    key1 = """abc \"def\" xyz"""
+)
+
+foo_bar(
+    name = "sqembed",
+    key1 = 'abc \'def\' xyz'
+)
+
+foo_bar(
+    name = "sq3embed",
+    key1 = '''abc \'def\' xyz'''
+)
