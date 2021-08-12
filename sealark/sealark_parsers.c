@@ -275,8 +275,7 @@ EXPORT struct node_s *sealark_parse_file(const char *fname)
         perror(fname);
         /* log_error("Value of errno: %d", errnum); */
         /* log_error("fopen error %s", strerror( errnum )); */
-        /* exit(EXIT_FAILURE); */
-        return NULL;
+        exit(EXIT_FAILURE);
     }
     fseek(f, 0, SEEK_END);
     const size_t fsize = (size_t) ftell(f);
