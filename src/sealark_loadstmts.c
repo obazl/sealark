@@ -230,6 +230,27 @@ EXPORT int sealark_loadstmt_arg_count(struct node_s *loadstmt)
 }
 
 /* **************************************************************** */
+//FIXME: for loadstmts use 'alias' instead of attr/binding?
+EXPORT int sealark_loadstmt_attr_count(struct node_s *loadstmt)
+{
+#ifdef DEBUG_TRACE
+    log_debug(">> sealark_loadstmt_arg_count");
+#endif
+
+    int subnode_ct = utarray_len(loadstmt->subnodes);
+    int arg_ct = 0;
+
+    struct node_s *item;
+    for (int i = 4; i < subnode_ct; i++) {
+        item = utarray_eltptr(loadstmt->subnodes, i);
+        if (item->tid == TK_Binding) {
+            arg_ct++;
+        }
+    }
+    return arg_ct;
+}
+
+/* **************************************************************** */
 EXPORT void sealark_loadstmt_rm_arg_at_int(struct node_s *loadstmt,
                                           int index)
 {
@@ -326,6 +347,112 @@ EXPORT void sealark_loadstmt_rm_arg_at_str(struct node_s *loadstmt,
                 utarray_erase(loadstmt->subnodes, i, span);
                 return;
             }
+        }
+    }
+    errno = ENOT_FOUND;
+    return;
+}
+
+/* **************************************************************** */
+EXPORT void sealark_loadstmt_rm_attr_at_int(struct node_s *loadstmt,
+                                          int index)
+{
+#ifdef DEBUG_TRACE
+    log_debug(">> sealark_loadstmt_rm_attr_at_int: %d", index);
+#endif
+    assert(loadstmt->tid == TK_Load_Stmt);
+    sealark_debug_log_ast_outline(loadstmt, 0);
+
+    int subnode_ct = utarray_len(loadstmt->subnodes);
+    log_debug("subnode_ct: %d", subnode_ct);
+
+    /* normalize index - cannot use util routine since there is no
+       args node type */
+    int attr_ct = sealark_loadstmt_attr_count(loadstmt);
+    log_debug("attr_ct: %d", attr_ct);
+    /* reverse indexing */
+    if (index < 0) {
+        if (abs(index) > attr_ct) {
+            log_error("abs(%d) > attr_ct", index, attr_ct);
+            errno = EINDEX_OUT_OF_BOUNDS;
+            return;
+        } else {
+            index = attr_ct + index;
+            /* log_debug("recurring..."); */
+            /* return sealark_vector_item_for_int(node, index); */
+        }
+    }
+
+    if (index > attr_ct-1) {
+        log_error("index > tattret count");
+        errno = EINDEX_OUT_OF_BOUNDS;
+        return;
+    }
+#if defined (DEBUG_TRACE) || defined(DEBUG_VECTORS)
+    log_debug("\tidx normalized: %d", index);
+#endif
+
+    int span = 2;
+    int attr_idx = 0;
+
+    /* start at idx 4, skipping 'load("key",' */
+    for (int i = 4; i < subnode_ct; i++) {
+        struct node_s *item = utarray_eltptr(loadstmt->subnodes, i);
+        log_debug("item %d/%d %s", i, attr_idx, item->s);
+        if (item->tid == TK_Binding) {
+            /* attr_idx = (i - 4) / 2; */
+            if (attr_idx == index) {
+                /* last subnode is ')' */
+                if (i == subnode_ct - 2) span = 1;
+                else span = 2;
+                log_debug("erasing %d span %d: %s", i, span,
+                          item->s);
+                utarray_erase(loadstmt->subnodes, i, span);
+                return;
+            }
+            attr_idx++;
+        }
+    }
+    return;
+}
+
+/* **************************************************************** */
+EXPORT void sealark_loadstmt_rm_attr_at_sym(struct node_s *loadstmt,
+                                            const char *key)
+{
+#ifdef DEBUG_TRACE
+    log_debug(">> sealark_loadstmt_rm_attr_at_sym: %s", key);
+#endif
+    assert(loadstmt->tid == TK_Load_Stmt);
+    sealark_debug_log_ast_outline(loadstmt, 0);
+
+    int klen = strlen(key);
+    int subnode_ct = utarray_len(loadstmt->subnodes);
+    log_debug("subnode_ct: %d", subnode_ct);
+
+    int span = 2;
+    int attr_idx = 0;
+    struct node_s *attr_id;
+
+    /* start at idx 4, skipping 'load("key",' */
+    for (int i = 4; i < subnode_ct; i++) {
+        struct node_s *item = utarray_eltptr(loadstmt->subnodes, i);
+        log_debug("item %d/%d %s", i, attr_idx, item->s);
+        if (item->tid == TK_Binding) {
+            attr_id = utarray_eltptr(item->subnodes, 0);
+            log_debug("test attr key: %s", attr_id->s);
+            if ( (strncmp(attr_id->s, key, klen) == 0)
+                 && (strlen(attr_id->s) == klen) ) {
+                /* last subnode is ')' */
+                if (i == subnode_ct - 2) span = 1;
+                else span = 2;
+                log_debug("erasing %d span %d: %s", i, span,
+                          item->s);
+                errno = 0;
+                utarray_erase(loadstmt->subnodes, i, span);
+                return;
+            }
+            attr_idx++;
         }
     }
     errno = ENOT_FOUND;
