@@ -8,6 +8,9 @@ debug_defs = select({
     "//:debug-filters": ["DEBUG_FILTERS"],
     "//conditions:default":   []
 }) + select({
+    "//:debug-format": ["DEBUG_FORMAT"],
+    "//conditions:default":   []
+}) + select({
     "//:debug-load": ["DEBUG_LOAD"],
     "//conditions:default":   []
 }) + select({

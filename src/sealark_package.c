@@ -323,6 +323,35 @@ EXPORT struct node_s *sealark_pkg_rm_target_at_key(struct node_s *pkg,
 }
 
 /* **************************************************************** */
+EXPORT int sealark_pkg_loadstmt_count(struct node_s *pkg)
+{
+#if defined(DEBUG_TRACE) || defined(DEBUG_MUTATE)
+    log_debug(">> sealark_pkg_loadstmt_count");
+#endif
+    assert(pkg->tid == TK_Package);
+
+    /* sealark_debug_log_ast_outline(pkg, 0); */
+
+    struct node_s *stmt_list = utarray_eltptr(pkg->subnodes, 0);
+    struct node_s *small_stmt_list = utarray_eltptr(stmt_list->subnodes, 0);
+
+    int toplevel_ct = utarray_len(small_stmt_list->subnodes);
+
+    int loadstmt_ct = 0;
+
+    struct node_s *node;
+    struct node_s *maybe_call;
+
+    for (int i = 0; i < toplevel_ct; i++) {
+        node = utarray_eltptr(small_stmt_list->subnodes, i);
+        if (node->tid == TK_Load_Stmt) {
+            loadstmt_ct++;
+        }
+    }
+    return loadstmt_ct;
+}
+
+/* **************************************************************** */
 /* **************************************************************** */
 EXPORT struct node_s *sealark_pkg_remove_loadstmt_at_int(struct node_s *pkg,
                                                          int index)
@@ -658,13 +687,15 @@ EXPORT void _pkg_format_toplevel(struct node_s *tl_nd, int *mrl, int *mrc)
             sealark_format_dirty_node(sub, mrl, mrc);
         }
     } else {
-        if (tl_nd->line <= *mrl) {
+        if (tl_nd->line < *mrl) {
             tl_nd->line = *mrl + format.leading;
             *mrl = tl_nd->line;
         } else {
             if (tl_nd->line == *mrl) {
-                (*mrl) += format.leading;
-                tl_nd->line = *mrl;
+                if (*mrl > 0) { /* first line of file */
+                    (*mrl) += format.leading;
+                    tl_nd->line = *mrl;
+                }
             }
         }
         if (tl_nd->comments) {

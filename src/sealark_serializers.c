@@ -156,7 +156,7 @@ EXPORT char *sealark_quote_type(struct node_s *node)
 LOCAL void _node2string(struct node_s *node, UT_string *buffer)
 {
 #if defined(DEBUG_SERIALIZERS)
-    log_debug("_node2string, line %d", line);
+    /* log_debug("_node2string %d %s", node->tid, TIDNAME(node)); */
 #endif
     int i;
     /* node->line is absolute; relativize it; */
@@ -244,7 +244,7 @@ LOCAL void _node2string(struct node_s *node, UT_string *buffer)
 LOCAL void _nodelist2string(UT_array *nodes, UT_string *buffer)
 {
 #if defined(DEBUG_SERIALIZERS)
-    log_debug("nodelist2string");
+    /* log_debug("nodelist2string"); */
 #endif
     /* line = col = 0; */
     struct node_s *node=NULL;
@@ -256,7 +256,7 @@ LOCAL void _nodelist2string(UT_array *nodes, UT_string *buffer)
 LOCAL void comments2string(UT_array *nodes, UT_string *buffer)
 {
 #if defined(DEBUG_SERIALIZERS)
-    log_debug("comments2string");
+    /* log_debug("comments2string"); */
 #endif
     struct node_s *node=NULL;
     while( (node=(struct node_s*)utarray_next(nodes, node))) {

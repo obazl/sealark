@@ -15,13 +15,15 @@ struct format_s {
     int leading;
     int toplevel_indent;
     int indent;
+    bool list_expr;
 };
 #endif
 
 struct format_s format = {
-                          .leading = 2,
-                          .toplevel_indent = 0,
-                          .indent = 4
+    .leading = 2,
+    .toplevel_indent = 0,
+    .indent = 4,
+    .list_expr = false
 };
 
 /* **************************************************************** */
@@ -44,12 +46,30 @@ EXPORT void sealark_format_dirty_node(struct node_s *nd, int *mrl, int *mrc)
     }
 
     if (sealark_is_printable(nd)) {
-        /* log_debug("formatting %d %s", nd->tid, TIDNAME(nd)); */
+        log_debug("PRINTABLE formatting %d %s", nd->tid, TIDNAME(nd));
         nd->line = *mrl;
         nd->col  = *mrc;
         char *s = sealark_node_printable_string(nd);
-        *mrc += strlen(s) + 1;
-        /* if (nd->tid == TK_COMMA) (*mrc)++; //??? */
+        *mrc += strlen(s);
+
+        switch(nd->tid) {
+        case TK_COMMA:
+            if (format.list_expr) {
+                (*mrl)++;
+                *mrc = format.indent * 2;
+            }
+            break;
+        case TK_STRING:
+            if (format.list_expr) {
+                nd->line++;
+                *mrl = nd->line;
+                nd->col = format.indent *2;
+                *mrc = nd->col + strlen(nd->s) + 2;
+            }
+            break;
+        default:
+            ;
+        }
         return;
     }
 
@@ -140,13 +160,27 @@ EXPORT void sealark_format_clean_node(struct node_s *nd,
               nd->s);
 #endif
 
+    switch(nd->tid) {
+    case TK_List_Expr:
+        format.list_expr = true;
+        break;
+    default:
+        ;
+    }
+
     if ( (nd->tid == TK_BLANK)
          ||  (nd->tid == TK_COMMENT) ){
         if (nd->line <= *mrl) {
             nd->line = *mrl + 1;
         }
         *mrl = nd->line;
-        return;
+        goto exit;
+    }
+
+    if (nd->line < 0) {
+        log_error("NEW NODE: %d %s", nd->tid, TIDNAME(nd));
+        sealark_format_dirty_node(nd, mrl, mrc);
+        goto exit;
     }
 
     if (nd->line < *mrl) {
@@ -164,7 +198,7 @@ EXPORT void sealark_format_clean_node(struct node_s *nd,
             if (nd->tid == TK_Call_Expr) {
                 (*mrl)++;
                 sealark_format_call_expr(nd, mrl, mrc);
-                return;
+                goto exit;
             }
             if (nd->tid == TK_Binding) {
                 (*mrl)++;
@@ -192,7 +226,7 @@ EXPORT void sealark_format_clean_node(struct node_s *nd,
                 char *s = sealark_node_printable_string(nd);
                 *mrc += strlen(s);
             }
-            return;
+            goto exit;
         } else {
 #if defined(DEBUG_FORMAT)
             log_error("\tOLD NODE %d %s", nd->tid, TIDNAME(nd));
@@ -265,6 +299,14 @@ EXPORT void sealark_format_clean_node(struct node_s *nd,
         while( (sub=(struct node_s*)utarray_next(nd->subnodes, sub)) ) {
             sealark_format_clean_node(sub, mrl, mrc);
         }
+    }
+ exit:
+    switch(nd->tid) {
+    case TK_List_Expr:
+        format.list_expr = false;
+        break;
+    default:
+        ;
     }
     /* return *mrl; */
 }
