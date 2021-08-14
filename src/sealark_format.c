@@ -30,7 +30,7 @@ struct format_s format = {
 /* dirty node: added or edited, needs formatting */
 EXPORT void sealark_format_dirty_node(struct node_s *nd, int *mrl, int *mrc)
 {
-#if defined(DEBUG_TRACE) || defined(DEBUG_FORMAT)
+#if defined(DEBUG_FORMAT)
     log_debug("sealark_format_DIRTY_node %d %s mrl: %d, mrc: %d | %s",
               nd->tid, TIDNAME(nd), *mrl, *mrc, nd->s);
     sealark_debug_log_ast_outline(nd, 0);
@@ -45,6 +45,11 @@ EXPORT void sealark_format_dirty_node(struct node_s *nd, int *mrl, int *mrc)
         return;
     }
 
+    if (nd->tid == TK_Load_Stmt) {
+        *mrc = 0;
+        nd->line = *mrc;
+    }
+
     if (sealark_is_printable(nd)) {
         log_debug("PRINTABLE formatting %d %s", nd->tid, TIDNAME(nd));
         nd->line = *mrl;
@@ -57,6 +62,8 @@ EXPORT void sealark_format_dirty_node(struct node_s *nd, int *mrl, int *mrc)
             if (format.list_expr) {
                 (*mrl)++;
                 *mrc = format.indent * 2;
+            } else {
+                (*mrc)++;
             }
             break;
         case TK_STRING:
@@ -233,7 +240,8 @@ EXPORT void sealark_format_clean_node(struct node_s *nd,
 #endif
             delta = *mrl - nd->line;
             if (nd->tid == TK_Binding) {
-                delta++; //FIXME?
+                delta++; //FIXME
+                /* *mrc = format.indent; */
             }
             nd->line += delta;
             *mrl = nd->line;

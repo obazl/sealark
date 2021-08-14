@@ -332,22 +332,44 @@ EXPORT int sealark_pkg_loadstmt_count(struct node_s *pkg)
 
     /* sealark_debug_log_ast_outline(pkg, 0); */
 
-    struct node_s *stmt_list = utarray_eltptr(pkg->subnodes, 0);
-    struct node_s *small_stmt_list = utarray_eltptr(stmt_list->subnodes, 0);
-
-    int toplevel_ct = utarray_len(small_stmt_list->subnodes);
-
+    struct node_s *stmt_list;
+    struct node_s *small_stmt_list;
+    int toplevel_ct;
     int loadstmt_ct = 0;
+    int i = 0;
 
-    struct node_s *node;
-    struct node_s *maybe_call;
+    struct node_s *top = NULL;
+    while( (top=(struct node_s*)utarray_next(pkg->subnodes, top)) ) {
+        if (top->tid == TK_Stmt_List) {
+            stmt_list = utarray_eltptr(pkg->subnodes, 0);
+            small_stmt_list = utarray_eltptr(stmt_list->subnodes, 0);
 
-    for (int i = 0; i < toplevel_ct; i++) {
-        node = utarray_eltptr(small_stmt_list->subnodes, i);
-        if (node->tid == TK_Load_Stmt) {
-            loadstmt_ct++;
+            toplevel_ct = utarray_len(small_stmt_list->subnodes);
+            log_debug("toplevel_ct %d", toplevel_ct);
+            struct node_s *node;
+            struct node_s *maybe_call;
+
+            for (int i = 0; i < toplevel_ct; i++) {
+                node = utarray_eltptr(small_stmt_list->subnodes, i);
+                if (node->tid == TK_Load_Stmt) {
+                    loadstmt_ct++;
+                }
+            }
+            continue;
         }
+        if (top->tid == TK_Load_Stmt) {
+            loadstmt_ct++;
+            continue;
+        }
+        if (top->tid == TK_COMMA) {
+            continue;
+        }
+        log_error("Unexpected toplevel type: %d %s",
+                  top->tid, TIDNAME(top));
+        errno = EUNEXPECTED_STATE;
+        return -1;
     }
+
     return loadstmt_ct;
 }
 
@@ -559,20 +581,34 @@ EXPORT void sealark_pkg_format_force(struct node_s *pkg)
     int mrl = 0;                /* most recent line */
     int mrc = 0;                /* most recent col */
 
-    /* FIXME: so far we always get one stmt_list with one small_stmt_list.
-       will that always be the case?
-     */
-    struct node_s *stmt_list = utarray_eltptr(pkg->subnodes, 0);
-    assert(stmt_list->tid == TK_Stmt_List);
-    struct node_s *small_stmts = utarray_eltptr(stmt_list->subnodes, 0);
-    assert(small_stmts->tid == TK_Small_Stmt_List);
+    struct node_s *top = NULL;
+    while( (top=(struct node_s*)utarray_next(pkg->subnodes, top)) ) {
+        /* struct node_s *toplevel = utarray_eltptr(pkg->subnodes, 0); */
+        if (top->tid == TK_Stmt_List) {
+            struct node_s *small_stmts = utarray_eltptr(top->subnodes, 0);
+            assert(small_stmts->tid == TK_Small_Stmt_List);
 
-    int toplevel_ct = utarray_len(small_stmts->subnodes);
+            int toplevel_ct = utarray_len(small_stmts->subnodes);
 
-    struct node_s *sub = NULL;
-    for (int i = 0; i < toplevel_ct; i++) {
-        sub = utarray_eltptr(small_stmts->subnodes, i);
-        _pkg_format_toplevel(sub, &mrl, &mrc);
+            struct node_s *sub = NULL;
+            for (int i = 0; i < toplevel_ct; i++) {
+                sub = utarray_eltptr(small_stmts->subnodes, i);
+                _pkg_format_toplevel(sub, &mrl, &mrc);
+            }
+            continue;
+        }
+        if (top->tid == TK_Load_Stmt) {
+            _pkg_format_loadstmt(top, &mrl, &mrc);
+            continue;
+        }
+        if (top->tid == TK_COMMA) {
+            // ???
+            continue;
+        }
+        log_error("Unexpected toplevel type: %d %s",
+                  top->tid, TIDNAME(top));
+        errno = EUNEXPECTED_STATE;
+        return;
     }
 }
 
@@ -674,9 +710,63 @@ EXPORT void _pkg_format_toplevel(struct node_s *tl_nd, int *mrl, int *mrc)
 
     struct node_s *sub = NULL;
     if (tl_nd->line < 0) {
+        log_debug("REFORMATTING new");
+        /* unformatted */
+        if (tl_nd->tid != TK_COMMA) {
+            *mrl += format.leading;
+        }
+        tl_nd->line = *mrl;
+        *mrc = 0; //FIXME??
+        tl_nd->col  = *mrc;
+        if (tl_nd->comments) {
+            while((sub=(struct node_s*)utarray_next(tl_nd->comments, sub))){
+                sealark_format_dirty_node(sub, mrl, mrc);
+            }
+        }
+        if (tl_nd->subnodes) {
+            while((sub=(struct node_s*)utarray_next(tl_nd->subnodes, sub))){
+                sealark_format_dirty_node(sub, mrl, mrc);
+            }
+        }
+    } else {
+        if (tl_nd->line < *mrl) {
+            tl_nd->line = *mrl + format.leading;
+            *mrl = tl_nd->line;
+        } else {
+            if (tl_nd->line == *mrl) {
+                if (*mrl > 0) { /* first line of file */
+                    (*mrl) += format.leading;
+                    tl_nd->line = *mrl;
+                }
+            }
+        }
+        if (tl_nd->comments) {
+            while((sub=(struct node_s*)utarray_next(tl_nd->comments, sub))) {
+                sealark_format_clean_node(sub, mrl, mrc);
+            }
+        }
+
+        while( (sub=(struct node_s*)utarray_next(tl_nd->subnodes, sub)) ) {
+            sealark_format_clean_node(sub, mrl, mrc);
+        }
+    }
+}
+
+/* **************************************************************** */
+EXPORT void _pkg_format_loadstmt(struct node_s *tl_nd, int *mrl, int *mrc)
+{
+#if defined(DEBUG_FORMAT)
+    log_debug("_pkg_format_loadstmt: %d %s, nd line %d; mrl: %d, mrc: %d",
+              tl_nd->tid, TIDNAME(tl_nd),
+              tl_nd->line, *mrl, *mrc);
+#endif
+
+    struct node_s *sub = NULL;
+    if (tl_nd->line < 0) {
         /* unformatted */
         *mrl += format.leading;
         tl_nd->line = *mrl;
+        *mrc = 0; //FIXME??
         tl_nd->col  = *mrc;
         if (tl_nd->comments) {
             while( (sub=(struct node_s*)utarray_next(tl_nd->comments, sub)) ) {

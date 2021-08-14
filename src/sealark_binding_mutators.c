@@ -239,22 +239,11 @@ struct node_s *sealark_arglist_insert_binding_at_int(struct node_s *arglist,
     /* int col  = 0; */
     if (index == item_ct) {
         struct node_s *old = utarray_eltptr(arglist->subnodes, subnode_ct-1);
-        /* line = old->line + 1; */
-        /* col  = old->col; */
-
         struct node_s *comma = sealark_new_node(TK_COMMA, without_subnodes);
-        /* comma->line = line; */
-        /* comma->col  = col; */
         utarray_push_back(arglist->subnodes, comma);
-        /* newb->line = line++; */
-        /* newb->col  = col; */
         utarray_push_back(arglist->subnodes, newb);
     } else {
         struct node_s *old = utarray_eltptr(arglist->subnodes, index*2);
-        /* newb->line = old->line; */
-        /* old->line += 1; */
-        /* newb->col = old->col; */
-
         utarray_insert(arglist->subnodes, newb, index*2);
         struct node_s *comma = sealark_new_node(TK_COMMA, without_subnodes);
         utarray_insert(arglist->subnodes, comma, index*2+1);
