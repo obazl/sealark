@@ -5,6 +5,9 @@ debug_defs = select({
     "//:debug-bindings": ["DEBUG_BINDINGS"],
     "//conditions:default":   []
 }) + select({
+    "//:debug-ctors": ["DEBUG_CTORS"],
+    "//conditions:default":   []
+}) + select({
     "//:debug-filters": ["DEBUG_FILTERS"],
     "//conditions:default":   []
 }) + select({
