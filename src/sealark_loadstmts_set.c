@@ -162,7 +162,7 @@ EXPORT void sealark_loadstmt_insert_arg_at_int(struct node_s *loadstmt,
         log_debug("inserting at %d", arg_idx);
         utarray_insert(loadstmt->subnodes, newval, arg_idx);
         utarray_insert(loadstmt->subnodes, comma, arg_idx+1);
-        sealark_debug_log_ast_outline(loadstmt, 0);
+        /* sealark_debug_log_ast_outline(loadstmt, 0); */
     }
     return;
 }
@@ -276,7 +276,8 @@ EXPORT void sealark_loadstmt_replace_arg_at_str(struct node_s *loadstmt,
                                                 const char *newval)
 {
 #ifdef DEBUG_TRACE
-    log_debug(">> sealark_loadstmt_replace_arg_at_str: %s", key);
+    log_debug(">> sealark_loadstmt_replace_arg_at_str: %s, %s",
+              key, newval);
 #endif
     assert(loadstmt->tid == TK_Load_Stmt);
     /* sealark_debug_log_ast_outline(loadstmt, 0); */
@@ -351,6 +352,230 @@ EXPORT void sealark_loadstmt_insert_arg_at_str(struct node_s *loadstmt,
 }
 
 /* **************************************************************** */
+EXPORT void sealark_loadstmt_insert_binding_at_int(struct node_s *loadstmt,
+                                                   int index,
+                                                   struct node_s *newattr)
+{
+#ifdef DEBUG_TRACE
+    log_debug(">> sealark_loadstmt_insert_binding_at_int %d", index);
+#endif
+    assert(loadstmt->tid == TK_Load_Stmt);
+    /* sealark_debug_log_ast_outline(loadstmt, 0); */
+
+    /* subtract 1 for terminal ')' */
+    int subnode_ct = utarray_len(loadstmt->subnodes) - 1;
+    log_debug("subnode_ct: %d", subnode_ct);
+
+    /* normalize index - cannot use util routine since there is no */
+    /*    args node type */
+    int attr_ct = sealark_loadstmt_binding_count(loadstmt);
+    log_debug("attr_ct: %d", attr_ct);
+    /* reverse indexing */
+    if (index < 0) {
+        if (abs(index) > attr_ct) {
+            log_error("abs(%d) > attr_ct", index, attr_ct);
+            errno = EINDEX_OUT_OF_BOUNDS;
+            return;
+        } else {
+            index = attr_ct + index;
+            /* log_debug("recurring..."); */
+            /* return sealark_vector_item_for_int(node, index); */
+        }
+    }
+
+    if (index > attr_ct) {
+        log_error("index %d > attr count %d", attr_ct);
+        errno = EINDEX_OUT_OF_BOUNDS;
+        return;
+    }
+#if defined (DEBUG_TRACE) || defined(DEBUG_VECTORS)
+    log_debug("normalized idx: %d", index);
+#endif
+
+    /* int arg_idx = 0; */
+
+    if (index == attr_ct) {
+        /* appending */
+    }
+
+    errno = 0;
+    int idx = sealark_loadstmt_binding_subidx_for_idx(loadstmt,
+                                                      index);
+        /* log_debug("new binding:"); */
+        /* sealark_debug_log_ast_outline(newattr, 0); */
+
+    struct node_s *comma = sealark_new_node(TK_COMMA, without_subnodes);
+
+    if (errno == 0) {
+        log_debug("inserting new binding at subidx %d for idx %d", idx, index);
+        /* if (idx == subnode_ct) { */
+        if (index == attr_ct) {
+            utarray_insert(loadstmt->subnodes, comma, idx);
+            utarray_insert(loadstmt->subnodes, newattr, idx + 1);
+        } else {
+            utarray_insert(loadstmt->subnodes, newattr, idx);
+            utarray_insert(loadstmt->subnodes, comma, idx + 1);
+        }
+    } else {
+        log_error("Error finding subidx for idx %d", errno);
+        return;
+    }
+    return;
+}
+
+/* **************************************************************** */
+/*                         BINDINGS OPS                             */
+/* **************************************************************** */
+
+/* **************************************************************** */
+EXPORT
+void sealark_loadstmt_binding_for_int_replace_key(struct node_s *loadstmt,
+                                                  int index,
+                                                  const char *newkey)
+{
+#ifdef DEBUG_TRACE
+    log_debug(">> sealark_loadstmt_binding_for_int_replace_key");
+#endif
+    assert(loadstmt->tid == TK_Load_Stmt);
+
+    struct node_s *b = sealark_loadstmt_binding_for_int(loadstmt, index);
+    struct node_s *k = utarray_eltptr(b->subnodes, 0);
+    free(k->s);
+    int klen = strlen(newkey);
+    k->s = calloc(klen, sizeof(char));
+    strncpy(k->s, newkey, klen);
+    return;
+}
+
+/* **************************************************************** */
+EXPORT
+void sealark_loadstmt_binding_for_int_replace_val(struct node_s *loadstmt,
+                                                  int index,
+                                                  const char *newval)
+{
+#ifdef DEBUG_TRACE
+    log_debug(">> sealark_loadstmt_binding_for_int_replace_val");
+#endif
+    assert(loadstmt->tid == TK_Load_Stmt);
+
+    struct node_s *b = sealark_loadstmt_binding_for_int(loadstmt, index);
+    struct node_s *k = utarray_eltptr(b->subnodes, 2);
+    free(k->s);
+    int klen = strlen(newval);
+    k->s = calloc(klen, sizeof(char));
+    strncpy(k->s, newval, klen);
+    return;
+}
+
+/* **************************************************************** */
+EXPORT
+void sealark_loadstmt_binding_for_sym_replace_key(struct node_s *loadstmt,
+                                                  const char *sym,
+                                                  const char *newkey)
+{
+#ifdef DEBUG_TRACE
+    log_debug(">> sealark_loadstmt_binding_for_sym_replace_key");
+#endif
+    assert(loadstmt->tid == TK_Load_Stmt);
+    struct node_s *b = sealark_loadstmt_binding_for_sym(loadstmt, sym);
+    if (errno != 0) {
+        return;
+    }
+
+    struct node_s *k = utarray_eltptr(b->subnodes, 0);
+    free(k->s);
+    int klen = strlen(newkey);
+    k->s = calloc(klen, sizeof(char));
+    strncpy(k->s, newkey, klen);
+    return;
+}
+
+/* **************************************************************** */
+EXPORT
+void sealark_loadstmt_binding_for_sym_replace_val(struct node_s *loadstmt,
+                                                  const char *sym,
+                                                  const char *newval)
+{
+#ifdef DEBUG_TRACE
+    log_debug(">> sealark_loadstmt_binding_for_sym_replace_val");
+#endif
+    assert(loadstmt->tid == TK_Load_Stmt);
+    struct node_s *b = sealark_loadstmt_binding_for_sym(loadstmt, sym);
+    if (errno != 0) {
+        return;
+    }
+
+    struct node_s *k = utarray_eltptr(b->subnodes, 2);
+    free(k->s);
+    int klen = strlen(newval);
+    k->s = calloc(klen, sizeof(char));
+    strncpy(k->s, newval, klen);
+    return;
+}
+
+/* **************************************************************** */
+EXPORT void sealark_loadstmt_replace_attr_at_int(struct node_s *loadstmt,
+                                                 int index,
+                                                 struct node_s *newattr)
+{
+#ifdef DEBUG_TRACE
+    log_debug(">> sealark_loadstmt_replace_attr_at_int %d", index);
+#endif
+    assert(loadstmt->tid == TK_Load_Stmt);
+    /* sealark_debug_log_ast_outline(loadstmt, 0); */
+
+    int subnode_ct = utarray_len(loadstmt->subnodes);
+    log_debug("subnode_ct: %d", subnode_ct);
+
+    /* normalize index - cannot use util routine since there is no
+       args node type */
+/*     int attr_ct = sealark_loadstmt_binding_count(loadstmt); */
+/*     log_debug("attr_ct: %d", attr_ct); */
+/*     /\* reverse indexing *\/ */
+/*     if (index < 0) { */
+/*         if (abs(index) > attr_ct) { */
+/*             log_error("abs(%d) > attr_ct", index, attr_ct); */
+/*             errno = EINDEX_OUT_OF_BOUNDS; */
+/*             return; */
+/*         } else { */
+/*             index = attr_ct + index; */
+/*             /\* log_debug("recurring..."); *\/ */
+/*             /\* return sealark_vector_item_for_int(node, index); *\/ */
+/*         } */
+/*     } */
+
+/*     if (index > attr_ct-1) { */
+/*         log_error("index > target count"); */
+/*         errno = EINDEX_OUT_OF_BOUNDS; */
+/*         return; */
+/*     } */
+/* #if defined (DEBUG_TRACE) || defined(DEBUG_VECTORS) */
+/*     log_debug("\tnormalized idx: %d", index); */
+/* #endif */
+
+/*     int arg_idx = 0; */
+
+    errno = 0;
+    struct node_s *item = sealark_loadstmt_binding_for_int(loadstmt, index);
+    if (errno == 0) {
+        log_debug("item at %d: %d %s", index, item->tid, TIDNAME(item));
+        sealark_debug_log_ast_outline(item, 0);
+        log_debug("new binding:");
+        sealark_debug_log_ast_outline(newattr, 0);
+        struct node_s *newid = utarray_eltptr(newattr->subnodes, 0);
+        utarray_erase(item->subnodes, 0, 1);
+        utarray_insert(item->subnodes, newid, 0);
+
+        struct node_s *newval = utarray_eltptr(newattr->subnodes, 2);
+        utarray_erase(item->subnodes, 2, 1);
+        utarray_insert(item->subnodes, newval, 2);
+    } else {
+        return;
+    }
+    return;
+}
+
+/* **************************************************************** */
 EXPORT void sealark_loadstmt_rm_attr_at_int(struct node_s *loadstmt,
                                           int index)
 {
@@ -365,7 +590,7 @@ EXPORT void sealark_loadstmt_rm_attr_at_int(struct node_s *loadstmt,
 
     /* normalize index - cannot use util routine since there is no
        args node type */
-    int attr_ct = sealark_loadstmt_attr_count(loadstmt);
+    int attr_ct = sealark_loadstmt_binding_count(loadstmt);
     log_debug("attr_ct: %d", attr_ct);
     /* reverse indexing */
     if (index < 0) {
@@ -529,6 +754,5 @@ EXPORT void sealark_pkg_insert_loadstmt_at_int(struct node_s *pkg,
         log_debug("prepending at %d", sub_idx);
         utarray_insert(small_stmt_list->subnodes, loadstmt, sub_idx);
     }
-
     return;
 }

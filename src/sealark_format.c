@@ -16,6 +16,7 @@ struct format_s {
     int toplevel_indent;
     int indent;
     bool list_expr;
+    bool load_stmt;
 };
 #endif
 
@@ -23,7 +24,8 @@ struct format_s format = {
     .leading = 2,
     .toplevel_indent = 0,
     .indent = 4,
-    .list_expr = false
+    .list_expr = false,
+    .load_stmt = false
 };
 
 /* **************************************************************** */
@@ -46,6 +48,7 @@ EXPORT void sealark_format_dirty_node(struct node_s *nd, int *mrl, int *mrc)
     }
 
     if (nd->tid == TK_Load_Stmt) {
+        log_debug("0 Dirty loadstmt xxxxxxxxxxxxxxxx");
         *mrc = 0;
         nd->line = *mrc;
     }
@@ -67,11 +70,21 @@ EXPORT void sealark_format_dirty_node(struct node_s *nd, int *mrl, int *mrc)
             }
             break;
         case TK_STRING:
+log_debug("0 xxxxxxxxxxxxxxxx");
             if (format.list_expr) {
+log_debug("1 xxxxxxxxxxxxxxxx");
                 nd->line++;
                 *mrl = nd->line;
                 nd->col = format.indent *2;
                 *mrc = nd->col + strlen(nd->s) + 2;
+            } else {
+log_debug("2 xxxxxxxxxxxxxxxx");
+                if (format.load_stmt) {
+log_debug("3 xxxxxxxxxxxxxxxx");
+                    nd->line = ++(*mrl);
+                    nd->col = format.indent *2;
+                    *mrc = nd->col + strlen(nd->s) + 2;
+                }
             }
             break;
         default:

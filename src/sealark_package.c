@@ -729,6 +729,9 @@ EXPORT void _pkg_format_toplevel(struct node_s *tl_nd, int *mrl, int *mrc)
             }
         }
     } else {
+        if (tl_nd->tid == TK_Load_Stmt)
+            format.load_stmt = true;
+
         if (tl_nd->line < *mrl) {
             tl_nd->line = *mrl + format.leading;
             *mrl = tl_nd->line;
