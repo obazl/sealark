@@ -99,8 +99,8 @@ EXPORT struct node_s *sealark_pkg_rm_target_at_int(struct node_s *pkg,
     int delta = (index < 0)? 0 : toplevel_ct;
     /* int stop  = (index < 0)? 0 : toplevel_ct; */
     int j = 0;
-    log_debug("target_ct: %d, delta: %d; j: %d",
-              target_ct, delta, j);
+    /* log_debug("target_ct: %d, delta: %d; j: %d", */
+    /*           target_ct, delta, j); */
 
     for (int i = 0; i < toplevel_ct; i++) {
         /* log_debug("i: %d", i); */
@@ -154,8 +154,8 @@ EXPORT struct node_s *sealark_pkg_replace_target_at_int(struct node_s *pkg,
     int delta = (index < 0)? 0 : toplevel_ct;
     /* int stop  = (index < 0)? 0 : toplevel_ct; */
     int j = 0;
-    log_debug("target_ct: %d, delta: %d; j: %d",
-              target_ct, delta, j);
+    /* log_debug("target_ct: %d, delta: %d; j: %d", */
+    /*           target_ct, delta, j); */
 
     for (int i = 0; i < toplevel_ct; i++) {
         /* log_debug("i: %d", i); */
@@ -167,7 +167,7 @@ EXPORT struct node_s *sealark_pkg_replace_target_at_int(struct node_s *pkg,
             if (maybe_call->tid == TK_Call_Expr) {
                 if (sealark_call_expr_is_target(maybe_call)) {
                     if (target_ct == index) {
-                        log_debug("HIT - replacing at %d", j);
+                        /* log_debug("HIT - replacing at %d", j); */
                         /* now replace */
                         newtgt->line = maybe_call->line;
                         newtgt->col = maybe_call->col;
@@ -345,7 +345,7 @@ EXPORT int sealark_pkg_loadstmt_count(struct node_s *pkg)
             small_stmt_list = utarray_eltptr(stmt_list->subnodes, 0);
 
             toplevel_ct = utarray_len(small_stmt_list->subnodes);
-            log_debug("toplevel_ct %d", toplevel_ct);
+            /* log_debug("toplevel_ct %d", toplevel_ct); */
             struct node_s *node;
             struct node_s *maybe_call;
 
@@ -710,7 +710,7 @@ EXPORT void _pkg_format_toplevel(struct node_s *tl_nd, int *mrl, int *mrc)
 
     struct node_s *sub = NULL;
     if (tl_nd->line < 0) {
-        log_debug("REFORMATTING new");
+        /* log_debug("REFORMATTING new"); */
         /* unformatted */
         if (tl_nd->tid != TK_COMMA) {
             *mrl += format.leading;

@@ -17,7 +17,7 @@ EXPORT UT_array *sealark_proc_bindings_to_utarray(struct node_s *target)
     log_debug("sealark_target_bindings");
 #endif
     assert(target->tid == TK_Call_Expr);
-    log_debug("target tid: %d %s", target->tid, TIDNAME(target));
+    /* log_debug("target tid: %d %s", target->tid, TIDNAME(target)); */
 
     /* :call-expr[1] => :call-sfx[1] => :arg-list */
     struct node_s *call_sfx = utarray_eltptr(target->subnodes, 1);
@@ -34,7 +34,7 @@ EXPORT UT_array *sealark_proc_bindings_to_utarray(struct node_s *target)
         if (nd->tid == TK_Binding)
             utarray_push_back(attribs, nd);
     }
-    log_debug("found %d bindings (named args)", utarray_len(attribs));
+    /* log_debug("found %d bindings (named args)", utarray_len(attribs)); */
     return attribs;
 }
 
