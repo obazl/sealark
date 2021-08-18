@@ -290,7 +290,7 @@ UT_array *sealark_loadstmt_args(struct node_s *loadstmt)
 
     UT_array *args;
     utarray_new(args, &node_icd);
-    int i;
+    int i = 0;
     struct node_s *arg_nd=NULL;
 
     while( (arg_nd=(struct node_s*)utarray_next(loadstmt->subnodes,
@@ -301,7 +301,7 @@ UT_array *sealark_loadstmt_args(struct node_s *loadstmt)
             utarray_push_back(args, arg_nd);
         i++;
     }
-    /* log_debug("found %d loadstmt args", utarray_len(args)); */
+    log_debug("found %d loadstmt args", utarray_len(args));
     return args;
 }
 
