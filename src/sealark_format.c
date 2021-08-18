@@ -48,7 +48,7 @@ EXPORT void sealark_format_dirty_node(struct node_s *nd, int *mrl, int *mrc)
     }
 
     if (nd->tid == TK_Load_Stmt) {
-        log_debug("0 Dirty loadstmt xxxxxxxxxxxxxxxx");
+        /* log_debug("0 Dirty loadstmt xxxxxxxxxxxxxxxx"); */
         *mrc = 0;
         nd->line = *mrc;
     }
