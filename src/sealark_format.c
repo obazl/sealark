@@ -721,3 +721,68 @@ EXPORT struct node_s *sealark_format_rm_trailing_commas(struct node_s *node)
     }
     return node;
 }
+
+/* **************************************************************** */
+EXPORT void sealark_remove_trailing_commas(struct node_s *node)
+{
+#if defined(DEBUG_FORMAT)
+    log_debug("sealark_remove_trailing_commas");
+#endif
+
+    int subnode_ct = 0;
+    struct node_s *last;
+    struct node_s *maybe_comma;
+    struct node_s *subnode;
+
+    switch(node->tid) {
+    case TK_Call_Sfx:
+        subnode = NULL;
+        while((subnode=(struct node_s*)utarray_next(node->subnodes,
+                                                    subnode))) {
+            sealark_remove_trailing_commas(subnode);
+        }
+
+        subnode_ct = utarray_len(node->subnodes);
+
+        /* last == RPAREN */
+        maybe_comma = utarray_eltptr(node->subnodes, subnode_ct - 2);
+        if (maybe_comma->tid == TK_COMMA) {
+            utarray_erase(node->subnodes, subnode_ct - 2, 1);
+        }
+        break;
+    case TK_List_Expr:
+        subnode_ct = utarray_len(node->subnodes);
+
+        maybe_comma = utarray_eltptr(node->subnodes, subnode_ct - 2);
+        if (maybe_comma->tid == TK_COMMA) {
+            utarray_erase(node->subnodes, subnode_ct - 2, 1);
+        }
+        subnode = NULL;
+        while((subnode=(struct node_s*)utarray_next(node->subnodes,
+                                                    subnode))) {
+            sealark_remove_trailing_commas(subnode);
+        }
+        break;
+    case TK_Load_Stmt:
+        sealark_debug_log_ast_outline(node, 0);
+        subnode_ct = utarray_len(node->subnodes);
+
+        maybe_comma = utarray_eltptr(node->subnodes, subnode_ct - 2);
+        if (maybe_comma->tid == TK_COMMA) {
+            utarray_erase(node->subnodes, subnode_ct - 2, 1);
+        }
+        break;
+    /* case TK_Package: */
+    /*     log_debug("TK_Package xxxxxxxxxxxxxxxx"); */
+    /*     sealark_debug_log_ast_outline(node, 0); */
+    /*     break; */
+    default:
+        if (node->subnodes) {
+            struct node_s *subnode = NULL;
+            while((subnode=(struct node_s*)utarray_next(node->subnodes,
+                                                        subnode))) {
+                sealark_remove_trailing_commas(subnode);
+            }
+        }
+    }
+}
