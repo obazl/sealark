@@ -51,12 +51,15 @@ struct node_s *sealark_remove_binding_at_index(struct node_s *bindings,
 
     assert(bindings->tid == TK_Arg_List);
 
-    int len = utarray_len(bindings->subnodes);
+    int subnode_ct = utarray_len(bindings->subnodes);
 
-    if ( (len - index) > 1 ) {
-        utarray_erase(bindings->subnodes, index, 2);
+    index = 2 * index; // translate item idx to subnode idx
+
+    if ( (subnode_ct - 1) == index) {
+        /* remove last */
+        utarray_erase(bindings->subnodes, index - 1, 2);
     } else {
-        utarray_erase(bindings->subnodes, index, 1);
+        utarray_erase(bindings->subnodes, index, 2);
     }
     return bindings;
 }
