@@ -432,7 +432,7 @@ loop:
     /* COMMENTS = (ws* ((#scmt "#"[^\n]+ #ecmt eol) | eol))*; */
     /* COMMENTS = ws* eol? (ws* (#scmt "#"[^\n]+ #ecmt)? eol)*; */
 
-    COMMENTS = (ws* (#scmt "#"[^\n]+ #ecmt)? eol)*;
+    COMMENTS = (ws* (#scmt "#"[^\n]* #ecmt)? eol)*;
 
       // RULES
 
@@ -576,7 +576,7 @@ loop:
         (*mtok)->col = lexer->tok - lexer->sol;
         return TK_LPAREN;
     }
-    <init> @s1 "#"[^\n]+ eol @s2 {
+    <init> @s1 "#"[^\n]* eol @s2 {
         /* n->line = line; // - newlines; */
         /* n->col  = scmt - sol; // lexer->pos.col; */
         (*mtok)->s = strndup(s1, (size_t)(s2 - s1));
