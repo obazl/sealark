@@ -301,7 +301,7 @@ UT_array *sealark_loadstmt_args(struct node_s *loadstmt)
             utarray_push_back(args, arg_nd);
         i++;
     }
-    log_debug("found %d loadstmt args", utarray_len(args));
+    /* log_debug("found %d loadstmt args", utarray_len(args)); */
     return args;
 }
 

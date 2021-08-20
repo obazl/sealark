@@ -19,7 +19,7 @@ EXPORT UT_array *sealark_targets_for_pkg(struct node_s *pkg)
     assert(pkg->tid == TK_Package);
     // :package > :stmt-list :smallstmt-list > expr-list > call-expr
 
-    sealark_debug_log_ast_outline(pkg, 0);
+    /* sealark_debug_log_ast_outline(pkg, 0); */
 
     struct node_s *stmt_list = utarray_eltptr(pkg->subnodes, 0);
 
@@ -52,7 +52,7 @@ EXPORT UT_array *sealark_targets_for_pkg(struct node_s *pkg)
 #endif
 
     int small_list_subnode_ct = utarray_len(small_list->subnodes);
-    log_debug("small_list_subnode_ct: %d", small_list_subnode_ct);
+    /* log_debug("small_list_subnode_ct: %d", small_list_subnode_ct); */
 
     int i = 0;
     while((exprs
