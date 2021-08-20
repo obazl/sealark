@@ -238,8 +238,8 @@ EXPORT bool sealark_target_has_name(struct node_s *call_expr,
 EXPORT bool sealark_target_is_rule_kind(struct node_s *call_expr,
                                         const char *rule_kind)
 {
-#if defined (DEBUG_TRACE) || defined(DEBUG_QUERY)
-    log_debug("sealark_target_is_rule_kind: %s", rule_kind);
+#if defined(DEBUG_QUERY)
+    /* log_debug("sealark_target_is_rule_kind: %s", rule_kind); */
 #endif
 
     char *rule;
@@ -253,13 +253,12 @@ EXPORT bool sealark_target_is_rule_kind(struct node_s *call_expr,
         strncpy(rule, rule_kind, rule_len-1);
         rule[rule_len] = '\0';
         rule_len--;
-        log_debug("0 xxxxxxxxxxxxxxxx %s", rule);
     } else {
         rule = (char*)rule_kind;
     }
 
     struct node_s *id = utarray_eltptr(call_expr->subnodes, 0);
-    log_debug("call expr rule: %s", id->s);
+    /* log_debug("call expr rule: %s", id->s); */
 
     if (globbing) {
         if (strncmp(id->s, rule, rule_len) == 0) {
@@ -271,10 +270,10 @@ EXPORT bool sealark_target_is_rule_kind(struct node_s *call_expr,
     } else {
         if ( (strncmp(id->s, rule, rule_len) == 0)
              && (strlen(id->s) == rule_len) ) {
-            log_debug("target has kind %s", rule);
+            /* log_debug("target has kind %s", rule); */
             return true;
         } else {
-            log_debug("target does note have kind %s", rule);
+            /* log_debug("target does note have kind %s", rule); */
             return false;
         }
     }

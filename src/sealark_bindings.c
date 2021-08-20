@@ -92,7 +92,7 @@ EXPORT struct node_s *sealark_value_for_binding(struct node_s *binding)
 /* ******************************** */
 EXPORT struct node_s *sealark_target_binding_for_key(struct node_s *call_expr, const char *key)
 {
-#if defined(DEBUG_TRACE)
+#if defined(DEBUG_BINDINGS)
     log_debug("sealark_target_binding_for_key: %s", key);
 #endif
 
