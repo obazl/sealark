@@ -19,8 +19,19 @@ EXPORT UT_array *sealark_targets_for_pkg(struct node_s *pkg)
     assert(pkg->tid == TK_Package);
     // :package > :stmt-list :smallstmt-list > expr-list > call-expr
 
+    sealark_debug_log_ast_outline(pkg, 0);
+
     struct node_s *stmt_list = utarray_eltptr(pkg->subnodes, 0);
-    struct node_s *small_list = utarray_eltptr(stmt_list->subnodes, 0);
+
+    /* skip leading comment lines to get to small_stmt_list */
+    struct node_s *small_list;
+    int stmt_list_subnode_ct = utarray_len(stmt_list->subnodes);
+    for (int i = 0; i < stmt_list_subnode_ct; i++) {
+        small_list = utarray_eltptr(stmt_list->subnodes, i);
+        if (small_list->tid == TK_Small_Stmt_List)
+            break;
+    }
+    /* struct node_s *small_list = utarray_eltptr(stmt_list->subnodes, 0); */
     /* log_debug("small_list child ct: %d", utarray_len(small_list->subnodes)); */
 
     // each call_expr is wrapped in expr_list
@@ -39,6 +50,10 @@ EXPORT UT_array *sealark_targets_for_pkg(struct node_s *pkg)
               token_name[TK_Expr_List][0],
               TK_Expr_List);
 #endif
+
+    int small_list_subnode_ct = utarray_len(small_list->subnodes);
+    log_debug("small_list_subnode_ct: %d", small_list_subnode_ct);
+
     int i = 0;
     while((exprs
            =(struct node_s*)utarray_next(small_list->subnodes, exprs))) {
@@ -56,11 +71,13 @@ EXPORT UT_array *sealark_targets_for_pkg(struct node_s *pkg)
         } else {
             /* ignore non-targets */
         }
+        i++;
     }
 
     /* FIXME: put this in a node->subnodes. need new node type?
        TK_Targets? would have to be virtual since targets may be
        interspersed with other productions in a file. */
+    /* log_debug("found %d targets", utarray_len(target_list)); */
     return target_list;
 }
 
