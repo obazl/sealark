@@ -5,6 +5,7 @@ test/data/tmp
 .sunlark.d
 user.bazelrc
 
+gtags.files
 GPATH
 GRTAGS
 GTAGS
