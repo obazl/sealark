@@ -11,17 +11,18 @@ UT_array  *result;
 
 char *build_file = "test/data/cc/BUILD.test";
 
-struct parse_state_s *parse_state;
+struct node_s *parse_state;
 
 struct node_s *ast;
 
 void setUp(void) {
-    parse_state = sealark_parse_file(build_file);
-    ast = parse_state->root;
+    ast = sealark_parse_file(build_file);
+    /* ast = parse_state->root; */
 }
 
 void tearDown(void) {
-    sealark_parse_state_free(parse_state);
+    /* sealark_parse_state_free(parse_state); */
+    sealark_node_free(ast);
 }
 
 void test_target_for_index(void) {

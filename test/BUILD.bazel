@@ -1,13 +1,24 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
+load("@makeheaders//src:RULES.bzl", "makeheaders")
+
+TOOLCHAINS = ["//:module_profiles"]
+
+test_suite(
+    name = "test",
+    tests = [
+        "//test/sys",
+        "//test/unit/parser",
+        "//test/unit/sealark",
+    ])
+
 ################################################################
 ## testing lexis, syntaxis
-
 cc_binary(
     name  = "lex_file",
     srcs  = [
         "lex_file.c",
-        "lex_file.h",
+        ":mkhdrs"
     ],
     copts = select({
         # strdup is non-standard, not supported on linux in strict c11 mode
@@ -20,23 +31,21 @@ cc_binary(
         "-I", "$(GENDIR)/src",
         "-I", "$(GENDIR)/test",
 
-        "-I", "vendored/logc",
-        # "-I", "external/obazl/vendored/logc",
-        # "-I", "external/tools_obazl/vendored/logc",
-
-        "-I", "vendored/uthash",
+        "-I$(@liblogc)//src",
+        "-I$(@uthash)//src",
     ],
     defines = ["DEBUG", "DEBUG_TRACE"],
     deps = [
         "//src:sealark",
-        "//vendored/logc",
-        "//vendored/uthash",
+        "@liblogc//src:logc",
+        "@uthash//src:uthash"
     ],
     # linkopts = select({
     #     "//bzl/host:linux": [],
     #     "//bzl/host:macos": ["-framework", "CoreServices"],
     # }),
-    linkstatic = 1
+    linkstatic = 1,
+    toolchains = TOOLCHAINS
 )
 
 ##########
@@ -44,7 +53,7 @@ cc_binary(
     name  = "parse_file",
     srcs  = [
         "parse_file.c",
-        "parse_file.h",
+        ":mkhdrs"
         # "//src:sealark_debug.c",
     ],
     copts = select({
@@ -59,43 +68,28 @@ cc_binary(
         "-I$(GENDIR)/external/sealark/test",
 
         "-I$(GENDIR)/src",
-
-        "-Ivendored/logc",
-        "-Iexternal/sealark/vendored/logc",
-
-        "-Ivendored/uthash",
-        "-Iexternal/sealark/vendored/uthash",
+        "-I$(@liblogc)//src",
+        "-I$(@uthash)//src",
     ],
     defines = ["DEBUG", "DEBUG_TRACE"],
     deps = [
         "//src:sealark",
-        "//vendored/logc",
-        "//vendored/uthash",
+        "@liblogc//src:logc",
+        "@uthash//src:uthash"
     ],
-    linkstatic = 1
+    linkstatic = 1,
+    toolchains = TOOLCHAINS
 )
 
-################################################################
-genrule(
+############
+makeheaders(
     name = "mkhdrs",
-    srcs = [
+    hdrs_srcs = [
         "lex_file.c",
         "parse_file.c",
-        "//src:mkhdrs-export",
     ],
-    outs = [
-        "lex_file.h",
-        "parse_file.h",
+    additional_srcs = [
+        "//src:sealark.h",
     ],
-    cmd = "\n".join([
-        "SRC1=$(location lex_file.c)",
-        "SRCDIR1=`dirname $$SRC1`",
-        "$(location //vendored/makeheaders) \\",
-        "    $(location //src:mkhdrs-export) \\",
-        "    $(location lex_file.c) \\",
-        "    $(location parse_file.c)",
-        "cp $${SRCDIR1}/*.h $(@D)",
-    ]),
-    tools = ["//vendored/makeheaders"],
     visibility = ["//visibility:public"]
 )

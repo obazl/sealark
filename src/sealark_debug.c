@@ -7,7 +7,7 @@
 
 #include "sealark_debug.h"
 
-void print_stacktrace()
+void print_stacktrace(void)
 {
     void* callstack[128];
     int i, frames = backtrace(callstack, 128);

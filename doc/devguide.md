@@ -16,14 +16,11 @@ files must be included as input to the makeheaders command.
 Note that this does not affect the Bazel dependency graph, so circular
 dependencies will not be introduced.
 
-For example, `//src/lib/lbazel/lbazel.c` depends on
-`src/lib/moonlark/libmoonlark.c`, so the latter needs to be run
-through makeheaders so that `lbazel.h` will contain the libmoonlark
-API.
-
 ## lua
 
-Neither libstarlark nor libmoonlark depend on the Bazel environment.
+WARNING: outdated. lua support is moribund. 
+
+Neither libsunlark nor libmoonlark depend on the Bazel environment.
 It's up to the app to deal with it.
 
 `//moonlark:edit` is a C application that depends on libmoonlark but
@@ -182,13 +179,15 @@ This is cause by a syntax error in a :mkhdrs target:
     ]),
 ```
 
+WARNING: //vendored has been removed, see MODULE.bazel
+
 ## CAVEATS
 
-* Bazel behaves erratically when used as a launcher. The RUNFILES env.
-  vars may or may not be defined, depending on whether run cmd was
-  'run' or 'test', and whether 'run' is used to launch a cc_binary or
-  a cc_test target. Also, the runtime environments for the 'test' and 'run'
-  commands are different.
+* Bazel may behave a little erratically when used as a launcher. The
+  RUNFILES env. vars may or may not be defined, depending on whether
+  run cmd was 'run' or 'test', and whether 'run' is used to launch a
+  cc_binary or a cc_test target. Also, the runtime environments for
+  the 'test' and 'run' commands are different.
 
 
 ### misc

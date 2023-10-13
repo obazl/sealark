@@ -1,0 +1,35 @@
+module(
+    name = "sealark",
+    version = "1.0.0",
+    compatibility_level = 1,
+    bazel_compatibility = [">=6.0.0"]
+)
+
+## bcr deps:
+bazel_dep(name = "platforms",    version = "0.0.7")
+bazel_dep(name = "bazel_skylib", version = "1.4.2")
+bazel_dep(name = "rules_cc", version = "0.0.9")
+bazel_dep(name = "rules_foreign_cc", version = "0.9.0")
+
+##  sfsexp, libinih, re2c, fswatch, unity, libffi
+## stardoc
+
+
+## obazl deps:
+bazel_dep(name = "obazl_tools_cc", version = "1.0.0")
+bazel_dep(name = "inih",           version = "57.0.0")
+bazel_dep(name = "lemon",          version = "3.42.0")
+bazel_dep(name = "liblogc",        version = "1.0.0")
+bazel_dep(name = "makeheaders",    version = "1.0.2")
+bazel_dep(name = "re2c",           version = "3.1.0")
+
+bazel_dep(name = "fswatch",        version = "1.17.1")
+bazel_dep(name = "libffi",         version = "3.4.4")
+bazel_dep(name = "sfsexp",         version = "1.4.1")
+
+bazel_dep(name = "gopt",           version = "10.0.0",
+          dev_dependency=True)
+bazel_dep(name = "unity",          version = "2.5.2",
+          dev_dependency=True)
+bazel_dep(name = "uthash",         version = "2.3.0",
+          dev_dependency=True)

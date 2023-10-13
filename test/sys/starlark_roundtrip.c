@@ -5,7 +5,7 @@
 #include "utarray.h"
 #include "utstring.h"
 #include "unity.h"
-#include "starlark.h"
+#include "sealark.h"
 /* #include "syntaxis.h" */
 
 #include "starlark_roundtrip.h"
@@ -58,13 +58,13 @@ int roundtrip(char *_file)
 
     utstring_printf(build_file, "%s", _file);
 
-    struct parse_state_s *parse = sealark_parse_file(utstring_body(build_file));
+    struct node_s *parse = sealark_parse_file(utstring_body(build_file));
     log_debug("parsed file %s", utstring_body(build_file));
     /* dump_node(root); */
 
     /* serialization routines expect a UT_string, not a char buffer */
     utstring_renew(buffer);
-    starlark_node2string(parse->root, buffer);
+    sealark_node_to_starlark(parse, buffer);
     /* printf("%s", utstring_body(buffer)); */
 
     // FIXME: use mkstemp instead of tmpnam
@@ -115,7 +115,7 @@ int roundtrip(char *_file)
         /*     printf("removed tmp file %s\n", outfile); */
         }
     }
-    parser_free(parse);
+    sealark_node_free(parse);
     /* node_dtor(parse->root); */
     return diff; // r;
 }

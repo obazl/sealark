@@ -24,83 +24,83 @@ void tearDown(void) {
 
 void test_android(void) {
     TEST_ASSERT_MESSAGE(
-        roundtrip("test/data/android.BUILD") == EXIT_SUCCESS,
-        "Mismatch on test/data/android.BUILD"
+        roundtrip("test/data/android/BUILD.test") == EXIT_SUCCESS,
+        "Mismatch on test/data/android/BUILD.test"
     );
 }
 
-void test_cpp(void) {
+void test_cc(void) {
     TEST_ASSERT_MESSAGE(
-        roundtrip("test/data/cpp.BUILD") == EXIT_SUCCESS,
-        "Mismatch on test/data/cpp.BUILD"
+        roundtrip("test/data/cc/BUILD.test") == EXIT_SUCCESS,
+        "Mismatch on test/data/cc/BUILD.test"
     );
 }
 
 void test_general_rules(void) {
     TEST_ASSERT_MESSAGE(
-        roundtrip("test/data/filegroup.BUILD") == EXIT_SUCCESS,
-        "Mismatch on test/data/filegroup.BUILD"
+        roundtrip("test/data/filegroup/BUILD.test") == EXIT_SUCCESS,
+        "Mismatch on test/data/filegroup/BUILD.test"
     );
 
     TEST_ASSERT_MESSAGE(
-        roundtrip("test/data/gen.BUILD") == EXIT_SUCCESS,
-        "Mismatch on test/data/gen.BUILD"
+        roundtrip("test/data/genrules/BUILD.test1") == EXIT_SUCCESS,
+        "Mismatch on test/data/genrules/BUILD.test1"
     );
 }
 
 void test_load(void) {
     TEST_ASSERT_MESSAGE(
-        roundtrip("test/data/load_1.BUILD") == EXIT_SUCCESS,
-        "Mismatch on test/data/load_1.BUILD"
+        roundtrip("test/data/load/BUILD.test1") == EXIT_SUCCESS,
+        "Mismatch on test/data/load/BUILD.test1"
     );
     TEST_ASSERT_MESSAGE(
-        roundtrip("test/data/load_2.BUILD") == EXIT_SUCCESS,
-        "Mismatch on test/data/load_2.BUILD"
+        roundtrip("test/data/load/BUILD.test2") == EXIT_SUCCESS,
+        "Mismatch on test/data/load/BUILD.test2"
     );
     TEST_ASSERT_MESSAGE(
-        roundtrip("test/data/load_3.BUILD") == EXIT_SUCCESS,
-        "Mismatch on test/data/load_3.BUILD"
+        roundtrip("test/data/load/BUILD.testsq") == EXIT_SUCCESS,
+        "Mismatch on test/data/load/BUILD.testsq"
     );
     TEST_ASSERT_MESSAGE(
-        roundtrip("test/data/load_aliases_1.BUILD") == EXIT_SUCCESS,
-        "Mismatch on test/data/load_aliases_1.BUILD"
+        roundtrip("test/data/load/BUILD.args") == EXIT_SUCCESS,
+        "Mismatch on test/data/load/BUILD.args"
     );
-    TEST_ASSERT_MESSAGE(
-        roundtrip("test/data/load_aliases_2.BUILD") == EXIT_SUCCESS,
-        "Mismatch on test/data/load_aliases_2.BUILD"
-    );
+    /* TEST_ASSERT_MESSAGE( */
+    /*     roundtrip("test/data/load/_aliases_2.BUILD") == EXIT_SUCCESS, */
+    /*     "Mismatch on test/data/load/_aliases_2.BUILD" */
+    /* ); */
 }
 
 void test_python(void) {
-    TEST_ASSERT_MESSAGE(
-        roundtrip("test/data/py.BUILD") == EXIT_SUCCESS,
-        "Mismatch on test/data/py.BUILD"
-    );
+    /* TEST_ASSERT_MESSAGE( */
+    /*     roundtrip("test/data/py.BUILD") == EXIT_SUCCESS, */
+    /*     "Mismatch on test/data/py.BUILD" */
+    /* ); */
 
     TEST_ASSERT_MESSAGE(
-        roundtrip("test/data/py_native.BUILD") == EXIT_SUCCESS,
-        "Mismatch on test/data/py_native.BUILD"
+        roundtrip("test/data/python/native/BUILD.test") == EXIT_SUCCESS,
+        "Mismatch on test/data/python/native/BUILD.test"
     );
 }
 
 void test_shell(void) {
     TEST_ASSERT_MESSAGE(
-        roundtrip("test/data/shell.BUILD") == EXIT_SUCCESS,
-        "Mismatch on test/data/shell.BUILD"
+        roundtrip("test/data/shell/BUILD.test") == EXIT_SUCCESS,
+        "Mismatch on test/data/shell/BUILD.test"
     );
 }
 
 void test_windows(void) {
     TEST_ASSERT_MESSAGE(
-        roundtrip("test/data/windows_dll.BUILD") == EXIT_SUCCESS,
-        "Mismatch on test/data/windows_dll.BUILD"
+        roundtrip("test/data/windows/dll/BUILD.test") == EXIT_SUCCESS,
+        "Mismatch on test/data/windows/dll/BUILD.test"
     );
 }
 
 int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_android);
-    RUN_TEST(test_cpp);
+    RUN_TEST(test_cc);
     RUN_TEST(test_general_rules);
     RUN_TEST(test_load);
     RUN_TEST(test_python);

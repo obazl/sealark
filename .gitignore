@@ -1,9 +1,15 @@
+.bazelignore
+.bazeliskrc
+.bazelversion
+bazel-*
+.bazel
 test.BUILD.bazel
 *.log
+log.*
 tmp/
 test/data/tmp
 .sunlark.d
-user.bazelrc
+obsolete
 
 gtags.files
 GPATH

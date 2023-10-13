@@ -1,6 +1,13 @@
+common --incompatible_enable_cc_toolchain_resolution
+always --experimental_cc_shared_library
+
+always --enable_bzlmod
+common --registry=https://raw.githubusercontent.com/obazl/registry/main/
+common --registry=https://bcr.bazel.build
+
 ## for parser testing, data file won't be read without this. why???
-build --nobuild_runfile_links
+#build --nobuild_runfile_links
 
-test --//sealark:yydebug=dicts,vectors,targets,loads
+# test --//src:yydebug=dicts,vectors,targets,loads
 
-try-import user.bazelrc
+try-import %workspace%/.config/user.bazelrc

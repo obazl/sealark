@@ -1,5 +1,26 @@
 load("@bazel_skylib//rules:common_settings.bzl", "string_list_flag")
 
+load("@obazl_tools_cc//rules:module_profiles.bzl",
+     "module_profiles")
+
+PROD_REPOS = [
+    "@liblogc//src:logc",
+    "@uthash//src:uthash"
+]
+
+module_profiles(
+    name = "module_profiles",
+    repos = PROD_REPOS
+)
+
+module_profiles(
+    name = "test_module_profiles",
+    repos = PROD_REPOS + [
+        "@unity//src:unity"
+    ]
+)
+
+
 string_list_flag(name = "debug", build_setting_default = [])
 config_setting(name = "debug-ast", flag_values = {":debug": "ast"})
 config_setting(name = "debug-bindings", flag_values = {":debug": "bindings"})

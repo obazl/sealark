@@ -1,4 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@makeheaders//src:RULES.bzl", "makeheaders")
+TOOLCHAINS = ["//:test_module_profiles"]
 
 test_suite(
     name = "sealark",
@@ -9,7 +11,7 @@ cc_test(
     name = "buildfile_expressors",
     srcs = [
         "buildfile_expressors.c",
-        "buildfile_expressors.h",
+        ":mkhdrs"
     ],
     data = [
         "//test/data/cc:BUILD.test"
@@ -21,46 +23,42 @@ cc_test(
     }) + [
         "-pedantic-errors",
 
-        "-I$(GENDIR)/test/unit/sealark",
-        "-I$(GENDIR)/external/moonlark/test/unit/sealark",
+        "-I$(GENDIR)/$(@)/src",
+        "-I$(GENDIR)/$(@)/test/unit/sealark",
 
-        "-I$(GENDIR)/sealark",
-        "-I$(GENDIR)/external/moonlark/sealark",
-
-        "-Ivendored/logc",
-        "-Iexternal/moonlark/vendored/logc",
-        "-Ivendored/unity",
-        "-Iexternal/moonlark/vendored/unity",
-        "-Ivendored/uthash",
-        "-Iexternal/moonlark/vendored/uthash",
+        "-I$(@liblogc)/src",
+        "-I$(@unity)/src",
+        "-I$(@uthash)/src",
     ],
     linkstatic = 1,
     deps = [
-        "//sealark",
-        "//vendored/logc",
-        "//vendored/unity",
-        "//vendored/uthash",
+        "//src:sealark",
+        "@liblogc//src:logc",
+        "@unity//src:unity",
+        "@uthash//src:uthash"
     ],
+    timeout    = "short",
+    toolchains = TOOLCHAINS
 )
 
 ################################################################
-genrule(
+makeheaders(
     name = "mkhdrs",
-    srcs = [
-        "//sealark:debug.c",
+    hdrs_srcs = [
+        "//src:sealark_debug.c",
         "buildfile_expressors.c",
     ],
-    outs = [
-        "buildfile_expressors.h",
-    ],
-    cmd = "\n".join([
-        "SRC1=$(location buildfile_expressors.c)",
-        "SRCDIR1=`dirname $$SRC1`",
-        "$(location //vendored/makeheaders) \\",
-        "    $(location //sealark:debug.c) \\",
-        "    $(location buildfile_expressors.c)",
-        "cp $${SRCDIR1}/*.h $(@D)",
-    ]),
-    tools = ["//vendored/makeheaders"],
+    # outs = [
+    #     "buildfile_expressors.h",
+    # ],
+    # cmd = "\n".join([
+    #     "SRC1=$(location buildfile_expressors.c)",
+    #     "SRCDIR1=`dirname $$SRC1`",
+    #     "$(location //vendored/makeheaders) \\",
+    #     "    $(location //sealark:debug.c) \\",
+    #     "    $(location buildfile_expressors.c)",
+    #     "cp $${SRCDIR1}/*.h $(@D)",
+    # ]),
+    # tools = ["//vendored/makeheaders"],
     visibility = ["//visibility:public"]
 )

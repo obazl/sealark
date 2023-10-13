@@ -1,10 +1,15 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@bazel_skylib//rules:common_settings.bzl", "string_list_flag")
 
-load("//:BUILD.bzl", DEFINES="debug_defs")
+load("//:BUILD.bzl", DEFINES="debug_defs") #FIXME: DEBUG_DEFINES
 load(":BUILD.bzl", "gensyntax")
 
+load("@makeheaders//src:RULES.bzl", "makeheaders")
+load("@lemon//src:BUILD.bzl", "lemon")
+
 exports_files(glob(["*.c"]))
+
+TOOLCHAINS = ["//:module_profiles"]
 
 ## to enable parser/lexer debugging pass --//sealark:debug=bindings,vectors,...
 string_list_flag(name = "yydebug", build_setting_default = [])
@@ -22,44 +27,25 @@ cc_library(
     linkstatic = 1,
     srcs  = [
         "expressors.c",
-        "expressors.h",
         "sealark_parsers.c",
-        "sealark_parsers.h",
         "sealark_binding_mutators.c",
-        "sealark_binding_mutators.h",
         "sealark_bindings.c",
-        "sealark_bindings.h",
         "sealark_ctors.c",
-        "sealark_ctors.h",
         "sealark_debug.c",
-        "sealark_debug.h",
         "sealark_dictionaries.c",
-        "sealark_dictionaries.h",
         "sealark_errors.c",
-        "sealark_errors.h",
         "sealark_format.c",
-        "sealark_format.h",
         "sealark_loadstmts.c",
-        "sealark_loadstmts.h",
         "sealark_loadstmts_set.c",
-        "sealark_loadstmts_set.h",
         "sealark_mutators.c",
-        "sealark_mutators.h",
         "sealark_nodes.c",
-        "sealark_nodes.h",
         "sealark_package.c",
-        "sealark_package.h",
         "sealark_predicators.c",
-        "sealark_predicators.h",
         "sealark_procs.c",
-        "sealark_procs.h",
         "sealark_serializers.c",
-        "sealark_serializers.h",
         "sealark_targets.c",
-        "sealark_targets.h",
         "sealark_vectors.c",
-        "sealark_vectors.h",
-        "//vendored/logc:log.h"
+        ":mkhdrs"
    ],
     hdrs = [pubic_header],
     defines = DEFINES,
@@ -69,25 +55,29 @@ cc_library(
         "//bzl/host:linux": ["-std=gnu11"],
         "//conditions:default": ["-std=c11"],
     }) + [
-        "-g", "-O0",
         "-pedantic-errors",
         "-I", ".",
         "-I", "$(GENDIR)/src",
         "-I", "$(GENDIR)/external/sealark/src",
 
-        "-I", "vendored/uthash",
-        "-I", "external/sealark/vendored/uthash",
+        "-I$(@liblogc)//src",
+        "-I$(@uthash)//src",
 
-        "-I", "vendored/logc",
-        "-I", "external/sealark/vendored/logc",
+        # "-I", "vendored/uthash",
+        # "-I", "external/sealark/vendored/uthash",
+        # "-I", "vendored/logc",
+        # "-I", "external/sealark/vendored/logc",
     ],
     deps = [
         ":lexis",
         ":syntaxis",
-        "//vendored/logc",
-        "//vendored/uthash"
+        # "//vendored/logc",
+        # "//vendored/uthash"
+        "@liblogc//src:logc",
+        "@uthash//src:uthash"
     ],
-    visibility = ["//visibility:public"]
+    visibility = ["//visibility:public"],
+    toolchains = TOOLCHAINS
 )
 
 ##########
@@ -97,10 +87,11 @@ cc_library(
     visibility = ["//visibility:public"],
     srcs  = [
         "syntaxis.c",
-        "syntaxis.h",
         "sealark_nodes.c",
-        "sealark_nodes.h",
-        "//vendored/logc:log.h",
+        ":mkhdrs"
+        # "syntaxis.h",
+        # "sealark_nodes.h",
+        # "//vendored/logc:log.h",
         # "//vendored/uthash"
     ],
     copts = select({
@@ -117,23 +108,29 @@ cc_library(
         "-I", "$(GENDIR)/src",
         "-I", "$(GENDIR)/external/sealark/src",
 
-        "-I", "vendored/logc",
-        "-I", "external/sealark/vendored/logc",
+        # "-I", "vendored/logc",
+        # "-I", "external/sealark/vendored/logc",
+        # "-I", "vendored/uthash",
+        # "-I", "external/sealark/vendored/uthash",
 
-        "-I", "vendored/uthash",
-        "-I", "external/sealark/vendored/uthash",
+        "-I$(@liblogc)//src",
+        "-I$(@uthash)//src",
 
         "-U", "NDEBUG"
     ],
     deps = [
-        "//vendored/logc",
-        "//vendored/uthash"
-    ]
+        "@liblogc//src:logc",
+        "@uthash//src:uthash"
+        # "//vendored/logc",
+        # "//vendored/uthash"
+    ],
+    toolchains = TOOLCHAINS
 )
 
-########
-gensyntax(
+################
+lemon(
     name = "gensyntaxis",
+    yy   = "syntaxis.y",
     outs = ["syntaxis.c","syntaxis.out"],
     defines = select({
         ":yydebug-vectors": ["YYDEBUG_VECTORS"],
@@ -150,6 +147,25 @@ gensyntax(
     })
 )
 
+########
+# gensyntax(
+#     name = "gensyntaxis",
+#     outs = ["syntaxis.c","syntaxis.out"],
+#     defines = select({
+#         ":yydebug-vectors": ["YYDEBUG_VECTORS"],
+#         "//conditions:default":   []
+#     }) + select({
+#         ":yydebug-dicts": ["YYDEBUG_DICTS"],
+#         "//conditions:default":   []
+#     }) + select({
+#         ":yydebug-targets": ["YYDEBUG_TARGETS"],
+#         "//conditions:default":   []
+#     }) + select({
+#         ":yydebug-loads": ["YYDEBUG_LOADSTMTS"],
+#         "//conditions:default":   []
+#     })
+# )
+
 ###########
 cc_library(
     name  = "lexis",
@@ -158,12 +174,13 @@ cc_library(
     visibility = ["//visibility:public"],
     srcs  = [
         "lexis.c",
-        "lexis.h",
         "sealark_nodes.c",
-        "sealark_nodes.h",
         "sealark_debug.c",
-        "sealark_debug.h",
-        "//vendored/logc:log.h",
+        ":mkhdrs"
+        # "lexis.h",
+        # "sealark_nodes.h",
+        # "sealark_debug.h",
+        # "//vendored/logc:log.h",
     ],
     copts = select({
         # strdup is non-standard, not supported on linux in strict c11 mode
@@ -178,35 +195,35 @@ cc_library(
         "-I", "$(GENDIR)/src",
         "-I", "$(GENDIR)/external/sealark/src",
 
-        "-I", "vendored/uthash",
-        "-I", "external/sealark/vendored/uthash",
+        "-I$(@liblogc)//src",
+        "-I$(@uthash)//src",
 
-        "-I", "vendored/logc",
-        "-I", "external/sealark/vendored/logc",
+        # "-I", "vendored/uthash",
+        # "-I", "external/sealark/vendored/uthash",
+        # "-I", "vendored/logc",
+        # "-I", "external/sealark/vendored/logc",
     ],
     defines = select({
         "//bzl/host:debug": [],
         "//conditions:default":   []
     }),
     deps = [
-        "//vendored/logc",
-        "//vendored/uthash",
-    ]
+        "@liblogc//src:logc",
+        "@uthash//src:uthash"
+        # "//vendored/logc",
+        # "//vendored/uthash",
+    ],
+    toolchains = TOOLCHAINS
 )
 
 ########
 genrule(
-    name = "gen_lexis",
-    srcs = [
-        "lexis.re",
-        # "test.re",
-    ],
-    tools = ["//vendored/re2c"],
-    outs  = [
-        "lexis.c"
-    ],
+    name  = "gen_lexis",
+    srcs  = ["lexis.re"],
+    outs  = ["lexis.c"],
+    tools = ["@re2c//:re2c"],
     cmd   = "\n".join([
-        "for f in $(locations //vendored/re2c)",
+        "for f in $(locations @re2c//:re2c)",
         "do",
         "    if [ -f $$f ]",
         "    then",
@@ -221,10 +238,10 @@ genrule(
     visibility = ["//visibility:public"]
 )
 
-########
-genrule(
+################
+makeheaders(
     name = "mkhdrs",
-    srcs = [
+    hdrs_srcs = [
         # "constants.c",
         "expressors.c",
         "lexis.c",
@@ -249,73 +266,104 @@ genrule(
         "sealark_vectors.c",
         # "//vendored/uthash",
     ],
-    outs = [
-        # "constants.h",
-        "expressors.h",
-        "lexis.h",
-        "sealark_parsers.h",
-        "syntaxis.h",
-        "sealark_binding_mutators.h",
-        "sealark_bindings.h",
-        "sealark_ctors.h",
-        "sealark_debug.h",
-        "sealark_dictionaries.h",
-        "sealark_errors.h",
-        "sealark_format.h",
-        "sealark_loadstmts.h",
-        "sealark_loadstmts_set.h",
-        "sealark_mutators.h",
-        "sealark_nodes.h",
-        "sealark_package.h",
-        "sealark_predicators.h",
-        "sealark_procs.h",
-        "sealark_serializers.h",
-        "sealark_targets.h",
-        "sealark_vectors.h",
-    ],
-    cmd = "\n".join([
-        "SRC1=$(location sealark_parsers.c)",
-        "SRCDIR1=`dirname $$SRC1`",
-        # "SRC2=$(location //vendored/uthash/utarray.h)",
-        # "SRCDIR2=`dirname $$SRC2`",
-        "$(location //vendored/makeheaders) \\",
-        # "    $(locations //vendored/uthash) \\",
-        # "    $(location constants.c) \\",
-        "    $(location expressors.c) \\",
-        "    $(location lexis.c) \\",
-        "    $(location sealark_parsers.c) \\",
-        "    $(location syntaxis.c) \\",
-        "    $(location sealark_binding_mutators.c) \\",
-        "    $(location sealark_bindings.c) \\",
-        "    $(location sealark_ctors.c) \\",
-        "    $(location sealark_debug.c) \\",
-        "    $(location sealark_dictionaries.c) \\",
-        "    $(location sealark_errors.c) \\",
-        "    $(location sealark_format.c) \\",
-        "    $(location sealark_loadstmts.c) \\",
-        "    $(location sealark_loadstmts_set.c) \\",
-        "    $(location sealark_mutators.c) \\",
-        "    $(location sealark_nodes.c) \\",
-        "    $(location sealark_package.c) \\",
-        "    $(location sealark_predicators.c) \\",
-        "    $(location sealark_procs.c) \\",
-        "    $(location sealark_serializers.c) \\",
-        "    $(location sealark_targets.c) \\",
-        "    $(location sealark_vectors.c)",
-        "cp $${SRCDIR1}/*.h $(@D)",
-    ]),
-    tools = ["//vendored/makeheaders"],
-    visibility = ["//visibility:public"]
 )
+########
+# genrule(
+#     name = "mkhdrs",
+#     srcs = [
+#         # "constants.c",
+#         "expressors.c",
+#         "lexis.c",
+#         "sealark_parsers.c",
+#         "syntaxis.c",
+#         "sealark_binding_mutators.c",
+#         "sealark_bindings.c",
+#         "sealark_ctors.c",
+#         "sealark_debug.c",
+#         "sealark_dictionaries.c",
+#         "sealark_errors.c",
+#         "sealark_format.c",
+#         "sealark_loadstmts.c",
+#         "sealark_loadstmts_set.c",
+#         "sealark_mutators.c",
+#         "sealark_nodes.c",
+#         "sealark_package.c",
+#         "sealark_predicators.c",
+#         "sealark_procs.c",
+#         "sealark_serializers.c",
+#         "sealark_targets.c",
+#         "sealark_vectors.c",
+#         # "//vendored/uthash",
+#     ],
+#     outs = [
+#         # "constants.h",
+#         "expressors.h",
+#         "lexis.h",
+#         "sealark_parsers.h",
+#         "syntaxis.h",
+#         "sealark_binding_mutators.h",
+#         "sealark_bindings.h",
+#         "sealark_ctors.h",
+#         "sealark_debug.h",
+#         "sealark_dictionaries.h",
+#         "sealark_errors.h",
+#         "sealark_format.h",
+#         "sealark_loadstmts.h",
+#         "sealark_loadstmts_set.h",
+#         "sealark_mutators.h",
+#         "sealark_nodes.h",
+#         "sealark_package.h",
+#         "sealark_predicators.h",
+#         "sealark_procs.h",
+#         "sealark_serializers.h",
+#         "sealark_targets.h",
+#         "sealark_vectors.h",
+#     ],
+#     cmd = "\n".join([
+#         "SRC1=$(location sealark_parsers.c)",
+#         "SRCDIR1=`dirname $$SRC1`",
+#         # "SRC2=$(location //vendored/uthash/utarray.h)",
+#         # "SRCDIR2=`dirname $$SRC2`",
+#         "$(location //vendored/makeheaders) \\",
+#         # "    $(locations //vendored/uthash) \\",
+#         # "    $(location constants.c) \\",
+#         "    $(location expressors.c) \\",
+#         "    $(location lexis.c) \\",
+#         "    $(location sealark_parsers.c) \\",
+#         "    $(location syntaxis.c) \\",
+#         "    $(location sealark_binding_mutators.c) \\",
+#         "    $(location sealark_bindings.c) \\",
+#         "    $(location sealark_ctors.c) \\",
+#         "    $(location sealark_debug.c) \\",
+#         "    $(location sealark_dictionaries.c) \\",
+#         "    $(location sealark_errors.c) \\",
+#         "    $(location sealark_format.c) \\",
+#         "    $(location sealark_loadstmts.c) \\",
+#         "    $(location sealark_loadstmts_set.c) \\",
+#         "    $(location sealark_mutators.c) \\",
+#         "    $(location sealark_nodes.c) \\",
+#         "    $(location sealark_package.c) \\",
+#         "    $(location sealark_predicators.c) \\",
+#         "    $(location sealark_procs.c) \\",
+#         "    $(location sealark_serializers.c) \\",
+#         "    $(location sealark_targets.c) \\",
+#         "    $(location sealark_vectors.c)",
+#         "cp $${SRCDIR1}/*.h $(@D)",
+#     ]),
+#     tools = ["//vendored/makeheaders"],
+#     visibility = ["//visibility:public"]
+# )
 
-genrule(
+makeheaders(
     name = "mkhdrs-export",
-    srcs = [
+    out  = "sealark.h",
+    export_interface = True,
+    hdrs_srcs = [
         "constants.c",
         "expressors.c",
         "lexis.c",
+        "syntaxis.c",
         "sealark_parsers.c",
-        "syntaxis.h",
         "sealark_binding_mutators.c",
         "sealark_bindings.c",
         "sealark_ctors.c",
@@ -337,38 +385,42 @@ genrule(
         # "test_parse.c",
         # "//vendored/uthash",
     ],
-    outs = [
-        "sealark.h",
+    additional_srcs = [
+        # "syntaxis.h",
     ],
-    cmd = "\n".join([
-        "SRC1=$(location sealark_parsers.c)",
-        "SRCDIR1=`dirname $$SRC1`",
-        "$(location //vendored/makeheaders) -H \\",
-        # "    $(locations //vendored/uthash) \\",
-        "    $(location constants.c) \\",
-        "    $(location expressors.c) \\",
-        "    $(location lexis.c) \\",
-        "    $(location sealark_parsers.c) \\",
-        "    $(location sealark_binding_mutators.c) \\",
-        "    $(location sealark_bindings.c) \\",
-        "    $(location sealark_ctors.c) \\",
-        "    $(location sealark_debug.c) \\",
-        "    $(location sealark_dictionaries.c) \\",
-        "    $(location sealark_errors.c) \\",
-        "    $(location sealark_format.c) \\",
-        "    $(location sealark_loadstmts.c) \\",
-        "    $(location sealark_loadstmts_set.c) \\",
-        "    $(location sealark_mutators.c) \\",
-        "    $(location sealark_nodes.c) \\",
-        "    $(location sealark_package.c) \\",
-        "    $(location sealark_predicators.c) \\",
-        "    $(location sealark_procs.c) \\",
-        "    $(location sealark_serializers.c) \\",
-        "    $(location sealark_targets.c) \\",
-        "    $(location sealark_vectors.c) \\",
-        "    $(location syntaxis.h) \\",
-        "    > $@",
-    ]),
-    tools = ["//vendored/makeheaders"],
     visibility = ["//visibility:public"]
+
+    # outs = [
+    #     "sealark.h",
+    # ],
+    # cmd = "\n".join([
+    #     "SRC1=$(location sealark_parsers.c)",
+    #     "SRCDIR1=`dirname $$SRC1`",
+    #     "$(location //vendored/makeheaders) -H \\",
+    #     # "    $(locations //vendored/uthash) \\",
+    #     "    $(location constants.c) \\",
+    #     "    $(location expressors.c) \\",
+    #     "    $(location lexis.c) \\",
+    #     "    $(location sealark_parsers.c) \\",
+    #     "    $(location sealark_binding_mutators.c) \\",
+    #     "    $(location sealark_bindings.c) \\",
+    #     "    $(location sealark_ctors.c) \\",
+    #     "    $(location sealark_debug.c) \\",
+    #     "    $(location sealark_dictionaries.c) \\",
+    #     "    $(location sealark_errors.c) \\",
+    #     "    $(location sealark_format.c) \\",
+    #     "    $(location sealark_loadstmts.c) \\",
+    #     "    $(location sealark_loadstmts_set.c) \\",
+    #     "    $(location sealark_mutators.c) \\",
+    #     "    $(location sealark_nodes.c) \\",
+    #     "    $(location sealark_package.c) \\",
+    #     "    $(location sealark_predicators.c) \\",
+    #     "    $(location sealark_procs.c) \\",
+    #     "    $(location sealark_serializers.c) \\",
+    #     "    $(location sealark_targets.c) \\",
+    #     "    $(location sealark_vectors.c) \\",
+    #     "    $(location syntaxis.h) \\",
+    #     "    > $@",
+    # ]),
+    # tools = ["//vendored/makeheaders"],
 )
